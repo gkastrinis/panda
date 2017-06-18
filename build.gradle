@@ -1,0 +1,75 @@
+plugins {
+	id 'antlr'
+	id 'application'
+	id 'groovy'
+	id 'maven-publish'
+	//see https://github.com/researchgate/gradle-release
+	id 'net.researchgate.release' version '2.4.0'
+}
+
+group = "org.clyze"
+
+mainClassName = "org.clyze.deepdoop.Main"
+
+task wrapper(type: Wrapper) {
+	gradleVersion = "3.1"
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compile "org.codehaus.groovy:groovy-all:2.4.7",   // Groovy
+	        "commons-logging:commons-logging:1.1",    // Logging wrapper
+	        "log4j:log4j:1.2.14",                     // Logging implementation
+	        "commons-io:commons-io:2.4",              // File Utils
+	        "org.apache.ivy:ivy:2.3.0",               // Apache Ivy (for downloading jars from maven repos)
+	        "org.antlr:antlr4-runtime:4.5.1-1"
+	antlr   "org.antlr:antlr4:4.5.1-1"
+	testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
+}
+
+applicationDistribution.from(projectDir) {
+	include 'LICENSE'
+}
+
+run {
+	enableAssertions = true
+	if (project.hasProperty("args")) {
+		args project.property("args").split()
+	}
+}
+
+test {
+	testLogging {
+		exceptionFormat = 'full'
+	}
+}
+
+
+if (project.hasProperty('artifactory_user')) {
+	publishing {
+		repositories {
+			maven {
+				credentials {
+					username artifactory_user
+					password artifactory_password
+				}
+				url "$artifactory_contextUrl/libs-release-local"
+			}
+		}
+	}
+
+	release {
+		failOnSnapshotDependencies = false
+		failOnUnversionedFiles = false
+		failOnCommitNeeded = false
+
+		git {
+			commitVersionFileOnly = true
+		}
+	}
+
+	afterReleaseBuild.dependsOn publish
+}

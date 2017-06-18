@@ -1,0 +1,7 @@
+.gradle
+.gradletasknamecache
+build
+
+#intellij idea files
+.idea
+deepdoop.iml
