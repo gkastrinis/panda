@@ -1,4 +1,4 @@
-package org.clyze.deepdoop.datalog.element.atom
+package org.clyze.deepdoop.datalog.element.relation
 
 import groovy.transform.Canonical
 import groovy.transform.EqualsAndHashCode
@@ -9,21 +9,22 @@ import org.clyze.deepdoop.datalog.expr.VariableExpr
 @EqualsAndHashCode(callSuper = true)
 class Constructor extends Functional {
 
-	// The constructed entity
-	IAtom entity
+	// The type of the constructed entity
+	Relation entity
 
-	Constructor(Functional f, IAtom entity) {
+	Constructor(Functional f, Relation entity) {
 		super(f.name, f.stage, f.keyExprs, f.valueExpr)
 		this.entity = entity
 	}
 
 	def getEntity() {
-		if (entity instanceof Stub)
+		// TODO fix check
+		//if (entity instanceof Relation)
 			entity = new Entity(entity.name, valueExpr)
 		return entity
 	}
 
-	IAtom newAlias(String name, String stage, List<VariableExpr> vars) {
+	Relation newAlias(String name, String stage, List<VariableExpr> vars) {
 		new Constructor(super.newAlias(name, stage, vars))
 	}
 

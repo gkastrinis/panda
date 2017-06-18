@@ -2,9 +2,9 @@ package org.clyze.deepdoop.datalog.clause
 
 import groovy.transform.Canonical
 import org.clyze.deepdoop.actions.IVisitor
-import org.clyze.deepdoop.datalog.element.atom.Predicate
-import org.clyze.deepdoop.datalog.element.atom.Primitive
-import org.clyze.deepdoop.datalog.element.atom.RefMode
+import org.clyze.deepdoop.datalog.element.relation.Predicate
+import org.clyze.deepdoop.datalog.element.relation.Primitive
+import org.clyze.deepdoop.datalog.element.relation.RefMode
 
 @Canonical
 class RefModeDeclaration extends Declaration {

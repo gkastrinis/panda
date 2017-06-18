@@ -1,15 +1,15 @@
 package org.clyze.deepdoop.datalog.component
 
 import groovy.transform.Canonical
-import org.clyze.deepdoop.datalog.element.atom.IAtom
+import org.clyze.deepdoop.datalog.element.relation.Relation
 
 @Canonical
 class Propagation {
 
 	@Canonical
 	static class Alias {
-		IAtom orig
-		IAtom alias
+		Relation orig
+		Relation alias
 	}
 
 	String fromId

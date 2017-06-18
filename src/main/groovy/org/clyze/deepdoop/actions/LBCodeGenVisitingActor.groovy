@@ -10,7 +10,7 @@ import org.clyze.deepdoop.datalog.component.CmdComponent
 import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.component.DependencyGraph
 import org.clyze.deepdoop.datalog.element.*
-import org.clyze.deepdoop.datalog.element.atom.*
+import org.clyze.deepdoop.datalog.element.relation.*
 import org.clyze.deepdoop.datalog.expr.BinaryExpr
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.GroupExpr
@@ -50,7 +50,7 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 
 		// Check that all used predicates have a declaration/definition
 		def allDeclAtoms = globalAtoms
-		Map<String, IAtom> allUsedAtoms = [:]
+		Map<String, Relation> allUsedAtoms = [:]
 		n.comps.values().each {
 			allDeclAtoms += infoActor.declaringAtoms[it].collect { it.name }
 			allUsedAtoms << infoActor.getUsedAtoms(it)
@@ -115,6 +115,8 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 
 	String exit(NegationElement n, Map<IVisitable, String> m) { "!${m[n.element]}" }
 
+	String exit(Relation n, Map<IVisitable, String> m) { throw UnsupportedOperationException() }
+
 	String exit(Constructor n, Map<IVisitable, String> m) {
 		def functionalStr = exit(n as Functional, m)
 		//if (inDecl) {
@@ -155,9 +157,6 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 		def stage = ((n.stage == null || n.stage == "@past") ? "" : n.stage)
 		return "${n.name}$stage(${m[n.entityVar]}:${m[n.valueExpr]})"
 	}
-
-	String exit(Stub n, Map<IVisitable, String> m) { throw UnsupportedOperationException() }
-
 
 	String exit(BinaryExpr n, Map<IVisitable, String> m) { "${m[n.left]} ${n.op} ${m[n.right]}" }
 
@@ -210,7 +209,7 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 
 			c.rules.each {
 				assert it.head.elements.size() == 1
-				def atom = it.head.elements.first() as IAtom
+				def atom = it.head.elements.first() as Relation
 				emitFilePredicate(atom, null, latestFile)
 			}
 
@@ -224,13 +223,13 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 
 			c.declarations.each {
 				assert !(it instanceof RefModeDeclaration)
-				def atom = infoActor.getDeclaringAtoms(it).values().first() as IAtom
+				def atom = infoActor.getDeclaringAtoms(it).values().first() as Relation
 				emitFilePredicate(atom, it, latestFile)
 			}
 		}
 	}
 
-	void emitFilePredicate(IAtom atom, Declaration d, File file) {
+	void emitFilePredicate(Relation atom, Declaration d, File file) {
 		def atomName = atom.name
 		def vars = VariableExpr.genTempVars(atom.arity)
 

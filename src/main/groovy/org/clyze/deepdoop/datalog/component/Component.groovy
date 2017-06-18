@@ -6,9 +6,9 @@ import org.clyze.deepdoop.actions.IVisitor
 import org.clyze.deepdoop.datalog.clause.Constraint
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
-import org.clyze.deepdoop.datalog.element.atom.Constructor
-import org.clyze.deepdoop.datalog.element.atom.Entity
-import org.clyze.deepdoop.datalog.element.atom.Predicate
+import org.clyze.deepdoop.datalog.element.relation.Constructor
+import org.clyze.deepdoop.datalog.element.relation.Entity
+import org.clyze.deepdoop.datalog.element.relation.Predicate
 import org.clyze.deepdoop.system.TSourceItem
 
 @Canonical
@@ -63,9 +63,9 @@ class Component implements IVisitable, TSourceItem {
 	/*void markEntity(String entityName) {
 		entities << entityName
 		// backwards patching
-		def decl = declarations.find { it.atom.name == entityName }
+		def decl = declarations.find { it.relation.name == entityName }
 		if (decl != null) {
-			def p = decl.atom as Predicate
+			def p = decl.relation as Predicate
 			assert p.exprs.size() == 1
 			def entity = new Entity(p.name, p.stage, p.exprs.first())
 			declarations.remove(decl)

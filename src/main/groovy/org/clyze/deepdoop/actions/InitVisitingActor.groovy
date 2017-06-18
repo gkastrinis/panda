@@ -10,7 +10,7 @@ import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.component.Propagation
 import org.clyze.deepdoop.datalog.component.Propagation.Alias
 import org.clyze.deepdoop.datalog.element.*
-import org.clyze.deepdoop.datalog.element.atom.*
+import org.clyze.deepdoop.datalog.element.relation.*
 import org.clyze.deepdoop.datalog.expr.*
 import org.clyze.deepdoop.system.ErrorId
 import org.clyze.deepdoop.system.ErrorManager
@@ -80,7 +80,7 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 				fromSet << prop.fromId
 
 				def (newName, newStage) = rename(alias.orig)
-				newPreds << new Alias(orig: new Stub(newName), alias: alias.alias)
+				newPreds << new Alias(orig: new Relation(newName), alias: alias.alias)
 
 				reverseMap[pred.name] = fromSet
 				reversePropsMap[prop.toId] = reverseMap
@@ -151,8 +151,8 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 
 				def stage = (prop.toId == null ? null : "@past")
 				def vars = VariableExpr.genTempVars(origAtom.arity)
-				def head = origAtom.newAlias(atom.name, stage, vars).accept(this) as IAtom
-				def body = origAtom.newAtom(null, vars) as LogicalElement
+				def head = origAtom.newAlias(atom.name, stage, vars).accept(this) as Relation
+				def body = origAtom.newRelation(null, vars) as LogicalElement
 				toComp.addRule(new Rule(new LogicalElement(head), body))
 			}
 		}
@@ -176,10 +176,10 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 
 		Set<Declaration> newDeclarations = [] as Set
 		n.declarations.each { newDeclarations << (m[it] as Declaration) }
-		Set<Stub> newImports = [] as Set
-		n.imports.each { newImports << (m[it] as Stub) }
-		Set<Stub> newExports = [] as Set
-		n.exports.each { newExports << (m[it] as Stub) }
+		Set<Relation> newImports = [] as Set
+		n.imports.each { newImports << (m[it] as Relation) }
+		Set<Relation> newExports = [] as Set
+		n.exports.each { newExports << (m[it] as Relation) }
 		return new CmdComponent(initName, newDeclarations, n.eval, newImports, newExports)
 	}
 
@@ -197,7 +197,7 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 	}
 
 	Declaration exit(Declaration n, Map<IVisitable, IVisitable> m) {
-		new Declaration(m[n.atom] as IAtom, n.types.collect { m[it] as IAtom }, n.annotations)
+		new Declaration(m[n.atom] as Relation, n.types.collect { m[it] as Relation }, n.annotations)
 	}
 
 	RefModeDeclaration exit(RefModeDeclaration n, Map<IVisitable, IVisitable> m) {
@@ -228,6 +228,11 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 
 	NegationElement exit(NegationElement n, Map<IVisitable, IVisitable> m) {
 		new NegationElement(m[n.element] as IElement)
+	}
+
+	Relation exit(Relation n, Map<IVisitable, IVisitable> m) {
+		def (newName, newStage) = rename(n)
+		return new Relation(newName)
 	}
 
 	Constructor exit(Constructor n, Map<IVisitable, IVisitable> m) {
@@ -290,11 +295,6 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 		return new RefMode(newName, newStage, m[n.entityVar] as VariableExpr, m[n.valueExpr] as IExpr)
 	}
 
-	Stub exit(Stub n, Map<IVisitable, IVisitable> m) {
-		def (newName, newStage) = rename(n)
-		return new Stub(newName)
-	}
-
 	BinaryExpr exit(BinaryExpr n, Map<IVisitable, IVisitable> m) {
 		new BinaryExpr(m[n.left] as IExpr, n.op, m[n.right] as IExpr)
 	}
@@ -308,7 +308,7 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 	VariableExpr exit(VariableExpr n, Map<IVisitable, IVisitable> m) { n }
 
 
-	def rename(IAtom atom) {
+	def rename(Relation atom) {
 		def name = atom.name
 
 		if (removeName != null && name.startsWith(removeName + ":"))
@@ -340,16 +340,16 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 			else return new Tuple2(initName + ":" + name + ":past", "@past")
 		}
 
-		// * if the atom is declared in this component, add the appropriate prefix
+		// * if the relation is declared in this component, add the appropriate prefix
 		if (declaredAtoms != null && name in declaredAtoms)
 			return new Tuple2(initName + ":" + name, atom.stage)
 
-		// * if the atom is propagated from another component, explicitly add
+		// * if the relation is propagated from another component, explicitly add
 		// the appropriate prefix and suffix
 		if (reverseSet != null)
 			return new Tuple2(initName + ":" + name + ":past", "@past")
 
-		// * otherwise it is an external atom, thus leave the name unaltered
+		// * otherwise it is an external relation, thus leave the name unaltered
 		return new Tuple2(name, atom.stage)
 	}
 }

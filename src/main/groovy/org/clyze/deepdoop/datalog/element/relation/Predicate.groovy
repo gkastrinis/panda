@@ -1,24 +1,24 @@
-package org.clyze.deepdoop.datalog.element.atom
+package org.clyze.deepdoop.datalog.element.relation
 
 import groovy.transform.Canonical
+import groovy.transform.TupleConstructor
 import org.clyze.deepdoop.actions.IVisitor
 import org.clyze.deepdoop.datalog.expr.IExpr
 import org.clyze.deepdoop.datalog.expr.VariableExpr
 
 @Canonical
-class Predicate implements IAtom {
+@TupleConstructor(callSuper = true, includeSuperProperties = true)
+class Predicate extends Relation {
 
-	String name
-	String stage
 	List<IExpr> exprs
 
 	int getArity() { exprs.size() }
 
-	IAtom newAtom(String stage, List<VariableExpr> vars) {
+	Relation newRelation(String stage, List<VariableExpr> vars) {
 		newAlias(name, stage, vars)
 	}
 
-	IAtom newAlias(String name, String stage, List<VariableExpr> vars) {
+	Relation newAlias(String name, String stage, List<VariableExpr> vars) {
 		assert arity == vars.size()
 		return new Predicate(name, stage, [] + vars)
 	}

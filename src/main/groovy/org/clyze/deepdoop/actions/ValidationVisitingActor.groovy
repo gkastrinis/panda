@@ -12,13 +12,13 @@ import org.clyze.deepdoop.datalog.element.ComparisonElement
 import org.clyze.deepdoop.datalog.element.GroupElement
 import org.clyze.deepdoop.datalog.element.LogicalElement
 import org.clyze.deepdoop.datalog.element.NegationElement
-import org.clyze.deepdoop.datalog.element.atom.Constructor
-import org.clyze.deepdoop.datalog.element.atom.Entity
-import org.clyze.deepdoop.datalog.element.atom.Functional
-import org.clyze.deepdoop.datalog.element.atom.Predicate
-import org.clyze.deepdoop.datalog.element.atom.Primitive
-import org.clyze.deepdoop.datalog.element.atom.RefMode
-import org.clyze.deepdoop.datalog.element.atom.Stub
+import org.clyze.deepdoop.datalog.element.relation.Constructor
+import org.clyze.deepdoop.datalog.element.relation.Entity
+import org.clyze.deepdoop.datalog.element.relation.Functional
+import org.clyze.deepdoop.datalog.element.relation.Predicate
+import org.clyze.deepdoop.datalog.element.relation.Primitive
+import org.clyze.deepdoop.datalog.element.relation.RefMode
+import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.expr.BinaryExpr
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.GroupExpr
@@ -83,6 +83,8 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 
 	IVisitable exit(NegationElement n, Map m) { null }
 
+	IVisitable exit(Relation n, Map m) { null }
+
 	IVisitable exit(Constructor n, Map m) {
 		if (!(n.entity.name in infoActor.allTypes))
 			ErrorManager.error(ErrorId.UNKNOWN_TYPE, n.entity.name)
@@ -114,8 +116,6 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 	IVisitable exit(Primitive n, Map m) { null }
 
 	IVisitable exit(RefMode n, Map m) { null }
-
-	IVisitable exit(Stub n, Map m) { null }
 
 	IVisitable exit(BinaryExpr n, Map m) { null }
 

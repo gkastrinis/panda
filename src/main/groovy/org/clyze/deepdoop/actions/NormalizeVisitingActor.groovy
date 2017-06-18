@@ -7,7 +7,7 @@ import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.CmdComponent
 import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.*
-import org.clyze.deepdoop.datalog.element.atom.*
+import org.clyze.deepdoop.datalog.element.relation.*
 
 class NormalizeVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<IVisitable>, TDummyActor<IVisitable> {
 

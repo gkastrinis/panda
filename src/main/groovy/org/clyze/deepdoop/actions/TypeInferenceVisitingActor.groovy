@@ -2,28 +2,15 @@ package org.clyze.deepdoop.actions
 
 import org.clyze.deepdoop.datalog.Annotation
 import org.clyze.deepdoop.datalog.Program
-import org.clyze.deepdoop.datalog.clause.Constraint
 import org.clyze.deepdoop.datalog.clause.Declaration
-import org.clyze.deepdoop.datalog.clause.RefModeDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
-import org.clyze.deepdoop.datalog.component.CmdComponent
 import org.clyze.deepdoop.datalog.component.Component
-import org.clyze.deepdoop.datalog.element.AggregationElement
 import org.clyze.deepdoop.datalog.element.ComparisonElement
-import org.clyze.deepdoop.datalog.element.GroupElement
-import org.clyze.deepdoop.datalog.element.LogicalElement
-import org.clyze.deepdoop.datalog.element.NegationElement
-import org.clyze.deepdoop.datalog.element.atom.Constructor
-import org.clyze.deepdoop.datalog.element.atom.Entity
-import org.clyze.deepdoop.datalog.element.atom.Functional
-import org.clyze.deepdoop.datalog.element.atom.IAtom
-import org.clyze.deepdoop.datalog.element.atom.Predicate
-import org.clyze.deepdoop.datalog.element.atom.Primitive
-import org.clyze.deepdoop.datalog.element.atom.RefMode
-import org.clyze.deepdoop.datalog.element.atom.Stub
-import org.clyze.deepdoop.datalog.expr.BinaryExpr
+import org.clyze.deepdoop.datalog.element.relation.Constructor
+import org.clyze.deepdoop.datalog.element.relation.Functional
+import org.clyze.deepdoop.datalog.element.relation.Relation
+import org.clyze.deepdoop.datalog.element.relation.Predicate
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
-import org.clyze.deepdoop.datalog.expr.GroupExpr
 import org.clyze.deepdoop.datalog.expr.IExpr
 import org.clyze.deepdoop.datalog.expr.VariableExpr
 import org.clyze.deepdoop.system.ErrorId
@@ -108,7 +95,7 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 
 	IVisitable exit(Rule n, Map m) {
 		n.head.elements.each {
-			def predName = (it as IAtom).name
+			def predName = (it as Relation).name
 			varIndices[predName].each { var, i ->
 				def types = varTypes[var]
 				// Var might not have possible types yet

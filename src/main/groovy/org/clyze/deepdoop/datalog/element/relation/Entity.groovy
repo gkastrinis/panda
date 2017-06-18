@@ -1,4 +1,4 @@
-package org.clyze.deepdoop.datalog.element.atom
+package org.clyze.deepdoop.datalog.element.relation
 
 import groovy.transform.Canonical
 import groovy.transform.EqualsAndHashCode
@@ -14,13 +14,13 @@ class Entity extends Predicate {
 		super(name, stage, [expr])
 	}
 
-	IAtom newAtom(String stage, List<VariableExpr> vars) {
+	Relation newRelation(String stage, List<VariableExpr> vars) {
 		assert arity == vars.size()
 		assert arity == 1
 		new Entity(name, stage, vars.first())
 	}
 
-	IAtom newAlias(String name, String stage, List<VariableExpr> vars) {
+	Relation newAlias(String name, String stage, List<VariableExpr> vars) {
 		throw new UnsupportedOperationException()
 	}
 

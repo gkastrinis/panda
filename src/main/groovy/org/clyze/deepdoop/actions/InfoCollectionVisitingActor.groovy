@@ -8,15 +8,15 @@ import org.clyze.deepdoop.datalog.clause.RefModeDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.*
-import org.clyze.deepdoop.datalog.element.atom.*
+import org.clyze.deepdoop.datalog.element.relation.*
 import org.clyze.deepdoop.datalog.expr.BinaryExpr
 import org.clyze.deepdoop.datalog.expr.GroupExpr
 import org.clyze.deepdoop.datalog.expr.VariableExpr
 
 class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<IVisitable>, TDummyActor<IVisitable> {
 
-	Map<IVisitable, List<IAtom>> declaringAtoms = [:].withDefault { [] }
-	Map<IVisitable, List<IAtom>> usedAtoms = [:].withDefault { [] }
+	Map<IVisitable, List<Relation>> declaringAtoms = [:].withDefault { [] }
+	Map<IVisitable, List<Relation>> usedAtoms = [:].withDefault { [] }
 	Map<IVisitable, List<VariableExpr>> vars = [:].withDefault { [] }
 
 	Set<String> allTypes = [] as Set
@@ -40,9 +40,9 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 	IVisitable exit(Program n, Map m) {
 		declaringAtoms[n] = declaringAtoms[n.globalComp] + (n.comps.values().collect {
 			declaringAtoms[it]
-		}.flatten() as List<IAtom>)
+		}.flatten() as List<Relation>)
 		usedAtoms[n] = usedAtoms[n.globalComp] +
-				(n.comps.collect { usedAtoms[it.value] }.flatten() as List<IAtom>)
+				(n.comps.collect { usedAtoms[it.value] }.flatten() as List<Relation>)
 
 		// Base case for supertypes
 		allTypes.each { type ->
@@ -66,7 +66,7 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 
 	/*
 	IVisitable exit(CmdComponent n, Map m) {
-		Map<String, IAtom> declMap = [:]
+		Map<String, Relation> declMap = [:]
 		n.declarations.each { declMap << getDeclaringAtoms(it) }
 		declaringAtoms[n] = declMap
 
@@ -81,7 +81,7 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 			if (!(declName in importPreds))
 				ErrorManager.error(ErrorId.CMD_NO_IMPORT, declName)
 		}
-		Map<String, IAtom> usedMap = [:]
+		Map<String, Relation> usedMap = [:]
 		n.exports.each { usedMap[it.name] = it }
 		usedAtoms[n] = usedMap
 		null
@@ -89,8 +89,8 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 	*/
 
 	IVisitable exit(Component n, Map m) {
-		declaringAtoms[n] = (n.declarations + n.rules).collect { declaringAtoms[it] }.flatten() as List<IAtom>
-		usedAtoms[n] = (n.declarations + n.constraints + n.rules).collect { usedAtoms[it] }.flatten() as List<IAtom>
+		declaringAtoms[n] = (n.declarations + n.rules).collect { declaringAtoms[it] }.flatten() as List<Relation>
+		usedAtoms[n] = (n.declarations + n.constraints + n.rules).collect { usedAtoms[it] }.flatten() as List<Relation>
 		null
 	}
 
@@ -130,17 +130,17 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 		usedAtoms[n] = usedAtoms[n.body]
 		// Atoms that appear in the head of the rule but have the @past stage
 		// are external
-		//declMap.findAll { name, atom -> atom.stage == "@past" }
-		//		.each { name, atom ->
+		//declMap.findAll { name, relation -> relation.stage == "@past" }
+		//		.each { name, relation ->
 		//	declMap.remove(name)
-		//	usedMap[name] = atom
+		//	usedMap[name] = relation
 		//}
 		//def headPredicates = n.head.elements
 		//		.findAll { !(it instanceof Constructor) }
-		//		.collect { (it as IAtom).name }
+		//		.collect { (it as Relation).name }
 		n.body.elements
-				.findAll { it instanceof IAtom }
-				.each { affectedRules[(it as IAtom).name] << n }
+				.findAll { it instanceof Relation }
+				.each { affectedRules[(it as Relation).name] << n }
 		null
 	}
 
@@ -164,7 +164,7 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 	}
 
 	IVisitable exit(LogicalElement n, Map m) {
-		usedAtoms[n] = n.elements.collect { usedAtoms[it] }.flatten() as List<IAtom>
+		usedAtoms[n] = n.elements.collect { usedAtoms[it] }.flatten() as List<Relation>
 
 		vars[n] = n.elements.collect { vars[it] }.flatten() as List<VariableExpr>
 		null

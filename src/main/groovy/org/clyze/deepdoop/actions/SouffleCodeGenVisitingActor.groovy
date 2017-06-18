@@ -9,7 +9,7 @@ import org.clyze.deepdoop.datalog.element.ComparisonElement
 import org.clyze.deepdoop.datalog.element.GroupElement
 import org.clyze.deepdoop.datalog.element.LogicalElement
 import org.clyze.deepdoop.datalog.element.NegationElement
-import org.clyze.deepdoop.datalog.element.atom.*
+import org.clyze.deepdoop.datalog.element.relation.*
 import org.clyze.deepdoop.datalog.expr.BinaryExpr
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.GroupExpr
@@ -31,13 +31,13 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 		// Unbound variable in a rule's head that a constructor will bound eventually
 		Map<IExpr, Constructor> unboundVar = [:]
 		// Atom (predicate, functional or constructor) to full predicate representation
-		Map<IAtom, String> atomToFull = [:]
+		Map<Relation, String> atomToFull = [:]
 		// Full predicate to partial predicate mapping
 		Map<String, String> fullToPartial = [:]
 		// Predicate depends on unbound vars to take values
-		Map<IAtom, List<IExpr>> unboundVarsForAtom = [:]
+		Map<Relation, List<IExpr>> unboundVarsForAtom = [:]
 		// Atom (predicate or functional) to list of variables
-		Map<IAtom, List<IExpr>> varsForAtom = [:]
+		Map<Relation, List<IExpr>> varsForAtom = [:]
 	}
 	Extra extra
 

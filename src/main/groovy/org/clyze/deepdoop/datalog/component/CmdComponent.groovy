@@ -5,7 +5,7 @@ import org.clyze.deepdoop.actions.IVisitor
 import org.clyze.deepdoop.datalog.clause.Constraint
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
-import org.clyze.deepdoop.datalog.element.atom.Stub
+import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.system.ErrorId
 import org.clyze.deepdoop.system.ErrorManager
 
@@ -13,10 +13,10 @@ import org.clyze.deepdoop.system.ErrorManager
 class CmdComponent extends Component {
 
 	String eval
-	Set<Stub> exports
-	Set<Stub> imports
+	Set<Relation> exports
+	Set<Relation> imports
 
-	CmdComponent(String name, Set<Declaration> declarations, String eval, Set<Stub> imports, Set<Stub> exports) {
+	CmdComponent(String name, Set<Declaration> declarations, String eval, Set<Relation> imports, Set<Relation> exports) {
 		super(name, null, declarations, [], [])
 		this.eval = eval
 		this.imports = imports
@@ -43,9 +43,9 @@ class CmdComponent extends Component {
 				if (eval != null) ErrorManager.error(ErrorId.CMD_EVAL, name)
 				eval = (d.constant.value as String).replaceAll('^\"|\"$', ""); break
 			case "lang:cmd:export":
-				exports << new Stub(d.backtick.name, "@past"); break
+				exports << new Relation(d.backtick.name, "@past"); break
 			case "lang:cmd:import":
-				imports << new Stub(d.backtick.name); break
+				imports << new Relation(d.backtick.name); break
 			default:
 				ErrorManager.error(ErrorId.CMD_DIRECTIVE, name)
 		}

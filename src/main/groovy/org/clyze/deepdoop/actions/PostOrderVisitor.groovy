@@ -8,7 +8,7 @@ import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.CmdComponent
 import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.*
-import org.clyze.deepdoop.datalog.element.atom.*
+import org.clyze.deepdoop.datalog.element.relation.*
 import org.clyze.deepdoop.datalog.expr.BinaryExpr
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.GroupExpr
@@ -118,6 +118,11 @@ class PostOrderVisitor<T> implements IVisitor<T> {
 		return actor.exit(n, m)
 	}
 
+	T visit(Relation n) {
+		actor.enter(n)
+		return actor.exit(n, [:])
+	}
+
 	T visit(Constructor n) {
 		actor.enter(n)
 		Map<IVisitable, T> m = [:]
@@ -162,11 +167,6 @@ class PostOrderVisitor<T> implements IVisitor<T> {
 		m[n.entityVar] = n.entityVar.accept(this)
 		m[n.valueExpr] = n.valueExpr.accept(this)
 		return actor.exit(n, m)
-	}
-
-	T visit(Stub n) {
-		actor.enter(n)
-		return actor.exit(n, [:])
 	}
 
 	T visit(BinaryExpr n) {

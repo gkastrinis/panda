@@ -8,7 +8,7 @@ import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.CmdComponent
 import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.*
-import org.clyze.deepdoop.datalog.element.atom.*
+import org.clyze.deepdoop.datalog.element.relation.*
 import org.clyze.deepdoop.datalog.expr.BinaryExpr
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.GroupExpr
@@ -39,6 +39,8 @@ interface IVisitor<T> {
 
 	T visit(NegationElement n)
 
+	T visit(Relation n)
+
 	T visit(Constructor n)
 
 	T visit(Entity n)
@@ -50,8 +52,6 @@ interface IVisitor<T> {
 	T visit(Primitive n)
 
 	T visit(RefMode n)
-
-	T visit(Stub n)
 
 	T visit(BinaryExpr n)
 

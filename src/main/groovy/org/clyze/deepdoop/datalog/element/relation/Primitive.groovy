@@ -1,25 +1,24 @@
-package org.clyze.deepdoop.datalog.element.atom
+package org.clyze.deepdoop.datalog.element.relation
 
 import groovy.transform.Canonical
+import groovy.transform.TupleConstructor
 import org.clyze.deepdoop.actions.IVisitor
 import org.clyze.deepdoop.datalog.expr.VariableExpr
 
 @Canonical
-class Primitive implements IAtom {
+@TupleConstructor(callSuper = true, includeSuperProperties = true, excludes = "stage")
+class Primitive extends Relation {
 
-	String name
 	VariableExpr var
-
-	String getStage() { null }
 
 	int getArity() { 1 }
 
-	IAtom newAtom(String stage, List<VariableExpr> vars) {
+	Relation newRelation(String stage, List<VariableExpr> vars) {
 		assert arity == vars.size()
 		return this
 	}
 
-	IAtom newAlias(String name, String stage, List<VariableExpr> vars) {
+	Relation newAlias(String name, String stage, List<VariableExpr> vars) {
 		throw new UnsupportedOperationException()
 	}
 

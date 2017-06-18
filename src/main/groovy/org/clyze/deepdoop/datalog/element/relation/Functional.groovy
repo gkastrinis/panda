@@ -1,25 +1,25 @@
-package org.clyze.deepdoop.datalog.element.atom
+package org.clyze.deepdoop.datalog.element.relation
 
 import groovy.transform.Canonical
+import groovy.transform.TupleConstructor
 import org.clyze.deepdoop.actions.IVisitor
 import org.clyze.deepdoop.datalog.expr.IExpr
 import org.clyze.deepdoop.datalog.expr.VariableExpr
 
 @Canonical
-class Functional implements IAtom {
+@TupleConstructor(callSuper = true, includeSuperProperties = true)
+class Functional extends Relation {
 
-	String name
-	String stage
 	List<IExpr> keyExprs
 	IExpr valueExpr
 
 	int getArity() { keyExprs.size() + 1 }
 
-	IAtom newAtom(String stage, List<VariableExpr> vars) {
+	Relation newRelation(String stage, List<VariableExpr> vars) {
 		newAlias(name, stage, vars)
 	}
 
-	IAtom newAlias(String name, String stage, List<VariableExpr> vars) {
+	Relation newAlias(String name, String stage, List<VariableExpr> vars) {
 		assert arity == vars.size()
 		def varsCopy = [] << vars
 		def valueVar = varsCopy.pop() as VariableExpr

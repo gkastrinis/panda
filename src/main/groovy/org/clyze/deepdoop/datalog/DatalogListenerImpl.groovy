@@ -15,7 +15,7 @@ import org.clyze.deepdoop.datalog.component.Propagation
 import org.clyze.deepdoop.datalog.component.Propagation.Alias
 import org.clyze.deepdoop.datalog.element.*
 import org.clyze.deepdoop.datalog.element.LogicalElement.LogicType
-import org.clyze.deepdoop.datalog.element.atom.*
+import org.clyze.deepdoop.datalog.element.relation.*
 import org.clyze.deepdoop.datalog.expr.*
 import org.clyze.deepdoop.system.ErrorId
 import org.clyze.deepdoop.system.ErrorManager
@@ -92,7 +92,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		if (ctx.predicateName(0)) {
 			validateAnnotations("Entity", annotations)
 			def entity = new Entity(values[ctx.predicateName(0)] as String, new VariableExpr("x"))
-			def supertype = ctx.predicateName(1) ? [new Stub(values[ctx.predicateName(1)] as String)] : []
+			def supertype = ctx.predicateName(1) ? [new Relation(values[ctx.predicateName(1)] as String)] : []
 			def d = new Declaration(entity, supertype, annotations)
 			values[ctx] = d
 			currComp.addDecl(d)
@@ -111,7 +111,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 
 				def headCompound = values[ctx.compound(0)] as LogicalElement
 				assert headCompound.elements.size() == 1
-				def atom = headCompound.elements.first() as IAtom
+				def atom = headCompound.elements.first() as Relation
 
 				// Types might appear out of order in body
 				def types = []
@@ -138,7 +138,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 
 				if (annotations.any { it.kind == CONSTRUCTOR }) {
 					assert atom instanceof Functional
-					atom = new Constructor(atom as Functional, types.last() as IAtom)
+					atom = new Constructor(atom as Functional, types.last() as Relation)
 				}
 
 				def d = new Declaration(atom, types, annotations)
@@ -168,7 +168,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 
 	void exitLeftArrow(LeftArrowContext ctx) {
 		if (ctx.predicateListExt()) {
-			def headAtoms = values[ctx.predicateListExt()] as List<IAtom>
+			def headAtoms = values[ctx.predicateListExt()] as List<Relation>
 			def head = new LogicalElement(headAtoms)
 			def body = ctx.compound() ? values[ctx.compound()] as LogicalElement : null
 			currComp.addRule(new Rule(head, body))
@@ -223,7 +223,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		recLoc(ctx)
 		values[ctx] = new Constructor(
 				values[ctx.functional()] as Functional,
-				new Stub(values[ctx.predicateName()] as String))
+				new Relation(values[ctx.predicateName()] as String))
 	}
 
 	void exitPredicateListExt(PredicateListExtContext ctx) {
@@ -263,10 +263,10 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		else if (ctx.AS()) {
 			def orig = values[ctx.predicateName(0)] as String
 			def alias = values[ctx.predicateName(1)] as String
-			values[ctx] = new Alias(orig: new Stub(orig), alias: new Stub(alias))
+			values[ctx] = new Alias(orig: new Relation(orig), alias: new Relation(alias))
 		} else {
 			def orig = values[ctx.predicateName(0)] as String
-			values[ctx] = new Alias(orig: new Stub(orig), alias: null)
+			values[ctx] = new Alias(orig: new Relation(orig), alias: null)
 		}
 	}
 
