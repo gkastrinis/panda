@@ -2,3 +2,6 @@
 
 ![DEEPDOOP](/deepdoop.png)
 =============================
+
+
+[badge-license]: https://img.shields.io/badge/license-MIT-green.svg
