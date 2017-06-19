@@ -1,4 +1,4 @@
-foo(x) -> string(x).
-ibar(1) <- foo(_).
-
-foo(x) <- bar(x, y), baz(t[x], y).
+t[1] = c <- agg<<c = count( )>> foo(_,_).
+t[2] = c <- agg<<c = count()>> (foo(_, x), bar(x, _)).
+t[3] = m <- agg<<m = max( ?y)>> bar(_, ?y).
+t[4] = min <- agg<<min = min(x)>> foo(_, x).

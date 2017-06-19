@@ -1,7 +1,19 @@
-lang:derivationType[`t1] = "Derived".
-lang:entity(`t2).
-lang:compiler:warning:SPECIFIC_STARRED_EDGE_IN_SAFETY_GRAPH_CYCLE[] = false.
+@Entity Shape.
+@Entity Circle -> Shape.
+@Entity Triangle -> Shape.
+@Constructor
+cons:Shape[x] = y -> string(x), Shape(y).
 
-t1(x) <- t2@previous(x).
-t2(x) <- t3@init(x).
-t2(x) <- t3@init[x] = _.
+// string x Circle
+new<<cons:Shape[x] = y as Circle>>,
+PredC(x, y) <- x = "circle".
+
+// string x Triangle
+new<<cons:Shape[x] = y as RightTriangle>>,
+PredT(x, y) <- x = "triangle".
+
+// Shape
+Pred(x) <- PredC(_, x).
+Pred(x) <- PredT(_, x).
+
+@Entity RightTriangle -> Triangle.

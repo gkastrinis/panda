@@ -5,6 +5,7 @@ import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTreeWalker
 import org.clyze.deepdoop.actions.NormalizeVisitingActor
 import org.clyze.deepdoop.actions.LBCodeGenVisitingActor
+import org.clyze.deepdoop.actions.SouffleCodeGenVisitingActor
 import org.clyze.deepdoop.datalog.DatalogLexer
 import org.clyze.deepdoop.datalog.DatalogListenerImpl
 import org.clyze.deepdoop.datalog.DatalogParser
@@ -31,26 +32,16 @@ class DatalogSpec extends Specification  {
 		"t4.logic"  | _
 		"t5.logic"  | _
 		"t6.logic"  | _
-		"t7.logic"  | _
-		"t8.logic"  | _
-		"t9.logic"  | _
-		"t10.logic" | _
-		"t11.logic" | _
-		"t12.logic" | _
-		"t13.logic" | _
-		"t14.logic" | _
-		//"sample.logic" | _
-		//"analysis/cfg-tests.logic" | _
-		//"analysis/context-insensitive-declarations.logic" | _
-		//"analysis/context-insensitive.logic" | _
-		//"analysis/facts-declarations.logic" | _
-		//"analysis/flow-insensitivity-declarations.logic" | _
-		//"analysis/statistics-simple.logic" | _
-		//"analysis/tamiflex-declarations.logic" | _
-		//"analysis/tamiflex-fact-declarations.logic" | _
-		//"analysis/tamiflex.logic" | _
+		//"t7.logic"  | _
+		//"t8.logic"  | _
+		//"t9.logic"  | _
+		//"t10.logic" | _
+		//"t11.logic" | _
+		//"t12.logic" | _
+		//"t13.logic" | _
 	}
 
+	/*
 	@Unroll
 	def "DeepDoop failing tests"() {
 		when:
@@ -78,10 +69,10 @@ class DatalogSpec extends Specification  {
 		"fail14.logic" | ErrorId.UNKNOWN_PRED
 		"fail15.logic" | ErrorId.NO_DECL_REC
 	}
-
+*/
 
 	def test(String file) {
-		def resourcePath = "/deepdoop/$file"
+		def resourcePath = "/$file"
 		def resource = this.class.getResource(resourcePath).file
 		def walker = new ParseTreeWalker()
 		def listener = new DatalogListenerImpl(resource)
@@ -97,6 +88,6 @@ class DatalogSpec extends Specification  {
 		def v = new NormalizeVisitingActor(p.comps)
 		def flatP = p.accept(v) as Program
 
-		flatP.accept(new LBCodeGenVisitingActor("build/"))
+		flatP.accept(new SouffleCodeGenVisitingActor("build/"))
 	}
 }

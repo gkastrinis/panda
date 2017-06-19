@@ -1,3 +1,40 @@
 __f:oo:bar[] = x -> string(x).
 __f:oo:bar[] = "abc".
 f:oo:bar2[y] = ?x -> string(?x), int(y).
+f:oo:bar2[2] = "bar".
+
+//t(x), tref(x:s) -> string(s).
+
+p(1).
+p(07).
+p(0xFf).
+
+r2(x) -> int(x).
+r1(t) <- r2(x), t = x + 10.
+
+p1(x) -> int(x).
+p2(a,b) -> int(a), int(b).
+p3[a] = b -> int(a), int(b).
+p4(x) -> int(x).
+p5(x) -> int(x).
+p6(x) -> int(x).
+
+p1(x) <- p2(x+1, y), p3[x] = z, z > y+10.
+p4(x) <- p1(x) ; p2(x, y).
+p5(x) <- ((p1(x), x > 10) ; p4(x)), !p2(x, _).
+p6(t) <- p4(x), t = x + 10.
+
+
+//t1(x) <- t2@previous(x).
+//t2(x) <- t3@init(x).
+//t2(x) <- t3@init[x] = _.
+
+
+/*
+baz(x) -> float(x).
+test9(x) <- baz(x), x > 10.5.
+test9(x) <- baz(x), x > .5.
+test9(x) <- baz(x), x > 10f.
+test9(x) <- baz(x), x > 0.6F.
+test9(x) <- baz(x), x > 10e2.
+*/
