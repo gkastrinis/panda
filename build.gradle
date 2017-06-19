@@ -31,7 +31,7 @@ dependencies {
 }
 
 applicationDistribution.from(projectDir) {
-	include 'LICENSE'
+	include 'LICENSE.txt', 'README.md'
 }
 
 run {
