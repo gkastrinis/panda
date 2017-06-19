@@ -68,11 +68,16 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 		emit "/////////////////////"
 	}
 
+	void enter(Declaration n) {
+		extra = new Extra()
+	}
+
 	String exit(Declaration n, Map<IVisitable, String> m) {
 		if (n.annotations.any { it.kind == INPUT })
 			emit ".input ${mini(n.atom.name)}"
 		if (n.annotations.any { it.kind == OUTPUT })
 			emit ".output ${mini(n.atom.name)}"
+		extra = null
 		return null
 	}
 

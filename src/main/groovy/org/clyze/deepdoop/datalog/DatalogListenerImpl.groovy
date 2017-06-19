@@ -232,24 +232,32 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	}
 
 	void exitCompoundElement(CompoundElementContext ctx) {
-		IElement el
-		if (ctx.predicate()) el = values[ctx.predicate()] as IElement
-		else if (ctx.comparison()) el = values[ctx.comparison()] as IElement
-		else el = values[ctx.compoundElement()] as IElement
+		//IElement el
+		if (ctx.predicate()) values[ctx] = values[ctx.predicate()] as IElement
+		else if (ctx.comparison()) values[ctx] = values[ctx.comparison()] as IElement
+		//else el = values[ctx.compoundElement()] as IElement
 
-		if (hasToken(ctx, "!")) values[ctx] = new NegationElement(el)
-		else if (hasToken(ctx, "(")) values[ctx] = new GroupElement(el)
-		else values[ctx] = el
+		//if (hasToken(ctx, "!")) values[ctx] = new NegationElement(el)
+		//else if (hasToken(ctx, "(")) values[ctx] = new GroupElement(el)
+		//else
+		//values[ctx] = el
 	}
 
 	void exitCompound(CompoundContext ctx) {
-		def el = values[ctx.compoundElement()] as IElement
-		if (ctx.compound()) {
-			def compound = values[ctx.compound()] as IElement
-			def type = hasToken(ctx, ",") ? LogicType.AND : LogicType.OR
-			values[ctx] = new LogicalElement(type, [compound, el])
-		} else {
+		if (ctx.compoundElement()) {
+			def el = values[ctx.compoundElement()] as IElement
 			values[ctx] = new LogicalElement(el)
+		} else if (hasToken(ctx, "!")) {
+			def el = values[ctx.compound(0)] as IElement
+			values[ctx] = new NegationElement(el)
+		} else if (hasToken(ctx, "(")) {
+			def el = values[ctx.compound(0)] as IElement
+			values[ctx] = new GroupElement(el)
+		} else {
+			def el0 = values[ctx.compound(0)] as IElement
+			def el1 = values[ctx.compound(1)] as IElement
+			def type = hasToken(ctx, ",") ? LogicType.AND : LogicType.OR
+			values[ctx] = new LogicalElement(type, [el0, el1])
 		}
 	}
 
@@ -347,15 +355,15 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		else if (hasToken(ctx, "("))
 			values[ctx] = new GroupExpr(values[ctx.expr(0)] as IExpr)
 		else {
-			def e1 = ctx.expr(0) as IExpr
-			def e2 = ctx.expr(1) as IExpr
+			def e0 = values[ctx.expr(0)] as IExpr
+			def e1 = values[ctx.expr(1)] as IExpr
 			BinOperator op
 			if (hasToken(ctx, "+")) op = BinOperator.PLUS
 			else if (hasToken(ctx, "-")) op = BinOperator.MINUS
 			else if (hasToken(ctx, "*")) op = BinOperator.MULT
 			else op = BinOperator.DIV
 
-			values[ctx] = new BinaryExpr(e1, op, e2)
+			values[ctx] = new BinaryExpr(e0, op, e1)
 		}
 	}
 
@@ -364,8 +372,8 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	}
 
 	void exitComparison(ComparisonContext ctx) {
-		def e1 = values[ctx.expr(0)] as IExpr
-		def e2 = values[ctx.expr(1)] as IExpr
+		def e0 = values[ctx.expr(0)] as IExpr
+		def e1 = values[ctx.expr(1)] as IExpr
 		BinOperator op
 		if (hasToken(ctx, "=")) op = BinOperator.EQ
 		else if (hasToken(ctx, "<")) op = BinOperator.LT
@@ -374,7 +382,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		else if (hasToken(ctx, ">=")) op = BinOperator.GEQ
 		else op = BinOperator.NEQ
 
-		values[ctx] = new ComparisonElement(e1, op, e2)
+		values[ctx] = new ComparisonElement(e0, op, e1)
 	}
 
 	void visitErrorNode(ErrorNode node) {

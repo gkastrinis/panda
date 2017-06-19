@@ -138,9 +138,10 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 		//def headPredicates = n.head.elements
 		//		.findAll { !(it instanceof Constructor) }
 		//		.collect { (it as Relation).name }
-		n.body.elements
-				.findAll { it instanceof Relation }
-				.each { affectedRules[(it as Relation).name] << n }
+		if (n.body)
+			n.body.elements
+					.findAll { it instanceof Relation }
+					.each { affectedRules[(it as Relation).name] << n }
 		null
 	}
 

@@ -1,12 +1,14 @@
 package org.clyze.deepdoop.datalog.element.relation
 
 import groovy.transform.Canonical
+import groovy.transform.ToString
 import org.clyze.deepdoop.actions.IVisitor
 import org.clyze.deepdoop.datalog.element.IElement
 import org.clyze.deepdoop.datalog.expr.VariableExpr
 
 // Generic base class that is also used when only the predicate name (and maybe stage) is known
 @Canonical
+@ToString(includePackage = false)
 class Relation implements IElement {
 
 	String name

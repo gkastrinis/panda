@@ -68,13 +68,13 @@ predicateListExt
 compoundElement
 	: predicate
 	| comparison
-	| '!' compoundElement
-	| '(' compoundElement ')'
 	;
 
 compound
 	: compoundElement
-	| compound (',' | ';') compoundElement
+	| '!' compound
+	| '(' compound ')'
+	| compound (',' | ';') compound
 	;
 
 identifierList
