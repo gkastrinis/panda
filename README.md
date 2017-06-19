@@ -1,4 +1,4 @@
-[![License UPL][badge-license]](LICENSE.txt)
+[![License MIT][badge-license]](LICENSE.txt)
 
 ![DEEPDOOP](/deepdoop.png)
 =============================
