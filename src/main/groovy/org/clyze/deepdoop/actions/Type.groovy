@@ -21,7 +21,7 @@ class ClosedType implements IType {
 
     @Delegate String value
 
-    void merge(IType t) { throw UnsupportedOperationException() }
+    void merge(IType t) { throw new UnsupportedOperationException() }
 
     IType join(IType t) {
         def open = new OpenType()

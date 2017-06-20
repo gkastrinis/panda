@@ -42,7 +42,7 @@ class Compiler {
 			codeGenActor.visit(listener.program)
 			return codeGenActor.results
 		} catch (e) {
-			log.error(e.message)
+			log.error(e.message, e)
 		}
 		return null
 	}

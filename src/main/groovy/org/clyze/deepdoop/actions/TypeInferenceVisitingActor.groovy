@@ -7,8 +7,7 @@ import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.Component
-import org.clyze.deepdoop.datalog.element.ComparisonElement
-import org.clyze.deepdoop.datalog.element.relation.Constructor
+import org.clyze.deepdoop.datalog.element.AggregationElement
 import org.clyze.deepdoop.datalog.element.relation.Functional
 import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.element.relation.Predicate
@@ -23,22 +22,14 @@ import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.*
 
 class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<IVisitable>, TDummyActor<IVisitable> {
 
+	// Relation name x Type (types are final)
 	Map<String, List<String>> inferredTypes = [:].withDefault { [] }
-
+	// Relation name x Type (might have open types)
 	Map<String, ComplexType> relationTypes = [:].withDefault { new ComplexType() }
-
+	// Element x Type (for current clause)
 	Map<IVisitable, IType> tmpTypes = [:].withDefault { new OpenType() }
-	// Predicate Name x Variable x Index (for current clause)
-	Map<String, Map<VariableExpr, Integer>> varIndices = [:].withDefault { [:] }
-
-
-	//Map<String, List<String>> inferredTypes = [:]
-	// Predicate Name x Parameter Index x Possible Types
-	//Map<String, Map<Integer, Set<String>>> possibleTypes = [:].withDefault { [:].withDefault { [] as Set } }
-	/// Variable x Possible Types (for current clause)
-	///Map<VariableExpr, Set<String>> varTypes = [:].withDefault { [] as Set }
-	/// Misc Elements (e.g. constants) x Type (for current clause)
-	///Map<IVisitable, String> values = [:]
+	// Predicate Name x Expression x Index (for current clause)
+	Map<String, Map<IExpr, Integer>> exprIndices = [:].withDefault { [:] }
 
 	// Implementing fix-point computation
 	Set<Rule> deltaRules
@@ -69,11 +60,6 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 			}
 			oldDeltaRules = deltaRules
 		}
-		//possibleTypes.each { pred, map ->
-		//	inferredTypes[pred] = map.collect { i, types -> coalesce(types, pred, i) }
-		//}
-		//relationTypes.each { relation, complexType -> coalesce2(relation, complexType)}
-
 		coalesce()
 
 		actor.exit(n, null)
@@ -89,19 +75,12 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 	//IVisitable exit(Constraint n, Map m) { null }
 
 	void enter(Declaration n) {
-		//varTypes.clear()
-		//values.clear()
 		tmpTypes.clear()
-		varIndices.clear()
+		exprIndices.clear()
 	}
 
 	IVisitable exit(Declaration n, Map m) {
 		if (!n.annotations.any { it.kind == Annotation.Kind.ENTITY }) {
-			//def t = new ComplexType()
-			//n.types.eachWithIndex { type, i ->
-			//	possibleTypes[n.atom.name][i] << type.name
-				//t.components << new ClosedType(type.name)
-			//}
 			relationTypes[n.atom.name] = new ComplexType(n.types.collect { new ClosedType(it.name) })
 		}
 		null
@@ -110,17 +89,16 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 	//IVisitable exit(RefModeDeclaration n, Map m) { null }
 
 	void enter(Rule n) {
-		//varTypes.clear()
-		//values.clear()
 		tmpTypes.clear()
-		varIndices.clear()
+		exprIndices.clear()
 	}
 
 	IVisitable exit(Rule n, Map m) {
 		n.head.elements.each {
 			def relation = (it as Relation).name
-			varIndices[relation].each { var, i ->
-				def types = tmpTypes[var]
+			exprIndices[relation].each { expr, i ->
+				// Var might not have possible types yet
+				def types = tmpTypes[expr]
 				if (types) {
 					def prevTypes = relationTypes[relation].components[i]
 					def newTypes = types.join(prevTypes)
@@ -128,40 +106,19 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 						relationTypes[relation].components[i] = newTypes
 						deltaRules += infoActor.affectedRules[relation]
 					}
-				}
-				//def types = varTypes[var]
-				//// Var might not have possible types yet
-				//if (!types.isEmpty()) {
-				//	// Don't add to deltas if no new type is inferred
-				//	def currentTypes = possibleTypes[relation][i]
-				//	if (types.any { !(it in currentTypes) }) {
-				//		possibleTypes[relation][i] += types
-				//		// Add to deltas every rule that uses the current predicate in it's body
-				//		deltaRules += infoActor.affectedRules[relation]
-				//	}
-				//} else
-				//	deltaRules << n
+				} else
+					deltaRules << n
 			}
 		}
 		null
 	}
 
-	//IVisitable exit(AggregationElement n, Map m) { null }
-
-	IVisitable exit(ComparisonElement n, Map m) {
-		//VariableExpr var
-		//if (n.expr.left instanceof VariableExpr) var = n.expr.left as VariableExpr
-		//else if (n.expr.right instanceof VariableExpr) var = n.expr.right as VariableExpr
-
-		//ConstantExpr value
-		//if (n.expr.left instanceof ConstantExpr) value = n.expr.left as ConstantExpr
-		//else if (n.expr.right instanceof ConstantExpr) value = n.expr.right as ConstantExpr
-
-		//if (var && value) varTypes[var] << values[value]
-
-		tmpTypes[n] = tmpTypes[n.expr]
+	IVisitable exit(AggregationElement n, Map m) {
+		tmpTypes[n.var] = ClosedType.INT_T
 		null
 	}
+
+	//IVisitable exit(ComparisonElement n, Map m) { null }
 
 	//IVisitable exit(GroupElement n, Map m) { null }
 
@@ -169,29 +126,26 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 
 	//IVisitable exit(NegationElement n, Map m) { null }
 
-	IVisitable exit(Constructor n, Map m) {
-		//exit(n as Functional, m)
-		//varTypes[n.valueExpr as VariableExpr] << n.entity.name
-		null
-	}
+	//IVisitable exit(Constructor n, Map m) { null }
 
 	//IVisitable exit(Entity n, Map m) { null }
 
 	IVisitable exit(Functional n, Map m) {
-		(n.keyExprs + n.valueExpr).eachWithIndex { expr, i -> varWithIndex(n.name, expr, i) }
+		exitRelation(n.name, n.keyExprs + [n.valueExpr])
 		null
 	}
 
 	IVisitable exit(Predicate n, Map m) {
-		n.exprs.eachWithIndex { expr, i -> varWithIndex(n.name, expr, i) }
-
-		def types = relationTypes[n.name]
-		if (types) {
-			n.exprs.withIndex()
-					.findAll { expr, i -> expr instanceof VariableExpr }
-					.each { expr, i -> tmpTypes[expr as IExpr].merge(types.components[i as int]) }
-		}
+		exitRelation(n.name, n.exprs)
 		null
+	}
+
+	private void exitRelation(String name, List<IExpr> exprs) {
+		def types = relationTypes[name]
+		exprs.eachWithIndex{ expr, i ->
+			exprIndices[name][expr] = i
+			if (types) tmpTypes[expr] = tmpTypes[expr].join(types.components[i])
+		}
 	}
 
 	//IVisitable exit(Primitive n, Map m) { null }
@@ -199,42 +153,26 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 	//IVisitable exit(RefMode n, Map m) { null }
 
 	IVisitable exit(BinaryExpr n, Map m) {
-		if (n.op == BinOperator.EQ || n.op == BinOperator.NEQ) {
-			def commonType = tmpTypes[n.left].join(tmpTypes[n.right])
-			// TODO add example where n.left needs to be updated
-			tmpTypes[n] = tmpTypes[n.left] = tmpTypes[n.right] = commonType
-		} else {
+		def commonType = tmpTypes[n.left].join(tmpTypes[n.right])
+		if (n.op != BinOperator.EQ && n.op != BinOperator.NEQ) {
 			// TODO numeric checks
-			tmpTypes[n].merge(tmpTypes[n.left])
-			tmpTypes[n].merge(tmpTypes[n.right])
 		}
+		// Both parts must have the same type
+		tmpTypes[n] = tmpTypes[n.left] = tmpTypes[n.right] = commonType
 		null
 	}
 
 	IVisitable exit(ConstantExpr n, Map m) {
-		//if (n.type == INTEGER) values[n] = "int"
-		//else if (n.type == REAL) values[n] = "real"
-		//else if (n.type == STRING) values[n] = "string"
 		if (n.type == INTEGER) tmpTypes[n] = ClosedType.INT_T
 		else if (n.type == REAL) tmpTypes[n] = ClosedType.REAL_T
 		else if (n.type == BOOLEAN) tmpTypes[n] = ClosedType.BOOL_T
 		else if (n.type == STRING) tmpTypes[n] = ClosedType.STR_T
-
 		null
 	}
 
 	//IVisitable exit(GroupExpr n, Map m) { null }
 
 	//IVisitable exit(VariableExpr n, Map m) { null }
-
-	private void varWithIndex(String name, IExpr expr, int i) {
-		if (expr instanceof VariableExpr) {
-			def var = expr as VariableExpr
-			varIndices[name][var] = i
-			//if (name in possibleTypes && !var.isDontCare())
-			//	varTypes[var] += possibleTypes[name][i]
-		}
-	}
 
 	private void coalesce() {
 		relationTypes.each { relation, complexType ->
