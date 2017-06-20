@@ -41,7 +41,6 @@ class DatalogSpec extends Specification  {
 		//"t13.logic" | _
 	}
 
-	/*
 	@Unroll
 	def "DeepDoop failing tests"() {
 		when:
@@ -53,6 +52,7 @@ class DatalogSpec extends Specification  {
 
 		where:
 		file           | expectedErrorId
+	/*
 		"fail1.logic"  | ErrorId.DEP_CYCLE
 		"fail2.logic"  | ErrorId.DEP_GLOBAL
 		"fail3.logic"  | ErrorId.CMD_RULE
@@ -68,8 +68,17 @@ class DatalogSpec extends Specification  {
 		"fail13.logic" | ErrorId.MULTIPLE_ENT_DECLS
 		"fail14.logic" | ErrorId.UNKNOWN_PRED
 		"fail15.logic" | ErrorId.NO_DECL_REC
-	}
 */
+		"fail16.logic" | ErrorId.CONSTRUCTOR_INCOMPATIBLE
+		"fail17.logic" | ErrorId.CONSTRUCTOR_RULE
+		"fail17.logic" | ErrorId.CONSTRUCTOR_RULE
+		"fail19.logic" | ErrorId.CONSTRUCTOR_UNKNOWN
+		"fail20.logic" | ErrorId.RESERVED_SUFFIX
+		"fail21.logic" | ErrorId.INCOMPATIBLE_TYPES
+		"fail22.logic" | ErrorId.INCONSISTENT_ARITY
+		//"fail23.logic" | ErrorId.INCONSISTENT_ARITY
+		"fail24.logic" | ErrorId.ENTITY_RULE
+	}
 
 	def test(String file) {
 		def resourcePath = "/$file"

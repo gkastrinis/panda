@@ -15,7 +15,6 @@ import org.clyze.deepdoop.datalog.element.relation.Predicate
 import org.clyze.deepdoop.datalog.expr.BinaryExpr
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.IExpr
-import org.clyze.deepdoop.datalog.expr.VariableExpr
 import org.clyze.deepdoop.system.ErrorId
 import org.clyze.deepdoop.system.ErrorManager
 
@@ -102,7 +101,7 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 				def types = tmpTypes[expr]
 				if (types) {
 					def prevTypes = relationTypes[relation].components[i]
-					def newTypes = types.join(prevTypes)
+					def newTypes = handleTypes(relation, i, prevTypes, types)
 					if (prevTypes != newTypes) {
 						relationTypes[relation].components[i] = newTypes
 						deltaRules += infoActor.affectedRules[relation]
@@ -112,6 +111,28 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 			}
 		}
 		null
+	}
+
+	static def handleTypes(def relation, def i, def prev, def curr) {
+		// Closed & Closed with same value => return Closed
+		// Closed & Open with single same value => return Open
+		// Open with single value & Closed with same value => return Open
+		// Open & Open => return join
+		// Otherwise ERROR
+		if (prev instanceof ClosedType && curr instanceof ClosedType) {
+			if (prev.value == curr.value) return prev
+		} else if (prev instanceof ClosedType && curr instanceof OpenType && curr.values.size() == 1) {
+			if (prev.value == curr.values.first()) return curr
+		} else if (prev instanceof OpenType && prev.values.size() == 1 && curr instanceof ClosedType) {
+			if (prev.values.first() == curr.value) return prev
+		} else if (prev instanceof OpenType && curr instanceof OpenType) {
+			return prev.join(curr)
+		}
+
+		if (prev instanceof ClosedType)
+			ErrorManager.error(ErrorId.FIXED_TYPE, prev.value, i, relation)
+		if (curr instanceof ClosedType)
+			ErrorManager.error(ErrorId.FIXED_TYPE, curr.value, i, relation)
 	}
 
 	IVisitable exit(AggregationElement n, Map m) {

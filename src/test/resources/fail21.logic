@@ -1,0 +1,3 @@
+@entity Animal.
+Foo(x) -> Animal(x).
+Bar(y) <- Foo(y), y != "cat".

@@ -33,6 +33,10 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 
 	InfoCollectionVisitingActor infoActor
 
+	Set<String> declaredRelations = [] as Set
+	Map<String, Integer> relationArities = [:]
+
+
 	ValidationVisitingActor(InfoCollectionVisitingActor infoActor) {
 		// Implemented this way, because Java doesn't allow usage of "this"
 		// keyword before all implicit/explicit calls to super/this have
@@ -51,6 +55,10 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 	IVisitable exit(Constraint n, Map m) { null }
 
 	IVisitable exit(Declaration n, Map m) {
+		//if (n.atom.name in declaredRelations)
+		//	ErrorManager.error()
+		//declaredRelations << n.atom.name
+
 		n.types.findAll { !(it instanceof Primitive) }
 				.findAll { !(it.name in infoActor.allTypes) }
 				.each { ErrorManager.error(ErrorId.UNKNOWN_TYPE, it.name) }
@@ -68,8 +76,14 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 				.each { ErrorManager.warn(ErrorId.UNUSED_VAR, it.name) }
 
 		n.head.elements.findAll { it instanceof Functional && !(it instanceof Constructor) }
-				.findAll { (it as Functional).name in infoActor.allConstructors }
-				.each { ErrorManager.error(ErrorId.CONSTRUCTOR_RULE, (it as Functional).name) }
+				.collect { (it as Functional).name }
+				.findAll { it in infoActor.allConstructors }
+				.each { ErrorManager.error(ErrorId.CONSTRUCTOR_RULE, it) }
+
+		n.head.elements.findAll { it instanceof Relation }
+				.collect { (it as Relation).name }
+				.findAll { it in infoActor.allTypes }
+				.each { ErrorManager.error(ErrorId.ENTITY_RULE, it) }
 		null
 	}
 
@@ -102,12 +116,20 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 	IVisitable exit(Entity n, Map m) { null }
 
 	IVisitable exit(Functional n, Map m) {
+		if (relationArities[n.name] && relationArities[n.name] != n.arity)
+			ErrorManager.error(ErrorId.INCONSISTENT_ARITY, n.name)
+		relationArities[n.name] = n.arity
+
 		if (n.name.endsWith("__pArTiAl"))
 			ErrorManager.error(ErrorId.RESERVED_SUFFIX)
 		null
 	}
 
 	IVisitable exit(Predicate n, Map m) {
+		if (relationArities[n.name] && relationArities[n.name] != n.arity)
+			ErrorManager.error(ErrorId.INCONSISTENT_ARITY, n.name)
+		relationArities[n.name] = n.arity
+
 		if (n.name.endsWith("__pArTiAl"))
 			ErrorManager.error(ErrorId.RESERVED_SUFFIX)
 		null
