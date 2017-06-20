@@ -63,7 +63,7 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 	void enter(Component n) {
 		inferenceActor.inferredTypes.each { predName, types ->
 			def params = types.withIndex().collect { type, i -> "x$i:${mapType(type)}" }.join(", ")
-			emit ".decl ${mini(predName)}($params)"
+			emit ".decl ${mini(predName)}($params)  // ${types.join(" x ")}"
 		}
 		emit "/////////////////////"
 		// Special rules to propagate info to supertypes
@@ -196,5 +196,8 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 
 	static def mini(def name) { name.replace ":", "_" }
 
-	static def mapType(def name) { name == "string" ? "symbol" : "number" }
+	static def mapType(def name) {
+		if (!name) throw new RuntimeException("********")
+		name == "string" ? "symbol" : "number"
+	}
 }

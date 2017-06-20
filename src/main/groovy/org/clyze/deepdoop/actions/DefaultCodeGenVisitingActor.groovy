@@ -21,6 +21,10 @@ class DefaultCodeGenVisitingActor extends PostOrderVisitor<String> implements IA
 		this.outDir = outDir
 	}
 
+	DefaultCodeGenVisitingActor(String outDir) {
+		this(new File(outDir))
+	}
+
 	protected def createUniqueFile(String prefix, String suffix) {
 		Files.createTempFile(Paths.get(outDir.name), prefix, suffix).toFile()
 	}

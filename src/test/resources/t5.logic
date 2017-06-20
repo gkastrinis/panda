@@ -8,7 +8,7 @@ cons:Shape[x] = y -> string(x), Shape(y).
 new<<cons:Shape[x] = y as Circle>>,
 PredC(x, y) <- x = "circle".
 
-// string x Triangle
+// string x RightTriangle
 new<<cons:Shape[x] = y as RightTriangle>>,
 PredT(x, y) <- x = "triangle".
 

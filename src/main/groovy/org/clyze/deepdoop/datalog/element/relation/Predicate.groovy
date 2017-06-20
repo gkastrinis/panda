@@ -1,6 +1,7 @@
 package org.clyze.deepdoop.datalog.element.relation
 
 import groovy.transform.Canonical
+import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 import groovy.transform.TupleConstructor
 import org.clyze.deepdoop.actions.IVisitor
@@ -8,6 +9,7 @@ import org.clyze.deepdoop.datalog.expr.IExpr
 import org.clyze.deepdoop.datalog.expr.VariableExpr
 
 @Canonical
+@EqualsAndHashCode(callSuper = true)
 @ToString(includeSuper = true, includePackage = false)
 @TupleConstructor(callSuper = true, includeSuperProperties = true)
 class Predicate extends Relation {

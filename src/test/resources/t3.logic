@@ -6,14 +6,14 @@
 @Entity PersianCat -> Cat.
 
 @Output
-Foo(x, y) -> AP(x), string(y).
+Foo(x, y) -> int(x), string(y).
 
-Foo(ap, x) <- x = "J", ap = x.
+Foo(y, x) <- x = "J", y = 1.
 
 @Output, @Entity Bar.
 
 @Output {
-	FooBar(x, y) -> AP(x), string(y).
+	FooBar(x, y) -> int(x), string(y).
 
 	@Entity Baz.
 }

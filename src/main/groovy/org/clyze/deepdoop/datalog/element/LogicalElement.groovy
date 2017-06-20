@@ -1,9 +1,11 @@
 package org.clyze.deepdoop.datalog.element
 
 import groovy.transform.Canonical
+import groovy.transform.ToString
 import org.clyze.deepdoop.actions.IVisitor
 
 @Canonical
+@ToString(includePackage = false)
 class LogicalElement implements IElement {
 
 	enum LogicType {

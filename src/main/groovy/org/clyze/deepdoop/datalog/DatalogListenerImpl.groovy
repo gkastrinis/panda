@@ -105,51 +105,49 @@ class DatalogListenerImpl extends DatalogBaseListener {
 			def d = new RefModeDeclaration(refmode, entity, primitive)
 			values[ctx] = d
 			currComp.addDecl(d)
-		} else {
-			if (!annotations.any { it.kind == CONSTRAINT }) {
-				validateAnnotations("Declaration", annotations)
+		} else if (!annotations.any { it.kind == CONSTRAINT }) {
+			validateAnnotations("Declaration", annotations)
 
-				def headCompound = values[ctx.compound(0)] as LogicalElement
-				assert headCompound.elements.size() == 1
-				def atom = headCompound.elements.first() as Relation
+			def headCompound = values[ctx.compound(0)] as LogicalElement
+			assert headCompound.elements.size() == 1
+			def atom = headCompound.elements.first() as Relation
 
-				// Types might appear out of order in body
-				def types = []
-				atom.accept(infoActor)
-				def varsInHead = infoActor.vars[atom]
-				def bodyCompound = (values[ctx.compound(1)] as LogicalElement)
-						.accept(new NormalizeVisitingActor()) as LogicalElement
-				bodyCompound.elements.each { t ->
-					def p = t as Predicate
-					assert p.arity == 1
-					def type = Primitive.isPrimitive(p.name) ?
-							new Primitive(p.name, p.exprs.first() as VariableExpr) :
-							new Entity(p.name, p.stage, p.exprs.first())
+			// Types might appear out of order in body
+			def types = []
+			atom.accept(infoActor)
+			def varsInHead = infoActor.vars[atom]
+			def bodyCompound = (values[ctx.compound(1)] as LogicalElement)
+					.accept(new NormalizeVisitingActor()) as LogicalElement
+			bodyCompound.elements.each { t ->
+				def p = t as Predicate
+				assert p.arity == 1
+				def type = Primitive.isPrimitive(p.name) ?
+						new Primitive(p.name, p.exprs.first() as VariableExpr) :
+						new Entity(p.name, p.stage, p.exprs.first())
 
-					type.accept(infoActor)
-					def vars = infoActor.vars[type]
-					assert vars.size() == 1
-					def index = varsInHead.indexOf(vars.first())
-					if (index == -1)
-						ErrorManager.error(loc, ErrorId.UNKNOWN_VAR, vars.first().name)
-					types[index] = type
-				}
-				assert types.size() == varsInHead.size()
-
-				if (annotations.any { it.kind == CONSTRUCTOR }) {
-					assert atom instanceof Functional
-					atom = new Constructor(atom as Functional, types.last() as Relation)
-				}
-
-				def d = new Declaration(atom, types, annotations)
-				values[ctx] = d
-				currComp.addDecl(d)
-			} else {
-				validateAnnotations("Constraint", annotations)
-				def headCompound = values[ctx.compound(0)] as LogicalElement
-				def bodyCompound = values[ctx.compound(1)] as LogicalElement
-				currComp.addCons(new Constraint(headCompound, bodyCompound))
+				type.accept(infoActor)
+				def vars = infoActor.vars[type]
+				assert vars.size() == 1
+				def index = varsInHead.indexOf(vars.first())
+				if (index == -1)
+					ErrorManager.error(loc, ErrorId.UNKNOWN_VAR, vars.first().name)
+				types[index] = type
 			}
+			assert types.size() == varsInHead.size()
+
+			if (annotations.any { it.kind == CONSTRUCTOR }) {
+				assert atom instanceof Functional
+				atom = new Constructor(atom as Functional, types.last() as Relation)
+			}
+
+			def d = new Declaration(atom, types, annotations)
+			values[ctx] = d
+			currComp.addDecl(d)
+		} else {
+			validateAnnotations("Constraint", annotations)
+			def headCompound = values[ctx.compound(0)] as LogicalElement
+			def bodyCompound = values[ctx.compound(1)] as LogicalElement
+			currComp.addCons(new Constraint(headCompound, bodyCompound))
 		}
 	}
 

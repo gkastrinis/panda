@@ -2,11 +2,13 @@ package org.clyze.deepdoop.datalog.element.relation
 
 import groovy.transform.Canonical
 import groovy.transform.EqualsAndHashCode
+import groovy.transform.ToString
 import org.clyze.deepdoop.actions.IVisitor
 import org.clyze.deepdoop.datalog.expr.VariableExpr
 
 @Canonical
 @EqualsAndHashCode(callSuper = true)
+@ToString(includeSuper = true, includePackage = false)
 class Constructor extends Functional {
 
 	// The type of the constructed entity
