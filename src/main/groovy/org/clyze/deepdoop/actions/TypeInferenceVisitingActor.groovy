@@ -114,6 +114,8 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 	}
 
 	static def handleTypes(def relation, def i, def prev, def curr) {
+		if (!prev) return curr
+		if (!curr) return prev
 		// Closed & Closed with same value => return Closed
 		// Closed & Open with single same value => return Open
 		// Open with single value & Closed with same value => return Open
