@@ -50,6 +50,12 @@ test {
 
 if (project.hasProperty('artifactory_user')) {
 	publishing {
+		publications {
+			mavenJava(MavenPublication) {
+				from components.java
+			}
+		}
+
 		repositories {
 			maven {
 				credentials {
