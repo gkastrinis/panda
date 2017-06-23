@@ -30,6 +30,7 @@ enum ErrorId {
 	INCONSISTENT_ARITY,
 	ENTITY_RULE,
 	FIXED_TYPE,
+	MULTIPLE_DECLS,
 
 	static Map<ErrorId, String> msgMap
 	static {
@@ -61,6 +62,7 @@ enum ErrorId {
 		msgMap[INCONSISTENT_ARITY] = "Relation `{0}` appears with inconsistent arity"
 		msgMap[ENTITY_RULE] = "Entity `{0}` used as a normal relation in rule head"
 		msgMap[FIXED_TYPE] = "Type `{0}` (at index {1}) for relation `{2}` is fixed"
+		msgMap[MULTIPLE_DECLS] = "Relation `{0}` has multiple declarations"
 	}
 
 	static String idToMsg(ErrorId errorId, Object[] values) {

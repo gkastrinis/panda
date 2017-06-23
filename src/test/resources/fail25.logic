@@ -1,1 +1,5 @@
-duplicate declarations
+@entity Animal.
+@entity Shape.
+
+Foo(x, y) -> Animal(x), string(y).
+Foo(x, y) -> Shape(x), string(y).

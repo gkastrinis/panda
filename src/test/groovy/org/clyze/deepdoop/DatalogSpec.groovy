@@ -76,8 +76,9 @@ class DatalogSpec extends Specification  {
 		"fail20.logic" | ErrorId.RESERVED_SUFFIX
 		"fail21.logic" | ErrorId.INCOMPATIBLE_TYPES
 		"fail22.logic" | ErrorId.INCONSISTENT_ARITY
-		//"fail23.logic" | ErrorId.INCONSISTENT_ARITY
+		"fail23.logic" | ErrorId.FIXED_TYPE
 		"fail24.logic" | ErrorId.ENTITY_RULE
+		"fail25.logic" | ErrorId.MULTIPLE_DECLS
 	}
 
 	def test(String file) {

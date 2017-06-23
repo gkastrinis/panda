@@ -55,9 +55,9 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 	IVisitable exit(Constraint n, Map m) { null }
 
 	IVisitable exit(Declaration n, Map m) {
-		//if (n.atom.name in declaredRelations)
-		//	ErrorManager.error()
-		//declaredRelations << n.atom.name
+		if (n.atom.name in declaredRelations)
+			ErrorManager.error(ErrorId.MULTIPLE_DECLS, n.atom.name)
+		declaredRelations << n.atom.name
 
 		n.types.findAll { !(it instanceof Primitive) }
 				.findAll { !(it.name in infoActor.allTypes) }
