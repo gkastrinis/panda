@@ -1,7 +1,7 @@
-@Entity Shape.
+@Entity Shape
 @Constructor
 cons:Name[x] = y -> string(x), Shape(y).
 
-@Entity Person.
+@Entity Person
 new<<cons:Shape[x] = y as Shape>>,
 Foo123(y) <- x = "a".

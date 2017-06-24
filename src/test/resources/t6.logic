@@ -1,4 +1,4 @@
-@Entity AP.
+@Entity AP
 @Constructor
 byVar[x] = y -> string(x), AP(y).
 @Constructor
@@ -7,13 +7,13 @@ byFld[x, y] = z -> string(x), string(y), AP(z).
 new<<byVar[x] = y as AP>>,
 Foo(y, x), Baz(x), BarBaz(y) <- x = "abc".
 
-@entity AP2 -> AP.
+@entity AP2 -> AP
 
 new<<byFld[x, y] = z as AP2>>,
 Foo2(z), Baz2(y, x) <- x = "x2", y = "f1".
 
 
-@Entity Shape.
+@Entity Shape
 @Constructor
 byLen[x] = y -> int(x), Shape(y).
 @Constructor

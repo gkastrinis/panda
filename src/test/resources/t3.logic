@@ -1,26 +1,26 @@
-@Entity Animal.
-@Entity AP.
+@Entity Animal
+@Entity AP
 
-@Entity Cat -> Animal.
-@Entity Dog -> Animal.
-@Entity PersianCat -> Cat.
+@Entity Cat -> Animal
+@Entity Dog -> Animal
+@Entity PersianCat -> Cat
 
 @Output
 Foo(x, y) -> int(x), string(y).
 
 Foo(y, x) <- x = "J", y = 1.
 
-@Output, @Entity Bar.
+@Output, @Entity Bar
 
 @Output {
 	FooBar(x, y) -> int(x), string(y).
 
-	@Entity Baz.
+	@Entity Baz
 }
 
 @Output, @Entity {
-	Dog1.
-	Cat1.
+	Dog1
+	Cat1
 }
 
 @Input {
