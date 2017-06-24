@@ -36,7 +36,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 
 	DatalogListenerImpl(String filename) {
 		currComp = program.globalComp
-		SourceManager.instance.setOutputFile(new File(filename).getAbsolutePath())
+		SourceManager.instance.outputFile = new File(filename).absolutePath
 	}
 
 	void enterComponent(ComponentContext ctx) {
@@ -85,7 +85,6 @@ class DatalogListenerImpl extends DatalogBaseListener {
 
 	void exitRightArrow(RightArrowContext ctx) {
 		inRArrow = false
-		def loc = SourceManager.instance.getLastLoc()
 
 		def annotations = gatherAnnotations(ctx.annotationList()) + pendingAnnotations
 
@@ -129,8 +128,10 @@ class DatalogListenerImpl extends DatalogBaseListener {
 				def vars = infoActor.vars[type]
 				assert vars.size() == 1
 				def index = varsInHead.indexOf(vars.first())
-				if (index == -1)
+				if (index == -1) {
+					def loc = SourceManager.instance.loc
 					ErrorManager.error(loc, ErrorId.UNKNOWN_VAR, vars.first().name)
+				}
 				types[index] = type
 			}
 			assert types.size() == varsInHead.size()
@@ -395,7 +396,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	}
 
 	static void recLoc(ParserRuleContext ctx) {
-		SourceManager.instance.recLoc(ctx.start.getLine())
+		SourceManager.instance.loc = ctx.start.getLine()
 	}
 
 	static void validateAnnotations(String key, def annotations) {
@@ -406,7 +407,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		]
 		def expectedAnnotations = allowedAnnotations[key]
 
-		def loc = SourceManager.instance.getLastLoc()
+		def loc = SourceManager.instance.loc
 		annotations.each {
 			if (!(it.kind in expectedAnnotations))
 				ErrorManager.error(loc, ErrorId.INVALID_ANNOTATION, it.kind, key)

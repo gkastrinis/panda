@@ -56,12 +56,12 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 
 	IVisitable exit(Declaration n, Map m) {
 		if (n.atom.name in declaredRelations)
-			ErrorManager.error(ErrorId.MULTIPLE_DECLS, n.atom.name)
+			ErrorManager.error(n.loc, ErrorId.MULTIPLE_DECLS, n.atom.name)
 		declaredRelations << n.atom.name
 
 		n.types.findAll { !(it instanceof Primitive) }
 				.findAll { !(it.name in infoActor.allTypes) }
-				.each { ErrorManager.error(ErrorId.UNKNOWN_TYPE, it.name) }
+				.each { ErrorManager.error(it.loc, ErrorId.UNKNOWN_TYPE, it.name) }
 		null
 	}
 
@@ -78,12 +78,12 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 		n.head.elements.findAll { it instanceof Functional && !(it instanceof Constructor) }
 				.collect { (it as Functional).name }
 				.findAll { it in infoActor.allConstructors }
-				.each { ErrorManager.error(ErrorId.CONSTRUCTOR_RULE, it) }
+				.each { ErrorManager.error(n.loc, ErrorId.CONSTRUCTOR_RULE, it) }
 
 		n.head.elements.findAll { it instanceof Relation }
-				.collect { (it as Relation).name }
-				.findAll { it in infoActor.allTypes }
-				.each { ErrorManager.error(ErrorId.ENTITY_RULE, it) }
+				.collect { it as Relation }
+				.findAll { it.name in infoActor.allTypes }
+				.each { ErrorManager.error(it.loc, ErrorId.ENTITY_RULE, it.name) }
 		null
 	}
 
@@ -101,14 +101,14 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 
 	IVisitable exit(Constructor n, Map m) {
 		if (!(n.entity.name in infoActor.allTypes))
-			ErrorManager.error(ErrorId.UNKNOWN_TYPE, n.entity.name)
+			ErrorManager.error(n.loc, ErrorId.UNKNOWN_TYPE, n.entity.name)
 
 		def baseType = infoActor.constructorBaseType[n.name]
 		// TODO should be more general check for predicates
 		if (!baseType)
-			ErrorManager.error(ErrorId.CONSTRUCTOR_UNKNOWN, n.name)
+			ErrorManager.error(n.loc, ErrorId.CONSTRUCTOR_UNKNOWN, n.name)
 		if (n.entity.name != baseType && !(baseType in infoActor.superTypesOrdered[n.entity.name]))
-			ErrorManager.error(ErrorId.CONSTRUCTOR_INCOMPATIBLE, n.name, n.entity.name)
+			ErrorManager.error(n.loc, ErrorId.CONSTRUCTOR_INCOMPATIBLE, n.name, n.entity.name)
 
 		null
 	}
@@ -117,21 +117,21 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 
 	IVisitable exit(Functional n, Map m) {
 		if (relationArities[n.name] && relationArities[n.name] != n.arity)
-			ErrorManager.error(ErrorId.INCONSISTENT_ARITY, n.name)
+			ErrorManager.error(n.loc, ErrorId.INCONSISTENT_ARITY, n.name)
 		relationArities[n.name] = n.arity
 
 		if (n.name.endsWith("__pArTiAl"))
-			ErrorManager.error(ErrorId.RESERVED_SUFFIX)
+			ErrorManager.error(n.loc, ErrorId.RESERVED_SUFFIX)
 		null
 	}
 
 	IVisitable exit(Predicate n, Map m) {
 		if (relationArities[n.name] && relationArities[n.name] != n.arity)
-			ErrorManager.error(ErrorId.INCONSISTENT_ARITY, n.name)
+			ErrorManager.error(n.loc, ErrorId.INCONSISTENT_ARITY, n.name)
 		relationArities[n.name] = n.arity
 
 		if (n.name.endsWith("__pArTiAl"))
-			ErrorManager.error(ErrorId.RESERVED_SUFFIX)
+			ErrorManager.error(n.loc, ErrorId.RESERVED_SUFFIX)
 		null
 	}
 

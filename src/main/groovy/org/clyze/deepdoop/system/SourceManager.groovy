@@ -15,8 +15,8 @@ class SourceManager {
 	}
 
 	Stack<LineMarker> markers = []
-	Stack<SourceLocation> locations = []
 	String outputFile
+	SourceLocation loc
 
 	void lineMarkerStart(int markerLine, int markerActualLine, String sourceFile) {
 		markers.push(new LineMarker(markerLine, markerActualLine, sourceFile))
@@ -26,12 +26,8 @@ class SourceManager {
 		markers.pop()
 	}
 
-	void recLoc(int outputLine) {
-		locations.push(location(outputLine))
-	}
-
-	SourceLocation getLastLoc() {
-		locations.empty() ? null : locations.pop()
+	void setLoc(int outputLine) {
+		loc = location(outputLine)
 	}
 
 	SourceLocation location(int outputLine) {

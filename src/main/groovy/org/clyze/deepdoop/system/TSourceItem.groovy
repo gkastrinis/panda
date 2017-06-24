@@ -1,5 +1,5 @@
 package org.clyze.deepdoop.system
 
 trait TSourceItem {
-	SourceLocation loc = SourceManager.instance.getLastLoc()
+	SourceLocation loc = SourceManager.instance.loc
 }

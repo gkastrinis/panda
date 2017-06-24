@@ -71,7 +71,7 @@ class DatalogSpec extends Specification  {
 */
 		"fail16.logic" | ErrorId.CONSTRUCTOR_INCOMPATIBLE
 		"fail17.logic" | ErrorId.CONSTRUCTOR_RULE
-		"fail17.logic" | ErrorId.CONSTRUCTOR_RULE
+		"fail18.logic" | ErrorId.UNKNOWN_TYPE
 		"fail19.logic" | ErrorId.CONSTRUCTOR_UNKNOWN
 		"fail20.logic" | ErrorId.RESERVED_SUFFIX
 		"fail21.logic" | ErrorId.INCOMPATIBLE_TYPES
