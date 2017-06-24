@@ -2,12 +2,13 @@ package org.clyze.deepdoop.datalog
 
 import groovy.transform.Canonical
 import groovy.transform.ToString
+import org.clyze.deepdoop.datalog.expr.ConstantExpr
 
 @Canonical
 @ToString(includePackage = false)
 class Annotation {
 
-	enum Kind {
+	static enum Kind {
 		CONSTRAINT,
 		CONSTRUCTOR,
 		ENTITY,
@@ -16,9 +17,22 @@ class Annotation {
 		UNDEF
 	}
 
-	String name
+	@Canonical
+	@ToString(includePackage = false)
+	static class Value {
+		String name
+		ConstantExpr value
+	}
 
-	def getKind() {
+	Kind kind
+	List<Value> values
+
+	Annotation(String name, List<Value> values = []) {
+		this.kind = findKind(name)
+		this.values = values
+	}
+
+	static def findKind(String name) {
 		name = name.toLowerCase()
 		switch (name) {
 			case "constraint": return Kind.CONSTRAINT

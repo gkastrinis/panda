@@ -22,6 +22,7 @@ import org.clyze.deepdoop.system.ErrorManager
 import org.clyze.deepdoop.system.SourceManager
 
 import static org.clyze.deepdoop.datalog.Annotation.Kind.*
+import static org.clyze.deepdoop.datalog.Annotation.Value
 import static org.clyze.deepdoop.datalog.DatalogParser.*
 
 class DatalogListenerImpl extends DatalogBaseListener {
@@ -281,10 +282,20 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		values[ctx] = (values[ctx.propagationList()] ?: []) << values[ctx.propagationElement()]
 	}
 
-	// Special handling for annotation lists (instead of using "exit")
-	List<Annotation> gatherAnnotations(AnnotationListContext ctx) {
+	// Special handling (instead of using "exit")
+	private List<Value> gatherValues(ValueListContext ctx) {
 		if (!ctx) return []
-		def annotation = new Annotation(ctx.annotation().IDENTIFIER().text)
+		exitConstant(ctx.value().constant())
+		def constant =  values[ctx.value().constant()] as ConstantExpr
+		def value = new Value(ctx.value().IDENTIFIER().text, constant)
+		return gatherValues(ctx.valueList()) << value
+	}
+
+	// Special handling (instead of using "exit")
+	private List<Annotation> gatherAnnotations(AnnotationListContext ctx) {
+		if (!ctx) return []
+		def valueList = gatherValues(ctx.annotation().valueList())
+		def annotation = new Annotation(ctx.annotation().IDENTIFIER().text, valueList)
 		return gatherAnnotations(ctx.annotationList()) << annotation
 	}
 

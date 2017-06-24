@@ -93,8 +93,16 @@ propagationList
 	| propagationList ',' propagationElement
 	;
 
+value
+    : IDENTIFIER '=' constant ;
+
+valueList
+    : value
+    | valueList ',' value
+    ;
+
 annotation
-	: '@' IDENTIFIER ;
+	: '@' IDENTIFIER ('(' valueList ')')? ;
 
 annotationList
 	: annotation

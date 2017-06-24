@@ -1,4 +1,4 @@
-@Entity AP
+@Entity(foo=true, bar="abc", baz=1) AP
 @Constructor
 byVar[x] = y -> string(x), AP(y).
 @Constructor
