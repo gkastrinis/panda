@@ -17,17 +17,10 @@ class Annotation {
 		UNDEF
 	}
 
-	@Canonical
-	@ToString(includePackage = false)
-	static class Value {
-		String name
-		ConstantExpr value
-	}
-
 	Kind kind
-	List<Value> values
+	Map<String, ConstantExpr> values
 
-	Annotation(String name, List<Value> values = []) {
+	Annotation(String name, Map<String, ConstantExpr> values = [:]) {
 		this.kind = findKind(name)
 		this.values = values
 	}

@@ -283,19 +283,19 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	}
 
 	// Special handling (instead of using "exit")
-	private List<Value> gatherValues(ValueListContext ctx) {
-		if (!ctx) return []
+	private Map<String, ConstantExpr> gatherValues(ValueListContext ctx) {
+		if (!ctx) return [:]
 		exitConstant(ctx.value().constant())
 		def constant =  values[ctx.value().constant()] as ConstantExpr
-		def value = new Value(ctx.value().IDENTIFIER().text, constant)
+		def value = [(ctx.value().IDENTIFIER().text) : constant]
 		return gatherValues(ctx.valueList()) << value
 	}
 
 	// Special handling (instead of using "exit")
 	private List<Annotation> gatherAnnotations(AnnotationListContext ctx) {
 		if (!ctx) return []
-		def valueList = gatherValues(ctx.annotation().valueList())
-		def annotation = new Annotation(ctx.annotation().IDENTIFIER().text, valueList)
+		def valueMap = gatherValues(ctx.annotation().valueList())
+		def annotation = new Annotation(ctx.annotation().IDENTIFIER().text, valueMap)
 		return gatherAnnotations(ctx.annotationList()) << annotation
 	}
 
