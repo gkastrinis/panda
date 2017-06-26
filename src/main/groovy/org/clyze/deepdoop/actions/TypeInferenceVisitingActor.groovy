@@ -86,8 +86,6 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 		null
 	}
 
-	//IVisitable exit(RefModeDeclaration n, Map m) { null }
-
 	void enter(Rule n) {
 		tmpTypes.clear()
 		exprIndices.clear()
@@ -176,8 +174,6 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 	}
 
 	//IVisitable exit(Primitive n, Map m) { null }
-
-	//IVisitable exit(RefMode n, Map m) { null }
 
 	IVisitable exit(BinaryExpr n, Map m) {
 		def commonType = tmpTypes[n.left].join(tmpTypes[n.right])

@@ -3,7 +3,6 @@ package org.clyze.deepdoop.actions
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Constraint
 import org.clyze.deepdoop.datalog.clause.Declaration
-import org.clyze.deepdoop.datalog.clause.RefModeDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.CmdComponent
 import org.clyze.deepdoop.datalog.component.Component
@@ -58,14 +57,6 @@ class PostOrderVisitor<T> implements IVisitor<T> {
 	}
 
 	T visit(Declaration n) {
-		actor.enter(n)
-		Map<IVisitable, T> m = [:]
-		m[n.atom] = n.atom.accept(this)
-		n.types.each { m[it] = it.accept(this) }
-		return actor.exit(n, m)
-	}
-
-	T visit(RefModeDeclaration n) {
 		actor.enter(n)
 		Map<IVisitable, T> m = [:]
 		m[n.atom] = n.atom.accept(this)
@@ -158,14 +149,6 @@ class PostOrderVisitor<T> implements IVisitor<T> {
 		actor.enter(n)
 		Map<IVisitable, T> m = [:]
 		m[n.var] = n.var.accept(this)
-		return actor.exit(n, m)
-	}
-
-	T visit(RefMode n) {
-		actor.enter(n)
-		Map<IVisitable, T> m = [:]
-		m[n.entityVar] = n.entityVar.accept(this)
-		m[n.valueExpr] = n.valueExpr.accept(this)
 		return actor.exit(n, m)
 	}
 

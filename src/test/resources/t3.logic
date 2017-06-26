@@ -28,3 +28,11 @@ Foo(y, x) <- x = "J", y = 1.
 	P2(x) -> int(x).
 	P3(x) -> string(x).
 }
+
+
+@Entity T
+
+@Constructor(refmode=true)
+tref[x] = y -> string(x), T(y).
+
+TPred(x, y) <- FooBar(_, x), tref[x] = y.

@@ -27,7 +27,6 @@ datalog
 rightArrow
     : annotationList? predicateName ('->' predicateName)?
     | annotationList? compound '->' compound '.'
-    | normalPredicate ',' refmode '->' normalPredicate '.'
     ;
 
 rightArrowBlock
@@ -40,13 +39,9 @@ leftArrow
 
 
 predicate
-	: refmode
-	| functional
+	: functional
 	| normalPredicate
 	;
-
-refmode
-	: predicateName AT_STAGE? '(' IDENTIFIER ':' expr ')' ;
 
 functional
 	: predicateName AT_STAGE? '[' exprList? ']' '=' expr ;

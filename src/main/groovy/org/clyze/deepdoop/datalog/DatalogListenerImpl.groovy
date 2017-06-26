@@ -7,7 +7,6 @@ import org.clyze.deepdoop.actions.InfoCollectionVisitingActor
 import org.clyze.deepdoop.actions.NormalizeVisitingActor
 import org.clyze.deepdoop.datalog.clause.Constraint
 import org.clyze.deepdoop.datalog.clause.Declaration
-import org.clyze.deepdoop.datalog.clause.RefModeDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.CmdComponent
 import org.clyze.deepdoop.datalog.component.Component
@@ -22,7 +21,6 @@ import org.clyze.deepdoop.system.ErrorManager
 import org.clyze.deepdoop.system.SourceManager
 
 import static org.clyze.deepdoop.datalog.Annotation.Kind.*
-import static org.clyze.deepdoop.datalog.Annotation.Value
 import static org.clyze.deepdoop.datalog.DatalogParser.*
 
 class DatalogListenerImpl extends DatalogBaseListener {
@@ -94,15 +92,6 @@ class DatalogListenerImpl extends DatalogBaseListener {
 			def entity = new Entity(values[ctx.predicateName(0)] as String, new VariableExpr("x"))
 			def supertype = ctx.predicateName(1) ? [new Relation(values[ctx.predicateName(1)] as String)] : []
 			def d = new Declaration(entity, supertype, annotations)
-			values[ctx] = d
-			currComp.addDecl(d)
-		} else if (ctx.refmode()) {
-			def p = values[ctx.normalPredicate(0)] as Predicate
-			def entity = new Entity(p.name, p.stage, p.exprs.first())
-			def refmode = values[ctx.refmode()] as RefMode
-			p = values[ctx.normalPredicate(1)] as Predicate
-			def primitive = new Primitive(p.name, p.exprs.first() as VariableExpr)
-			def d = new RefModeDeclaration(refmode, entity, primitive)
 			values[ctx] = d
 			currComp.addDecl(d)
 		} else if (!annotations.any { it.kind == CONSTRAINT }) {
@@ -181,18 +170,8 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	}
 
 	void exitPredicate(PredicateContext ctx) {
-		if (ctx.refmode()) values[ctx] = values[ctx.refmode()]
-		else if (ctx.functional()) values[ctx] = values[ctx.functional()]
+		if (ctx.functional()) values[ctx] = values[ctx.functional()]
 		else if (ctx.normalPredicate()) values[ctx] = values[ctx.normalPredicate()]
-	}
-
-	void exitRefmode(RefmodeContext ctx) {
-		recLoc(ctx)
-		values[ctx] = new RefMode(
-				values[ctx.predicateName()] as String,
-				ctx.AT_STAGE()?.text,
-				new VariableExpr(ctx.IDENTIFIER().text),
-				values[ctx.expr()] as IExpr)
 	}
 
 	void exitFunctional(FunctionalContext ctx) {

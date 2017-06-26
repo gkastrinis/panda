@@ -4,7 +4,6 @@ import org.clyze.deepdoop.datalog.Annotation
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Constraint
 import org.clyze.deepdoop.datalog.clause.Declaration
-import org.clyze.deepdoop.datalog.clause.RefModeDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.*
@@ -28,6 +27,8 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 
 	// Predicate Name x Set of Rules
 	Map<String, Set<Rule>> affectedRules = [:].withDefault { [] as Set }
+
+	List<String> refmodeRelations = []
 
 	InfoCollectionVisitingActor() {
 		// Implemented this way, because Java doesn't allow usage of "this"
@@ -114,13 +115,13 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 			def entity = n.types.last().name
 			constructorBaseType[predName] = entity
 			constructorsPerType[entity] << predName
+
+			n.annotations.findAll { it.kind == Annotation.Kind.CONSTRUCTOR }.each {
+				def refmode = it.values["refmode"]
+				if (refmode) refmodeRelations << n.atom.name
+			}
 		}
 
-		null
-	}
-
-	IVisitable exit(RefModeDeclaration n, Map m) {
-		declaringAtoms[n] = [n.atom, n.types.first()]
 		null
 	}
 
@@ -204,13 +205,6 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 
 	IVisitable exit(Primitive n, Map m) {
 		vars[n] = [n.var]
-		null
-	}
-
-	IVisitable exit(RefMode n, Map m) {
-		usedAtoms[n] = [n]
-
-		vars[n] = [n.entityVar] + vars[n.valueExpr]
 		null
 	}
 

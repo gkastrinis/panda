@@ -3,7 +3,6 @@ package org.clyze.deepdoop.actions
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Constraint
 import org.clyze.deepdoop.datalog.clause.Declaration
-import org.clyze.deepdoop.datalog.clause.RefModeDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.CmdComponent
 import org.clyze.deepdoop.datalog.component.Component
@@ -200,10 +199,6 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 		new Declaration(m[n.atom] as Relation, n.types.collect { m[it] as Relation }, n.annotations)
 	}
 
-	RefModeDeclaration exit(RefModeDeclaration n, Map<IVisitable, IVisitable> m) {
-		new RefModeDeclaration(m[n.atom] as RefMode, m[n.types[0]] as Predicate, m[n.types[1]] as Primitive)
-	}
-
 	Rule exit(Rule n, Map<IVisitable, IVisitable> m) {
 		new Rule(m[n.head], m[n.body], n.annotations)
 	}
@@ -289,11 +284,6 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 	}
 
 	Primitive exit(Primitive n, Map<IVisitable, IVisitable> m) { n }
-
-	RefMode exit(RefMode n, Map<IVisitable, IVisitable> m) {
-		def (newName, newStage) = rename(n)
-		return new RefMode(newName, newStage, m[n.entityVar] as VariableExpr, m[n.valueExpr] as IExpr)
-	}
 
 	BinaryExpr exit(BinaryExpr n, Map<IVisitable, IVisitable> m) {
 		new BinaryExpr(m[n.left] as IExpr, n.op, m[n.right] as IExpr)

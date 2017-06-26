@@ -3,7 +3,6 @@ package org.clyze.deepdoop.actions
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Constraint
 import org.clyze.deepdoop.datalog.clause.Declaration
-import org.clyze.deepdoop.datalog.clause.RefModeDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.CmdComponent
 import org.clyze.deepdoop.datalog.component.Component
@@ -24,8 +23,6 @@ interface IVisitor<T> {
 	T visit(Constraint n)
 
 	T visit(Declaration n)
-
-	T visit(RefModeDeclaration n)
 
 	T visit(Rule n)
 
@@ -50,8 +47,6 @@ interface IVisitor<T> {
 	T visit(Predicate n)
 
 	T visit(Primitive n)
-
-	T visit(RefMode n)
 
 	T visit(BinaryExpr n)
 

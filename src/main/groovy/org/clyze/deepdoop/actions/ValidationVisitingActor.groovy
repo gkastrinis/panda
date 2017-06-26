@@ -3,7 +3,6 @@ package org.clyze.deepdoop.actions
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Constraint
 import org.clyze.deepdoop.datalog.clause.Declaration
-import org.clyze.deepdoop.datalog.clause.RefModeDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.CmdComponent
 import org.clyze.deepdoop.datalog.component.Component
@@ -17,7 +16,6 @@ import org.clyze.deepdoop.datalog.element.relation.Entity
 import org.clyze.deepdoop.datalog.element.relation.Functional
 import org.clyze.deepdoop.datalog.element.relation.Predicate
 import org.clyze.deepdoop.datalog.element.relation.Primitive
-import org.clyze.deepdoop.datalog.element.relation.RefMode
 import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.expr.BinaryExpr
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
@@ -64,8 +62,6 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 				.each { ErrorManager.error(it.loc, ErrorId.UNKNOWN_TYPE, it.name) }
 		null
 	}
-
-	IVisitable exit(RefModeDeclaration n, Map m) { null }
 
 	IVisitable exit(Rule n, Map m) {
 		def varsInHead = infoActor.vars[n.head]
@@ -136,8 +132,6 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 	}
 
 	IVisitable exit(Primitive n, Map m) { null }
-
-	IVisitable exit(RefMode n, Map m) { null }
 
 	IVisitable exit(BinaryExpr n, Map m) { null }
 

@@ -85,8 +85,6 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 		return null
 	}
 
-	//String exit(RefModeDeclaration n, Map<IVisitable, String> m) { null }
-
 	void enter(Rule n) {
 		extra = new Extra()
 		extra.unboundVar = n.head.elements
@@ -183,8 +181,6 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 	}
 
 	//String exit(Primitive n, Map<IVisitable, String> m) { null }
-
-	//String exit(RefMode n, Map<IVisitable, String> m) { null }
 
 	String exit(BinaryExpr n, Map<IVisitable, String> m) { "${m[n.left]} ${n.op} ${m[n.right]}" }
 

@@ -95,6 +95,4 @@ class NormalizeVisitingActor extends PostOrderVisitor<IVisitable> implements IAc
 	Predicate exit(Predicate n, Map<IVisitable, IVisitable> m) { n }
 
 	Primitive exit(Primitive n, Map<IVisitable, IVisitable> m) { n }
-
-	RefMode exit(RefMode n, Map<IVisitable, IVisitable> m) { n }
 }

@@ -3,7 +3,6 @@ package org.clyze.deepdoop.actions
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Constraint
 import org.clyze.deepdoop.datalog.clause.Declaration
-import org.clyze.deepdoop.datalog.clause.RefModeDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.CmdComponent
 import org.clyze.deepdoop.datalog.component.Component
@@ -34,10 +33,6 @@ interface IActor<T> {
 	void enter(Declaration n)
 
 	T exit(Declaration n, Map<IVisitable, T> m)
-
-	void enter(RefModeDeclaration n)
-
-	T exit(RefModeDeclaration n, Map<IVisitable, T> m)
 
 	void enter(Rule n)
 
@@ -86,10 +81,6 @@ interface IActor<T> {
 	void enter(Primitive n)
 
 	T exit(Primitive n, Map<IVisitable, T> m)
-
-	void enter(RefMode n)
-
-	T exit(RefMode n, Map<IVisitable, T> m)
 
 	void enter(BinaryExpr n)
 

@@ -4,7 +4,6 @@ import groovy.transform.InheritConstructors
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Constraint
 import org.clyze.deepdoop.datalog.clause.Declaration
-import org.clyze.deepdoop.datalog.clause.RefModeDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.CmdComponent
 import org.clyze.deepdoop.datalog.component.Component
@@ -92,10 +91,6 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 		return "${m[n.atom]} -> ${typeStr}."
 	}
 
-	String exit(RefModeDeclaration n, Map<IVisitable, String> m) {
-		"${m[n.types[0]]}, ${m[n.atom]} -> ${m[n.types[1]]}."
-	}
-
 	String exit(Rule n, Map<IVisitable, String> m) {
 		m[n.head] + (n.body != null ? " <- " + m[n.body] : "") + "."
 	}
@@ -152,11 +147,6 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 	}
 
 	String exit(Primitive n, Map<IVisitable, String> m) { "${n.name}(${m[n.var]})" }
-
-	String exit(RefMode n, Map<IVisitable, String> m) {
-		def stage = ((n.stage == null || n.stage == "@past") ? "" : n.stage)
-		return "${n.name}$stage(${m[n.entityVar]}:${m[n.valueExpr]})"
-	}
 
 	String exit(BinaryExpr n, Map<IVisitable, String> m) { "${m[n.left]} ${n.op} ${m[n.right]}" }
 
@@ -222,7 +212,6 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 			results << new Result(Result.Kind.IMPORT, latestFile)
 
 			c.declarations.each {
-				assert !(it instanceof RefModeDeclaration)
 				def atom = infoActor.getDeclaringAtoms(it).values().first() as Relation
 				emitFilePredicate(atom, it, latestFile)
 			}

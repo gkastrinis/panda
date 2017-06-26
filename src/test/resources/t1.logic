@@ -3,8 +3,6 @@ __f:oo:bar[] = "abc".
 f:oo:bar2[y] = ?x -> string(?x), int(y).
 f:oo:bar2[2] = "bar".
 
-//t(x), tref(x:s) -> string(s).
-
 p(1).
 p(07).
 p(0xFf).
