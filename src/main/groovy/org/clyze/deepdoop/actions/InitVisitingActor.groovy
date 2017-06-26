@@ -205,7 +205,7 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 	}
 
 	Rule exit(Rule n, Map<IVisitable, IVisitable> m) {
-		new Rule(m[n.head], m[n.body])
+		new Rule(m[n.head], m[n.body], n.annotations)
 	}
 
 	AggregationElement exit(AggregationElement n, Map<IVisitable, IVisitable> m) {

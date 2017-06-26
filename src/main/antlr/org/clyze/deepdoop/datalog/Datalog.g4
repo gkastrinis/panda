@@ -34,7 +34,7 @@ rightArrowBlock
     : annotationList '{' rightArrow+ '}' ;
 
 leftArrow
-	: predicateListExt ('<-' compound)? '.'
+	: annotationList? predicateListExt ('<-' compound)? '.'
 	| functional '<-' aggregation '.'
 	;
 

@@ -167,11 +167,12 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	}
 
 	void exitLeftArrow(LeftArrowContext ctx) {
+		def annotations = gatherAnnotations(ctx.annotationList())
 		if (ctx.predicateListExt()) {
 			def headAtoms = values[ctx.predicateListExt()] as List<Relation>
 			def head = new LogicalElement(headAtoms)
 			def body = ctx.compound() ? values[ctx.compound()] as LogicalElement : null
-			currComp.addRule(new Rule(head, body))
+			currComp.addRule(new Rule(head, body, annotations))
 		} else {
 			def head = new LogicalElement(values[ctx.functional()] as Functional)
 			def aggregation = values[ctx.aggregation()] as AggregationElement

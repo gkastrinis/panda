@@ -18,8 +18,7 @@ import org.clyze.deepdoop.datalog.expr.IExpr
 import org.clyze.deepdoop.datalog.expr.VariableExpr
 import org.clyze.deepdoop.system.*
 
-import static org.clyze.deepdoop.datalog.Annotation.Kind.INPUT
-import static org.clyze.deepdoop.datalog.Annotation.Kind.OUTPUT
+import static org.clyze.deepdoop.datalog.Annotation.Kind.*
 import static org.clyze.deepdoop.datalog.element.LogicalElement.LogicType.AND
 
 @InheritConstructors
@@ -99,6 +98,9 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 	String exit(Rule n, Map<IVisitable, String> m) {
 		// Potentially a rule for partial predicates
 		n.body ? emit("${m[n.head]} :- ${m[n.body]}.") : emit("${m[n.head]}.")
+		// TODO TEMP HACK
+		n.annotations.find { it.kind == PLAN }.each { emit ".plan ${it.values["val"]}" }
+
 		// Rules for populating full predicates from partial ones
 		extra.unboundVarsForAtom.each { atom, vars ->
 			def atomVars = extra.varsForAtom[atom].collect { (it as VariableExpr).name }

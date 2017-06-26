@@ -14,6 +14,7 @@ class Annotation {
 		ENTITY,
 		INPUT,
 		OUTPUT,
+		PLAN,
 		UNDEF
 	}
 
@@ -33,6 +34,7 @@ class Annotation {
 			case "entity": return Kind.ENTITY
 			case "input": return Kind.INPUT
 			case "output": return Kind.OUTPUT
+			case "plan": return Kind.PLAN
 			default: return Kind.UNDEF
 		}
 	}

@@ -12,6 +12,9 @@ Foo(y, x), Baz(x), BarBaz(y) <- x = "abc".
 new<<byFld[x, y] = z as AP2>>,
 Foo2(z), Baz2(y, x) <- x = "x2", y = "f1".
 
+@Plan(val="1:(1,2)")
+Planned(x) <- Foo(_, x), Baz(x).
+
 
 @Entity Shape
 @Constructor
