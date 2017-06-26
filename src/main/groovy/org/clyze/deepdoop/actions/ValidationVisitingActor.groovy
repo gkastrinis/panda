@@ -60,6 +60,8 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 		n.types.findAll { !(it instanceof Primitive) }
 				.findAll { !(it.name in infoActor.allTypes) }
 				.each { ErrorManager.error(it.loc, ErrorId.UNKNOWN_TYPE, it.name) }
+
+		n.annotations?.each { it.value.validate() }
 		null
 	}
 
@@ -80,6 +82,8 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 				.collect { it as Relation }
 				.findAll { it.name in infoActor.allTypes }
 				.each { ErrorManager.error(it.loc, ErrorId.ENTITY_RULE, it.name) }
+
+		n.annotations?.each { it.value.validate() }
 		null
 	}
 

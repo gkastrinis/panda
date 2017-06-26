@@ -32,6 +32,9 @@ enum ErrorId {
 	FIXED_TYPE,
 	MULTIPLE_DECLS,
 	DUP_ANNOTATION,
+	NON_EMPTY_ANNOTATION,
+	MISSING_ARG_ANNOTATION,
+	INVALID_ARG_ANNOTATION,
 
 	static Map<ErrorId, String> msgMap
 	static {
@@ -65,6 +68,9 @@ enum ErrorId {
 		msgMap[FIXED_TYPE] = "Type `{0}` (at index {1}) for relation `{2}` is fixed"
 		msgMap[MULTIPLE_DECLS] = "Relation `{0}` has multiple declarations"
 		msgMap[DUP_ANNOTATION] = "Annotation `{0}` appears more than once in clause"
+		msgMap[NON_EMPTY_ANNOTATION] = "Annotation `{0}` takes no arguments"
+		msgMap[MISSING_ARG_ANNOTATION] = "Mandatory argument `{0}` for annotation `{1}` is missing"
+		msgMap[INVALID_ARG_ANNOTATION] = "Argument `{0}` for annotation `{1}` is invalid"
 	}
 
 	static String idToMsg(ErrorId errorId, Object[] values) {

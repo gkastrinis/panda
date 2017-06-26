@@ -1,7 +1,7 @@
 invalid annotations
-invalid values in annotations
-foo.clone(["x":1, "y":2])
+move annotation validation in validationActor?
 
+foo.clone(["x":1, "y":2])
 // Create a copy of the current object. `m` has pairs of field x value (groovy style)
 Relation copy(Map m, boolean duplicateRest = true) { throw new UnsupportedOperationException() }
 
