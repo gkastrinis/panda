@@ -10,7 +10,7 @@ Foo(x, y) -> int(x), string(y).
 
 Foo(y, x) <- x = "J", y = 1.
 
-@Output, @Entity Bar
+@Output, @Entity, @Output Bar
 
 @Output {
 	FooBar(x, y) -> int(x), string(y).
@@ -19,7 +19,7 @@ Foo(y, x) <- x = "J", y = 1.
 }
 
 @Output, @Entity {
-	Dog1
+	@Output Dog1
 	Cat1
 }
 

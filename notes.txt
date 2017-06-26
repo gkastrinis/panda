@@ -5,6 +5,4 @@ foo.clone(["x":1, "y":2])
 // Create a copy of the current object. `m` has pairs of field x value (groovy style)
 Relation copy(Map m, boolean duplicateRest = true) { throw new UnsupportedOperationException() }
 
-each annotation max once
-
 refmode only primitive keys

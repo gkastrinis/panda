@@ -31,6 +31,7 @@ enum ErrorId {
 	ENTITY_RULE,
 	FIXED_TYPE,
 	MULTIPLE_DECLS,
+	DUP_ANNOTATION,
 
 	static Map<ErrorId, String> msgMap
 	static {
@@ -63,6 +64,7 @@ enum ErrorId {
 		msgMap[ENTITY_RULE] = "Entity `{0}` used as a normal relation in rule head"
 		msgMap[FIXED_TYPE] = "Type `{0}` (at index {1}) for relation `{2}` is fixed"
 		msgMap[MULTIPLE_DECLS] = "Relation `{0}` has multiple declarations"
+		msgMap[DUP_ANNOTATION] = "Annotation `{0}` appears more than once in clause"
 	}
 
 	static String idToMsg(ErrorId errorId, Object[] values) {

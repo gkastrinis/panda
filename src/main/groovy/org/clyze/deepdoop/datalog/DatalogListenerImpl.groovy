@@ -86,7 +86,9 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	void exitRightArrow(RightArrowContext ctx) {
 		inRArrow = false
 
-		def annotations = gatherAnnotations(ctx.annotationList()) + pendingAnnotations
+		def annotations = gatherAnnotations(ctx.annotationList())
+		annotations.keySet().each { if (it in pendingAnnotations) ErrorManager.warn(ErrorId.DUP_ANNOTATION, it) }
+		annotations += pendingAnnotations
 
 		if (ctx.predicateName(0)) {
 			validateAnnotations("Entity", annotations)
@@ -270,7 +272,9 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		if (!ctx) return [:]
 		def valueMap = gatherValues(ctx.annotation().valueList())
 		def annotation = new Annotation(ctx.annotation().IDENTIFIER().text, valueMap)
-		return gatherAnnotations(ctx.annotationList()) << [(annotation.kind): annotation]
+		def map = gatherAnnotations(ctx.annotationList())
+		if (annotation.kind in map) ErrorManager.warn(ErrorId.DUP_ANNOTATION, annotation.kind)
+		return map << [(annotation.kind): annotation]
 	}
 
 	void enterLineMarker(LineMarkerContext ctx) {
