@@ -1,6 +1,5 @@
 package org.clyze.deepdoop.actions
 
-import org.clyze.deepdoop.datalog.Annotation
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Constraint
 import org.clyze.deepdoop.datalog.clause.Declaration
@@ -9,8 +8,11 @@ import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.*
 import org.clyze.deepdoop.datalog.element.relation.*
 import org.clyze.deepdoop.datalog.expr.BinaryExpr
+import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.GroupExpr
 import org.clyze.deepdoop.datalog.expr.VariableExpr
+
+import static org.clyze.deepdoop.datalog.Annotation.Kind.*
 
 class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<IVisitable>, TDummyActor<IVisitable> {
 
@@ -52,7 +54,7 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 		}
 		// Transitive closure on supertypes
 		def oldDeltaTypes = superTypesOrdered.keySet()
-		while(!oldDeltaTypes.isEmpty()) {
+		while (!oldDeltaTypes.isEmpty()) {
 			def deltaTypes = [] as Set
 			oldDeltaTypes.each { type ->
 				def newSuperTypes = [] as Set
@@ -106,20 +108,19 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 
 		def predName = n.atom.name
 
-		if (n.annotations.any { it.kind == Annotation.Kind.ENTITY }) {
+		if (ENTITY in n.annotations) {
 			allTypes << predName
 			if (!n.types.isEmpty()) directSuperType[predName] = n.types.first().name
 		}
 
-		if (n.annotations.any { it.kind == Annotation.Kind.CONSTRUCTOR }) {
+		if (CONSTRUCTOR in n.annotations) {
 			def entity = n.types.last().name
 			constructorBaseType[predName] = entity
 			constructorsPerType[entity] << predName
 
-			n.annotations.findAll { it.kind == Annotation.Kind.CONSTRUCTOR }.each {
-				def refmode = it.values["refmode"]
-				if (refmode) refmodeRelations << n.atom.name
-			}
+			def refmode = n.annotations[CONSTRUCTOR].values["refmode"]
+			if (refmode && refmode.type == ConstantExpr.Type.BOOLEAN && refmode.value)
+				refmodeRelations << n.atom.name
 		}
 
 		null

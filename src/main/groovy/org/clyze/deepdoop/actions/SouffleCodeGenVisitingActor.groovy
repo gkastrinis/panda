@@ -77,9 +77,9 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 	}
 
 	String exit(Declaration n, Map<IVisitable, String> m) {
-		if (n.annotations.any { it.kind == INPUT })
+		if (INPUT in n.annotations)
 			emit ".input ${mini(n.atom.name)}"
-		if (n.annotations.any { it.kind == OUTPUT })
+		if (OUTPUT in n.annotations)
 			emit ".output ${mini(n.atom.name)}"
 		extra = null
 		return null
@@ -97,7 +97,7 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 		// Potentially a rule for partial predicates
 		n.body ? emit("${m[n.head]} :- ${m[n.body]}.") : emit("${m[n.head]}.")
 		// TODO TEMP HACK
-		n.annotations.find { it.kind == PLAN }.each { emit ".plan ${it.values["val"]}" }
+		if (PLAN in n.annotations) emit ".plan ${n.annotations[PLAN].values["val"]}"
 
 		// Rules for populating full predicates from partial ones
 		extra.unboundVarsForAtom.each { atom, vars ->

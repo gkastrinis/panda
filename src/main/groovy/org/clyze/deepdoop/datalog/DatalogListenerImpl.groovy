@@ -5,6 +5,7 @@ import org.antlr.v4.runtime.tree.ErrorNode
 import org.antlr.v4.runtime.tree.TerminalNode
 import org.clyze.deepdoop.actions.InfoCollectionVisitingActor
 import org.clyze.deepdoop.actions.NormalizeVisitingActor
+import org.clyze.deepdoop.datalog.Annotation.Kind
 import org.clyze.deepdoop.datalog.clause.Constraint
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
@@ -29,7 +30,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	def inRArrow = false
 	Component currComp
 	InfoCollectionVisitingActor infoActor = new InfoCollectionVisitingActor()
-	List<Annotation> pendingAnnotations = []
+	Map<Kind, Annotation> pendingAnnotations = [:]
 
 	def program = new Program()
 
@@ -94,7 +95,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 			def d = new Declaration(entity, supertype, annotations)
 			values[ctx] = d
 			currComp.addDecl(d)
-		} else if (!annotations.any { it.kind == CONSTRAINT }) {
+		} else if (!(CONSTRAINT in annotations)) {
 			validateAnnotations("Declaration", annotations)
 
 			def headCompound = values[ctx.compound(0)] as LogicalElement
@@ -126,7 +127,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 			}
 			assert types.size() == varsInHead.size()
 
-			if (annotations.any { it.kind == CONSTRUCTOR }) {
+			if (CONSTRUCTOR in annotations) {
 				assert atom instanceof Functional
 				atom = new Constructor(atom as Functional, types.last() as Relation)
 			}
@@ -148,7 +149,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	}
 
 	void exitRightArrowBlock(RightArrowBlockContext ctx) {
-		pendingAnnotations = []
+		pendingAnnotations = [:]
 	}
 
 	void enterLeftArrow(LeftArrowContext ctx) {
@@ -212,15 +213,8 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	}
 
 	void exitCompoundElement(CompoundElementContext ctx) {
-		//IElement el
 		if (ctx.predicate()) values[ctx] = values[ctx.predicate()] as IElement
 		else if (ctx.comparison()) values[ctx] = values[ctx.comparison()] as IElement
-		//else el = values[ctx.compoundElement()] as IElement
-
-		//if (hasToken(ctx, "!")) values[ctx] = new NegationElement(el)
-		//else if (hasToken(ctx, "(")) values[ctx] = new GroupElement(el)
-		//else
-		//values[ctx] = el
 	}
 
 	void exitCompound(CompoundContext ctx) {
@@ -266,17 +260,17 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	private Map<String, ConstantExpr> gatherValues(ValueListContext ctx) {
 		if (!ctx) return [:]
 		exitConstant(ctx.value().constant())
-		def constant =  values[ctx.value().constant()] as ConstantExpr
-		def value = [(ctx.value().IDENTIFIER().text) : constant]
+		def constant = values[ctx.value().constant()] as ConstantExpr
+		def value = [(ctx.value().IDENTIFIER().text): constant]
 		return gatherValues(ctx.valueList()) << value
 	}
 
 	// Special handling (instead of using "exit")
-	private List<Annotation> gatherAnnotations(AnnotationListContext ctx) {
-		if (!ctx) return []
+	private Map<Kind, Annotation> gatherAnnotations(AnnotationListContext ctx) {
+		if (!ctx) return [:]
 		def valueMap = gatherValues(ctx.annotation().valueList())
 		def annotation = new Annotation(ctx.annotation().IDENTIFIER().text, valueMap)
-		return gatherAnnotations(ctx.annotationList()) << annotation
+		return gatherAnnotations(ctx.annotationList()) << [(annotation.kind): annotation]
 	}
 
 	void enterLineMarker(LineMarkerContext ctx) {
@@ -390,7 +384,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		SourceManager.instance.loc = ctx.start.getLine()
 	}
 
-	static void validateAnnotations(String key, def annotations) {
+	static void validateAnnotations(String key, Map<Kind, Annotation> annotations) {
 		def allowedAnnotations = [
 				"Entity"     : EnumSet.of(ENTITY, OUTPUT),
 				"Declaration": EnumSet.of(CONSTRUCTOR, INPUT, OUTPUT),
@@ -399,9 +393,9 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		def expectedAnnotations = allowedAnnotations[key]
 
 		def loc = SourceManager.instance.loc
-		annotations.each {
-			if (!(it.kind in expectedAnnotations))
-				ErrorManager.error(loc, ErrorId.INVALID_ANNOTATION, it.kind, key)
+		annotations.keySet().each {
+			if (!(it in expectedAnnotations))
+				ErrorManager.error(loc, ErrorId.INVALID_ANNOTATION, it, key)
 		}
 	}
 }

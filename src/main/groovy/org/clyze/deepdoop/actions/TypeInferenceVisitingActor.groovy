@@ -1,7 +1,6 @@
 package org.clyze.deepdoop.actions
 
 import org.apache.commons.logging.LogFactory
-import org.clyze.deepdoop.datalog.Annotation
 import org.clyze.deepdoop.datalog.BinOperator
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Declaration
@@ -18,6 +17,7 @@ import org.clyze.deepdoop.datalog.expr.IExpr
 import org.clyze.deepdoop.system.ErrorId
 import org.clyze.deepdoop.system.ErrorManager
 
+import static org.clyze.deepdoop.datalog.Annotation.Kind.*
 import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.*
 
 class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<IVisitable>, TDummyActor<IVisitable> {
@@ -80,9 +80,8 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 	}
 
 	IVisitable exit(Declaration n, Map m) {
-		if (!n.annotations.any { it.kind == Annotation.Kind.ENTITY }) {
+		if (!(ENTITY in n.annotations))
 			relationTypes[n.atom.name] = new ComplexType(n.types.collect { new ClosedType(it.name) })
-		}
 		null
 	}
 
