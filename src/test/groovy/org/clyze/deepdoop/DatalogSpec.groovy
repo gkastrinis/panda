@@ -1,20 +1,13 @@
 package org.clyze.deepdoop
 
 import org.antlr.v4.runtime.ANTLRInputStream
-import org.antlr.v4.runtime.CommonTokenStream
-import org.antlr.v4.runtime.tree.ParseTreeWalker
-import org.clyze.deepdoop.actions.NormalizeVisitingActor
 import org.clyze.deepdoop.actions.LBCodeGenVisitingActor
 import org.clyze.deepdoop.actions.SouffleCodeGenVisitingActor
-import org.clyze.deepdoop.datalog.DatalogLexer
-import org.clyze.deepdoop.datalog.DatalogListenerImpl
-import org.clyze.deepdoop.datalog.DatalogParser
-import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.system.*
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class DatalogSpec extends Specification  {
+class DatalogSpec extends Specification {
 
 	@Unroll
 	def "DeepDoop passing tests"() {
@@ -25,13 +18,13 @@ class DatalogSpec extends Specification  {
 		notThrown(DeepDoopException)
 
 		where:
-		file        | _
-		"t1.logic"  | _
-		"t2.logic"  | _
-		"t3.logic"  | _
-		"t4.logic"  | _
-		"t5.logic"  | _
-		"t6.logic"  | _
+		file       | _
+		"t1.logic" | _
+		"t2.logic" | _
+		"t3.logic" | _
+		"t4.logic" | _
+		"t5.logic" | _
+		"t6.logic" | _
 		//"t7.logic"  | _
 		//"t8.logic"  | _
 		//"t9.logic"  | _
@@ -52,7 +45,7 @@ class DatalogSpec extends Specification  {
 
 		where:
 		file           | expectedErrorId
-	/*
+		/*
 		"fail1.logic"  | ErrorId.DEP_CYCLE
 		"fail2.logic"  | ErrorId.DEP_GLOBAL
 		"fail3.logic"  | ErrorId.CMD_RULE
@@ -88,20 +81,24 @@ class DatalogSpec extends Specification  {
 	def test(String file) {
 		def resourcePath = "/$file"
 		def resource = this.class.getResource(resourcePath).file
-		def walker = new ParseTreeWalker()
-		def listener = new DatalogListenerImpl(resource)
-		def tree = new DatalogParser(
-			new CommonTokenStream(
-				new DatalogLexer(
-					new ANTLRInputStream(this.class.getResourceAsStream(resourcePath))))).program()
 
-		walker.walk(listener, tree)
+		DeepDoopException e1 = null
+		try {
+			def inputStream = new ANTLRInputStream(this.class.getResourceAsStream(resourcePath))
+			Compiler.compile0(inputStream, resource, new LBCodeGenVisitingActor("build"))
+		} catch (DeepDoopException e) {
+			e1 = e
+		}
 
-		def p = listener.program
+		DeepDoopException e2 = null
+		try {
+			def inputStream = new ANTLRInputStream(this.class.getResourceAsStream(resourcePath))
+			Compiler.compile0(inputStream, resource, new SouffleCodeGenVisitingActor("build"))
+		} catch (DeepDoopException e) {
+			e2 = e
+		}
 
-		def v = new NormalizeVisitingActor(p.comps)
-		def flatP = p.accept(v) as Program
-
-		flatP.accept(new SouffleCodeGenVisitingActor("build/"))
+		assert e1?.errorId == e2?.errorId
+		if (e1) throw e1
 	}
 }
