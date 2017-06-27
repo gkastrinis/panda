@@ -25,7 +25,7 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 	// Relation name x Type (types are final)
 	Map<String, List<String>> inferredTypes = [:].withDefault { [] }
 	// Relation name x Type (might have open types)
-	Map<String, ComplexType> relationTypes = [:].withDefault { new ComplexType() }
+	Map<String, List<IType>> relationTypes = [:].withDefault { [] }
 	// Element x Type (for current clause)
 	Map<IVisitable, IType> tmpTypes = [:].withDefault { new OpenType() }
 	// Predicate Name x Expression x Index (for current clause)
@@ -81,7 +81,7 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 
 	IVisitable exit(Declaration n, Map m) {
 		if (!(ENTITY in n.annotations))
-			relationTypes[n.atom.name] = new ComplexType(n.types.collect { new ClosedType(it.name) })
+			relationTypes[n.atom.name] = n.types.collect { new ClosedType(it.name) }
 		null
 	}
 
@@ -97,10 +97,10 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 				// Var might not have possible types yet
 				def types = tmpTypes[expr]
 				if (types) {
-					def prevTypes = relationTypes[relation].components[i]
+					def prevTypes = relationTypes[relation][i]
 					def newTypes = handleTypes(relation, i, prevTypes, types)
 					if (prevTypes != newTypes) {
-						relationTypes[relation].components[i] = newTypes
+						relationTypes[relation][i] = newTypes
 						deltaRules += infoActor.affectedRules[relation]
 					}
 				} else
@@ -168,7 +168,7 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 		def types = relationTypes[name]
 		exprs.eachWithIndex { expr, i ->
 			exprIndices[name][expr] = i
-			if (types) tmpTypes[expr] = tmpTypes[expr].join(types.components[i])
+			if (types) tmpTypes[expr] = tmpTypes[expr].join(types[i])
 		}
 	}
 
@@ -197,8 +197,8 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 	//IVisitable exit(VariableExpr n, Map m) { null }
 
 	private void coalesce() {
-		relationTypes.each { relation, complexType ->
-			complexType.components.eachWithIndex { type, i ->
+		relationTypes.each { relation, types ->
+			types.eachWithIndex { type, i ->
 				if (type instanceof ClosedType) {
 					inferredTypes[relation][i] = type.value
 				} else if (type instanceof OpenType) {
