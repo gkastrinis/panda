@@ -1,1 +1,3 @@
 @Entity(foo=true, bar="abc", baz=1) AP
+
+@Entity Shape

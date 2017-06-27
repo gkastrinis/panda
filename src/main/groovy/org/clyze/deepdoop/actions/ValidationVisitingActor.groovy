@@ -24,8 +24,8 @@ import org.clyze.deepdoop.datalog.expr.VariableExpr
 import org.clyze.deepdoop.system.ErrorId
 import org.clyze.deepdoop.system.ErrorManager
 
-import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.BOOLEAN
-import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.REAL
+import static org.clyze.deepdoop.datalog.Annotation.Kind.*
+import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.*
 
 class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<IVisitable>, TDummyActor<IVisitable>  {
 
@@ -53,6 +53,16 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 	IVisitable exit(Constraint n, Map m) { null }
 
 	IVisitable exit(Declaration n, Map m) {
+		n.annotations?.each {
+			if (ENTITY in n.annotations) {
+				if (!(it.key in [ENTITY, OUTPUT]))
+					ErrorManager.error(n.loc, ErrorId.INVALID_ANNOTATION, it.key, "entity")
+			} else if (!(it.key in [CONSTRUCTOR, INPUT, OUTPUT]))
+				ErrorManager.error(n.loc, ErrorId.INVALID_ANNOTATION, it.key, "declaration")
+
+			it.value.validate(n.loc)
+		}
+
 		if (n.atom.name in declaredRelations)
 			ErrorManager.error(n.loc, ErrorId.MULTIPLE_DECLS, n.atom.name)
 		declaredRelations << n.atom.name
@@ -60,12 +70,17 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 		n.types.findAll { !(it instanceof Primitive) }
 				.findAll { !(it.name in infoActor.allTypes) }
 				.each { ErrorManager.error(it.loc, ErrorId.UNKNOWN_TYPE, it.name) }
-
-		n.annotations?.each { it.value.validate() }
 		null
 	}
 
 	IVisitable exit(Rule n, Map m) {
+		n.annotations?.each {
+			if (!(it.key in [PLAN]))
+				ErrorManager.error(n.loc, ErrorId.INVALID_ANNOTATION, it.key, "rule")
+
+			it.value.validate(n.loc)
+		}
+
 		def varsInHead = infoActor.vars[n.head]
 		def varsInBody = infoActor.vars[n.body]
 		varsInBody.findAll { !it.isDontCare() }
@@ -82,8 +97,6 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 				.collect { it as Relation }
 				.findAll { it.name in infoActor.allTypes }
 				.each { ErrorManager.error(it.loc, ErrorId.ENTITY_RULE, it.name) }
-
-		n.annotations?.each { it.value.validate() }
 		null
 	}
 

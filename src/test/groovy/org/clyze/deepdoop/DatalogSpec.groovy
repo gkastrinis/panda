@@ -82,6 +82,7 @@ class DatalogSpec extends Specification  {
 		"fail26.logic" | ErrorId.NON_EMPTY_ANNOTATION
 		"fail27.logic" | ErrorId.MISSING_ARG_ANNOTATION
 		"fail28.logic" | ErrorId.INVALID_ARG_ANNOTATION
+		"fail29.logic" | ErrorId.INVALID_ANNOTATION
 	}
 
 	def test(String file) {

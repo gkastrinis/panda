@@ -35,6 +35,7 @@ enum ErrorId {
 	NON_EMPTY_ANNOTATION,
 	MISSING_ARG_ANNOTATION,
 	INVALID_ARG_ANNOTATION,
+	CONSTRUCTOR_NON_FUNC,
 
 	static Map<ErrorId, String> msgMap
 	static {
@@ -71,6 +72,7 @@ enum ErrorId {
 		msgMap[NON_EMPTY_ANNOTATION] = "Annotation `{0}` takes no arguments"
 		msgMap[MISSING_ARG_ANNOTATION] = "Mandatory argument `{0}` for annotation `{1}` is missing"
 		msgMap[INVALID_ARG_ANNOTATION] = "Argument `{0}` for annotation `{1}` is invalid"
+		msgMap[CONSTRUCTOR_NON_FUNC] = "Constructor `{0}` must be a functional relation"
 	}
 
 	static String idToMsg(ErrorId errorId, Object[] values) {

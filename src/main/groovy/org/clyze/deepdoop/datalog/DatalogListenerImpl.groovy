@@ -86,20 +86,19 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	void exitRightArrow(RightArrowContext ctx) {
 		inRArrow = false
 
+		def loc = SourceManager.instance.loc
+
 		def annotations = gatherAnnotations(ctx.annotationList())
-		annotations.keySet().each { if (it in pendingAnnotations) ErrorManager.warn(ErrorId.DUP_ANNOTATION, it) }
+		annotations.keySet().each { if (it in pendingAnnotations) ErrorManager.warn(loc, ErrorId.DUP_ANNOTATION, it) }
 		annotations += pendingAnnotations
 
 		if (ctx.predicateName(0)) {
-			validateAnnotations("Entity", annotations)
 			def entity = new Entity(values[ctx.predicateName(0)] as String, new VariableExpr("x"))
 			def supertype = ctx.predicateName(1) ? [new Relation(values[ctx.predicateName(1)] as String)] : []
 			def d = new Declaration(entity, supertype, annotations)
 			values[ctx] = d
 			currComp.addDecl(d)
 		} else if (!(CONSTRAINT in annotations)) {
-			validateAnnotations("Declaration", annotations)
-
 			def headCompound = values[ctx.compound(0)] as LogicalElement
 			assert headCompound.elements.size() == 1
 			def atom = headCompound.elements.first() as Relation
@@ -121,16 +120,15 @@ class DatalogListenerImpl extends DatalogBaseListener {
 				def vars = infoActor.vars[type]
 				assert vars.size() == 1
 				def index = varsInHead.indexOf(vars.first())
-				if (index == -1) {
-					def loc = SourceManager.instance.loc
+				if (index == -1)
 					ErrorManager.error(loc, ErrorId.UNKNOWN_VAR, vars.first().name)
-				}
 				types[index] = type
 			}
 			assert types.size() == varsInHead.size()
 
 			if (CONSTRUCTOR in annotations) {
-				assert atom instanceof Functional
+				if (!(atom instanceof Functional))
+					ErrorManager.error(loc, ErrorId.CONSTRUCTOR_NON_FUNC, atom.name)
 				atom = new Constructor(atom as Functional, types.last() as Relation)
 			}
 
@@ -138,7 +136,6 @@ class DatalogListenerImpl extends DatalogBaseListener {
 			values[ctx] = d
 			currComp.addDecl(d)
 		} else {
-			validateAnnotations("Constraint", annotations)
 			def headCompound = values[ctx.compound(0)] as LogicalElement
 			def bodyCompound = values[ctx.compound(1)] as LogicalElement
 			currComp.addCons(new Constraint(headCompound, bodyCompound))
@@ -273,7 +270,8 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		def valueMap = gatherValues(ctx.annotation().valueList())
 		def annotation = new Annotation(ctx.annotation().IDENTIFIER().text, valueMap)
 		def map = gatherAnnotations(ctx.annotationList())
-		if (annotation.kind in map) ErrorManager.warn(ErrorId.DUP_ANNOTATION, annotation.kind)
+		def loc = SourceManager.instance.loc
+		if (annotation.kind in map) ErrorManager.warn(loc, ErrorId.DUP_ANNOTATION, annotation.kind)
 		return map << [(annotation.kind): annotation]
 	}
 
@@ -386,20 +384,5 @@ class DatalogListenerImpl extends DatalogBaseListener {
 
 	static void recLoc(ParserRuleContext ctx) {
 		SourceManager.instance.loc = ctx.start.getLine()
-	}
-
-	static void validateAnnotations(String key, Map<Kind, Annotation> annotations) {
-		def allowedAnnotations = [
-				"Entity"     : EnumSet.of(ENTITY, OUTPUT),
-				"Declaration": EnumSet.of(CONSTRUCTOR, INPUT, OUTPUT),
-				"Constraint" : EnumSet.of(CONSTRAINT),
-		]
-		def expectedAnnotations = allowedAnnotations[key]
-
-		def loc = SourceManager.instance.loc
-		annotations.keySet().each {
-			if (!(it in expectedAnnotations))
-				ErrorManager.error(loc, ErrorId.INVALID_ANNOTATION, it, key)
-		}
 	}
 }
