@@ -13,7 +13,11 @@ import org.clyze.deepdoop.datalog.DatalogParser
 
 class Compiler {
 
-	static List<Result> compileToLB(String filename, File outDir) {
+	static {
+		initLogging("INFO", "./build/logs", true)
+	}
+
+	static List<Result> compileToLB3(String filename, File outDir) {
 		compile(filename, new LBCodeGenVisitingActor(outDir))
 	}
 
@@ -22,8 +26,6 @@ class Compiler {
 	}
 
 	private static List<Result> compile(String filename, def codeGenActor) {
-		initLogging("INFO", "./build/logs", true)
-
 		def log = LogFactory.getLog(Compiler.class)
 		log.info("[DD] COMPILE: $filename with ${codeGenActor.class.name}")
 

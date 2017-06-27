@@ -21,8 +21,10 @@ import org.clyze.deepdoop.system.Result
 @InheritConstructors
 class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 
+	List<String> alreadyDeclared = []
+
+
 	boolean inDecl
-	File currentFile
 
 
 	Set<String> globalAtoms
@@ -34,16 +36,20 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 
 
 	String visit(Program p) {
-		currentFile = createUniqueFile("out_", ".dl")
+		currentFile = createUniqueFile("out_", ".logic")
 		results << new Result(Result.Kind.LOGIC, currentFile)
 
 		// Transform program before visiting nodes
-		return p.accept(new NormalizeVisitingActor())
+		def n = p.accept(new NormalizeVisitingActor())
 				.accept(new InitVisitingActor())
-				.accept(this)
+				.accept(infoActor)
+				.accept(new ValidationVisitingActor(infoActor))
+				.accept(inferenceActor)
+
+		return super.visit(n as Program)
 	}
 
-	String exit(Program n, Map<IVisitable, String> m) {
+	/*String exit(Program n, Map<IVisitable, String> m) {
 		n.accept(new PostOrderVisitor<IVisitable>(infoActor))
 		globalAtoms = infoActor.declaringAtoms[n.globalComp].collect { it.name }
 
@@ -77,53 +83,64 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 		emit(n, m, currSet)
 
 		return null
+	}*/
+
+	//String exit(CmdComponent n, Map<IVisitable, String> m) { null }
+
+	void enter(Component n) {
+		inferenceActor.inferredTypes.each { predName, types ->
+			def arity = infoActor.functionalRelations[predName]
+			def body = types.withIndex().collect { type, i -> "${mapTypes(type)}(x$i)" }.join(", ")
+			if (predName in infoActor.refmodeRelations) {
+				emit "${types.last()}(x), $predName(x:y) -> ${types.first()}(y)."
+			} else if (arity) {
+				def head = (0..<(arity-1)).collect { "x$it" }.join(", ")
+				emit "$predName[$head] = x${arity-1} -> $body."
+			} else {
+				def head = (0..<(types.size())).collect { "x$it" }.join(", ")
+				emit "$predName($head) -> $body."
+			}
+		}
+		emit "/////////////////////"
 	}
 
-	String exit(Constraint n, Map<IVisitable, String> m) {
-		"${m[n.head]} -> ${m[n.body]}."
-	}
+	//String exit(Constraint n, Map<IVisitable, String> m) {
+	//	"${m[n.head]} -> ${m[n.body]}."
+	//}
 
-	void enter(Declaration n) { inDecl = true }
+	//void enter(Declaration n) { inDecl = true }
 
-	String exit(Declaration n, Map<IVisitable, String> m) {
-		inDecl = false
-		def typeStr = n.types.collect { m[it] }.join(', ')
-		return "${m[n.atom]} -> ${typeStr}."
-	}
+	//String exit(Declaration n, Map<IVisitable, String> m) {
+	//	inDecl = false
+	//	def typeStr = n.types.collect { m[it] }.join(', ')
+	//	return "${m[n.atom]} -> ${typeStr}."
+	//}
 
 	String exit(Rule n, Map<IVisitable, String> m) {
-		m[n.head] + (n.body != null ? " <- " + m[n.body] : "") + "."
+		emit(n.body ? "${m[n.head]} <- ${m[n.body]}." : "${m[n.head]}.")
 	}
 
 	String exit(AggregationElement n, Map<IVisitable, String> m) {
-		"agg<<${m[n.var]} = ${m[n.predicate]}>> ${m[n.body]}"
+		def pred = n.predicate.name
+		if (pred == "count" || pred == "min" || pred == "max")
+			"agg<<${m[n.var]} = ${m[n.predicate]}>> ${m[n.body]}"
+		else null
 	}
-
-	String exit(ComparisonElement n, Map<IVisitable, String> m) { m[n.expr] }
-
-	String exit(GroupElement n, Map<IVisitable, String> m) { "(${m[n.element]})" }
-
-	String exit(LogicalElement n, Map<IVisitable, String> m) {
-		def delim = (n.type == LogicalElement.LogicType.AND ? ", " : "; ")
-		return n.elements.collect { m[it] }.join(delim)
-	}
-
-	String exit(NegationElement n, Map<IVisitable, String> m) { "!${m[n.element]}" }
-
-	String exit(Relation n, Map<IVisitable, String> m) { throw UnsupportedOperationException() }
 
 	String exit(Constructor n, Map<IVisitable, String> m) {
-		def functionalStr = exit(n as Functional, m)
+		def constructor = exit(n as Functional, m)
+		"$constructor, ${n.entity.name}(${m[n.valueExpr]})"
+		//def functionalStr = exit(n as Functional, m)
 		//if (inDecl) {
 		//	def directive = new Directive("lang:constructor", new Stub(n.entity.name))
 		//	return directive.accept(this) + ".\n" + functionalStr
 		//} else {
-		def entityStr = exit(n.entity as Entity, m)
-		return "$functionalStr, $entityStr"
+		//def entityStr = exit(n.entity as Entity, m)
+		//return "$functionalStr, $entityStr"
 		//}
 	}
 
-	String exit(Entity n, Map<IVisitable, String> m) {
+	/*String exit(Entity n, Map<IVisitable, String> m) {
 		def entityStr = exit(n as Predicate, m)
 		//if (inDecl) {
 		//	def directive = new Directive("lang:entity", new Stub(n.name))
@@ -131,33 +148,25 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 		//} else {
 		return entityStr
 		//}
-	}
+	}*/
 
 	String exit(Functional n, Map<IVisitable, String> m) {
-		def keyStr = n.keyExprs.collect { m[it] }.join(', ')
-		def stage = ((n.stage == null || n.stage == "@past") ? "" : n.stage)
-		def valueStr = (n.valueExpr ? " = " + m[n.valueExpr] : "")
-		return "${n.name}$stage[$keyStr]$valueStr"
+		if (n.name in infoActor.refmodeRelations) {
+			return "${n.name}(${m[n.valueExpr]}:${m[n.keyExprs.first()]})"
+		} else {
+			//def stage = ((n.stage == null || n.stage == "@past") ? "" : n.stage)
+			def keyParams = n.keyExprs.collect { m[it] }.join(", ")
+			return "${n.name}[$keyParams] = ${m[n.valueExpr]}"
+		}
 	}
 
 	String exit(Predicate n, Map<IVisitable, String> m) {
-		def str = n.exprs.collect { m[it] }.join(', ')
-		def stage = ((n.stage == null || n.stage == "@past") ? "" : n.stage)
-		return "${n.name}$stage($str)"
+		//def stage = ((n.stage == null || n.stage == "@past") ? "" : n.stage)
+		def params = n.exprs.collect { m[it] }.join(", ")
+		return "${n.name}($params)"
 	}
 
-	String exit(Primitive n, Map<IVisitable, String> m) { "${n.name}(${m[n.var]})" }
-
-	String exit(BinaryExpr n, Map<IVisitable, String> m) { "${m[n.left]} ${n.op} ${m[n.right]}" }
-
-	String exit(ConstantExpr n, Map<IVisitable, String> m) { n.value.toString() }
-
-	String exit(GroupExpr n, Map<IVisitable, String> m) { "(${m[n.expr]})" }
-
-	String exit(VariableExpr n, Map<IVisitable, String> m) { n.name }
-
-
-	void emit(Program n, Map<IVisitable, String> m, Set<DependencyGraph.Node> nodes) {
+	/*void emit(Program n, Map<IVisitable, String> m, Set<DependencyGraph.Node> nodes) {
 		latestFile = createUniqueFile("out_", ".logic")
 		results << new Result(Result.Kind.LOGIC, latestFile)
 
@@ -172,7 +181,7 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 				write(latestFile, l)
 			} else if (node instanceof DependencyGraph.CmdNode)
 				assert false
-			else /* if (node instanceof PredNode)*/ {
+			else /* if (node instanceof PredNode)* / {
 				handledAtoms << node.name
 				currSet << node.name
 			}
@@ -182,9 +191,9 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 		handle(m, unhandledGlobal.declarations, latestFile)
 		handle(m, unhandledGlobal.constraints, latestFile)
 		handle(m, unhandledGlobal.rules, latestFile)
-	}
+	}*/
 
-	void emitCmd(Program n, Map<IVisitable, String> m, Set<DependencyGraph.Node> nodes) {
+	/*void emitCmd(Program n, Map<IVisitable, String> m, Set<DependencyGraph.Node> nodes) {
 		assert nodes.size() == 1
 		nodes.each { node ->
 			assert node instanceof DependencyGraph.CmdNode
@@ -216,9 +225,9 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 				emitFilePredicate(atom, it, latestFile)
 			}
 		}
-	}
+	}*/
 
-	void emitFilePredicate(Relation atom, Declaration d, File file) {
+	/*void emitFilePredicate(Relation atom, Declaration d, File file) {
 		def atomName = atom.name
 		def vars = VariableExpr.genTempVars(atom.arity)
 
@@ -237,9 +246,9 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 				decl,
 				rule
 		])
-	}
+	}*/
 
-	def <T extends IVisitable> void handle(Map<IVisitable, String> m, Set<T> set, File file) {
+	/*def <T extends IVisitable> void handle(Map<IVisitable, String> m, Set<T> set, File file) {
 		Set<T> toRemove = []
 		set.each {
 			if (allHandledFor(it)) {
@@ -257,5 +266,12 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 		atoms.retainAll(globalAtoms)
 
 		return atoms.every { handledAtoms.contains(it) }
+	}*/
+
+	static def mapTypes(def name) {
+		// TODO clean this
+		if (!name) throw new RuntimeException("********")
+		if (name == "int") return "int[64]"
+		return name
 	}
 }

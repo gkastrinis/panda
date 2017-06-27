@@ -32,6 +32,8 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 	Map<String, Set<Rule>> affectedRules = [:].withDefault { [] as Set }
 
 	List<String> refmodeRelations = []
+	// Map functional relations to their arity
+	Map<String, Integer> functionalRelations = [:]
 
 	InfoCollectionVisitingActor() {
 		// Implemented this way, because Java doesn't allow usage of "this"
@@ -195,6 +197,8 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 		usedAtoms[n] = [n]
 
 		vars[n] = (n.keyExprs + [n.valueExpr]).collect { vars[it] }.flatten() as List<VariableExpr>
+
+		functionalRelations[n.name] = n.arity
 		null
 	}
 

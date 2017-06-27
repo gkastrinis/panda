@@ -19,9 +19,6 @@ import static org.clyze.deepdoop.datalog.element.LogicalElement.LogicType.AND
 @InheritConstructors
 class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 
-	File currentFile
-	TypeInferenceVisitingActor inferenceActor
-
 	static class Extra {
 		// Unbound variable in a rule's head that a constructor will bound eventually
 		Map<IExpr, Constructor> unboundVar = [:]
@@ -39,8 +36,6 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 	String visit(Program p) {
 		currentFile = createUniqueFile("out_", ".dl")
 		results << new Result(Result.Kind.LOGIC, currentFile)
-
-		inferenceActor = new TypeInferenceVisitingActor(infoActor)
 
 		// Transform program before visiting nodes
 		def n = p.accept(new NormalizeVisitingActor())
@@ -90,7 +85,7 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 
 	String exit(Rule n, Map<IVisitable, String> m) {
 		// Potentially a rule for partial predicates
-		n.body ? emit("${m[n.head]} :- ${m[n.body]}.") : emit("${m[n.head]}.")
+		emit(n.body ? "${m[n.head]} <- ${m[n.body]}." : "${m[n.head]}.")
 		// TODO TEMP HACK
 		if (PLAN in n.annotations) emit ".plan ${n.annotations[PLAN].values["val"]}"
 
@@ -119,20 +114,11 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 	}
 
 	String exit(AggregationElement n, Map<IVisitable, String> m) {
-		if (n.predicate.name == "count")
-			return "${m[n.var]} = count : ${m[n.body]}"
-		else return null
+		def pred = n.predicate.name
+		if (pred == "count" || pred == "min" || pred == "max")
+			"${m[n.var]} = $pred : ${m[n.body]}"
+		else null
 	}
-
-	String exit(ComparisonElement n, Map<IVisitable, String> m) { m[n.expr] }
-
-	String exit(GroupElement n, Map<IVisitable, String> m) { "(${m[n.element]})" }
-
-	String exit(LogicalElement n, Map<IVisitable, String> m) {
-		return n.elements.findAll { m[it] }.collect { m[it] }.join(n.type == AND ? ", " : "; ")
-	}
-
-	String exit(NegationElement n, Map<IVisitable, String> m) { "!${m[n.element]}" }
 
 	String exit(Constructor n, Map<IVisitable, String> m) {
 		if (!extra) return null
@@ -175,21 +161,10 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 			return fullPred
 	}
 
-	//String exit(Primitive n, Map<IVisitable, String> m) { null }
-
-	String exit(BinaryExpr n, Map<IVisitable, String> m) { "${m[n.left]} ${n.op} ${m[n.right]}" }
-
-	String exit(ConstantExpr n, Map<IVisitable, String> m) { n.value as String }
-
-	String exit(GroupExpr n, Map<IVisitable, String> m) { "(${m[n.expr]})" }
-
-	String exit(VariableExpr n, Map<IVisitable, String> m) { n.name }
-
-	def emit(def data) { write currentFile, data }
-
 	static def mini(def name) { name.replace ":", "_" }
 
 	static def mapType(def name) {
+		// TODO clean this
 		if (!name) throw new RuntimeException("********")
 		name == "string" ? "symbol" : "number"
 	}

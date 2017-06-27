@@ -2,8 +2,13 @@ foo.clone(["x":1, "y":2])
 // Create a copy of the current object. `m` has pairs of field x value (groovy style)
 Relation copy(Map m, boolean duplicateRest = true) { throw new UnsupportedOperationException() }
 
+refmode functional
+refmode 2 arity
 refmode only primitive keys
 
+aggregations
+
+emit lang: directives
 
 
 assert to errors
