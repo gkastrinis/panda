@@ -9,10 +9,9 @@ import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Entity
 import org.clyze.deepdoop.datalog.element.relation.Predicate
-import org.clyze.deepdoop.system.TSourceItem
 
 @Canonical
-class Component implements IVisitable, TSourceItem {
+class Component implements IVisitable {
 
 	String name
 	String superComp

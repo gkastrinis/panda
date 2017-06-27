@@ -22,7 +22,7 @@ class Constructor extends Functional {
 	def getEntity() {
 		// TODO fix check
 		//if (entity instanceof Relation)
-			entity = new Entity(entity.name, valueExpr)
+		entity = new Entity(entity.name, valueExpr)
 		return entity
 	}
 

@@ -5,7 +5,7 @@ import groovy.transform.ToString
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.system.ErrorId
 import org.clyze.deepdoop.system.ErrorManager
-import org.clyze.deepdoop.system.SourceLocation
+import org.clyze.deepdoop.system.SourceManager
 
 import static org.clyze.deepdoop.datalog.Annotation.Kind.*
 
@@ -31,7 +31,7 @@ class Annotation {
 		this.values = values
 	}
 
-	void validate(SourceLocation loc) { VALIDATORS[kind].call(this, loc) }
+	void validate() { VALIDATORS[kind].call(this) }
 
 	private static def findKind(String name) {
 		name = name.toLowerCase()
@@ -46,17 +46,20 @@ class Annotation {
 		}
 	}
 
-	private static final def EMPTY_VALIDATOR = { Annotation a, SourceLocation loc ->
+	private static final def EMPTY_VALIDATOR = { Annotation a ->
+		def loc = SourceManager.instance.recall(a)
 		if (!a.values.isEmpty()) ErrorManager.error(loc, ErrorId.NON_EMPTY_ANNOTATION, a.kind)
 	}
 
-	private static final def MANDATORY_VALIDATOR = { Annotation a, List<String> mandatory, SourceLocation loc ->
+	private static final def MANDATORY_VALIDATOR = { Annotation a, List<String> mandatory ->
+		def loc = SourceManager.instance.recall(a)
 		mandatory.findAll { !(it in a.values) }.each {
 			ErrorManager.error(loc, ErrorId.MISSING_ARG_ANNOTATION, it, a.kind)
 		}
 	}
 
-	private static final def OPTIONAL_VALIDATOR = { Annotation a, List<String> optional, SourceLocation loc ->
+	private static final def OPTIONAL_VALIDATOR = { Annotation a, List<String> optional ->
+		def loc = SourceManager.instance.recall(a)
 		a.values.findAll { !(it.key in optional) }.each {
 			ErrorManager.error(loc, ErrorId.INVALID_ARG_ANNOTATION, it.key, a.kind)
 		}
@@ -64,15 +67,15 @@ class Annotation {
 
 	private static final Map<Kind, Closure> VALIDATORS = [
 			(CONSTRAINT) : EMPTY_VALIDATOR,
-			(CONSTRUCTOR): { Annotation a, SourceLocation loc ->
-				OPTIONAL_VALIDATOR.call(a, ["refmode"], loc)
+			(CONSTRUCTOR): { Annotation a ->
+				OPTIONAL_VALIDATOR.call(a, ["refmode"])
 			},
 			(ENTITY)     : EMPTY_VALIDATOR,
 			(INPUT)      : EMPTY_VALIDATOR,
 			(OUTPUT)     : EMPTY_VALIDATOR,
-			(PLAN)       : { Annotation a, SourceLocation loc ->
-				MANDATORY_VALIDATOR.call(a, ["val"], loc)
-				OPTIONAL_VALIDATOR.call(a, ["val"], loc)
+			(PLAN)       : { Annotation a ->
+				MANDATORY_VALIDATOR.call(a, ["val"])
+				OPTIONAL_VALIDATOR.call(a, ["val"])
 			},
 	]
 }

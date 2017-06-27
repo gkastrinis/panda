@@ -19,9 +19,11 @@ import org.clyze.deepdoop.datalog.element.relation.*
 import org.clyze.deepdoop.datalog.expr.*
 import org.clyze.deepdoop.system.ErrorId
 import org.clyze.deepdoop.system.ErrorManager
+import org.clyze.deepdoop.system.SourceLocation
 import org.clyze.deepdoop.system.SourceManager
 
-import static org.clyze.deepdoop.datalog.Annotation.Kind.*
+import static org.clyze.deepdoop.datalog.Annotation.Kind.CONSTRAINT
+import static org.clyze.deepdoop.datalog.Annotation.Kind.CONSTRUCTOR
 import static org.clyze.deepdoop.datalog.DatalogParser.*
 
 class DatalogListenerImpl extends DatalogBaseListener {
@@ -40,7 +42,6 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	}
 
 	void enterComponent(ComponentContext ctx) {
-		recLoc(ctx)
 		currComp = new Component(ctx.IDENTIFIER(0).text, ctx.IDENTIFIER(1)?.text)
 	}
 
@@ -53,7 +54,6 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	}
 
 	void enterCmd(CmdContext ctx) {
-		recLoc(ctx)
 		currComp = new CmdComponent(ctx.IDENTIFIER().text)
 	}
 
@@ -80,13 +80,12 @@ class DatalogListenerImpl extends DatalogBaseListener {
 
 	void enterRightArrow(RightArrowContext ctx) {
 		inRArrow = true
-		recLoc(ctx)
 	}
 
 	void exitRightArrow(RightArrowContext ctx) {
 		inRArrow = false
 
-		def loc = SourceManager.instance.loc
+		def loc = rec(null, ctx)
 
 		def annotations = gatherAnnotations(ctx.annotationList())
 		annotations.keySet().each { if (it in pendingAnnotations) ErrorManager.warn(loc, ErrorId.DUP_ANNOTATION, it) }
@@ -96,8 +95,8 @@ class DatalogListenerImpl extends DatalogBaseListener {
 			def entity = new Entity(values[ctx.predicateName(0)] as String, new VariableExpr("x"))
 			def supertype = ctx.predicateName(1) ? [new Relation(values[ctx.predicateName(1)] as String)] : []
 			def d = new Declaration(entity, supertype, annotations)
-			values[ctx] = d
 			currComp.addDecl(d)
+			rec(d, ctx)
 		} else if (!(CONSTRAINT in annotations)) {
 			def headCompound = values[ctx.compound(0)] as LogicalElement
 			assert headCompound.elements.size() == 1
@@ -133,17 +132,18 @@ class DatalogListenerImpl extends DatalogBaseListener {
 			}
 
 			def d = new Declaration(atom, types, annotations)
-			values[ctx] = d
 			currComp.addDecl(d)
+			rec(d, ctx)
 		} else {
 			def headCompound = values[ctx.compound(0)] as LogicalElement
 			def bodyCompound = values[ctx.compound(1)] as LogicalElement
-			currComp.addCons(new Constraint(headCompound, bodyCompound))
+			def c = new Constraint(headCompound, bodyCompound)
+			currComp.addCons(c)
+			rec(c, ctx)
 		}
 	}
 
 	void enterRightArrowBlock(RightArrowBlockContext ctx) {
-		recLoc(ctx)
 		pendingAnnotations = gatherAnnotations(ctx.annotationList())
 	}
 
@@ -151,31 +151,31 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		pendingAnnotations = [:]
 	}
 
-	void enterLeftArrow(LeftArrowContext ctx) {
-		recLoc(ctx)
-	}
-
 	void exitLeftArrow(LeftArrowContext ctx) {
+		Rule r
 		def annotations = gatherAnnotations(ctx.annotationList())
 		if (ctx.predicateListExt()) {
 			def headAtoms = values[ctx.predicateListExt()] as List<Relation>
 			def head = new LogicalElement(headAtoms)
 			def body = ctx.compound() ? values[ctx.compound()] as LogicalElement : null
-			currComp.addRule(new Rule(head, body, annotations))
+			r = new Rule(head, body, annotations)
+			currComp.addRule(r)
 		} else {
 			def head = new LogicalElement(values[ctx.functional()] as Functional)
 			def aggregation = values[ctx.aggregation()] as AggregationElement
-			currComp.addRule(new Rule(head, new LogicalElement(aggregation)))
+			r = new Rule(head, new LogicalElement(aggregation))
+			currComp.addRule(r)
 		}
+		rec(r, ctx)
 	}
 
 	void exitPredicate(PredicateContext ctx) {
 		if (ctx.functional()) values[ctx] = values[ctx.functional()]
 		else if (ctx.normalPredicate()) values[ctx] = values[ctx.normalPredicate()]
+		rec(values[ctx], ctx)
 	}
 
 	void exitFunctional(FunctionalContext ctx) {
-		recLoc(ctx)
 		def name = values[ctx.predicateName()] as String
 		def stage = ctx.AT_STAGE()?.text
 		def keyExprs = (ctx.exprList() ? values[ctx.exprList()] : []) as List<IExpr>
@@ -184,7 +184,6 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	}
 
 	void exitNormalPredicate(NormalPredicateContext ctx) {
-		recLoc(ctx)
 		values[ctx] = new Predicate(
 				values[ctx.predicateName()] as String,
 				ctx.AT_STAGE()?.text,
@@ -192,18 +191,18 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	}
 
 	void exitAggregation(AggregationContext ctx) {
-		recLoc(ctx)
 		values[ctx] = new AggregationElement(
 				new VariableExpr(ctx.IDENTIFIER().text),
 				values[ctx.predicate()] as Predicate,
 				values[ctx.compound()] as IElement)
+		rec(values[ctx], ctx)
 	}
 
 	void exitConstruction(ConstructionContext ctx) {
-		recLoc(ctx)
 		values[ctx] = new Constructor(
 				values[ctx.functional()] as Functional,
 				new Relation(values[ctx.predicateName()] as String))
+		rec(values[ctx], ctx)
 	}
 
 	void exitPredicateListExt(PredicateListExtContext ctx) {
@@ -270,7 +269,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		def valueMap = gatherValues(ctx.annotation().valueList())
 		def annotation = new Annotation(ctx.annotation().IDENTIFIER().text, valueMap)
 		def map = gatherAnnotations(ctx.annotationList())
-		def loc = SourceManager.instance.loc
+		def loc = rec(annotation, ctx)
 		if (annotation.kind in map) ErrorManager.warn(loc, ErrorId.DUP_ANNOTATION, annotation.kind)
 		return map << [(annotation.kind): annotation]
 	}
@@ -304,7 +303,6 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	}
 
 	void exitPredicateName(PredicateNameContext ctx) {
-		recLoc(ctx)
 		def name = ctx.IDENTIFIER().text
 		if (ctx.predicateName())
 			name = values[ctx.predicateName()] + ":" + name
@@ -382,7 +380,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		return false
 	}
 
-	static void recLoc(ParserRuleContext ctx) {
-		SourceManager.instance.loc = ctx.start.getLine()
+	static SourceLocation rec(Object o, ParserRuleContext ctx) {
+		SourceManager.instance.record(o, ctx.start.getLine())
 	}
 }

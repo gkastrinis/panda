@@ -7,11 +7,10 @@ import org.clyze.deepdoop.actions.IVisitor
 import org.clyze.deepdoop.datalog.Annotation
 import org.clyze.deepdoop.datalog.Annotation.Kind
 import org.clyze.deepdoop.datalog.element.relation.Relation
-import org.clyze.deepdoop.system.TSourceItem
 
 @Canonical
 @ToString(includePackage = false)
-class Declaration implements IVisitable, TSourceItem {
+class Declaration implements IVisitable {
 
 	Relation atom
 	List<Relation> types

@@ -7,11 +7,10 @@ import org.clyze.deepdoop.actions.IVisitor
 import org.clyze.deepdoop.datalog.Annotation
 import org.clyze.deepdoop.datalog.Annotation.Kind
 import org.clyze.deepdoop.datalog.element.LogicalElement
-import org.clyze.deepdoop.system.TSourceItem
 
 @Canonical
 @ToString(includePackage = false)
-class Rule implements IVisitable, TSourceItem {
+class Rule implements IVisitable {
 
 	LogicalElement head
 	LogicalElement body

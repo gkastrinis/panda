@@ -12,7 +12,8 @@ import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.GroupExpr
 import org.clyze.deepdoop.datalog.expr.VariableExpr
 
-import static org.clyze.deepdoop.datalog.Annotation.Kind.*
+import static org.clyze.deepdoop.datalog.Annotation.Kind.CONSTRUCTOR
+import static org.clyze.deepdoop.datalog.Annotation.Kind.ENTITY
 
 class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<IVisitable>, TDummyActor<IVisitable> {
 

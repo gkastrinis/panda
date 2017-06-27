@@ -5,11 +5,10 @@ import groovy.transform.ToString
 import org.clyze.deepdoop.actions.IVisitable
 import org.clyze.deepdoop.actions.IVisitor
 import org.clyze.deepdoop.datalog.element.IElement
-import org.clyze.deepdoop.system.TSourceItem
 
 @Canonical
 @ToString(includePackage = false)
-class Constraint implements IVisitable, TSourceItem {
+class Constraint implements IVisitable {
 
 	IElement head
 	IElement body

@@ -9,15 +9,15 @@ import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.AggregationElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Functional
-import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.element.relation.Predicate
+import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.expr.BinaryExpr
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.IExpr
 import org.clyze.deepdoop.system.ErrorId
 import org.clyze.deepdoop.system.ErrorManager
 
-import static org.clyze.deepdoop.datalog.Annotation.Kind.*
+import static org.clyze.deepdoop.datalog.Annotation.Kind.ENTITY
 import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.*
 
 class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<IVisitable>, TDummyActor<IVisitable> {
@@ -166,7 +166,7 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 
 	private void exitRelation(String name, List<IExpr> exprs) {
 		def types = relationTypes[name]
-		exprs.eachWithIndex{ expr, i ->
+		exprs.eachWithIndex { expr, i ->
 			exprIndices[name][expr] = i
 			if (types) tmpTypes[expr] = tmpTypes[expr].join(types.components[i])
 		}
@@ -198,10 +198,10 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 
 	private void coalesce() {
 		relationTypes.each { relation, complexType ->
-			complexType.components.eachWithIndex{ type, i ->
+			complexType.components.eachWithIndex { type, i ->
 				if (type instanceof ClosedType) {
 					inferredTypes[relation][i] = type.value
-				} else if (type instanceof  OpenType) {
+				} else if (type instanceof OpenType) {
 					def resultTypes = []
 					String coalescedType
 
@@ -215,7 +215,7 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 					if (resultTypes.size() != 1) {
 						String t1 = resultTypes[0]
 						resultTypes.removeAt(0)
-						while(resultTypes) {
+						while (resultTypes) {
 							// Iterate types in pairs
 							String t2 = resultTypes[0]
 							resultTypes.removeAt(0)

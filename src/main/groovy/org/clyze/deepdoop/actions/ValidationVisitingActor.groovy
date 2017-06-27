@@ -6,28 +6,21 @@ import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.CmdComponent
 import org.clyze.deepdoop.datalog.component.Component
-import org.clyze.deepdoop.datalog.element.AggregationElement
-import org.clyze.deepdoop.datalog.element.ComparisonElement
-import org.clyze.deepdoop.datalog.element.GroupElement
-import org.clyze.deepdoop.datalog.element.LogicalElement
-import org.clyze.deepdoop.datalog.element.NegationElement
-import org.clyze.deepdoop.datalog.element.relation.Constructor
-import org.clyze.deepdoop.datalog.element.relation.Entity
-import org.clyze.deepdoop.datalog.element.relation.Functional
-import org.clyze.deepdoop.datalog.element.relation.Predicate
-import org.clyze.deepdoop.datalog.element.relation.Primitive
-import org.clyze.deepdoop.datalog.element.relation.Relation
+import org.clyze.deepdoop.datalog.element.*
+import org.clyze.deepdoop.datalog.element.relation.*
 import org.clyze.deepdoop.datalog.expr.BinaryExpr
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.GroupExpr
 import org.clyze.deepdoop.datalog.expr.VariableExpr
 import org.clyze.deepdoop.system.ErrorId
 import org.clyze.deepdoop.system.ErrorManager
+import org.clyze.deepdoop.system.SourceManager
 
 import static org.clyze.deepdoop.datalog.Annotation.Kind.*
-import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.*
+import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.BOOLEAN
+import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.REAL
 
-class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<IVisitable>, TDummyActor<IVisitable>  {
+class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<IVisitable>, TDummyActor<IVisitable> {
 
 	InfoCollectionVisitingActor infoActor
 
@@ -56,29 +49,29 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 		n.annotations?.each {
 			if (ENTITY in n.annotations) {
 				if (!(it.key in [ENTITY, OUTPUT]))
-					ErrorManager.error(n.loc, ErrorId.INVALID_ANNOTATION, it.key, "entity")
+					ErrorManager.error(recall(it), ErrorId.INVALID_ANNOTATION, it.key, "entity")
 			} else if (!(it.key in [CONSTRUCTOR, INPUT, OUTPUT]))
-				ErrorManager.error(n.loc, ErrorId.INVALID_ANNOTATION, it.key, "declaration")
+				ErrorManager.error(recall(it), ErrorId.INVALID_ANNOTATION, it.key, "declaration")
 
-			it.value.validate(n.loc)
+			it.value.validate()
 		}
 
 		if (n.atom.name in declaredRelations)
-			ErrorManager.error(n.loc, ErrorId.MULTIPLE_DECLS, n.atom.name)
+			ErrorManager.error(recall(n), ErrorId.MULTIPLE_DECLS, n.atom.name)
 		declaredRelations << n.atom.name
 
 		n.types.findAll { !(it instanceof Primitive) }
 				.findAll { !(it.name in infoActor.allTypes) }
-				.each { ErrorManager.error(it.loc, ErrorId.UNKNOWN_TYPE, it.name) }
+				.each { ErrorManager.error(recall(it), ErrorId.UNKNOWN_TYPE, it.name) }
 		null
 	}
 
 	IVisitable exit(Rule n, Map m) {
 		n.annotations?.each {
 			if (!(it.key in [PLAN]))
-				ErrorManager.error(n.loc, ErrorId.INVALID_ANNOTATION, it.key, "rule")
+				ErrorManager.error(recall(it), ErrorId.INVALID_ANNOTATION, it.key, "rule")
 
-			it.value.validate(n.loc)
+			it.value.validate()
 		}
 
 		def varsInHead = infoActor.vars[n.head]
@@ -91,12 +84,12 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 		n.head.elements.findAll { it instanceof Functional && !(it instanceof Constructor) }
 				.collect { (it as Functional).name }
 				.findAll { it in infoActor.allConstructors }
-				.each { ErrorManager.error(n.loc, ErrorId.CONSTRUCTOR_RULE, it) }
+				.each { ErrorManager.error(recall(n), ErrorId.CONSTRUCTOR_RULE, it) }
 
 		n.head.elements.findAll { it instanceof Relation }
 				.collect { it as Relation }
 				.findAll { it.name in infoActor.allTypes }
-				.each { ErrorManager.error(it.loc, ErrorId.ENTITY_RULE, it.name) }
+				.each { ErrorManager.error(recall(n), ErrorId.ENTITY_RULE, it.name) }
 		null
 	}
 
@@ -114,14 +107,14 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 
 	IVisitable exit(Constructor n, Map m) {
 		if (!(n.entity.name in infoActor.allTypes))
-			ErrorManager.error(n.loc, ErrorId.UNKNOWN_TYPE, n.entity.name)
+			ErrorManager.error(recall(n), ErrorId.UNKNOWN_TYPE, n.entity.name)
 
 		def baseType = infoActor.constructorBaseType[n.name]
 		// TODO should be more general check for predicates
 		if (!baseType)
-			ErrorManager.error(n.loc, ErrorId.CONSTRUCTOR_UNKNOWN, n.name)
+			ErrorManager.error(recall(n), ErrorId.CONSTRUCTOR_UNKNOWN, n.name)
 		if (n.entity.name != baseType && !(baseType in infoActor.superTypesOrdered[n.entity.name]))
-			ErrorManager.error(n.loc, ErrorId.CONSTRUCTOR_INCOMPATIBLE, n.name, n.entity.name)
+			ErrorManager.error(recall(n), ErrorId.CONSTRUCTOR_INCOMPATIBLE, n.name, n.entity.name)
 
 		null
 	}
@@ -130,21 +123,21 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 
 	IVisitable exit(Functional n, Map m) {
 		if (relationArities[n.name] && relationArities[n.name] != n.arity)
-			ErrorManager.error(n.loc, ErrorId.INCONSISTENT_ARITY, n.name)
+			ErrorManager.error(recall(n), ErrorId.INCONSISTENT_ARITY, n.name)
 		relationArities[n.name] = n.arity
 
 		if (n.name.endsWith("__pArTiAl"))
-			ErrorManager.error(n.loc, ErrorId.RESERVED_SUFFIX)
+			ErrorManager.error(recall(n), ErrorId.RESERVED_SUFFIX)
 		null
 	}
 
 	IVisitable exit(Predicate n, Map m) {
 		if (relationArities[n.name] && relationArities[n.name] != n.arity)
-			ErrorManager.error(n.loc, ErrorId.INCONSISTENT_ARITY, n.name)
+			ErrorManager.error(recall(n), ErrorId.INCONSISTENT_ARITY, n.name)
 		relationArities[n.name] = n.arity
 
 		if (n.name.endsWith("__pArTiAl"))
-			ErrorManager.error(n.loc, ErrorId.RESERVED_SUFFIX)
+			ErrorManager.error(recall(n), ErrorId.RESERVED_SUFFIX)
 		null
 	}
 
@@ -161,4 +154,6 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 	IVisitable exit(GroupExpr n, Map m) { null }
 
 	IVisitable exit(VariableExpr n, Map m) { null }
+
+	private static def recall(Object o) { SourceManager.instance.recall(o) }
 }
