@@ -76,6 +76,8 @@ class DatalogSpec extends Specification {
 		"fail27.logic" | ErrorId.MISSING_ARG_ANNOTATION
 		"fail28.logic" | ErrorId.INVALID_ARG_ANNOTATION
 		"fail29.logic" | ErrorId.INVALID_ANNOTATION
+		"fail30.logic" | ErrorId.REFMODE_ARITY
+		"fail31.logic" | ErrorId.REFMODE_KEY
 	}
 
 	def test(String file) {

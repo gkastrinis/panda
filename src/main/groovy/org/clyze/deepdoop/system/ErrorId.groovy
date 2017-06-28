@@ -36,6 +36,8 @@ enum ErrorId {
 	MISSING_ARG_ANNOTATION,
 	INVALID_ARG_ANNOTATION,
 	CONSTRUCTOR_NON_FUNC,
+	REFMODE_ARITY,
+	REFMODE_KEY,
 
 	static Map<ErrorId, String> msgMap
 	static {
@@ -73,6 +75,8 @@ enum ErrorId {
 		msgMap[MISSING_ARG_ANNOTATION] = "Mandatory argument `{0}` for annotation `{1}` is missing"
 		msgMap[INVALID_ARG_ANNOTATION] = "Argument `{0}` for annotation `{1}` is invalid"
 		msgMap[CONSTRUCTOR_NON_FUNC] = "Constructor `{0}` must be a functional relation"
+		msgMap[REFMODE_ARITY] = "Refmode `{0}` arity must be 2"
+		msgMap[REFMODE_KEY] = "Refmode `{0}` key argument must be primitive"
 	}
 
 	static String idToMsg(ErrorId errorId, Object[] values) {

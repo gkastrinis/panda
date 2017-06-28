@@ -63,6 +63,13 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 		n.types.findAll { !(it instanceof Primitive) }
 				.findAll { !(it.name in infoActor.allTypes) }
 				.each { ErrorManager.error(recall(it), ErrorId.UNKNOWN_TYPE, it.name) }
+
+		if (n.atom.name in infoActor.refmodeRelations) {
+			if (n.atom.arity != 2)
+				ErrorManager.error(ErrorId.REFMODE_ARITY, n.atom.name)
+			if (!Primitive.isPrimitive(n.types.first().name))
+				ErrorManager.error(ErrorId.REFMODE_KEY, n.atom.name)
+		}
 		null
 	}
 
