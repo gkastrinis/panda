@@ -26,10 +26,6 @@ class DefaultCodeGenVisitingActor extends PostOrderVisitor<String> implements IA
 	List<Result> results = []
 
 	DefaultCodeGenVisitingActor(File outDir) {
-		// Implemented this way, because Java doesn't allow usage of "this"
-		// keyword before all implicit/explicit calls to super/this have
-		// returned
-		super(null)
 		actor = this
 		this.outDir = outDir
 	}

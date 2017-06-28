@@ -11,13 +11,7 @@ import org.clyze.deepdoop.datalog.element.relation.*
 
 class NormalizeVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<IVisitable>, TDummyActor<IVisitable> {
 
-	NormalizeVisitingActor() {
-		// Implemented this way, because Java doesn't allow usage of "this"
-		// keyword before all implicit/explicit calls to super/this have
-		// returned
-		super(null)
-		actor = this
-	}
+	NormalizeVisitingActor() { actor = this }
 
 	Program exit(Program n, Map<IVisitable, IVisitable> m) {
 		// Flatten components that extend other components

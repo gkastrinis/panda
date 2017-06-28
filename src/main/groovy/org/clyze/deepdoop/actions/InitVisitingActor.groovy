@@ -32,12 +32,7 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 	InfoCollectionVisitingActor acActor
 
 	InitVisitingActor() {
-		// Implemented this way, because Java doesn't allow usage of "this"
-		// keyword before all implicit/explicit calls to super/this have
-		// returned
-		super(null)
 		actor = this
-
 		acActor = new InfoCollectionVisitingActor()
 		autoGenDecls = [:]
 	}

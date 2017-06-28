@@ -35,13 +35,7 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 	// Map functional relations to their arity
 	Map<String, Integer> functionalRelations = [:]
 
-	InfoCollectionVisitingActor() {
-		// Implemented this way, because Java doesn't allow usage of "this"
-		// keyword before all implicit/explicit calls to super/this have
-		// returned
-		super(null)
-		actor = this
-	}
+	InfoCollectionVisitingActor() { actor = this }
 
 	IVisitable exit(Program n, Map m) {
 		declaringAtoms[n] = declaringAtoms[n.globalComp] + (n.comps.values().collect {

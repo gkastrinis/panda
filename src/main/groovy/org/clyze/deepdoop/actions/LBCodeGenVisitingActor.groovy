@@ -21,19 +21,11 @@ import org.clyze.deepdoop.system.Result
 @InheritConstructors
 class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 
-	List<String> alreadyDeclared = []
-
-
-	boolean inDecl
-
-
-	Set<String> globalAtoms
-
-	Component unhandledGlobal
-	Set<String> handledAtoms = [] as Set
-
-	File latestFile
-
+	//boolean inDecl
+	//Set<String> globalAtoms
+	//Component unhandledGlobal
+	//Set<String> handledAtoms = [] as Set
+	//File latestFile
 
 	String visit(Program p) {
 		currentFile = createUniqueFile("out_", ".logic")
@@ -118,6 +110,7 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 
 	String exit(Rule n, Map<IVisitable, String> m) {
 		emit(n.body ? "${m[n.head]} <- ${m[n.body]}." : "${m[n.head]}.")
+		null
 	}
 
 	String exit(AggregationElement n, Map<IVisitable, String> m) {

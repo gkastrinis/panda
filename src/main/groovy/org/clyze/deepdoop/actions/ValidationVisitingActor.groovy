@@ -27,12 +27,7 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 	Set<String> declaredRelations = [] as Set
 	Map<String, Integer> relationArities = [:]
 
-
 	ValidationVisitingActor(InfoCollectionVisitingActor infoActor) {
-		// Implemented this way, because Java doesn't allow usage of "this"
-		// keyword before all implicit/explicit calls to super/this have
-		// returned
-		super(null)
 		actor = this
 		this.infoActor = infoActor
 	}

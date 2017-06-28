@@ -37,10 +37,6 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 	InfoCollectionVisitingActor infoActor
 
 	TypeInferenceVisitingActor(InfoCollectionVisitingActor infoActor) {
-		// Implemented this way, because Java doesn't allow usage of "this"
-		// keyword before all implicit/explicit calls to super/this have
-		// returned
-		super(null)
 		actor = this
 		this.infoActor = infoActor
 	}
@@ -62,7 +58,7 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 		}
 		coalesce()
 
-		actor.exit(n, null)
+		actor.exit(n, m)
 		null
 	}
 
