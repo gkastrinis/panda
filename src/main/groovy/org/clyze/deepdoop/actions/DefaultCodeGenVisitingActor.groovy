@@ -32,6 +32,20 @@ class DefaultCodeGenVisitingActor extends PostOrderVisitor<String> implements IA
 
 	DefaultCodeGenVisitingActor(String outDir) { this(new File(outDir)) }
 
+	//String exit(Program n, Map<IVisitable, String> m) { null }
+
+	//String exit(CmdComponent n, Map<IVisitable, String> m) { null }
+
+	//String exit(Component n, Map<IVisitable, String> m) { null }
+
+	//String exit(Constraint n, Map<IVisitable, String> m) { null }
+
+	//String exit(Declaration n, Map<IVisitable, String> m) { null }
+
+	//String exit(Rule n, Map<IVisitable, String> m) { null }
+
+	//String exit(AggregationElement n, Map<IVisitable, String> m) { null }
+
 	String exit(ComparisonElement n, Map<IVisitable, String> m) { m[n.expr] }
 
 	String exit(GroupElement n, Map<IVisitable, String> m) { "(${m[n.element]})" }
@@ -41,6 +55,16 @@ class DefaultCodeGenVisitingActor extends PostOrderVisitor<String> implements IA
 	}
 
 	String exit(NegationElement n, Map<IVisitable, String> m) { "!${m[n.element]}" }
+
+	//String exit(Relation n, Map<IVisitable, String> m) { null }
+
+	//String exit(Constructor n, Map<IVisitable, String> m) { null }
+
+	//String exit(Entity n, Map<IVisitable, String> m) { null }
+
+	//String exit(Functional n, Map<IVisitable, String> m) { null }
+
+	//String exit(Predicate n, Map<IVisitable, String> m) { null }
 
 	String exit(Primitive n, Map<IVisitable, String> m) { "${n.name}(${m[n.var]})" }
 
@@ -58,9 +82,5 @@ class DefaultCodeGenVisitingActor extends PostOrderVisitor<String> implements IA
 
 	protected void emit(String data) { write currentFile, data }
 
-	protected void emit(List<String> data) { write currentFile, data }
-
 	protected static void write(File file, String data) { file << data << "\n" }
-
-	protected static void write(File file, List<String> data) { data.each { write file, it } }
 }

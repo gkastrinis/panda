@@ -5,16 +5,16 @@ import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.Component
-import org.clyze.deepdoop.datalog.element.*
+import org.clyze.deepdoop.datalog.element.AggregationElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Functional
 import org.clyze.deepdoop.datalog.element.relation.Predicate
 import org.clyze.deepdoop.datalog.element.relation.Relation
-import org.clyze.deepdoop.datalog.expr.*
+import org.clyze.deepdoop.datalog.expr.IExpr
+import org.clyze.deepdoop.datalog.expr.VariableExpr
 import org.clyze.deepdoop.system.Result
 
 import static org.clyze.deepdoop.datalog.Annotation.Kind.*
-import static org.clyze.deepdoop.datalog.element.LogicalElement.LogicType.AND
 
 @InheritConstructors
 class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
@@ -47,20 +47,16 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 		return super.visit(n as Program)
 	}
 
-	//String exit(CmdComponent n, Map<IVisitable, String> m) { null }
-
 	void enter(Component n) {
 		inferenceActor.inferredTypes.each { predName, types ->
 			def params = types.withIndex().collect { type, i -> "x$i:${mapType(type)}" }.join(", ")
 			emit ".decl ${mini(predName)}($params)  // ${types.join(" x ")}"
 		}
-		emit "/////////////////////"
+		emit ""
 		// Special rules to propagate info to supertypes
 		infoActor.directSuperType.each { emit "${mini(it.value)}(x) :- ${mini(it.key)}(x)." }
-		emit "/////////////////////"
+		emit ""
 	}
-
-	//String exit(Constraint n, Map<IVisitable, String> m) { null }
 
 	void enter(Declaration n) {
 		extra = new Extra()
@@ -134,8 +130,6 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 
 		return partialPred
 	}
-
-	//String exit(Entity n, Map<IVisitable, String> m) { null }
 
 	String exit(Functional n, Map<IVisitable, String> m) {
 		return exitRelation(n, m, n.keyExprs + [n.valueExpr])

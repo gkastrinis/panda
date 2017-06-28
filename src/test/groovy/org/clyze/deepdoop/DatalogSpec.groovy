@@ -3,7 +3,9 @@ package org.clyze.deepdoop
 import org.antlr.v4.runtime.ANTLRInputStream
 import org.clyze.deepdoop.actions.LBCodeGenVisitingActor
 import org.clyze.deepdoop.actions.SouffleCodeGenVisitingActor
-import org.clyze.deepdoop.system.*
+import org.clyze.deepdoop.system.Compiler
+import org.clyze.deepdoop.system.DeepDoopException
+import org.clyze.deepdoop.system.ErrorId
 import spock.lang.Specification
 import spock.lang.Unroll
 

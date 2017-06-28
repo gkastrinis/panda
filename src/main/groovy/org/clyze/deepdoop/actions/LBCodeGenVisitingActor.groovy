@@ -2,26 +2,21 @@ package org.clyze.deepdoop.actions
 
 import groovy.transform.InheritConstructors
 import org.clyze.deepdoop.datalog.Program
-import org.clyze.deepdoop.datalog.clause.Constraint
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
-import org.clyze.deepdoop.datalog.component.CmdComponent
 import org.clyze.deepdoop.datalog.component.Component
-import org.clyze.deepdoop.datalog.component.DependencyGraph
-import org.clyze.deepdoop.datalog.element.*
-import org.clyze.deepdoop.datalog.element.relation.*
-import org.clyze.deepdoop.datalog.expr.BinaryExpr
-import org.clyze.deepdoop.datalog.expr.ConstantExpr
-import org.clyze.deepdoop.datalog.expr.GroupExpr
-import org.clyze.deepdoop.datalog.expr.VariableExpr
-import org.clyze.deepdoop.system.ErrorId
-import org.clyze.deepdoop.system.ErrorManager
+import org.clyze.deepdoop.datalog.element.AggregationElement
+import org.clyze.deepdoop.datalog.element.relation.Constructor
+import org.clyze.deepdoop.datalog.element.relation.Functional
+import org.clyze.deepdoop.datalog.element.relation.Predicate
 import org.clyze.deepdoop.system.Result
+
+import static org.clyze.deepdoop.datalog.Annotation.Kind.CONSTRUCTOR
+import static org.clyze.deepdoop.datalog.Annotation.Kind.ENTITY
 
 @InheritConstructors
 class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 
-	//boolean inDecl
 	//Set<String> globalAtoms
 	//Component unhandledGlobal
 	//Set<String> handledAtoms = [] as Set
@@ -77,8 +72,6 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 		return null
 	}*/
 
-	//String exit(CmdComponent n, Map<IVisitable, String> m) { null }
-
 	void enter(Component n) {
 		inferenceActor.inferredTypes.each { predName, types ->
 			def arity = infoActor.functionalRelations[predName]
@@ -86,27 +79,27 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 			if (predName in infoActor.refmodeRelations) {
 				emit "${types.last()}(x), $predName(x:y) -> ${types.first()}(y)."
 			} else if (arity) {
-				def head = (0..<(arity-1)).collect { "x$it" }.join(", ")
-				emit "$predName[$head] = x${arity-1} -> $body."
+				def head = (0..<(arity - 1)).collect { "x$it" }.join(", ")
+				emit "$predName[$head] = x${arity - 1} -> $body."
 			} else {
 				def head = (0..<(types.size())).collect { "x$it" }.join(", ")
 				emit "$predName($head) -> $body."
 			}
 		}
-		emit "/////////////////////"
+		emit ""
 	}
 
 	//String exit(Constraint n, Map<IVisitable, String> m) {
 	//	"${m[n.head]} -> ${m[n.body]}."
 	//}
 
-	//void enter(Declaration n) { inDecl = true }
-
-	//String exit(Declaration n, Map<IVisitable, String> m) {
-	//	inDecl = false
-	//	def typeStr = n.types.collect { m[it] }.join(', ')
-	//	return "${m[n.atom]} -> ${typeStr}."
-	//}
+	String exit(Declaration n, Map<IVisitable, String> m) {
+		if (ENTITY in n.annotations)
+			emit "lang:entity(`${n.atom.name})."
+		if (CONSTRUCTOR in n.annotations)
+			emit "lang:constructor(`${n.atom.name})."
+		null
+	}
 
 	String exit(Rule n, Map<IVisitable, String> m) {
 		emit(n.body ? "${m[n.head]} <- ${m[n.body]}." : "${m[n.head]}.")
@@ -123,25 +116,7 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 	String exit(Constructor n, Map<IVisitable, String> m) {
 		def constructor = exit(n as Functional, m)
 		"$constructor, ${n.entity.name}(${m[n.valueExpr]})"
-		//def functionalStr = exit(n as Functional, m)
-		//if (inDecl) {
-		//	def directive = new Directive("lang:constructor", new Stub(n.entity.name))
-		//	return directive.accept(this) + ".\n" + functionalStr
-		//} else {
-		//def entityStr = exit(n.entity as Entity, m)
-		//return "$functionalStr, $entityStr"
-		//}
 	}
-
-	/*String exit(Entity n, Map<IVisitable, String> m) {
-		def entityStr = exit(n as Predicate, m)
-		//if (inDecl) {
-		//	def directive = new Directive("lang:entity", new Stub(n.name))
-		//	return directive.accept(this) + ".\n" + entityStr
-		//} else {
-		return entityStr
-		//}
-	}*/
 
 	String exit(Functional n, Map<IVisitable, String> m) {
 		if (n.name in infoActor.refmodeRelations) {

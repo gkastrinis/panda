@@ -2,8 +2,6 @@ foo.clone(["x":1, "y":2])
 // Create a copy of the current object. `m` has pairs of field x value (groovy style)
 Relation copy(Map m, boolean duplicateRest = true) { throw new UnsupportedOperationException() }
 
-emit lang: directives
-
 assert to errors
 constructor @past
 predicate graph
