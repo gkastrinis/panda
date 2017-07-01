@@ -92,8 +92,9 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		annotations += pendingAnnotations
 
 		if (ctx.predicateName(0)) {
-			def entity = new Entity(values[ctx.predicateName(0)] as String, new VariableExpr("x"))
-			def supertype = ctx.predicateName(1) ? [new Relation(values[ctx.predicateName(1)] as String)] : []
+			def var = new VariableExpr("x")
+			def entity = new Entity(values[ctx.predicateName(0)] as String, var)
+			def supertype = ctx.predicateName(1) ? [new Entity(values[ctx.predicateName(1)] as String, var)] : []
 			def d = new Declaration(entity, supertype, annotations)
 			currComp.add(d)
 			rec(d, ctx)

@@ -31,3 +31,5 @@ rename Alias // remove Alias
 
 
 t2.logic -> unused
+
+no @entity Animal -> int

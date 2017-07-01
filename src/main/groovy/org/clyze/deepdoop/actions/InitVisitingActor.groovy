@@ -10,6 +10,7 @@ import org.clyze.deepdoop.datalog.element.GroupElement
 import org.clyze.deepdoop.datalog.element.IElement
 import org.clyze.deepdoop.datalog.element.LogicalElement
 import org.clyze.deepdoop.datalog.element.NegationElement
+import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Entity
 import org.clyze.deepdoop.datalog.element.relation.Functional
 import org.clyze.deepdoop.datalog.element.relation.Predicate
@@ -144,6 +145,9 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 	NegationElement exit(NegationElement n, Map<IVisitable, IVisitable> m) {
 		new NegationElement(m[n.element] as IElement)
 	}
+
+	// TODO add check "no past"
+	Constructor exit(Constructor n, Map<IVisitable, IVisitable> m) { n }
 
 	// TODO add check "no past"
 	Entity exit(Entity n, Map<IVisitable, IVisitable> m) { n }
