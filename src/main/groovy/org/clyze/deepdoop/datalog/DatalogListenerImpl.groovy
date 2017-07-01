@@ -47,9 +47,9 @@ class DatalogListenerImpl extends DatalogBaseListener {
 
 	void exitComponent(ComponentContext ctx) {
 		values[ctx.identifierList()].each { String id ->
-			program.addInit(id, currComp.name)
+			program.add id, currComp.name
 		}
-		program.addComponent(currComp)
+		program.add currComp
 		currComp = program.globalComp
 	}
 
@@ -59,23 +59,23 @@ class DatalogListenerImpl extends DatalogBaseListener {
 
 	void exitCmd(CmdContext ctx) {
 		values[ctx.identifierList()].each { String id ->
-			program.addInit(id, currComp.name)
+			program.add id, currComp.name
 		}
-		program.addComponent(currComp)
+		program.add currComp
 		currComp = program.globalComp
 	}
 
 	void exitInitialize(InitializeContext ctx) {
 		values[ctx.identifierList()].each { String id ->
-			program.addInit(id, ctx.IDENTIFIER().text)
+			program.add id, ctx.IDENTIFIER().text
 		}
 	}
 
 	void exitPropagate(PropagateContext ctx) {
-		program.addPropagation(new Propagation(
+		program.add new Propagation(
 				ctx.IDENTIFIER(0).text,
 				(values[ctx.propagationList()] + []) as Set,
-				ctx.IDENTIFIER(1)?.text))
+				ctx.IDENTIFIER(1)?.text)
 	}
 
 	void enterRightArrow(RightArrowContext ctx) {
@@ -95,7 +95,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 			def entity = new Entity(values[ctx.predicateName(0)] as String, new VariableExpr("x"))
 			def supertype = ctx.predicateName(1) ? [new Relation(values[ctx.predicateName(1)] as String)] : []
 			def d = new Declaration(entity, supertype, annotations)
-			currComp.addDecl(d)
+			currComp.add(d)
 			rec(d, ctx)
 		} else if (!(CONSTRAINT in annotations)) {
 			def headCompound = values[ctx.compound(0)] as LogicalElement
@@ -132,7 +132,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 			}
 
 			def d = new Declaration(atom, types, annotations)
-			currComp.addDecl(d)
+			currComp.add(d)
 			rec(d, ctx)
 		} else {
 			def headCompound = values[ctx.compound(0)] as LogicalElement
@@ -159,12 +159,12 @@ class DatalogListenerImpl extends DatalogBaseListener {
 			def head = new LogicalElement(headAtoms)
 			def body = ctx.compound() ? values[ctx.compound()] as LogicalElement : null
 			r = new Rule(head, body, annotations)
-			currComp.addRule(r)
+			currComp.add(r)
 		} else {
 			def head = new LogicalElement(values[ctx.functional()] as Functional)
 			def aggregation = values[ctx.aggregation()] as AggregationElement
 			r = new Rule(head, new LogicalElement(aggregation))
-			currComp.addRule(r)
+			currComp.add(r)
 		}
 		rec(r, ctx)
 	}

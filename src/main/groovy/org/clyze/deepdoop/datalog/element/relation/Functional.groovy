@@ -17,7 +17,7 @@ class Functional extends Relation {
 	List<IExpr> keyExprs
 	IExpr valueExpr
 
-	int getArity() { keyExprs.size() + 1 }
+	int getArity() { (keyExprs ? keyExprs.size() : 0) + 1 }
 
 	Relation newRelation(String stage, List<VariableExpr> vars) {
 		newAlias(name, stage, vars)

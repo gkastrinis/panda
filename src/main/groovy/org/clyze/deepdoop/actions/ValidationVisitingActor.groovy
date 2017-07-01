@@ -81,7 +81,7 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 		varsInBody.findAll { !it.isDontCare() }
 				.findAll { !varsInHead.contains(it) }
 				.findAll { Collections.frequency(varsInBody, it) == 1 }
-				.each { ErrorManager.warn(ErrorId.UNUSED_VAR, it.name) }
+				.each { ErrorManager.warn(recall(n), ErrorId.UNUSED_VAR, it.name) }
 
 		n.head.elements.findAll { it instanceof Functional && !(it instanceof Constructor) }
 				.collect { (it as Functional).name }

@@ -35,9 +35,9 @@ class NormalizeVisitingActor extends PostOrderVisitor<IVisitable> implements IAc
 
 	Component exit(Component n, Map<IVisitable, IVisitable> m) {
 		def newComp = new Component(n.name, n.superComp)
-		n.declarations.each { newComp.addDecl(m[it] as Declaration) }
+		n.declarations.each { newComp.add(m[it] as Declaration) }
 		//n.constraints.each { newComp.addCons(m[it] as Constraint) }
-		n.rules.each { newComp.addRule(m[it] as Rule) }
+		n.rules.each { newComp.add(m[it] as Rule) }
 		return newComp
 	}
 

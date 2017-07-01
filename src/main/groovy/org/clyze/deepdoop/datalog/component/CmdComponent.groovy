@@ -27,13 +27,13 @@ class CmdComponent extends Component {
 		this(name, [] as Set, null, [] as Set, [] as Set)
 	}
 
-	void addDecl(Declaration d) { declarations << d }
+	void add(Declaration d) { declarations << d }
 
 	void addCons(Constraint c) { ErrorManager.error(ErrorId.CMD_CONSTRAINT) }
 
-	void addRule(Rule r) {
+	void add(Rule r) {
 		//if (!r.isDirective) {
-		super.addRule(r)
+		super.add(r)
 		return
 		//}
 /*

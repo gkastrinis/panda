@@ -1,6 +1,7 @@
 package org.clyze.deepdoop.datalog.component
 
 import groovy.transform.Canonical
+import groovy.transform.ToString
 import org.clyze.deepdoop.actions.IVisitable
 import org.clyze.deepdoop.actions.IVisitor
 import org.clyze.deepdoop.datalog.clause.Constraint
@@ -11,6 +12,7 @@ import org.clyze.deepdoop.datalog.element.relation.Entity
 import org.clyze.deepdoop.datalog.element.relation.Predicate
 
 @Canonical
+@ToString(includePackage = false)
 class Component implements IVisitable {
 
 	String name
@@ -32,8 +34,8 @@ class Component implements IVisitable {
 				constructionInfo: [:] << constructionInfo)
 	}
 
-	void addDecl(Declaration d) {
-		if (d.atom instanceof Constructor) {
+	void add(Declaration d) {
+		/*if (d.atom instanceof Constructor) {
 			def c = d.atom as Constructor
 			def name = c.entity.name
 			if (!constructionInfo[name]) constructionInfo[name] = []
@@ -45,13 +47,13 @@ class Component implements IVisitable {
 			assert p.exprs.size() == 1
 			def entity = new Entity(p.name, p.stage, p.exprs.first())
 			d = new Declaration(entity, [] + d.types)
-		}
+		}*/
 		declarations << d
 	}
 
 	void addCons(Constraint c) { constraints << c }
 
-	void addRule(Rule r) { rules << r }
+	void add(Rule r) { rules << r }
 
 	void addAll(Component other) {
 		declarations += other.declarations

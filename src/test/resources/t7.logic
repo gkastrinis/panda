@@ -12,7 +12,6 @@ component First {
 as S0
 
 component Base {
-	lang:derivationType[`P1] = "Derived".
 	P1(x) <- P(x).
 	P1(x) -> string(x).
 }
@@ -36,4 +35,4 @@ S4 { * } -> .
 
 Pred(x) <- W(x).
 
-S2:Z@past(x) <- S1:P1(x).
+//S2:Z@past(x) <- S1:P1(x).

@@ -1,11 +1,13 @@
 package org.clyze.deepdoop.datalog.element.relation
 
 import groovy.transform.Canonical
+import groovy.transform.ToString
 import groovy.transform.TupleConstructor
 import org.clyze.deepdoop.actions.IVisitor
 import org.clyze.deepdoop.datalog.expr.VariableExpr
 
 @Canonical
+@ToString(includeSuper = true, includePackage = false)
 @TupleConstructor(callSuper = true, includeSuperProperties = true, excludes = "stage")
 class Primitive extends Relation {
 

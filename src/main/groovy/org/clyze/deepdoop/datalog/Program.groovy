@@ -16,18 +16,14 @@ class Program implements IVisitable {
 	Map<String, String> inits = [:]
 	Set<Propagation> props = [] as Set
 
-	void addComponent(Component comp) {
-		comps[comp.name] = comp
-	}
+	def add(Component n) { comps[n.name] = n }
 
-	void addInit(String id, String comp) {
+	def add(String id, String compName) {
 		if (inits[id]) ErrorManager.error(ErrorId.ID_IN_USE, id)
-		inits[id] = comp
+		inits[id] = compName
 	}
 
-	void addPropagation(Propagation prop) {
-		props << prop
-	}
+	def add(Propagation n) { props << n }
 
 	def <T> T accept(IVisitor<T> v) { v.visit(this) }
 

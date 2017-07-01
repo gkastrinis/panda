@@ -16,7 +16,7 @@ class Predicate extends Relation {
 
 	List<IExpr> exprs
 
-	int getArity() { exprs.size() }
+	int getArity() { exprs ? exprs.size() : 0 }
 
 	Relation newRelation(String stage, List<VariableExpr> vars) {
 		newAlias(name, stage, vars)
