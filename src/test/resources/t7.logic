@@ -1,37 +1,32 @@
-
-P(x) -> string(x).
-Q(x, y) -> string(x), int(y).
-
-Q(x, y) <- P(x), y = 10.
-Q("hello", 0).
+P("hello").
+Q(x, 42) <- P(x).
 
 component First {
 	Z(x) -> int(x).
 }
-as S0
+as S1
 
 component Base {
 	P1(x) <- P(x).
 	P1(x) -> string(x).
 }
-as S1
+as S2
 
-component Foo : Base {
+First as S3
+
+component Core : Base {
 	P2(x) <- Q(x, _).
-	Z(y) <- Q(_, y).
+	P3(x) <- Q(_, x).
 	W(x) <- Z@past(x).
 }
-as S2, S3
+as S4
 
-Foo as S4
-
-S0 { * } -> S2
-S1 { * } -> .
-S2 { * } -> S3
-S3 { W, P1 } -> S4
-S4 { * } -> .
+S1 { * } -> S2
+S2 { * } -> .
+S3 { * } -> S4
+S4 { W, P1 } -> .
 
 
 Pred(x) <- W(x).
 
-S2:P2@past(x) <- S1:P1(x).
+S4:P2@past(x) <- S2:P1(x).

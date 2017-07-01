@@ -88,11 +88,8 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 				if (!prop.toId && rel in infoActor.declaringAtoms[origP.globalComp])
 					ErrorManager.error(ErrorId.DEP_GLOBAL, rel.name)
 
-				// TODO should not accept on rel (wrong variables)
-				currInitName = prop.toId
-				def head = new LogicalElement(rel.accept(this) as Relation)
-				currInitName = prop.fromId
-				def body = new LogicalElement(rel.accept(this) as Relation)
+				def head = new LogicalElement(rename(rel, prop.toId, true && prop.toId))
+				def body = new LogicalElement(rename(rel, prop.fromId, false))
 				initP.globalComp.rules << new Rule(head, body)
 			}
 		}
@@ -140,14 +137,12 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 
 	Functional exit(Functional n, Map<IVisitable, IVisitable> m) {
 		def (String newName, String newStage) = rename(n)
-		def change = (n.name != newName || n.stage != newStage)
-		change ? new Functional(newName, newStage, n.keyExprs, n.valueExpr) : n
+		new Functional(newName, newStage, n.keyExprs, n.valueExpr)
 	}
 
 	Predicate exit(Predicate n, Map<IVisitable, IVisitable> m) {
 		def (String newName, String newStage) = rename(n)
-		def change = (n.name != newName || n.stage != newStage)
-		change ? new Predicate(newName, newStage, n.exprs) : n
+		new Predicate(newName, newStage, n.exprs)
 	}
 
 	Primitive exit(Primitive n, Map<IVisitable, IVisitable> m) { n }
@@ -215,18 +210,27 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 
 	def rename(Relation r) {
 		// Global Component
-		if (!currInitName) {
-			if (r.stage == "@past") return ["${r.name}:__pAsT", null]
-			else return [r.name, r.stage]
-		}
+		if (!currInitName)
+			return [rename(r, currInitName, r.stage == "@past").name, null]
 
 		def declared = infoActor.declaringAtoms[currComp].collect { it.name }
 
 		if (r.stage == "@past")
-			return ["$currInitName:${r.name}:__pAsT", null]
+			return [rename(r, currInitName, true).name, null]
 		else if (r.name in declared)
-			return ["$currInitName:${r.name}", r.stage]
+			return [rename(r, currInitName, false).name, null]
 		else
-			return [r.name, r.stage]
+			return [r.name, null]
+	}
+
+	static def rename(Relation n, String initName, boolean withPast) {
+		def prefix = initName ? "$initName:" : ""
+		def suffix = withPast ? ":__pAsT" : ""
+		def name = "$prefix${n.name}$suffix"
+		if (n instanceof Functional)
+			return new Functional(name, null, n.keyExprs, n.valueExpr)
+		else if (n instanceof Predicate)
+			return new Predicate(name, null, n.exprs)
+		else throw new RuntimeException()
 	}
 }

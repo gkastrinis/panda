@@ -1,9 +1,16 @@
 TODO
 ====
 check order of rules, predicates etc
+
 constructor @past
 * entities isolated in components
 * constructors >>
+
+multiple inits
+recursive component
+multiple components into component
+
+incomplete type inference in components (due to missing propagations)
 
 
 TEST
@@ -25,11 +32,10 @@ inline predicates
 forAll
 foo(x, y, z){2,1,3}
 predicate graph
+constraints
+init optimize news?
+consistent actors style
 
 foo.clone(["x":1, "y":2])
 // Create a copy of the current object. `m` has pairs of field x value (groovy style)
 Relation copy(Map m, boolean duplicateRest = true) { throw new UnsupportedOperationException() }
-
-constraints
-init optimize news?
-consistent actors style

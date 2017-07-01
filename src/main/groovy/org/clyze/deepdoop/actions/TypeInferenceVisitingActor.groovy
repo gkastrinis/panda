@@ -1,6 +1,5 @@
 package org.clyze.deepdoop.actions
 
-import org.apache.commons.logging.LogFactory
 import org.clyze.deepdoop.datalog.BinOperator
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Declaration
@@ -50,10 +49,8 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 		while (!oldDeltaRules.isEmpty()) {
 			deltaRules = [] as Set
 			oldDeltaRules.each { it.accept(this) }
-			if (oldDeltaRules == deltaRules) {
-				LogFactory.getLog(this.class).warn("TODO fix")
-				break
-			}
+			if (oldDeltaRules == deltaRules)
+				ErrorManager.error(ErrorId.TYPE_INFERENCE_FAIL)
 			oldDeltaRules = deltaRules
 		}
 		coalesce()

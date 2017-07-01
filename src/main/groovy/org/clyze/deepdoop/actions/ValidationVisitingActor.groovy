@@ -78,7 +78,7 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 
 		def varsInHead = infoActor.vars[n.head]
 		def varsInBody = infoActor.vars[n.body]
-		varsInBody.findAll { !it.isDontCare() }
+		varsInBody.findAll { it.name != "_" }
 				.findAll { !varsInHead.contains(it) }
 				.findAll { Collections.frequency(varsInBody, it) == 1 }
 				.each { ErrorManager.warn(recall(n), ErrorId.UNUSED_VAR, it.name) }

@@ -38,6 +38,7 @@ enum ErrorId {
 	CONSTRUCTOR_NON_FUNC,
 	REFMODE_ARITY,
 	REFMODE_KEY,
+	TYPE_INFERENCE_FAIL,
 
 	static Map<ErrorId, String> msgMap
 	static {
@@ -77,6 +78,7 @@ enum ErrorId {
 		msgMap[CONSTRUCTOR_NON_FUNC] = "Constructor `{0}` must be a functional relation"
 		msgMap[REFMODE_ARITY] = "Refmode `{0}` arity must be 2"
 		msgMap[REFMODE_KEY] = "Refmode `{0}` key argument must be primitive"
+		msgMap[TYPE_INFERENCE_FAIL] = "Type inference was inconclusive: cannot reach fixpoint"
 	}
 
 	static String idToMsg(ErrorId errorId, Object[] values) {

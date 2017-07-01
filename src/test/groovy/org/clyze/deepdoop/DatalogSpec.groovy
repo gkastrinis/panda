@@ -27,7 +27,7 @@ class DatalogSpec extends Specification {
 		"t4.logic" | _
 		"t5.logic" | _
 		"t6.logic" | _
-		//"t7.logic"  | _
+		"t7.logic" | _
 		//"t8.logic"  | _
 		//"t9.logic"  | _
 		//"t10.logic" | _
