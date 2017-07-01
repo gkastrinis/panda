@@ -5,9 +5,8 @@ Q(x, y) -> string(x), int(y).
 Q(x, y) <- P(x), y = 10.
 Q("hello", 0).
 
-
 component First {
-	Z(x) -> string(x).
+	Z(x) -> int(x).
 }
 as S0
 
@@ -18,7 +17,7 @@ component Base {
 as S1
 
 component Foo : Base {
-	Z(y) -> int(y).
+	P2(x) <- Q(x, _).
 	Z(y) <- Q(_, y).
 	W(x) <- Z@past(x).
 }
@@ -35,4 +34,4 @@ S4 { * } -> .
 
 Pred(x) <- W(x).
 
-//S2:Z@past(x) <- S1:P1(x).
+S2:P2@past(x) <- S1:P1(x).

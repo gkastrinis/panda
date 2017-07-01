@@ -27,14 +27,12 @@ class CmdComponent extends Component {
 		this(name, [] as Set, null, [] as Set, [] as Set)
 	}
 
-	void add(Declaration d) { declarations << d }
+	//void addCons(Constraint c) { ErrorManager.error(ErrorId.CMD_CONSTRAINT) }
 
-	void addCons(Constraint c) { ErrorManager.error(ErrorId.CMD_CONSTRAINT) }
-
-	void add(Rule r) {
+	//void addFOO(Rule r) {
 		//if (!r.isDirective) {
-		super.add(r)
-		return
+		//super.addFOO(r)
+		//return
 		//}
 /*
 		def d = r.getDirective()
@@ -50,10 +48,10 @@ class CmdComponent extends Component {
 				ErrorManager.error(ErrorId.CMD_DIRECTIVE, name)
 		}
 		*/
-	}
+	//}
 
-	void addAll(Component other) {
-		throw new UnsupportedOperationException("`addAll` is not supported on a command block")
+	void add(Component other) {
+		throw new UnsupportedOperationException("`add` is not supported on a command block")
 	}
 
 	def <T> T accept(IVisitor<T> v) { v.visit(this) }

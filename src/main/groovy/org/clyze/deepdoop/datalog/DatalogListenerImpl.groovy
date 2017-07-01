@@ -73,7 +73,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	void exitPropagate(PropagateContext ctx) {
 		program.add new Propagation(
 				ctx.IDENTIFIER(0).text,
-				(values[ctx.propagationList()] + []) as Set,
+				values[ctx.propagationList()] as Set,
 				ctx.IDENTIFIER(1)?.text)
 	}
 
@@ -95,7 +95,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 			def type = new Type(values[ctx.predicateName(0)] as String, var)
 			def supertype = ctx.predicateName(1) ? [new Type(values[ctx.predicateName(1)] as String, var)] : []
 			def d = new Declaration(type, supertype, annotations)
-			currComp.add(d)
+			currComp.declarations << d
 			rec(d, ctx)
 		} else if (!(CONSTRAINT in annotations)) {
 			def headCompound = values[ctx.compound(0)] as LogicalElement
@@ -132,13 +132,13 @@ class DatalogListenerImpl extends DatalogBaseListener {
 			}
 
 			def d = new Declaration(atom, types, annotations)
-			currComp.add(d)
+			currComp.declarations << d
 			rec(d, ctx)
 		} else {
 			def headCompound = values[ctx.compound(0)] as LogicalElement
 			def bodyCompound = values[ctx.compound(1)] as LogicalElement
 			def c = new Constraint(headCompound, bodyCompound)
-			currComp.addCons(c)
+			currComp.constraints << c
 			rec(c, ctx)
 		}
 	}
@@ -159,12 +159,12 @@ class DatalogListenerImpl extends DatalogBaseListener {
 			def head = new LogicalElement(headAtoms)
 			def body = ctx.compound() ? values[ctx.compound()] as LogicalElement : null
 			r = new Rule(head, body, annotations)
-			currComp.add(r)
+			currComp.rules << r
 		} else {
 			def head = new LogicalElement(values[ctx.functional()] as Functional)
 			def aggregation = values[ctx.aggregation()] as AggregationElement
 			r = new Rule(head, new LogicalElement(aggregation))
-			currComp.add(r)
+			currComp.rules << r
 		}
 		rec(r, ctx)
 	}

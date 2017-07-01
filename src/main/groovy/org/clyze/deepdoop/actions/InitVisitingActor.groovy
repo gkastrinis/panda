@@ -61,61 +61,48 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 		}
 
 		// Propagation rules
-		// TODO add checks
 		origP.props.each { prop ->
+			if (!origP.inits[prop.fromId])
+				ErrorManager.error(ErrorId.UNKNOWN_COMP, prop.fromId)
+			if (!origP.inits[prop.toId] && prop.toId)
+				ErrorManager.error(ErrorId.UNKNOWN_COMP, prop.toId)
+
 			// fromId is the component name after initialization
 			// fromCompTemplate is the component before initialization
 			def fromCompTemplate = origP.comps[origP.inits[prop.fromId]]
 
-			// TODO Should not have duplicates!
 			def declaredRelations = infoActor.declaringAtoms[fromCompTemplate]
 
 			// If preds is null then "*" was used
 			def toPropagate = (prop.preds ?
-					prop.preds.collect { p -> declaredRelations.find { it.name == p }} :
+					prop.preds.collect { p ->
+						def relation = declaredRelations.find { it.name == p }
+						if (!relation)
+							ErrorManager.error(ErrorId.UNKNOWN_PRED, p)
+						return relation
+					} :
 					declaredRelations) as Set
 
 			toPropagate.each { rel ->
+				// Propagate to global scope and relation already declared there
+				if (!prop.toId && rel in infoActor.declaringAtoms[origP.globalComp])
+					ErrorManager.error(ErrorId.DEP_GLOBAL, rel.name)
+
+				// TODO should not accept on rel (wrong variables)
 				currInitName = prop.toId
-				rel.stage = "@past"
 				def head = new LogicalElement(rel.accept(this) as Relation)
 				currInitName = prop.fromId
-				rel.stage = null
 				def body = new LogicalElement(rel.accept(this) as Relation)
-				initP.globalComp.add(new Rule(head, body))
+				initP.globalComp.rules << new Rule(head, body)
 			}
 		}
 
-		initP
-		/*
-			if (fromComp == null)
-				ErrorManager.error(ErrorId.UNKNOWN_COMP, prop.fromId)
-			if (toComp == null)
-				ErrorManager.error(ErrorId.UNKNOWN_COMP, prop.toId)
-
-			prop.preds.each { alias ->
-				def origAtom = declAtoms[alias.orig.name]
-				if (origAtom == null)
-					ErrorManager.error(ErrorId.UNKNOWN_PRED, alias.orig.name)
-
-				// Propagate to global scope
-				if (prop.toId == null) {
-					def (newName, newStage) = rename(atom)
-					// Declared in global space
-					if (globalDeclAtoms.contains(newName))
-						ErrorManager.error(ErrorId.DEP_GLOBAL, newName)
-					// Used in global space (but not declared there)
-					// * might be declared inside a component and then propagated to global
-					// * might be declared in a different (previous) file
-					else if (globalAtoms.contains(newName))
-						ErrorManager.warn(ErrorId.DEP_GLOBAL, newName)
-				}
-		*/
+		return initP
 	}
 
 	Component exit(Component n, Map<IVisitable, IVisitable> m) {
-		n.declarations.each { initP.globalComp.add(m[it] as Declaration) }
-		n.rules.each { initP.globalComp.add(m[it] as Rule) }
+		n.declarations.each { initP.globalComp.declarations << (m[it] as Declaration) }
+		n.rules.each { initP.globalComp.rules << (m[it] as Rule) }
 		null
 	}
 
@@ -147,10 +134,8 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 		new NegationElement(m[n.element] as IElement)
 	}
 
-	// TODO add check "no past"
 	Constructor exit(Constructor n, Map<IVisitable, IVisitable> m) { n }
 
-	// TODO add check "no past"
 	Type exit(Type n, Map<IVisitable, IVisitable> m) { n }
 
 	Functional exit(Functional n, Map<IVisitable, IVisitable> m) {
@@ -174,36 +159,6 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 	GroupExpr exit(GroupExpr n, Map<IVisitable, IVisitable> m) { n }
 
 	VariableExpr exit(VariableExpr n, Map<IVisitable, IVisitable> m) { n }
-
-	/*CmdComponent exit(CmdComponent n, Map<IVisitable, IVisitable> m) {
-		if (!n.rules.isEmpty())
-			ErrorManager.error(ErrorId.CMD_RULE)
-
-		Set<Declaration> newDeclarations = [] as Set
-		n.declarations.each { newDeclarations << (m[it] as Declaration) }
-		Set<Relation> newImports = [] as Set
-		n.imports.each { newImports << (m[it] as Relation) }
-		Set<Relation> newExports = [] as Set
-		n.exports.each { newExports << (m[it] as Relation) }
-		return new CmdComponent(initName, newDeclarations, n.eval, newImports, newExports)
-	}*/
-
-	/*Constructor exit(Constructor n, Map<IVisitable, IVisitable> m) {
-		def (newName, newStage) = rename(n)
-		def newKeyExprs = n.keyExprs.collect { m[it] as IExpr }
-
-		if (!inFrameRules && n.stage == "@past" && n.name in declaredAtoms && !autoGenDecls[newName]) {
-			def decl = curComp.declarations.find { it.atom.name == n.name }
-			if (!decl)
-				ErrorManager.error(ErrorId.NO_DECL_REC, n.name)
-			def newVars = decl.types.collect { it.getVars().first() }
-			def newValueVar = newVars.takeRight(1)
-			def newKeyVars = newVars.dropRight(1)
-			autoGenDecls[newName] = new Declaration(new Functional(newName, null, newKeyVars, newValueVar), decl.types)
-		}
-		def newFunctional = new Functional(newName, newStage, newKeyExprs, m[n.valueExpr] as IExpr)
-		return new Constructor(newFunctional, n.entity)
-	}*/
 
 	/*Predicate exit(Predicate n, Map<IVisitable, IVisitable> m) {
 		if (!inFrameRules && n.stage == "@past" && n.name in declaredAtoms && !autoGenDecls[newName]) {
@@ -261,9 +216,8 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 	def rename(Relation r) {
 		// Global Component
 		if (!currInitName) {
-			//if (r.stage == "@past") return ["${r.name}:__pAsT", null]
-			//else
-			return [r.name, r.stage]
+			if (r.stage == "@past") return ["${r.name}:__pAsT", null]
+			else return [r.name, r.stage]
 		}
 
 		def declared = infoActor.declaringAtoms[currComp].collect { it.name }

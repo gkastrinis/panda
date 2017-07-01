@@ -23,7 +23,7 @@ class NormalizeVisitingActor extends PostOrderVisitor<IVisitable> implements IAc
 				flatComp = currComp.clone()
 				while (currComp.superComp) {
 					currComp = m[n.comps[currComp.superComp]] as Component
-					flatComp.addAll(currComp)
+					flatComp.add(currComp)
 				}
 			} else
 				flatComp = currComp
@@ -35,9 +35,9 @@ class NormalizeVisitingActor extends PostOrderVisitor<IVisitable> implements IAc
 
 	Component exit(Component n, Map<IVisitable, IVisitable> m) {
 		def newComp = new Component(n.name, n.superComp)
-		n.declarations.each { newComp.add(m[it] as Declaration) }
+		n.declarations.each { newComp.declarations << (m[it] as Declaration) }
 		//n.constraints.each { newComp.addCons(m[it] as Constraint) }
-		n.rules.each { newComp.add(m[it] as Rule) }
+		n.rules.each { newComp.rules << (m[it] as Rule) }
 		return newComp
 	}
 
