@@ -12,7 +12,6 @@ import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.CmdComponent
 import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.component.Propagation
-import org.clyze.deepdoop.datalog.component.Propagation.Alias
 import org.clyze.deepdoop.datalog.element.*
 import org.clyze.deepdoop.datalog.element.LogicalElement.LogicType
 import org.clyze.deepdoop.datalog.element.relation.*
@@ -238,21 +237,13 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		values[ctx] = ((values[ctx.identifierList()] ?: []) as List<String>) << ctx.IDENTIFIER().text
 	}
 
-	void exitPropagationElement(PropagationElementContext ctx) {
-		if (ctx.ALL())
-			values[ctx] = new Alias(orig: null, alias: null)
-		else if (ctx.AS()) {
-			def orig = values[ctx.predicateName(0)] as String
-			def alias = values[ctx.predicateName(1)] as String
-			values[ctx] = new Alias(orig: new Relation(orig), alias: new Relation(alias))
-		} else {
-			def orig = values[ctx.predicateName(0)] as String
-			values[ctx] = new Alias(orig: new Relation(orig), alias: null)
-		}
-	}
-
 	void exitPropagationList(PropagationListContext ctx) {
-		values[ctx] = (values[ctx.propagationList()] ?: []) << values[ctx.propagationElement()]
+		if (ctx.ALL())
+			values[ctx] = null
+		else {
+			def val = values[ctx.predicateName()] as String
+			values[ctx] = (values[ctx.propagationList()] ?: []) << val
+		}
 	}
 
 	// Special handling (instead of using "exit")

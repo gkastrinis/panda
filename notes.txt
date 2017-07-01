@@ -27,9 +27,9 @@ init optimize news?
 
 
 constraints
-rename Alias // remove Alias
-
 
 t2.logic -> unused
 
 no @entity Animal -> int
+
+empty propagation list

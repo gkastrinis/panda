@@ -77,15 +77,10 @@ identifierList
 	| identifierList ',' IDENTIFIER
 	;
 
-propagationElement
-	: ALL
-	| predicateName AS predicateName
-	| predicateName
-	;
-
 propagationList
-	: propagationElement
-	| propagationList ',' propagationElement
+    : ALL
+	| predicateName
+	| propagationList ',' predicateName
 	;
 
 value

@@ -70,9 +70,10 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 			// TODO Should not have duplicates!
 			def declaredRelations = infoActor.declaringAtoms[fromCompTemplate]
 
-			def toPropagate = (prop.preds.any { !it.orig } ?
-					declaredRelations :
-					prop.preds.collect { p -> declaredRelations.find { it.name == p.orig.name }}) as Set
+			// If preds is null then "*" was used
+			def toPropagate = (prop.preds ?
+					prop.preds.collect { p -> declaredRelations.find { it.name == p }} :
+					declaredRelations) as Set
 
 			toPropagate.each { rel ->
 				currInitName = prop.toId
