@@ -32,22 +32,7 @@ class Component implements IVisitable {
 				constructionInfo: [:] << constructionInfo)
 	}
 
-	void add(Declaration d) {
-		/*if (d.atom instanceof Constructor) {
-			def c = d.atom as Constructor
-			def name = c.entity.name
-			if (!constructionInfo[name]) constructionInfo[name] = []
-			constructionInfo[name] << new Tuple2(d, c)
-		}
-		// forward patching
-		if (d.atom.name in entities) {
-			def p = d.atom as Predicate
-			assert p.exprs.size() == 1
-			def entity = new Type(p.name, p.stage, p.exprs.first())
-			d = new Declaration(entity, [] + d.types)
-		}*/
-		declarations << d
-	}
+	void add(Declaration d) { declarations << d }
 
 	void addCons(Constraint c) { constraints << c }
 
@@ -58,19 +43,6 @@ class Component implements IVisitable {
 		constraints += other.constraints
 		rules += other.rules
 	}
-
-	/*void markEntity(String entityName) {
-		entities << entityName
-		// backwards patching
-		def decl = declarations.find { it.relation.name == entityName }
-		if (decl != null) {
-			def p = decl.relation as Predicate
-			assert p.exprs.size() == 1
-			def entity = new Type(p.name, p.stage, p.exprs.first())
-			declarations.remove(decl)
-			declarations << new Declaration(entity, decl.types)
-		}
-	}*/
 
 	def <T> T accept(IVisitor<T> v) { v.visit(this) }
 }

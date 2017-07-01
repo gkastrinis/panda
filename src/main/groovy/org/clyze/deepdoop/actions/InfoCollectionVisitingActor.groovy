@@ -17,8 +17,8 @@ import static org.clyze.deepdoop.datalog.Annotation.Kind.TYPE
 
 class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<IVisitable>, TDummyActor<IVisitable> {
 
-	Map<IVisitable, List<Relation>> declaringAtoms = [:].withDefault { [] }
-	Map<IVisitable, List<Relation>> usedAtoms = [:].withDefault { [] }
+	Map<IVisitable, Set<Relation>> declaringAtoms = [:].withDefault { [] as Set }
+	Map<IVisitable, Set<Relation>> usedAtoms = [:].withDefault { [] as Set }
 	Map<IVisitable, List<VariableExpr>> vars = [:].withDefault { [] }
 
 	Set<String> allTypes = [] as Set
@@ -40,9 +40,9 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 	IVisitable exit(Program n, Map m) {
 		declaringAtoms[n] = declaringAtoms[n.globalComp] + (n.comps.values().collect {
 			declaringAtoms[it]
-		}.flatten() as List<Relation>)
+		}.flatten() as Set<Relation>)
 		usedAtoms[n] = usedAtoms[n.globalComp] +
-				(n.comps.collect { usedAtoms[it.value] }.flatten() as List<Relation>)
+				(n.comps.collect { usedAtoms[it.value] }.flatten() as Set<Relation>)
 
 		// Base case for supertypes
 		allTypes.each { type ->
@@ -89,8 +89,8 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 	*/
 
 	IVisitable exit(Component n, Map m) {
-		declaringAtoms[n] = (n.declarations + n.rules).collect { declaringAtoms[it] }.flatten() as List<Relation>
-		usedAtoms[n] = (n.declarations + n.constraints + n.rules).collect { usedAtoms[it] }.flatten() as List<Relation>
+		declaringAtoms[n] = (n.declarations + n.rules).collect { declaringAtoms[it] }.flatten() as Set<Relation>
+		usedAtoms[n] = (n.declarations + n.constraints + n.rules).collect { usedAtoms[it] }.flatten() as Set<Relation>
 		null
 	}
 
@@ -127,16 +127,7 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 		// Atoms used in the head, are declared in the rule
 		declaringAtoms[n] = usedAtoms[n.head]
 		usedAtoms[n] = usedAtoms[n.body]
-		// Atoms that appear in the head of the rule but have the @past stage
-		// are external
-		//declMap.findAll { name, relation -> relation.stage == "@past" }
-		//		.each { name, relation ->
-		//	declMap.remove(name)
-		//	usedMap[name] = relation
-		//}
-		//def headPredicates = n.head.elements
-		//		.findAll { !(it instanceof Constructor) }
-		//		.collect { (it as Relation).name }
+
 		if (n.body)
 			n.body.elements
 					.findAll { it instanceof Relation }

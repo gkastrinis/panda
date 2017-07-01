@@ -1,5 +1,9 @@
 TODO
 ====
+check order of rules, predicates etc
+constructor @past
+* entities isolated in components
+* constructors >>
 
 
 TEST
@@ -8,6 +12,10 @@ t2.logic -> unused
 no @entity Animal -> int
 empty propagation list
 assert to errors
+
+no @past in decl
+@past in rule head only in global (and not in constructor)
+
 
 
 MISC
@@ -25,8 +33,3 @@ Relation copy(Map m, boolean duplicateRest = true) { throw new UnsupportedOperat
 constraints
 init optimize news?
 consistent actors style
-
-constructor @past
-
-* entities isolated in components
-* constructors >>
