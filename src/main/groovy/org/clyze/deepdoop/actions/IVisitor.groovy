@@ -40,7 +40,7 @@ interface IVisitor<T> {
 
 	T visit(Constructor n)
 
-	T visit(Entity n)
+	T visit(Type n)
 
 	T visit(Functional n)
 

@@ -66,9 +66,9 @@ interface IActor<T> {
 
 	T exit(Constructor n, Map<IVisitable, T> m)
 
-	void enter(Entity n)
+	void enter(Type n)
 
-	T exit(Entity n, Map<IVisitable, T> m)
+	T exit(Type n, Map<IVisitable, T> m)
 
 	void enter(Functional n)
 

@@ -1,5 +1,5 @@
-@entity Animal
-@entity Shape
+@Type Animal
+@Type Shape
 
 Foo(x, y) -> Animal(x), string(y).
 Foo(x, y) -> Shape(x), string(y).

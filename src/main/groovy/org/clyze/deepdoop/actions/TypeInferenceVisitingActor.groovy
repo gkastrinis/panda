@@ -17,7 +17,7 @@ import org.clyze.deepdoop.datalog.expr.IExpr
 import org.clyze.deepdoop.system.ErrorId
 import org.clyze.deepdoop.system.ErrorManager
 
-import static org.clyze.deepdoop.datalog.Annotation.Kind.ENTITY
+import static org.clyze.deepdoop.datalog.Annotation.Kind.TYPE
 import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.*
 
 class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<IVisitable>, TDummyActor<IVisitable> {
@@ -76,7 +76,7 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 	}
 
 	IVisitable exit(Declaration n, Map m) {
-		if (!(ENTITY in n.annotations))
+		if (!(TYPE in n.annotations))
 			relationTypes[n.atom.name] = n.types.collect { new ClosedType(it.name) }
 		null
 	}
@@ -144,11 +144,11 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 	//IVisitable exit(NegationElement n, Map m) { null }
 
 	IVisitable exit(Constructor n, Map m) {
-		tmpTypes[n.valueExpr] = new ClosedType(n.entity.name)
+		tmpTypes[n.valueExpr] = new ClosedType(n.type.name)
 		null
 	}
 
-	//IVisitable exit(Entity n, Map m) { null }
+	//IVisitable exit(Type n, Map m) { null }
 
 	IVisitable exit(Functional n, Map m) {
 		exitRelation(n.name, n.keyExprs + [n.valueExpr])

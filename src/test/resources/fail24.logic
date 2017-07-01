@@ -1,2 +1,2 @@
-@entity Animal
+@type Animal
 Animal(1).

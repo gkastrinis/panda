@@ -1,4 +1,4 @@
-@Entity T
+@Type T
 
 @Constructor(refmode=true)
 tref[x, z] = y -> string(x), string(z), T(y).

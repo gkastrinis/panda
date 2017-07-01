@@ -1,6 +1,6 @@
-@Entity Shape
-@Entity Circle -> Shape
-@Entity Triangle -> Shape
+@Type Shape
+@Type Circle -> Shape
+@Type Triangle -> Shape
 @Constructor
 cons:Shape[x] = y -> string(x), Shape(y).
 
@@ -16,4 +16,4 @@ PredT(x, y) <- x = "triangle".
 Pred(x) <- PredC(_, x).
 Pred(x) <- PredT(_, x).
 
-@Entity RightTriangle -> Triangle
+@Type RightTriangle -> Triangle

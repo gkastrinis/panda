@@ -16,10 +16,10 @@ class Annotation {
 	static enum Kind {
 		CONSTRAINT,
 		CONSTRUCTOR,
-		ENTITY,
 		INPUT,
 		OUTPUT,
 		PLAN,
+		TYPE,
 		UNDEF
 	}
 
@@ -38,10 +38,10 @@ class Annotation {
 		switch (name) {
 			case "constraint": return CONSTRAINT
 			case "constructor": return CONSTRUCTOR
-			case "entity": return ENTITY
 			case "input": return INPUT
 			case "output": return OUTPUT
 			case "plan": return PLAN
+			case "type": return TYPE
 			default: return UNDEF
 		}
 	}
@@ -70,12 +70,12 @@ class Annotation {
 			(CONSTRUCTOR): { Annotation a ->
 				OPTIONAL_VALIDATOR.call(a, ["refmode"])
 			},
-			(ENTITY)     : EMPTY_VALIDATOR,
 			(INPUT)      : EMPTY_VALIDATOR,
 			(OUTPUT)     : EMPTY_VALIDATOR,
 			(PLAN)       : { Annotation a ->
 				MANDATORY_VALIDATOR.call(a, ["val"])
 				OPTIONAL_VALIDATOR.call(a, ["val"])
 			},
+			(TYPE)       : EMPTY_VALIDATOR,
 	]
 }

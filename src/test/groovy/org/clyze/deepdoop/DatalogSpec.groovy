@@ -72,7 +72,7 @@ class DatalogSpec extends Specification {
 		"fail21.logic" | ErrorId.INCOMPATIBLE_TYPES
 		"fail22.logic" | ErrorId.INCONSISTENT_ARITY
 		"fail23.logic" | ErrorId.FIXED_TYPE
-		"fail24.logic" | ErrorId.ENTITY_RULE
+		"fail24.logic" | ErrorId.TYPE_RULE
 		"fail25.logic" | ErrorId.MULTIPLE_DECLS
 		"fail26.logic" | ErrorId.NON_EMPTY_ANNOTATION
 		"fail27.logic" | ErrorId.MISSING_ARG_ANNOTATION

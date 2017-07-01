@@ -1,3 +1,3 @@
-@Entity(foo=true, bar="abc", baz=1) AP
+@Type(foo=true, bar="abc", baz=1) AP
 
-@Entity Shape
+@Type Shape

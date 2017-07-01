@@ -1,24 +1,24 @@
-@Entity Animal
-@Entity AP
+@Type Animal
+@Type AP
 
-@Entity Cat -> Animal
-@Entity Dog -> Animal
-@Entity PersianCat -> Cat
+@Type Cat -> Animal
+@Type Dog -> Animal
+@Type PersianCat -> Cat
 
 @Output
 Foo(x, y) -> int(x), string(y).
 
 Foo(y, x) <- x = "J", y = 1.
 
-@Output, @Entity, @Output Bar
+@Output, @Type, @Output Bar
 
 @Output {
 	FooBar(x, y) -> int(x), string(y).
 
-	@Entity Baz
+	@Type Baz
 }
 
-@Output, @Entity {
+@Output, @Type {
 	@Output Dog1
 	Cat1
 }
@@ -30,7 +30,7 @@ Foo(y, x) <- x = "J", y = 1.
 }
 
 
-@Entity T
+@Type T
 
 @Constructor(refmode=true)
 tref[x] = y -> string(x), T(y).

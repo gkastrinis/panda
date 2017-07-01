@@ -60,7 +60,7 @@ class DefaultCodeGenVisitingActor extends PostOrderVisitor<String> implements IA
 
 	//String exit(Constructor n, Map<IVisitable, String> m) { null }
 
-	//String exit(Entity n, Map<IVisitable, String> m) { null }
+	//String exit(Type n, Map<IVisitable, String> m) { null }
 
 	//String exit(Functional n, Map<IVisitable, String> m) { null }
 

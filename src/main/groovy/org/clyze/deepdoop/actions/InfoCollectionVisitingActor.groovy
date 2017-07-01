@@ -13,7 +13,7 @@ import org.clyze.deepdoop.datalog.expr.GroupExpr
 import org.clyze.deepdoop.datalog.expr.VariableExpr
 
 import static org.clyze.deepdoop.datalog.Annotation.Kind.CONSTRUCTOR
-import static org.clyze.deepdoop.datalog.Annotation.Kind.ENTITY
+import static org.clyze.deepdoop.datalog.Annotation.Kind.TYPE
 
 class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<IVisitable>, TDummyActor<IVisitable> {
 
@@ -105,15 +105,15 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 
 		def predName = n.atom.name
 
-		if (ENTITY in n.annotations) {
+		if (TYPE in n.annotations) {
 			allTypes << predName
 			if (!n.types.isEmpty()) directSuperType[predName] = n.types.first().name
 		}
 
 		if (CONSTRUCTOR in n.annotations) {
-			def entity = n.types.last().name
-			constructorBaseType[predName] = entity
-			constructorsPerType[entity] << predName
+			def type = n.types.last().name
+			constructorBaseType[predName] = type
+			constructorsPerType[type] << predName
 
 			def refmode = n.annotations[CONSTRUCTOR].values["refmode"]
 			if (refmode && refmode.type == ConstantExpr.Type.BOOLEAN && refmode.value)
@@ -183,7 +183,7 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 		null
 	}
 
-	IVisitable exit(Entity n, Map m) {
+	IVisitable exit(Type n, Map m) {
 		exit(n as Predicate, m)
 	}
 

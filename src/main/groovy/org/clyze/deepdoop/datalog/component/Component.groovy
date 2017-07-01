@@ -8,8 +8,6 @@ import org.clyze.deepdoop.datalog.clause.Constraint
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.element.relation.Constructor
-import org.clyze.deepdoop.datalog.element.relation.Entity
-import org.clyze.deepdoop.datalog.element.relation.Predicate
 
 @Canonical
 @ToString(includePackage = false)
@@ -45,7 +43,7 @@ class Component implements IVisitable {
 		if (d.atom.name in entities) {
 			def p = d.atom as Predicate
 			assert p.exprs.size() == 1
-			def entity = new Entity(p.name, p.stage, p.exprs.first())
+			def entity = new Type(p.name, p.stage, p.exprs.first())
 			d = new Declaration(entity, [] + d.types)
 		}*/
 		declarations << d
@@ -68,7 +66,7 @@ class Component implements IVisitable {
 		if (decl != null) {
 			def p = decl.relation as Predicate
 			assert p.exprs.size() == 1
-			def entity = new Entity(p.name, p.stage, p.exprs.first())
+			def entity = new Type(p.name, p.stage, p.exprs.first())
 			declarations.remove(decl)
 			declarations << new Declaration(entity, decl.types)
 		}

@@ -28,7 +28,7 @@ enum ErrorId {
 	INCOMPATIBLE_TYPES,
 	RESERVED_SUFFIX,
 	INCONSISTENT_ARITY,
-	ENTITY_RULE,
+	TYPE_RULE,
 	FIXED_TYPE,
 	MULTIPLE_DECLS,
 	DUP_ANNOTATION,
@@ -57,7 +57,7 @@ enum ErrorId {
 		msgMap[UNKNOWN_VAR] = "Unknown var `{0}`"
 		msgMap[UNUSED_VAR] = "Unused var `{0}`"
 		msgMap[UNKNOWN_COMP] = "Unknown component `{0}`"
-		msgMap[MULTIPLE_ENT_DECLS] = "Multiple declarations for Entity `{0}` in previous components"
+		msgMap[MULTIPLE_ENT_DECLS] = "Multiple declarations for Type `{0}` in previous components"
 		msgMap[INVALID_ANNOTATION] = "Invalid annotation `{0}` for `{1}`"
 		msgMap[UNSUPPORTED_TYPE] = "Type `{0}` is currently unsupported"
 		msgMap[UNKNOWN_TYPE] = "Unknown type `{0}`"
@@ -67,7 +67,7 @@ enum ErrorId {
 		msgMap[INCOMPATIBLE_TYPES] = "Incompatible types for relation `{0}` (at index {1})"
 		msgMap[RESERVED_SUFFIX] = "Suffix `__pArTiAl` is reserved and cannot appear in relation names"
 		msgMap[INCONSISTENT_ARITY] = "Relation `{0}` appears with inconsistent arity"
-		msgMap[ENTITY_RULE] = "Entity `{0}` used as a normal relation in rule head"
+		msgMap[TYPE_RULE] = "Type `{0}` used as a normal relation in rule head"
 		msgMap[FIXED_TYPE] = "Type `{0}` (at index {1}) for relation `{2}` is fixed"
 		msgMap[MULTIPLE_DECLS] = "Relation `{0}` has multiple declarations"
 		msgMap[DUP_ANNOTATION] = "Annotation `{0}` appears more than once in clause"

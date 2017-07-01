@@ -1,5 +1,5 @@
-@entity Animal
-@entity Cat -> Animal
+@Type Animal
+@Type Cat -> Animal
 
 Foo[x] = y -> string(x), Animal(y).
 Pred(x, y) -> string(x), Cat(y).

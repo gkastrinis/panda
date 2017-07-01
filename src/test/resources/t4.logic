@@ -1,5 +1,5 @@
-@Entity Animal
-@Entity Cat -> Animal
+@Type Animal
+@Type Cat -> Animal
 
 @Constructor
 cons:A[x] = y -> string(x), Animal(y).

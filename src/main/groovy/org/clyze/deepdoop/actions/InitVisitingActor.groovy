@@ -11,7 +11,7 @@ import org.clyze.deepdoop.datalog.element.IElement
 import org.clyze.deepdoop.datalog.element.LogicalElement
 import org.clyze.deepdoop.datalog.element.NegationElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
-import org.clyze.deepdoop.datalog.element.relation.Entity
+import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.element.relation.Functional
 import org.clyze.deepdoop.datalog.element.relation.Predicate
 import org.clyze.deepdoop.datalog.element.relation.Primitive
@@ -151,7 +151,7 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 	Constructor exit(Constructor n, Map<IVisitable, IVisitable> m) { n }
 
 	// TODO add check "no past"
-	Entity exit(Entity n, Map<IVisitable, IVisitable> m) { n }
+	Type exit(Type n, Map<IVisitable, IVisitable> m) { n }
 
 	Functional exit(Functional n, Map<IVisitable, IVisitable> m) {
 		def (String newName, String newStage) = rename(n)
@@ -235,7 +235,7 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 			// * if @past is used in the head of a rule
 			// * if @past is used for an entity
 			// then fix name accordingly
-			else if (inRuleHead || atom instanceof Entity) {
+			else if (inRuleHead || atom instanceof Type) {
 				if (reverseSet == null)
 					return new Tuple2(name, null)
 				else

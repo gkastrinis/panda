@@ -12,7 +12,7 @@ import org.clyze.deepdoop.datalog.element.relation.Predicate
 import org.clyze.deepdoop.system.Result
 
 import static org.clyze.deepdoop.datalog.Annotation.Kind.CONSTRUCTOR
-import static org.clyze.deepdoop.datalog.Annotation.Kind.ENTITY
+import static org.clyze.deepdoop.datalog.Annotation.Kind.TYPE
 
 @InheritConstructors
 class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
@@ -94,7 +94,7 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 	//}
 
 	String exit(Declaration n, Map<IVisitable, String> m) {
-		if (ENTITY in n.annotations)
+		if (TYPE in n.annotations)
 			emit "lang:entity(`${n.atom.name})."
 		if (CONSTRUCTOR in n.annotations)
 			emit "lang:constructor(`${n.atom.name})."
@@ -115,7 +115,7 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 
 	String exit(Constructor n, Map<IVisitable, String> m) {
 		def constructor = exit(n as Functional, m)
-		"$constructor, ${n.entity.name}(${m[n.valueExpr]})"
+		"$constructor, ${n.type.name}(${m[n.valueExpr]})"
 	}
 
 	String exit(Functional n, Map<IVisitable, String> m) {

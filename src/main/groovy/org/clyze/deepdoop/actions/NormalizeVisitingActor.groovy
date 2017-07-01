@@ -82,7 +82,7 @@ class NormalizeVisitingActor extends PostOrderVisitor<IVisitable> implements IAc
 
 	Constructor exit(Constructor n, Map<IVisitable, IVisitable> m) { n }
 
-	Entity exit(Entity n, Map<IVisitable, IVisitable> m) { n }
+	Type exit(Type n, Map<IVisitable, IVisitable> m) { n }
 
 	Functional exit(Functional n, Map<IVisitable, IVisitable> m) { n }
 

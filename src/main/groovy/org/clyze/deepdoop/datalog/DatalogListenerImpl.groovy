@@ -92,9 +92,9 @@ class DatalogListenerImpl extends DatalogBaseListener {
 
 		if (ctx.predicateName(0)) {
 			def var = new VariableExpr("x")
-			def entity = new Entity(values[ctx.predicateName(0)] as String, var)
-			def supertype = ctx.predicateName(1) ? [new Entity(values[ctx.predicateName(1)] as String, var)] : []
-			def d = new Declaration(entity, supertype, annotations)
+			def type = new Type(values[ctx.predicateName(0)] as String, var)
+			def supertype = ctx.predicateName(1) ? [new Type(values[ctx.predicateName(1)] as String, var)] : []
+			def d = new Declaration(type, supertype, annotations)
 			currComp.add(d)
 			rec(d, ctx)
 		} else if (!(CONSTRAINT in annotations)) {
@@ -113,7 +113,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 				assert p.arity == 1
 				def type = Primitive.isPrimitive(p.name) ?
 						new Primitive(p.name, p.exprs.first() as VariableExpr) :
-						new Entity(p.name, p.stage, p.exprs.first())
+						new Type(p.name, p.stage, p.exprs.first())
 
 				type.accept(infoActor)
 				def vars = infoActor.vars[type]

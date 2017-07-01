@@ -1,1 +1,1 @@
-@Entity, @input Animal
+@Type, @input Animal

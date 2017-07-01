@@ -10,16 +10,16 @@ import org.clyze.deepdoop.datalog.expr.VariableExpr
 @Canonical
 @EqualsAndHashCode(callSuper = true)
 @ToString(includeSuper = true, includePackage = false)
-class Entity extends Predicate {
+class Type extends Predicate {
 
-	Entity(String name, String stage = null, IExpr expr) {
+	Type(String name, String stage = null, IExpr expr) {
 		super(name, stage, [expr])
 	}
 
 	Relation newRelation(String stage, List<VariableExpr> vars) {
 		assert arity == vars.size()
 		assert arity == 1
-		new Entity(name, stage, vars.first())
+		new Type(name, stage, vars.first())
 	}
 
 	Relation newAlias(String name, String stage, List<VariableExpr> vars) {

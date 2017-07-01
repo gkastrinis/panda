@@ -106,11 +106,11 @@ class PostOrderVisitor<T> implements IVisitor<T> {
 		actor.enter(n)
 		n.keyExprs.each { m[it] = it.accept(this) }
 		if (n.valueExpr) m[n.valueExpr] = n.valueExpr.accept(this)
-		m[n.entity] = n.entity.accept(this)
+		m[n.type] = n.type.accept(this)
 		return actor.exit(n, m)
 	}
 
-	T visit(Entity n) {
+	T visit(Type n) {
 		actor.enter(n)
 		n.exprs.each { m[it] = it.accept(this) }
 		return actor.exit(n, m)

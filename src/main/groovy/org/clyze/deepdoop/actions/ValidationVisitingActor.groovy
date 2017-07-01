@@ -42,9 +42,9 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 
 	IVisitable exit(Declaration n, Map m) {
 		n.annotations?.each {
-			if (ENTITY in n.annotations) {
-				if (!(it.key in [ENTITY, OUTPUT]))
-					ErrorManager.error(recall(it), ErrorId.INVALID_ANNOTATION, it.key, "entity")
+			if (TYPE in n.annotations) {
+				if (!(it.key in [TYPE, OUTPUT]))
+					ErrorManager.error(recall(it), ErrorId.INVALID_ANNOTATION, it.key, "type")
 			} else if (!(it.key in [CONSTRUCTOR, INPUT, OUTPUT]))
 				ErrorManager.error(recall(it), ErrorId.INVALID_ANNOTATION, it.key, "declaration")
 
@@ -91,7 +91,7 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 		n.head.elements.findAll { it instanceof Relation }
 				.collect { it as Relation }
 				.findAll { it.name in infoActor.allTypes }
-				.each { ErrorManager.error(recall(n), ErrorId.ENTITY_RULE, it.name) }
+				.each { ErrorManager.error(recall(n), ErrorId.TYPE_RULE, it.name) }
 		null
 	}
 
@@ -108,20 +108,20 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 	IVisitable exit(Relation n, Map m) { null }
 
 	IVisitable exit(Constructor n, Map m) {
-		if (!(n.entity.name in infoActor.allTypes))
-			ErrorManager.error(recall(n), ErrorId.UNKNOWN_TYPE, n.entity.name)
+		if (!(n.type.name in infoActor.allTypes))
+			ErrorManager.error(recall(n), ErrorId.UNKNOWN_TYPE, n.type.name)
 
 		def baseType = infoActor.constructorBaseType[n.name]
 		// TODO should be more general check for predicates
 		if (!baseType)
 			ErrorManager.error(recall(n), ErrorId.CONSTRUCTOR_UNKNOWN, n.name)
-		if (n.entity.name != baseType && !(baseType in infoActor.superTypesOrdered[n.entity.name]))
-			ErrorManager.error(recall(n), ErrorId.CONSTRUCTOR_INCOMPATIBLE, n.name, n.entity.name)
+		if (n.type.name != baseType && !(baseType in infoActor.superTypesOrdered[n.type.name]))
+			ErrorManager.error(recall(n), ErrorId.CONSTRUCTOR_INCOMPATIBLE, n.name, n.type.name)
 
 		null
 	}
 
-	IVisitable exit(Entity n, Map m) { null }
+	IVisitable exit(Type n, Map m) { null }
 
 	IVisitable exit(Functional n, Map m) {
 		if (relationArities[n.name] && relationArities[n.name] != n.arity)

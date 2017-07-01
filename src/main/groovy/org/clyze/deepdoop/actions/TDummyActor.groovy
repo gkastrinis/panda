@@ -66,9 +66,9 @@ trait TDummyActor<T> implements IActor<T> {
 
 	T exit(Constructor n, Map<IVisitable, T> m) { null }
 
-	void enter(Entity n) {}
+	void enter(Type n) {}
 
-	T exit(Entity n, Map<IVisitable, T> m) { null }
+	T exit(Type n, Map<IVisitable, T> m) { null }
 
 	void enter(Functional n) {}
 

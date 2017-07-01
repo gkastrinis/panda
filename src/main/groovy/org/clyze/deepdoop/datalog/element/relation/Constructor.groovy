@@ -11,19 +11,19 @@ import org.clyze.deepdoop.datalog.expr.VariableExpr
 @ToString(includeSuper = true, includePackage = false)
 class Constructor extends Functional {
 
-	// The type of the constructed entity
-	Relation entity
+	// The constructed type
+	Relation type
 
-	Constructor(Functional f, Relation entity) {
+	Constructor(Functional f, Relation type) {
 		super(f.name, f.stage, f.keyExprs, f.valueExpr)
-		this.entity = entity
+		this.type = type
 	}
 
-	def getEntity() {
+	def getType() {
 		// TODO fix check
-		//if (entity instanceof Relation)
-		entity = new Entity(entity.name, valueExpr)
-		return entity
+		//if (type instanceof Relation)
+		type = new Type(type.name, valueExpr)
+		return type
 	}
 
 	Relation newAlias(String name, String stage, List<VariableExpr> vars) {
