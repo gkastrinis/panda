@@ -25,12 +25,12 @@ datalog
 
 
 rightArrow
-    : annotationList? predicateName ('->' predicateName)?
-    | annotationList? compound '->' compound '.'
-    ;
+	: annotationList? predicateName ('->' predicateName)?
+	| annotationList? compound '->' compound '.'
+	;
 
 rightArrowBlock
-    : annotationList '{' rightArrow+ '}' ;
+	: annotationList '{' rightArrow+ '}' ;
 
 leftArrow
 	: annotationList? predicateListExt ('<-' compound)? '.'
@@ -53,7 +53,7 @@ aggregation
 	: AGG '<<' IDENTIFIER '=' predicate '>>' compound ;
 
 construction
-	: NEW '<<' functional AS predicateName '>>' ;
+	: functional NEW predicateName ;
 
 predicateListExt
 	: (predicate | construction)
@@ -84,12 +84,12 @@ propagationList
 	;
 
 value
-    : IDENTIFIER '=' constant ;
+	: IDENTIFIER '=' constant ;
 
 valueList
-    : value
-    | valueList ',' value
-    ;
+	: value
+	| valueList ',' value
+	;
 
 annotation
 	: '@' IDENTIFIER ('(' valueList ')')? ;

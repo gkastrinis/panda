@@ -6,15 +6,15 @@ cons:A[x] = y -> string(x), Animal(y).
 
 Foo(a, b) -> Animal(a), string(b).
 
-//new<<cons:A[z] = x AS Animal>>,
+//cons:A[z] = x new Animal,
 //Foo(x, z) <- z = "bird".
 
 // Animal x string
-new<<cons:A[z] = x AS Animal>>,
+cons:A[z] = x new Animal,
 Foo2(x, z) <- z = "bird".
 
 // string x Cat
-new<<cons:A[z] = x As Cat>>,
+cons:A[z] = x new Cat,
 Bar(z, x) <- z = "kitty".
 
 // string x Animal

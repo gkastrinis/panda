@@ -1,11 +1,5 @@
 TODO
 ====
-constraints
-init optimize news?
-
-new<<foo[x]= y as Bar>>, ...
-foo[x] = y as Bar, ...
-foo[x] = y new Bar, ...
 
 
 TEST
@@ -28,6 +22,8 @@ foo.clone(["x":1, "y":2])
 // Create a copy of the current object. `m` has pairs of field x value (groovy style)
 Relation copy(Map m, boolean duplicateRest = true) { throw new UnsupportedOperationException() }
 
+constraints
+init optimize news?
 consistent actors style
 
 constructor @past

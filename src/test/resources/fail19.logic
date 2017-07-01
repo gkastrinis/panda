@@ -3,5 +3,5 @@
 cons:Name[x] = y -> string(x), Shape(y).
 
 @Type Person
-new<<cons:Shape[x] = y as Shape>>,
+cons:Shape[x] = y new Shape,
 Foo123(y) <- x = "a".
