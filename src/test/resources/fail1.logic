@@ -1,4 +1,3 @@
-
 P(x) -> string(x).
 P("hello").
 
@@ -8,11 +7,13 @@ component Foo {
 }
 as S1
 component Bar {
-	P2(x) <- P1@past(x).
+	P2(x) <- P1@ext(x).
+	P1@ext(x) -> string(x).
 }
 as S2
 component Baz {
-	P3(x) <- P2@past(x).
+	P3(x) <- P2@ext(x).
+	P2@ext(x) -> string(x).
 }
 as S3
 

@@ -29,7 +29,7 @@ class DatalogSpec extends Specification {
 		"t6.logic" | _
 		"t7.logic" | _
 		"t8.logic" | _
-		//"t9.logic"  | _
+		//"t9.logic" | _
 	}
 
 	@Unroll
@@ -45,20 +45,20 @@ class DatalogSpec extends Specification {
 		file           | expectedErrorId
 		/*
 		"fail1.logic"  | ErrorId.DEP_CYCLE
-		"fail2.logic"  | ErrorId.DEP_GLOBAL
 		"fail3.logic"  | ErrorId.CMD_RULE
 		"fail4.logic"  | ErrorId.CMD_CONSTRAINT
 		"fail5.logic"  | ErrorId.CMD_DIRECTIVE
 		"fail6.logic"  | ErrorId.CMD_NO_DECL
 		"fail7.logic"  | ErrorId.CMD_NO_IMPORT
 		"fail8.logic"  | ErrorId.CMD_EVAL
-		"fail9.logic"  | ErrorId.ID_IN_USE
 		"fail10.logic" | ErrorId.UNKNOWN_VAR
+		"fail13.logic" | ErrorId.MULTIPLE_ENT_DECLS
+		*/
+		"fail2.logic"  | ErrorId.DEP_GLOBAL
+		"fail9.logic"  | ErrorId.ID_IN_USE
 		"fail11.logic" | ErrorId.UNKNOWN_COMP
 		"fail12.logic" | ErrorId.UNKNOWN_COMP
-		"fail13.logic" | ErrorId.MULTIPLE_ENT_DECLS
 		"fail14.logic" | ErrorId.UNKNOWN_PRED
-*/
 		"fail15.logic" | ErrorId.NO_DECL_REC
 		"fail16.logic" | ErrorId.CONSTRUCTOR_INCOMPATIBLE
 		"fail17.logic" | ErrorId.CONSTRUCTOR_RULE

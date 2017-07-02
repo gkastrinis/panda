@@ -1,8 +1,8 @@
 TODO
 ====
 check order of rules, predicates etc
-global relations with @past?
 annotation names in grammar
+only one logo
 
 
 TEST
@@ -11,9 +11,8 @@ check in LB/Souffle
 t2.logic -> unused
 no @entity Animal -> int
 empty propagation list
-assert to errors
-
 entities isolated in components
+global relations with @past?
 @past in rule head only in global (and not in constructor)
 multiple components into component
 
@@ -21,7 +20,8 @@ multiple components into component
 
 MISC
 ====
-ord in souffle
+assert to errors
+`ord` in souffle
 inline predicates
 forAll
 foo(x, y, z){2,1,3}

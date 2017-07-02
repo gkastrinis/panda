@@ -1,15 +1,15 @@
 component Foo {
-  A(x) -> .
+	A(x) -> .
 }
 as S1
 
 component Baz {
-  A(x) -> .
+	A(x) -> .
 }
 as S2
 
 component FooBaz {
-  P(x, y) -> int(x), A@past(y).
+	P(x, y) -> int(x), A@ext(y).
 }
 as S3
 

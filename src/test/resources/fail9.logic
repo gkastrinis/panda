@@ -5,8 +5,7 @@ component Foo {
 }
 as S1
 
-command Bar {
-	lang:cmd:EVAL[] = "dir2/run.sh -flag1".
-	lang:cmd:export(`P1).
+component Bar {
+	P2(x) <- x = 10.
 }
 as S2, S1
