@@ -16,5 +16,10 @@ Installation & Testing
       $ git clone git://github.com/gkastrinis/deepdoop.git
       $ cd deepdoop
       $ ./gradlew run -Pargs=myfile.logic
+      
+Documentation
+-------------
+
+http://github.com/gkastrinis/deepdoop/wiki
 
 [badge-license]: https://img.shields.io/badge/license-MIT-green.svg
