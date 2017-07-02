@@ -1,6 +1,6 @@
 [![License MIT][badge-license]](LICENSE.txt)
 
-![DEEPDOOP](/deepdoop2.png)
+![DEEPDOOP](/deepdoop-logo.png)
 =============================
 
 

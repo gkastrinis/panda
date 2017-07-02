@@ -14,7 +14,6 @@ multiple components into component
 
 MISC
 ====
-only one logo
 assert to errors
 `ord` in souffle
 inline predicates
