@@ -1,11 +1,2 @@
-component Foo {
-	P(x) <- Q(x).
-	Bar(x) <- P(x), Bar@ext(x).
-}
-as Foo1, Foo2
-
-Q(1).
-Q(2).
-
-Foo1 {*} -> Foo2
-Foo2 {*} -> .
+@type Animal
+Animal(1).

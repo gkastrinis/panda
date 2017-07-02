@@ -1,12 +1,5 @@
-P(x) -> string(x).
+@Type Shape
+@Constructor
+cons:Shape[x] = y -> string(x), Shape(y).
 
-command Bar {
-	lang:cmd:EVAL[] = "dir2/run.sh -flag1".
-	lang:cmd:export(`P).
-	lang:cmd:import(`A).
-	A(x, y) -> string(x), string(y).
-	lang:cmd:EVAL[] = "dir2/run2.sh -flag1".
-}
-as S
-
-S { * } -> .
+cons:Shape[x] = y <- Ble(a, b).

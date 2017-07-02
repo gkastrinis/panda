@@ -1,7 +1,5 @@
+@Type Animal
 @Type Shape
-@Constructor
-cons:Shape[x] = y -> string(x), Shape(y).
 
-@Type Person
-cons:Shape[x] = y new Person,
-Foo123(y) <- x = "a".
+Foo(x, y) -> Animal(x), string(y).
+Foo(x, y) -> Shape(x), string(y).

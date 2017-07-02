@@ -1,6 +1,0 @@
-@Type Animal
-@Type Cat -> Animal
-
-Foo[x] = y -> string(x), Animal(y).
-Pred(x, y) -> string(x), Cat(y).
-Pred(x, y) <- Foo[x] = y.

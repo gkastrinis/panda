@@ -1,23 +1,13 @@
 P(x) -> string(x).
-P("hello").
+Q(x, y) -> string(x), int(y).
+
+Q(x, y) <- P(x), y = 10.
 
 component Foo {
 	P1(x) <- P(x).
-	P1(x) -> string(x).
+	Z(y) <- Q(_, y).
+	P(x) <- Q(x, _), !Q(_, x).
 }
 as S1
-component Bar {
-	P2(x) <- P1@ext(x).
-	P1@ext(x) -> string(x).
-}
-as S2
-component Baz {
-	P3(x) <- P2@ext(x).
-	P2@ext(x) -> string(x).
-}
-as S3
 
-S1 { * } -> S2
-S2 { * } -> S3
-S3 { * } -> S1
-S3 { P3 } -> .
+S1 { P } -> .

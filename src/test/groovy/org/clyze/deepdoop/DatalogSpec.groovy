@@ -43,39 +43,39 @@ class DatalogSpec extends Specification {
 
 		where:
 		file           | expectedErrorId
+		"fail1.logic"  | ErrorId.DEP_GLOBAL
+		"fail2.logic"  | ErrorId.ID_IN_USE
+		"fail3.logic"  | ErrorId.UNKNOWN_COMP
+		"fail4.logic"  | ErrorId.UNKNOWN_COMP
+		"fail5.logic"  | ErrorId.UNKNOWN_PRED
+		"fail6.logic"  | ErrorId.NO_DECL_REC
+		"fail7.logic"  | ErrorId.CONSTRUCTOR_INCOMPATIBLE
+		"fail8.logic"  | ErrorId.CONSTRUCTOR_RULE
+		"fail9.logic"  | ErrorId.UNKNOWN_TYPE
+		"fail10.logic" | ErrorId.CONSTRUCTOR_UNKNOWN
+		"fail11.logic" | ErrorId.RESERVED_SUFFIX
+		"fail12.logic" | ErrorId.INCOMPATIBLE_TYPES
+		"fail13.logic" | ErrorId.INCONSISTENT_ARITY
+		"fail14.logic" | ErrorId.FIXED_TYPE
+		"fail15.logic" | ErrorId.TYPE_RULE
+		"fail16.logic" | ErrorId.MULTIPLE_DECLS
+		"fail17.logic" | ErrorId.NON_EMPTY_ANNOTATION
+		"fail18.logic" | ErrorId.MISSING_ARG_ANNOTATION
+		"fail19.logic" | ErrorId.INVALID_ARG_ANNOTATION
+		"fail20.logic" | ErrorId.INVALID_ANNOTATION
+		"fail21.logic" | ErrorId.REFMODE_ARITY
+		"fail22.logic" | ErrorId.REFMODE_KEY
 		/*
-		"fail1.logic"  | ErrorId.DEP_CYCLE
-		"fail3.logic"  | ErrorId.CMD_RULE
-		"fail4.logic"  | ErrorId.CMD_CONSTRAINT
-		"fail5.logic"  | ErrorId.CMD_DIRECTIVE
-		"fail6.logic"  | ErrorId.CMD_NO_DECL
-		"fail7.logic"  | ErrorId.CMD_NO_IMPORT
-		"fail8.logic"  | ErrorId.CMD_EVAL
-		"fail10.logic" | ErrorId.UNKNOWN_VAR
-		"fail13.logic" | ErrorId.MULTIPLE_ENT_DECLS
+		"fail100.logic"  | ErrorId.DEP_CYCLE
+		"fail101.logic"  | ErrorId.CMD_RULE
+		"fail102.logic"  | ErrorId.CMD_CONSTRAINT
+		"fail103.logic"  | ErrorId.CMD_DIRECTIVE
+		"fail104.logic"  | ErrorId.CMD_NO_DECL
+		"fail105.logic"  | ErrorId.CMD_NO_IMPORT
+		"fail106.logic"  | ErrorId.CMD_EVAL
+		"fail107.logic" | ErrorId.UNKNOWN_VAR
+		"fail108.logic" | ErrorId.MULTIPLE_ENT_DECLS
 		*/
-		"fail2.logic"  | ErrorId.DEP_GLOBAL
-		"fail9.logic"  | ErrorId.ID_IN_USE
-		"fail11.logic" | ErrorId.UNKNOWN_COMP
-		"fail12.logic" | ErrorId.UNKNOWN_COMP
-		"fail14.logic" | ErrorId.UNKNOWN_PRED
-		"fail15.logic" | ErrorId.NO_DECL_REC
-		"fail16.logic" | ErrorId.CONSTRUCTOR_INCOMPATIBLE
-		"fail17.logic" | ErrorId.CONSTRUCTOR_RULE
-		"fail18.logic" | ErrorId.UNKNOWN_TYPE
-		"fail19.logic" | ErrorId.CONSTRUCTOR_UNKNOWN
-		"fail20.logic" | ErrorId.RESERVED_SUFFIX
-		"fail21.logic" | ErrorId.INCOMPATIBLE_TYPES
-		"fail22.logic" | ErrorId.INCONSISTENT_ARITY
-		"fail23.logic" | ErrorId.FIXED_TYPE
-		"fail24.logic" | ErrorId.TYPE_RULE
-		"fail25.logic" | ErrorId.MULTIPLE_DECLS
-		"fail26.logic" | ErrorId.NON_EMPTY_ANNOTATION
-		"fail27.logic" | ErrorId.MISSING_ARG_ANNOTATION
-		"fail28.logic" | ErrorId.INVALID_ARG_ANNOTATION
-		"fail29.logic" | ErrorId.INVALID_ANNOTATION
-		"fail30.logic" | ErrorId.REFMODE_ARITY
-		"fail31.logic" | ErrorId.REFMODE_KEY
 	}
 
 	def test(String file) {

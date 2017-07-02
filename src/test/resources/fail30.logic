@@ -1,8 +1,0 @@
-@Type T
-
-@Constructor(refmode=true)
-tref[x, z] = y -> string(x), string(z), T(y).
-
-TPred(x, y) <- FooBar(_, x), tref[x, "abc"] = y.
-
-Foo(x, y) -> int(x), string(y).

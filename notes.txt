@@ -7,13 +7,13 @@ only one logo
 
 TEST
 ====
-check in LB/Souffle
+empty propagation list
 t2.logic -> unused
 no @entity Animal -> int
-empty propagation list
-entities isolated in components
-global relations with @past?
 @past in rule head only in global (and not in constructor)
+
+check in LB/Souffle
+entities isolated in components
 multiple components into component
 
 

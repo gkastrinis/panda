@@ -1,7 +1,5 @@
-@Type Shape
-@Constructor
-cons:Name[x] = y -> string(x), Shape(y).
+Foo(x) -> string(x).
+Baz(x) -> string(x).
 
-@Type Person
-cons:Shape[x] = y new Shape,
-Foo123(y) <- x = "a".
+@Plan(val = "1:(1,2)", bar = true)
+Planned(x) <- Foo(x), Baz(x).

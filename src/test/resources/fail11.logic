@@ -1,6 +1,1 @@
-component Foo {
-	P(x) -> string(x).
-}
-as S1
-
-S2 { * } -> .
+Foo__pArTiAl(x, y) -> string(x), int(y).

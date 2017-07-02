@@ -1,3 +1,8 @@
-Bar(x, y) <- x = "aaa", y = 1.
-Foo(x, y) <- x = "abc", y = 12.
-Foo(x) <- x = "def".
+@Type T
+
+@Constructor(refmode=true)
+tref[x] = y -> T(x), T(y).
+
+TPred(x, y) <- FooBar(_, x), tref[x] = y.
+
+Foo(x, y) -> int(x), T(y).

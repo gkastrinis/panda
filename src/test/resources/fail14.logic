@@ -1,7 +1,6 @@
-component Foo {
-	P(x) <- x = 10.
-	BaZ(x, y) <- P(x), P(y).
-	BarBaz(x) <- BaZ(_, x).
-} as Foo1
+@Type Animal
+@Type Cat -> Animal
 
-Foo1 { P, Bar } -> .
+Foo[x] = y -> string(x), Animal(y).
+Pred(x, y) -> string(x), Cat(y).
+Pred(x, y) <- Foo[x] = y.
