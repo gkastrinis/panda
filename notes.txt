@@ -1,25 +1,20 @@
 TODO
 ====
-check order of rules, predicates etc
-annotation names in grammar
-only one logo
 
 
 TEST
 ====
-empty propagation list
+check order of rules, predicates etc
 t2.logic -> unused
-no @entity Animal -> int
 @past in rule head only in global (and not in constructor)
-
 check in LB/Souffle
 entities isolated in components
 multiple components into component
 
 
-
 MISC
 ====
+only one logo
 assert to errors
 `ord` in souffle
 inline predicates
@@ -27,7 +22,6 @@ forAll
 foo(x, y, z){2,1,3}
 predicate graph
 constraints
-init optimize news?
 consistent actors style
 
 foo.clone(["x":1, "y":2])
