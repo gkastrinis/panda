@@ -28,12 +28,8 @@ class DatalogSpec extends Specification {
 		"t5.logic" | _
 		"t6.logic" | _
 		"t7.logic" | _
-		//"t8.logic"  | _
+		"t8.logic" | _
 		//"t9.logic"  | _
-		//"t10.logic" | _
-		//"t11.logic" | _
-		//"t12.logic" | _
-		//"t13.logic" | _
 	}
 
 	@Unroll
@@ -62,8 +58,8 @@ class DatalogSpec extends Specification {
 		"fail12.logic" | ErrorId.UNKNOWN_COMP
 		"fail13.logic" | ErrorId.MULTIPLE_ENT_DECLS
 		"fail14.logic" | ErrorId.UNKNOWN_PRED
-		"fail15.logic" | ErrorId.NO_DECL_REC
 */
+		"fail15.logic" | ErrorId.NO_DECL_REC
 		"fail16.logic" | ErrorId.CONSTRUCTOR_INCOMPATIBLE
 		"fail17.logic" | ErrorId.CONSTRUCTOR_RULE
 		"fail18.logic" | ErrorId.UNKNOWN_TYPE

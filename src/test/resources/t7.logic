@@ -17,7 +17,8 @@ First as S3
 component Core : Base {
 	P2(x) <- Q(x, _).
 	P3(x) <- Q(_, x).
-	W(x) <- Z@past(x).
+	W(x) <- Z@ext(x).
+	Z@ext(x) -> int(x).
 }
 as S4
 
@@ -29,4 +30,4 @@ S4 { W, P1 } -> .
 
 Pred(x) <- W(x).
 
-S4:P2@past(x) <- S2:P1(x).
+S4:P2@ext(x) <- S2:P1(x).

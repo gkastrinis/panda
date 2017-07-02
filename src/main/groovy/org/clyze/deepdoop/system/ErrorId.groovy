@@ -53,7 +53,7 @@ enum ErrorId {
 		msgMap[DEP_GLOBAL] = "Reintroducing relation `{0}` to global space"
 		msgMap[ID_IN_USE] = "Id `{0}` already used to initialize a component"
 		msgMap[NO_DECL] = "Relation `{0}` used but not declared"
-		msgMap[NO_DECL_REC] = "Relation `{0}` used with @past but not declared"
+		msgMap[NO_DECL_REC] = "Relation `{0}` used with @ext but not declared"
 		msgMap[UNKNOWN_PRED] = "Unknown relation `{0}` used in propagation"
 		msgMap[UNKNOWN_VAR] = "Unknown var `{0}`"
 		msgMap[UNUSED_VAR] = "Unused var `{0}`"

@@ -1,27 +1,21 @@
 TODO
 ====
 check order of rules, predicates etc
-
-constructor @past
-* entities isolated in components
-* constructors >>
-
-multiple inits
-recursive component
-multiple components into component
-
-incomplete type inference in components (due to missing propagations)
+global relations with @past?
+annotation names in grammar
 
 
 TEST
 ====
+check in LB/Souffle
 t2.logic -> unused
 no @entity Animal -> int
 empty propagation list
 assert to errors
 
-no @past in decl
+entities isolated in components
 @past in rule head only in global (and not in constructor)
+multiple components into component
 
 
 

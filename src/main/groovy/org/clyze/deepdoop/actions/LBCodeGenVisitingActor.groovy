@@ -122,14 +122,12 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 		if (n.name in infoActor.refmodeRelations) {
 			return "${n.name}(${m[n.valueExpr]}:${m[n.keyExprs.first()]})"
 		} else {
-			//def stage = ((n.stage == null || n.stage == "@past") ? "" : n.stage)
 			def keyParams = n.keyExprs.collect { m[it] }.join(", ")
 			return "${n.name}[$keyParams] = ${m[n.valueExpr]}"
 		}
 	}
 
 	String exit(Predicate n, Map<IVisitable, String> m) {
-		//def stage = ((n.stage == null || n.stage == "@past") ? "" : n.stage)
 		def params = n.exprs.collect { m[it] }.join(", ")
 		return "${n.name}($params)"
 	}

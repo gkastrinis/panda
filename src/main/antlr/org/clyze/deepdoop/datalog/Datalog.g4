@@ -150,7 +150,7 @@ AT_STAGE
 	| '@initial'
 	| '@prev'
 	| '@previous'
-	| '@past'
+	| '@ext'
 	;
 
 CAPACITY

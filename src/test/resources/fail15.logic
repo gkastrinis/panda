@@ -1,6 +1,6 @@
 component Foo {
-P(x) <- Q(x).
-Bar(x) <- P(x), Bar@past(x).
+	P(x) <- Q(x).
+	Bar(x) <- P(x), Bar@ext(x).
 }
 as Foo1, Foo2
 

@@ -1,9 +1,11 @@
 package org.clyze.deepdoop.datalog.element
 
 import groovy.transform.Canonical
+import groovy.transform.ToString
 import org.clyze.deepdoop.actions.IVisitor
 
 @Canonical
+@ToString(includePackage = false)
 class LogicalElement implements IElement {
 
 	enum LogicType {
@@ -24,6 +26,4 @@ class LogicalElement implements IElement {
 	}
 
 	def <T> T accept(IVisitor<T> v) { v.visit(this) }
-
-	String toString() { "$type{ ${elements.join(", ")} }" }
 }
