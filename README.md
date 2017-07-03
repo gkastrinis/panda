@@ -15,7 +15,7 @@ Installation & Testing
 
       $ git clone git://github.com/gkastrinis/deepdoop.git
       $ cd deepdoop
-      $ ./gradlew run -Pargs=myfile.logic
+      $ ./gradlew run -Pargs=src/test/resources/t1.logic
       
 Documentation
 -------------
