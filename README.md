@@ -8,7 +8,7 @@ DeepDoop is a Datalog compiler targeting the [LogiQL](http://www.logicblox.com/t
 System requirements
 -------------------
 
-* Java Developer Kit version 8 or newer. Available from [Oracle's Java website](http://www.oracle.com/java)
+* Java Developer Kit version 8 or newer
 
 Installation & Testing
 ----------------------
