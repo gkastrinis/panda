@@ -74,19 +74,21 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 
 	void enter(Component n) {
 		inferenceActor.inferredTypes.each { predName, types ->
-			def arity = infoActor.functionalRelations[predName]
+			def functionalArity = infoActor.functionalRelations[predName]
 			def body = types.withIndex().collect { type, i -> "${mapTypes(type)}(x$i)" }.join(", ")
 			if (predName in infoActor.refmodeRelations) {
 				emit "${types.last()}(x), $predName(x:y) -> ${types.first()}(y)."
-			} else if (arity) {
-				def head = (0..<(arity - 1)).collect { "x$it" }.join(", ")
-				emit "$predName[$head] = x${arity - 1} -> $body."
+			} else if (functionalArity) {
+				def head = (0..<(functionalArity - 1)).collect { "x$it" }.join(", ")
+				emit "$predName[$head] = x${functionalArity - 1} -> $body."
 			} else {
 				def head = (0..<(types.size())).collect { "x$it" }.join(", ")
 				emit "$predName($head) -> $body."
 			}
 		}
 		emit ""
+		infoActor.allTypes.findAll { !(it in infoActor.directSuperType) }.each { emit "$it(x) -> ." }
+		infoActor.directSuperType.each { emit "${it.key}(x) -> ${it.value}(x)." }
 	}
 
 	//String exit(Constraint n, Map<IVisitable, String> m) {
@@ -96,7 +98,7 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 	String exit(Declaration n, Map<IVisitable, String> m) {
 		if (TYPE in n.annotations)
 			emit "lang:entity(`${n.atom.name})."
-		if (CONSTRUCTOR in n.annotations)
+		if (CONSTRUCTOR in n.annotations && !(n.atom.name in infoActor.refmodeRelations))
 			emit "lang:constructor(`${n.atom.name})."
 		null
 	}

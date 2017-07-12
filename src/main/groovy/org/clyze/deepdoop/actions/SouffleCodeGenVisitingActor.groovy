@@ -53,6 +53,7 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 			emit ".decl ${mini(predName)}($params)  // ${types.join(" x ")}"
 		}
 		emit ""
+		infoActor.allTypes.each { emit ".decl ${mini(it)}(x:symbol)" }
 		// Special rules to propagate info to supertypes
 		infoActor.directSuperType.each { emit "${mini(it.value)}(x) :- ${mini(it.key)}(x)." }
 		emit ""

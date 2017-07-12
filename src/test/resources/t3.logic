@@ -1,4 +1,4 @@
-@Type Animal
+@output, @Type Animal
 @Type AP
 
 @Type Cat -> Animal
@@ -36,3 +36,5 @@ Foo(y, x) <- x = "J", y = 1.
 tref[x] = y -> string(x), T(y).
 
 TPred(x, y) <- FooBar(_, x), tref[x] = y.
+
+FooBar(42, "bla").
