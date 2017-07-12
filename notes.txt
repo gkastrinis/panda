@@ -1,28 +1,26 @@
 TODO
 ====
+aggregations need relations for binding
+assert to errors
+`ord` in souffle
+constraints
+consistent actors style
+sum aggregation?
 
 
 TEST
 ====
 check order of rules, predicates etc
-t2.logic -> unused
 @past in rule head only in global (and not in constructor)
 check in LB/Souffle
+check code from wiki
 entities isolated in components
 multiple components into component
 
 
-MISC
+NEW
 ====
-assert to errors
-`ord` in souffle
-inline predicates
 forAll
+inline predicates
 foo(x, y, z){2,1,3}
 predicate graph
-constraints
-consistent actors style
-
-foo.clone(["x":1, "y":2])
-// Create a copy of the current object. `m` has pairs of field x value (groovy style)
-Relation copy(Map m, boolean duplicateRest = true) { throw new UnsupportedOperationException() }

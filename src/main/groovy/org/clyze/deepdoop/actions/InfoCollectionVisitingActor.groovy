@@ -138,7 +138,7 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 	IVisitable exit(AggregationElement n, Map m) {
 		usedAtoms[n] = usedAtoms[n.body]
 
-		vars[n] = vars[n.body]
+		vars[n] = vars[n.body] + vars[n.predicate]
 		null
 	}
 
