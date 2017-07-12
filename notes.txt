@@ -5,6 +5,7 @@ assert to errors
 `ord` in souffle
 constraints
 consistent actors style
+constructed entity -> capacity
 
 
 TEST

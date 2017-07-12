@@ -98,8 +98,11 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 	String exit(Declaration n, Map<IVisitable, String> m) {
 		if (TYPE in n.annotations)
 			emit "lang:entity(`${n.atom.name})."
-		if (CONSTRUCTOR in n.annotations && !(n.atom.name in infoActor.refmodeRelations))
+		if (CONSTRUCTOR in n.annotations && !(n.atom.name in infoActor.refmodeRelations)) {
+			def type = n.types.last().name
+			emit """lang:physical:storageModel[`$type] = "ScalableSparse"."""
 			emit "lang:constructor(`${n.atom.name})."
+		}
 		null
 	}
 
