@@ -4,7 +4,6 @@ import groovy.transform.InheritConstructors
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
-import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.AggregationElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Functional
@@ -36,43 +35,7 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 		return super.visit(n as Program)
 	}
 
-	/*String exit(Program n, Map<IVisitable, String> m) {
-		n.accept(new PostOrderVisitor<IVisitable>(infoActor))
-		globalAtoms = infoActor.declaringAtoms[n.globalComp].collect { it.name }
-
-		// Check that all used predicates have a declaration/definition
-		def allDeclAtoms = globalAtoms
-		Map<String, Relation> allUsedAtoms = [:]
-		n.comps.values().each {
-			allDeclAtoms += infoActor.declaringAtoms[it].collect { it.name }
-			allUsedAtoms << infoActor.getUsedAtoms(it)
-		}
-		allUsedAtoms.each { usedAtomName, usedAtom ->
-			if (usedAtom.stage == "@past") return
-
-			if (!(usedAtomName in allDeclAtoms))
-				ErrorManager.warn(ErrorId.REL_NO_DECL, usedAtomName)
-		}
-
-		// Compute dependency graph for components (and global predicates)
-		def graph = new DependencyGraph(n)
-
-		unhandledGlobal = new Component(n.globalComp)
-		def currSet = [] as Set
-		graph.getLayers().each { layer ->
-			if (layer.any { it instanceof DependencyGraph.CmdNode }) {
-				emit(n, m, currSet)
-				emitCmd(n, m, layer)
-				currSet = [] as Set
-			} else
-				currSet << layer
-		}
-		emit(n, m, currSet)
-
-		return null
-	}*/
-
-	void enter(Component n) {
+	void enter(Program n) {
 		inferenceActor.inferredTypes.each { predName, types ->
 			def functionalArity = infoActor.functionalRelations[predName]
 			def body = types.withIndex().collect { type, i -> "${mapTypes(type)}(x$i)" }.join(", ")
@@ -87,7 +50,7 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 			}
 		}
 		emit ""
-		infoActor.allTypes.findAll { !(it in infoActor.directSuperType) }.each { emit "$it(x) -> ." }
+		infoActor.allTypes.findAll { !infoActor.directSuperType[it] }.each { emit "$it(x) -> ." }
 		infoActor.directSuperType.each { emit "${it.key}(x) -> ${it.value}(x)." }
 	}
 

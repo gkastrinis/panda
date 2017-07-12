@@ -30,6 +30,8 @@ class ConstantExpr implements IExpr {
 
 	ConstantExpr(String s) {
 		type = Type.STRING
+		// Unquote string literals
+		if (s.startsWith('"') && s.endsWith('"')) s = s[1..-2]
 		value = s
 	}
 

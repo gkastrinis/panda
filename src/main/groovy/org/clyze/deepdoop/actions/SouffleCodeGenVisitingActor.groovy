@@ -4,7 +4,6 @@ import groovy.transform.InheritConstructors
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
-import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.AggregationElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Functional
@@ -22,16 +21,19 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 	static class Extra {
 		// Unbound variable in a rule's head that a constructor will bound eventually
 		Map<IExpr, Constructor> unboundVar = [:]
-		// Atom (predicate, functional or constructor) to full predicate representation
-		Map<Relation, String> atomToFull = [:]
-		// Full predicate to partial predicate mapping
+		// Relation to full relation representation
+		Map<Relation, String> relationToFull = [:]
+		// Full relation to partial relation mapping
 		Map<String, String> fullToPartial = [:]
-		// Predicate depends on unbound vars to take values
-		Map<Relation, List<IExpr>> unboundVarsForAtom = [:]
-		// Atom (predicate or functional) to list of variables
-		Map<Relation, List<IExpr>> varsForAtom = [:]
+		// Relation depends on unbound vars to take values
+		Map<Relation, List<IExpr>> unboundVarsForRelation = [:]
+		// Relation to list of variables
+		Map<Relation, List<IExpr>> varsForRelation = [:]
 	}
 	Extra extra
+
+	// Types for partial relations
+	Set<String> partialDeclarations = [] as Set
 
 	String visit(Program p) {
 		currentFile = createUniqueFile("out_", ".dl")
@@ -47,7 +49,7 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 		return super.visit(n as Program)
 	}
 
-	void enter(Component n) {
+	void enter(Program n) {
 		inferenceActor.inferredTypes.each { predName, types ->
 			def params = types.withIndex().collect { type, i -> "x$i:${mapType(type)}" }.join(", ")
 			emit ".decl ${mini(predName)}($params)  // ${types.join(" x ")}"
@@ -57,6 +59,11 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 		// Special rules to propagate info to supertypes
 		infoActor.directSuperType.each { emit "${mini(it.value)}(x) :- ${mini(it.key)}(x)." }
 		emit ""
+	}
+
+	String exit(Program n, Map<IVisitable, String> m) {
+		partialDeclarations.each { emit ".decl $it" }
+		null
 	}
 
 	void enter(Declaration n) {
@@ -69,7 +76,7 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 		if (OUTPUT in n.annotations)
 			emit ".output ${mini(n.atom.name)}"
 		extra = null
-		return null
+		null
 	}
 
 	void enter(Rule n) {
@@ -87,9 +94,9 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 		if (PLAN in n.annotations) emit ".plan ${n.annotations[PLAN].values["val"]}"
 
 		// Rules for populating full predicates from partial ones
-		extra.unboundVarsForAtom.each { atom, vars ->
-			def atomVars = extra.varsForAtom[atom].collect { (it as VariableExpr).name }
-			def fullPred = extra.atomToFull[atom]
+		extra.unboundVarsForRelation.each { atom, vars ->
+			def atomVars = extra.varsForRelation[atom].collect { (it as VariableExpr).name }
+			def fullPred = extra.relationToFull[atom]
 			def partialPred = extra.fullToPartial[fullPred]
 			def body = ((partialPred ? [partialPred] : []) +
 					vars.collect {
@@ -103,7 +110,7 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 			emit "$fullPred :- $body."
 		}
 		extra.unboundVar.values().each { con ->
-			def fullPred = extra.atomToFull[con]
+			def fullPred = extra.relationToFull[con]
 			def partialPred = extra.fullToPartial[fullPred]
 			emit "$fullPred :- $partialPred."
 		}
@@ -125,8 +132,13 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 		def fullPred = "${mini(n.name)}($allParams)"
 		def boundParams = n.keyExprs.collect { m[it] }.join(", ")
 		def partialPred = "${mini(n.name)}__pArTiAl($boundParams)"
-		extra.atomToFull[n] = fullPred
+		extra.relationToFull[n] = fullPred
 		extra.fullToPartial[fullPred] = partialPred
+		def types = inferenceActor.inferredTypes[n.name]
+		def partialTypes = n.keyExprs.withIndex()
+				.collect { expr, int i -> "var$i:${mapType(types[i])}" }
+				.join(", ")
+		partialDeclarations << "${mini(n.name)}__pArTiAl($partialTypes)"
 
 		return partialPred
 	}
@@ -142,16 +154,22 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 	private String exitRelation(Relation n, Map<IVisitable, String> m, List<IExpr> exprs) {
 		def allParams = exprs.collect { m[it] }.join(", ")
 		def fullPred = "${mini(n.name)}($allParams)"
-		extra.atomToFull[n] = fullPred
-		extra.varsForAtom[n] = exprs
+		extra.relationToFull[n] = fullPred
+		extra.varsForRelation[n] = exprs
 
 		def unboundVars = exprs.findAll { extra.unboundVar[it] }
 
 		if (unboundVars) {
-			extra.unboundVarsForAtom[n] = unboundVars
+			extra.unboundVarsForRelation[n] = unboundVars
 			def boundParams = exprs.findAll { !(it in unboundVars) }.collect { m[it] }.join(", ")
 			def partialPred = boundParams ? "${mini(n.name)}__pArTiAl($boundParams)" : null
 			extra.fullToPartial[fullPred] = partialPred
+			def types = inferenceActor.inferredTypes[n.name]
+			def partialTypes = exprs.withIndex()
+					.findAll { !((it[0] as IExpr) in unboundVars) }
+					.collect { expr, int i -> "var$i:${mapType(types[i])}" }
+					.join(", ")
+			partialDeclarations << "${mini(n.name)}__pArTiAl($partialTypes)"
 			return partialPred
 		} else
 			return fullPred
