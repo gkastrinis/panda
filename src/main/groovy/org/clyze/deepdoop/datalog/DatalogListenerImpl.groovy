@@ -127,7 +127,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 
 			if (CONSTRUCTOR in annotations) {
 				if (!(atom instanceof Functional))
-					ErrorManager.error(loc, ErrorId.CONSTRUCTOR_NON_FUNC, atom.name)
+					ErrorManager.error(loc, ErrorId.CONSTR_NON_FUNC, atom.name)
 				atom = new Constructor(atom as Functional, types.last() as Relation)
 			}
 

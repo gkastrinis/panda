@@ -22,6 +22,7 @@ import org.clyze.deepdoop.datalog.expr.GroupExpr
 import org.clyze.deepdoop.datalog.expr.VariableExpr
 import org.clyze.deepdoop.system.ErrorId
 import org.clyze.deepdoop.system.ErrorManager
+import org.clyze.deepdoop.system.SourceManager
 
 class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<IVisitable>, TDummyActor<IVisitable> {
 
@@ -41,6 +42,8 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 	Set<String> haveDeclaration
 	// Relations in a component that need a declaration (their stage is @ext)
 	Set<String> needDeclaration
+
+	boolean inRuleHead
 
 	InitVisitingActor() { actor = this }
 
@@ -121,6 +124,16 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 		new Declaration(m[n.atom] as Relation, n.types.collect { m[it] as Relation }, n.annotations)
 	}
 
+	// Override to keep track of when in rule's head
+	IVisitable visit(Rule n) {
+		actor.enter(n)
+		inRuleHead = true
+		m[n.head] = n.head.accept(this)
+		inRuleHead = false
+		if (n.body) m[n.body] = n.body.accept(this)
+		return actor.exit(n, m)
+	}
+
 	Rule exit(Rule n, Map<IVisitable, IVisitable> m) {
 		new Rule(m[n.head] as LogicalElement, m[n.body] as LogicalElement, n.annotations)
 	}
@@ -150,12 +163,14 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 	Type exit(Type n, Map<IVisitable, IVisitable> m) { n }
 
 	Functional exit(Functional n, Map<IVisitable, IVisitable> m) {
+		checkExt(n)
 		mayNeedDecl(n)
 		def (String newName, String newStage) = rename(n)
 		new Functional(newName, newStage, n.keyExprs, n.valueExpr)
 	}
 
 	Predicate exit(Predicate n, Map<IVisitable, IVisitable> m) {
+		checkExt(n)
 		mayNeedDecl(n)
 		def (String newName, String newStage) = rename(n)
 		new Predicate(newName, newStage, n.exprs)
@@ -205,5 +220,12 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 	def mayNeedDecl(Relation n) {
 		// Ignore relations in global scope or without an "@ext" stage
 		if (currComp && n.stage == "@ext") needDeclaration << n.name
+	}
+
+	def checkExt(Relation r) {
+		def loc = SourceManager.instance.recall(r)
+		// @ext is allowed in the rule's head only in global space
+		if (inRuleHead && currInitName && r.stage == "@ext")
+			ErrorManager.error(loc, ErrorId.REL_EXT_HEAD, r.name)
 	}
 }

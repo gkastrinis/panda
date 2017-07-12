@@ -10,12 +10,11 @@ sum aggregation?
 
 TEST
 ====
-check order of rules, predicates etc
-@past in rule head only in global (and not in constructor)
 check in LB/Souffle
 check code from wiki
 entities isolated in components
 multiple components into component
+check order of rules, predicates etc
 
 
 NEW

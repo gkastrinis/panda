@@ -86,7 +86,7 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 		n.head.elements.findAll { it instanceof Functional && !(it instanceof Constructor) }
 				.collect { (it as Functional).name }
 				.findAll { it in infoActor.allConstructors }
-				.each { ErrorManager.error(recall(n), ErrorId.CONSTRUCTOR_RULE, it) }
+				.each { ErrorManager.error(recall(n), ErrorId.CONSTR_RULE, it) }
 
 		n.head.elements.findAll { it instanceof Relation }
 				.collect { it as Relation }
@@ -114,9 +114,9 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 		def baseType = infoActor.constructorBaseType[n.name]
 		// TODO should be more general check for predicates
 		if (!baseType)
-			ErrorManager.error(recall(n), ErrorId.CONSTRUCTOR_UNKNOWN, n.name)
+			ErrorManager.error(recall(n), ErrorId.CONSTR_UNKNOWN, n.name)
 		if (n.type.name != baseType && !(baseType in infoActor.superTypesOrdered[n.type.name]))
-			ErrorManager.error(recall(n), ErrorId.CONSTRUCTOR_INCOMP, n.name, n.type.name)
+			ErrorManager.error(recall(n), ErrorId.CONSTR_INCOMP, n.name, n.type.name)
 
 		null
 	}

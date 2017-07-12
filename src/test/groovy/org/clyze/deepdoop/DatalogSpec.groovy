@@ -49,10 +49,10 @@ class DatalogSpec extends Specification {
 		"fail4.logic"  | ErrorId.COMP_UNKNOWN
 		"fail5.logic"  | ErrorId.REL_UNKNOWN
 		"fail6.logic"  | ErrorId.REL_NO_DECL_REC
-		"fail7.logic"  | ErrorId.CONSTRUCTOR_INCOMP
-		"fail8.logic"  | ErrorId.CONSTRUCTOR_RULE
+		"fail7.logic"  | ErrorId.CONSTR_INCOMP
+		"fail8.logic"  | ErrorId.CONSTR_RULE
 		"fail9.logic"  | ErrorId.TYPE_UNKNOWN
-		"fail10.logic" | ErrorId.CONSTRUCTOR_UNKNOWN
+		"fail10.logic" | ErrorId.CONSTR_UNKNOWN
 		"fail11.logic" | ErrorId.SUFFIX_RESERVED
 		"fail12.logic" | ErrorId.TYPE_INCOMP
 		"fail13.logic" | ErrorId.REL_ARITY
@@ -65,6 +65,7 @@ class DatalogSpec extends Specification {
 		"fail20.logic" | ErrorId.ANNOTATION_INVALID
 		"fail21.logic" | ErrorId.REFMODE_ARITY
 		"fail22.logic" | ErrorId.REFMODE_KEY
+		"fail23.logic" | ErrorId.REL_EXT_HEAD
 		/*
 		"fail100.logic"  | ErrorId.DEP_CYCLE
 		"fail101.logic"  | ErrorId.CMD_RULE

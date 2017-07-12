@@ -21,12 +21,14 @@ enum ErrorId {
 	REL_UNKNOWN,
 	REL_NO_DECL_REC,
 	REL_ARITY,
+	REL_EXT_HEAD,
 	VAR_UNKNOWN,
 	VAR_UNUSED,
-	CONSTRUCTOR_UNKNOWN,
-	CONSTRUCTOR_RULE,
-	CONSTRUCTOR_INCOMP,
-	CONSTRUCTOR_NON_FUNC,
+	CONSTR_UNKNOWN,
+	CONSTR_RULE,
+	CONSTR_INCOMP,
+	CONSTR_NON_FUNC,
+	CONSTR_EXT_HEAD,
 	REFMODE_ARITY,
 	REFMODE_KEY,
 
@@ -61,12 +63,14 @@ enum ErrorId {
 		msgMap[REL_UNKNOWN] = "Unknown relation `{0}` used in propagation"
 		msgMap[REL_NO_DECL_REC] = "Undeclared relation `{0}` used with `@ext`"
 		msgMap[REL_ARITY] = "Inconsistent arity for relation `{0}`"
+		msgMap[REL_EXT_HEAD] = "Relation `{0}` used with `@ext` in rule head, inside a component"
 		msgMap[VAR_UNKNOWN] = "Unknown var `{0}`"
 		msgMap[VAR_UNUSED] = "Unused var `{0}`"
-		msgMap[CONSTRUCTOR_UNKNOWN] = "Unknown constructor `{0}`"
-		msgMap[CONSTRUCTOR_RULE] = "Constructor `{0}` used as a normal relation in rule head"
-		msgMap[CONSTRUCTOR_INCOMP] = "Constructor `{0}` used with incompatible type `{1}`"
-		msgMap[CONSTRUCTOR_NON_FUNC] = "Constructor `{0}` must be a functional relation"
+		msgMap[CONSTR_UNKNOWN] = "Unknown constructor `{0}`"
+		msgMap[CONSTR_RULE] = "Constructor `{0}` used as a normal relation in rule head"
+		msgMap[CONSTR_INCOMP] = "Constructor `{0}` used with incompatible type `{1}`"
+		msgMap[CONSTR_NON_FUNC] = "Constructor `{0}` must be a functional relation"
+		msgMap[CONSTR_EXT_HEAD] = "Constructor `{0}` cannot be used with `@ext` in rule head"
 		msgMap[REFMODE_ARITY] = "Refmode `{0}` arity must be 2"
 		msgMap[REFMODE_KEY] = "Refmode `{0}` key argument must be primitive"
 
