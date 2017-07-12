@@ -108,8 +108,9 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 
 	String exit(AggregationElement n, Map<IVisitable, String> m) {
 		def pred = n.predicate.name
-		if (pred == "count" || pred == "min" || pred == "max")
-			"agg<<${m[n.var]} = ${m[n.predicate]}>> ${m[n.body]}"
+		def lbPred = m[n.predicate].replaceFirst("sum", "total")
+		if (pred == "count" || pred == "min" || pred == "max" || pred == "sum")
+			"agg<<${m[n.var]} = $lbPred>> ${m[n.body]}"
 		else null
 	}
 

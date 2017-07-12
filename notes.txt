@@ -5,13 +5,11 @@ assert to errors
 `ord` in souffle
 constraints
 consistent actors style
-sum aggregation?
 
 
 TEST
 ====
 check in LB/Souffle
-check code from wiki
 entities isolated in components
 multiple components into component
 check order of rules, predicates etc

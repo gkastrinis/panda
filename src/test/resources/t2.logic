@@ -1,4 +1,12 @@
-t[1] = c <- agg<<c = count( )>> foo(_,_).
-t[2] = c <- agg<<c = count()>> (foo(_, x), bar(x, _)).
-t[3] = m <- agg<<m = max( ?y)>> bar(_, ?y).
-t[4] = min <- agg<<min = min(x)>> foo(_, x).
+foo(1,2).
+bar(3,4).
+
+@output t[x] = c -> int(x), int(c).
+
+t1[1] = c <- agg<<c = count( )>> foo(_,_).
+t2[2] = c <- agg<<c = count()>> (foo(_, x), bar(x, _)).
+t3[3] = m <- agg<<m = max( ?y)>> bar(_, ?y).
+t4[4] = m <- agg<<m = min(x)>> foo(_, x).
+t5[5] = c <- agg<<c = sum(x)>> foo(x, _).
+
+t(x, y) <- t1[x] = y ; t2[x] = y ; t3[x] = y ; t4[x] = y ; t5[x] = y.

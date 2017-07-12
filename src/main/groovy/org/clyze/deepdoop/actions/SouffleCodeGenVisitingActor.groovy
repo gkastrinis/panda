@@ -111,10 +111,9 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 
 	String exit(AggregationElement n, Map<IVisitable, String> m) {
 		def pred = n.predicate.name
-		if (pred == "count")
-			"${m[n.var]} = $pred : ${m[n.body]}"
-		else if (pred == "min" || pred == "max")
-			"${m[n.var]} = $pred(${m[n.predicate.exprs.first()]}) : ${m[n.body]}"
+		def soufflePred = n.predicate.exprs ? "$pred(${m[n.predicate.exprs.first()]})" : pred
+		if (pred == "count" || pred == "min" || pred == "max" || pred == "sum")
+			"${m[n.var]} = $soufflePred : { ${m[n.body]} }"
 		else null
 	}
 
