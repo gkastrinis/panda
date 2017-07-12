@@ -45,24 +45,24 @@ class DatalogSpec extends Specification {
 		file           | expectedErrorId
 		"fail1.logic"  | ErrorId.DEP_GLOBAL
 		"fail2.logic"  | ErrorId.ID_IN_USE
-		"fail3.logic"  | ErrorId.UNKNOWN_COMP
-		"fail4.logic"  | ErrorId.UNKNOWN_COMP
-		"fail5.logic"  | ErrorId.UNKNOWN_PRED
-		"fail6.logic"  | ErrorId.NO_DECL_REC
-		"fail7.logic"  | ErrorId.CONSTRUCTOR_INCOMPATIBLE
+		"fail3.logic"  | ErrorId.COMP_UNKNOWN
+		"fail4.logic"  | ErrorId.COMP_UNKNOWN
+		"fail5.logic"  | ErrorId.REL_UNKNOWN
+		"fail6.logic"  | ErrorId.REL_NO_DECL_REC
+		"fail7.logic"  | ErrorId.CONSTRUCTOR_INCOMP
 		"fail8.logic"  | ErrorId.CONSTRUCTOR_RULE
-		"fail9.logic"  | ErrorId.UNKNOWN_TYPE
+		"fail9.logic"  | ErrorId.TYPE_UNKNOWN
 		"fail10.logic" | ErrorId.CONSTRUCTOR_UNKNOWN
-		"fail11.logic" | ErrorId.RESERVED_SUFFIX
-		"fail12.logic" | ErrorId.INCOMPATIBLE_TYPES
-		"fail13.logic" | ErrorId.INCONSISTENT_ARITY
-		"fail14.logic" | ErrorId.FIXED_TYPE
+		"fail11.logic" | ErrorId.SUFFIX_RESERVED
+		"fail12.logic" | ErrorId.TYPE_INCOMP
+		"fail13.logic" | ErrorId.REL_ARITY
+		"fail14.logic" | ErrorId.TYPE_FIXED
 		"fail15.logic" | ErrorId.TYPE_RULE
-		"fail16.logic" | ErrorId.MULTIPLE_DECLS
-		"fail17.logic" | ErrorId.NON_EMPTY_ANNOTATION
-		"fail18.logic" | ErrorId.MISSING_ARG_ANNOTATION
-		"fail19.logic" | ErrorId.INVALID_ARG_ANNOTATION
-		"fail20.logic" | ErrorId.INVALID_ANNOTATION
+		"fail16.logic" | ErrorId.DECL_MULTIPLE
+		"fail17.logic" | ErrorId.ANNOTATION_NON_EMPTY
+		"fail18.logic" | ErrorId.ANNOTATION_MISSING_ARG
+		"fail19.logic" | ErrorId.ANNOTATION_INVALID_ARG
+		"fail20.logic" | ErrorId.ANNOTATION_INVALID
 		"fail21.logic" | ErrorId.REFMODE_ARITY
 		"fail22.logic" | ErrorId.REFMODE_KEY
 		/*
@@ -73,7 +73,7 @@ class DatalogSpec extends Specification {
 		"fail104.logic"  | ErrorId.CMD_NO_DECL
 		"fail105.logic"  | ErrorId.CMD_NO_IMPORT
 		"fail106.logic"  | ErrorId.CMD_EVAL
-		"fail107.logic" | ErrorId.UNKNOWN_VAR
+		"fail107.logic" | ErrorId.VAR_UNKNOWN
 		"fail108.logic" | ErrorId.MULTIPLE_ENT_DECLS
 		*/
 	}

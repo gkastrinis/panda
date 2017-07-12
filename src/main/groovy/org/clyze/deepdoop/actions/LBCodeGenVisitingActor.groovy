@@ -51,7 +51,7 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 			if (usedAtom.stage == "@past") return
 
 			if (!(usedAtomName in allDeclAtoms))
-				ErrorManager.warn(ErrorId.NO_DECL, usedAtomName)
+				ErrorManager.warn(ErrorId.REL_NO_DECL, usedAtomName)
 		}
 
 		// Compute dependency graph for components (and global predicates)

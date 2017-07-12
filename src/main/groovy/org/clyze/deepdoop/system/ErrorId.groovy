@@ -3,82 +3,82 @@ package org.clyze.deepdoop.system
 import java.text.MessageFormat
 
 enum ErrorId {
+	ID_IN_USE,
+	SUFFIX_RESERVED,
+	COMP_UNKNOWN,
+	ANNOTATION_INVALID,
+	ANNOTATION_INVALID_ARG,
+	ANNOTATION_MISSING_ARG,
+	ANNOTATION_NON_EMPTY,
+	ANNOTATION_MULTIPLE,
+	DECL_MULTIPLE,
+	TYPE_UNKNOWN,
+	TYPE_UNSUPP,
+	TYPE_FIXED,
+	TYPE_INCOMP,
+	TYPE_INFERENCE_FAIL,
+	TYPE_RULE,
+	REL_UNKNOWN,
+	REL_NO_DECL_REC,
+	REL_ARITY,
+	VAR_UNKNOWN,
+	VAR_UNUSED,
+	CONSTRUCTOR_UNKNOWN,
+	CONSTRUCTOR_RULE,
+	CONSTRUCTOR_INCOMP,
+	CONSTRUCTOR_NON_FUNC,
+	REFMODE_ARITY,
+	REFMODE_KEY,
+
+	MULTIPLE_ENT_DECLS,
+	DEP_CYCLE,
+	DEP_GLOBAL,
 	CMD_CONSTRAINT,
 	CMD_DIRECTIVE,
 	CMD_EVAL,
 	CMD_RULE,
 	CMD_NO_DECL,
 	CMD_NO_IMPORT,
-	DEP_CYCLE,
-	DEP_GLOBAL,
-	ID_IN_USE,
-	NO_DECL,
-	NO_DECL_REC,
-	UNKNOWN_PRED,
-	UNKNOWN_VAR,
-	UNUSED_VAR,
-	UNKNOWN_COMP,
-	MULTIPLE_ENT_DECLS,
-	INVALID_ANNOTATION,
-	UNSUPPORTED_TYPE,
-	UNKNOWN_TYPE,
-	CONSTRUCTOR_UNKNOWN,
-	CONSTRUCTOR_RULE,
-	CONSTRUCTOR_INCOMPATIBLE,
-	INCOMPATIBLE_TYPES,
-	RESERVED_SUFFIX,
-	INCONSISTENT_ARITY,
-	TYPE_RULE,
-	FIXED_TYPE,
-	MULTIPLE_DECLS,
-	DUP_ANNOTATION,
-	NON_EMPTY_ANNOTATION,
-	MISSING_ARG_ANNOTATION,
-	INVALID_ARG_ANNOTATION,
-	CONSTRUCTOR_NON_FUNC,
-	REFMODE_ARITY,
-	REFMODE_KEY,
-	TYPE_INFERENCE_FAIL,
 
 	static Map<ErrorId, String> msgMap
 	static {
 		msgMap = new EnumMap<>(ErrorId.class)
+		msgMap[ID_IN_USE] = "Id `{0}` already in use to initialize a component"
+		msgMap[SUFFIX_RESERVED] = "Suffix `__pArTiAl` is reserved and cannot appear in a relation name"
+		msgMap[COMP_UNKNOWN] = "Unknown component `{0}`"
+		msgMap[ANNOTATION_INVALID] = "Invalid annotation `{0}` for `{1}`"
+		msgMap[ANNOTATION_INVALID_ARG] = "Invalid argument `{0}` for annotation `{1}`"
+		msgMap[ANNOTATION_MISSING_ARG] = "Missing mandatory argument `{0}` for annotation `{1}`"
+		msgMap[ANNOTATION_NON_EMPTY] = "Annotation `{0}` takes no arguments"
+		msgMap[ANNOTATION_MULTIPLE] = "Annotation `{0}` appears more than once in clause"
+		msgMap[DECL_MULTIPLE] = "Multiple declarations for relation `{0}`"
+		msgMap[TYPE_UNKNOWN] = "Unknown type `{0}`"
+		msgMap[TYPE_UNSUPP] = "Unsupported type `{0}` (currently)"
+		msgMap[TYPE_FIXED] = "Fixed type `{0}` (at index {1}) for relation `{2}`"
+		msgMap[TYPE_INCOMP] = "Incompatible types for relation `{0}` (at index {1})"
+		msgMap[TYPE_INFERENCE_FAIL] = "Type inference was inconclusive: cannot reach fixpoint"
+		msgMap[TYPE_RULE] = "Type `{0}` used as a normal relation in rule head"
+		msgMap[REL_UNKNOWN] = "Unknown relation `{0}` used in propagation"
+		msgMap[REL_NO_DECL_REC] = "Undeclared relation `{0}` used with `@ext`"
+		msgMap[REL_ARITY] = "Inconsistent arity for relation `{0}`"
+		msgMap[VAR_UNKNOWN] = "Unknown var `{0}`"
+		msgMap[VAR_UNUSED] = "Unused var `{0}`"
+		msgMap[CONSTRUCTOR_UNKNOWN] = "Unknown constructor `{0}`"
+		msgMap[CONSTRUCTOR_RULE] = "Constructor `{0}` used as a normal relation in rule head"
+		msgMap[CONSTRUCTOR_INCOMP] = "Constructor `{0}` used with incompatible type `{1}`"
+		msgMap[CONSTRUCTOR_NON_FUNC] = "Constructor `{0}` must be a functional relation"
+		msgMap[REFMODE_ARITY] = "Refmode `{0}` arity must be 2"
+		msgMap[REFMODE_KEY] = "Refmode `{0}` key argument must be primitive"
+
+		msgMap[MULTIPLE_ENT_DECLS] = "Multiple declarations for Type `{0}` in previous components"
+		msgMap[DEP_CYCLE] = "Cycle detected in the dependency graph of components"
+		msgMap[DEP_GLOBAL] = "Reintroducing relation `{0}` to global space"
 		msgMap[CMD_CONSTRAINT] = "Constraints are not supported in a command block"
 		msgMap[CMD_DIRECTIVE] = "Invalid directive in command block `{0}`"
 		msgMap[CMD_EVAL] = "EVAL property already specified in command block `{0}`"
 		msgMap[CMD_RULE] = "Normal rules are not supported in a command block"
 		msgMap[CMD_NO_DECL] = "Relation `{0}` is imported but has no declaration"
 		msgMap[CMD_NO_IMPORT] = "Relation `{0}` is declared but not imported"
-		msgMap[DEP_CYCLE] = "Cycle detected in the dependency graph of components"
-		msgMap[DEP_GLOBAL] = "Reintroducing relation `{0}` to global space"
-		msgMap[ID_IN_USE] = "Id `{0}` already used to initialize a component"
-		msgMap[NO_DECL] = "Relation `{0}` used but not declared"
-		msgMap[NO_DECL_REC] = "Relation `{0}` used with @ext but not declared"
-		msgMap[UNKNOWN_PRED] = "Unknown relation `{0}` used in propagation"
-		msgMap[UNKNOWN_VAR] = "Unknown var `{0}`"
-		msgMap[UNUSED_VAR] = "Unused var `{0}`"
-		msgMap[UNKNOWN_COMP] = "Unknown component `{0}`"
-		msgMap[MULTIPLE_ENT_DECLS] = "Multiple declarations for Type `{0}` in previous components"
-		msgMap[INVALID_ANNOTATION] = "Invalid annotation `{0}` for `{1}`"
-		msgMap[UNSUPPORTED_TYPE] = "Type `{0}` is currently unsupported"
-		msgMap[UNKNOWN_TYPE] = "Unknown type `{0}`"
-		msgMap[CONSTRUCTOR_UNKNOWN] = "Unknown constructor `{0}`"
-		msgMap[CONSTRUCTOR_RULE] = "Constructor `{0}` used as a normal relation in rule head"
-		msgMap[CONSTRUCTOR_INCOMPATIBLE] = "Constructor `{0}` used with incompatible type `{1}`"
-		msgMap[INCOMPATIBLE_TYPES] = "Incompatible types for relation `{0}` (at index {1})"
-		msgMap[RESERVED_SUFFIX] = "Suffix `__pArTiAl` is reserved and cannot appear in relation names"
-		msgMap[INCONSISTENT_ARITY] = "Relation `{0}` appears with inconsistent arity"
-		msgMap[TYPE_RULE] = "Type `{0}` used as a normal relation in rule head"
-		msgMap[FIXED_TYPE] = "Type `{0}` (at index {1}) for relation `{2}` is fixed"
-		msgMap[MULTIPLE_DECLS] = "Relation `{0}` has multiple declarations"
-		msgMap[DUP_ANNOTATION] = "Annotation `{0}` appears more than once in clause"
-		msgMap[NON_EMPTY_ANNOTATION] = "Annotation `{0}` takes no arguments"
-		msgMap[MISSING_ARG_ANNOTATION] = "Mandatory argument `{0}` for annotation `{1}` is missing"
-		msgMap[INVALID_ARG_ANNOTATION] = "Argument `{0}` for annotation `{1}` is invalid"
-		msgMap[CONSTRUCTOR_NON_FUNC] = "Constructor `{0}` must be a functional relation"
-		msgMap[REFMODE_ARITY] = "Refmode `{0}` arity must be 2"
-		msgMap[REFMODE_KEY] = "Refmode `{0}` key argument must be primitive"
-		msgMap[TYPE_INFERENCE_FAIL] = "Type inference was inconclusive: cannot reach fixpoint"
 	}
 
 	static String idToMsg(ErrorId errorId, Object[] values) {

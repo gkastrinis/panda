@@ -60,16 +60,16 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 		origP.inits.each { initName, compName ->
 			currInitName = initName
 			currComp = origP.comps[compName]
-			if (!currComp) ErrorManager.error(ErrorId.UNKNOWN_COMP, compName)
+			if (!currComp) ErrorManager.error(ErrorId.COMP_UNKNOWN, compName)
 			currComp.accept(this)
 		}
 
 		// Propagation rules
 		origP.props.each { prop ->
 			if (!origP.inits[prop.fromId])
-				ErrorManager.error(ErrorId.UNKNOWN_COMP, prop.fromId)
+				ErrorManager.error(ErrorId.COMP_UNKNOWN, prop.fromId)
 			if (!origP.inits[prop.toId] && prop.toId)
-				ErrorManager.error(ErrorId.UNKNOWN_COMP, prop.toId)
+				ErrorManager.error(ErrorId.COMP_UNKNOWN, prop.toId)
 
 			// fromId is the component name after initialization
 			// fromCompTemplate is the component before initialization
@@ -82,7 +82,7 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 					prop.preds.collect { p ->
 						def relation = declaredRelations.find { it.name == p }
 						if (!relation)
-							ErrorManager.error(ErrorId.UNKNOWN_PRED, p)
+							ErrorManager.error(ErrorId.REL_UNKNOWN, p)
 						return relation
 					} :
 					declaredRelations) as Set
@@ -111,7 +111,7 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 		n.rules.each { initP.globalComp.rules << (m[it] as Rule) }
 
 		needDeclaration?.findAll { !(it in haveDeclaration) }?.each {
-			ErrorManager.error(ErrorId.NO_DECL_REC, it)
+			ErrorManager.error(ErrorId.REL_NO_DECL_REC, it)
 		}
 		null
 	}

@@ -48,20 +48,20 @@ class Annotation {
 
 	private static final def EMPTY_VALIDATOR = { Annotation a ->
 		def loc = SourceManager.instance.recall(a)
-		if (!a.values.isEmpty()) ErrorManager.error(loc, ErrorId.NON_EMPTY_ANNOTATION, a.kind)
+		if (!a.values.isEmpty()) ErrorManager.error(loc, ErrorId.ANNOTATION_NON_EMPTY, a.kind)
 	}
 
 	private static final def MANDATORY_VALIDATOR = { Annotation a, List<String> mandatory ->
 		def loc = SourceManager.instance.recall(a)
 		mandatory.findAll { !(it in a.values) }.each {
-			ErrorManager.error(loc, ErrorId.MISSING_ARG_ANNOTATION, it, a.kind)
+			ErrorManager.error(loc, ErrorId.ANNOTATION_MISSING_ARG, it, a.kind)
 		}
 	}
 
 	private static final def OPTIONAL_VALIDATOR = { Annotation a, List<String> optional ->
 		def loc = SourceManager.instance.recall(a)
 		a.values.findAll { !(it.key in optional) }.each {
-			ErrorManager.error(loc, ErrorId.INVALID_ARG_ANNOTATION, it.key, a.kind)
+			ErrorManager.error(loc, ErrorId.ANNOTATION_INVALID_ARG, it.key, a.kind)
 		}
 	}
 

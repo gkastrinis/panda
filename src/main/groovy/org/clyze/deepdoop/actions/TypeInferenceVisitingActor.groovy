@@ -122,9 +122,9 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 		}
 
 		if (prev instanceof ClosedType)
-			ErrorManager.error(ErrorId.FIXED_TYPE, prev.value, i, relation)
+			ErrorManager.error(ErrorId.TYPE_FIXED, prev.value, i, relation)
 		if (curr instanceof ClosedType)
-			ErrorManager.error(ErrorId.FIXED_TYPE, curr.value, i, relation)
+			ErrorManager.error(ErrorId.TYPE_FIXED, curr.value, i, relation)
 	}
 
 	IVisitable exit(AggregationElement n, Map m) {
@@ -223,7 +223,7 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 							t1 = superT
 
 							if (!superT)
-								ErrorManager.error(ErrorId.INCOMPATIBLE_TYPES, relation, i)
+								ErrorManager.error(ErrorId.TYPE_INCOMP, relation, i)
 						}
 						coalescedType = t1
 					} else

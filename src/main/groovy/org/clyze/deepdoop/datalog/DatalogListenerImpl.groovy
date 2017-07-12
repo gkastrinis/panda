@@ -87,7 +87,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		def loc = rec(null, ctx)
 
 		def annotations = gatherAnnotations(ctx.annotationList())
-		annotations.keySet().each { if (it in pendingAnnotations) ErrorManager.warn(loc, ErrorId.DUP_ANNOTATION, it) }
+		annotations.keySet().each { if (it in pendingAnnotations) ErrorManager.warn(loc, ErrorId.ANNOTATION_MULTIPLE, it) }
 		annotations += pendingAnnotations
 
 		if (ctx.predicateName(0)) {
@@ -120,7 +120,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 				assert vars.size() == 1
 				def index = varsInHead.indexOf(vars.first())
 				if (index == -1)
-					ErrorManager.error(loc, ErrorId.UNKNOWN_VAR, vars.first().name)
+					ErrorManager.error(loc, ErrorId.VAR_UNKNOWN, vars.first().name)
 				types[index] = type
 			}
 			assert types.size() == varsInHead.size()
@@ -262,7 +262,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		def annotation = new Annotation(ctx.annotation().IDENTIFIER().text, valueMap)
 		def map = gatherAnnotations(ctx.annotationList())
 		def loc = rec(annotation, ctx)
-		if (annotation.kind in map) ErrorManager.warn(loc, ErrorId.DUP_ANNOTATION, annotation.kind)
+		if (annotation.kind in map) ErrorManager.warn(loc, ErrorId.ANNOTATION_MULTIPLE, annotation.kind)
 		return map << [(annotation.kind): annotation]
 	}
 
