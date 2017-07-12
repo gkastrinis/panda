@@ -16,11 +16,6 @@ import static org.clyze.deepdoop.datalog.Annotation.Kind.TYPE
 @InheritConstructors
 class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 
-	//Set<String> globalAtoms
-	//Component unhandledGlobal
-	//Set<String> handledAtoms = [] as Set
-	//File latestFile
-
 	String visit(Program p) {
 		currentFile = createUniqueFile("out_", ".logic")
 		results << new Result(Result.Kind.LOGIC, currentFile)
@@ -204,9 +199,6 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 	}*/
 
 	static def mapTypes(def name) {
-		// TODO clean this
-		if (!name) throw new RuntimeException("********")
-		if (name == "int") return "int[64]"
-		return name
+		name == "int" ? "int[64]" : name
 	}
 }

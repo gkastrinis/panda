@@ -61,12 +61,6 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 
 	IVisitable exit(Program n, Map m) { n }
 
-	//IVisitable exit(CmdComponent n, Map m) { null }
-
-	//IVisitable exit(Component n, Map m) { null }
-
-	//IVisitable exit(Constraint n, Map m) { null }
-
 	void enter(Declaration n) {
 		tmpTypes.clear()
 		exprIndices.clear()
@@ -132,20 +126,10 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 		null
 	}
 
-	//IVisitable exit(ComparisonElement n, Map m) { null }
-
-	//IVisitable exit(GroupElement n, Map m) { null }
-
-	//IVisitable exit(LogicalElement n, Map m) { null }
-
-	//IVisitable exit(NegationElement n, Map m) { null }
-
 	IVisitable exit(Constructor n, Map m) {
 		tmpTypes[n.valueExpr] = new ClosedType(n.type.name)
 		null
 	}
-
-	//IVisitable exit(Type n, Map m) { null }
 
 	IVisitable exit(Functional n, Map m) {
 		exitRelation(n.name, n.keyExprs + [n.valueExpr])
@@ -165,8 +149,6 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 		}
 	}
 
-	//IVisitable exit(Primitive n, Map m) { null }
-
 	IVisitable exit(BinaryExpr n, Map m) {
 		def commonType = tmpTypes[n.left].join(tmpTypes[n.right])
 		if (n.op != BinOperator.EQ && n.op != BinOperator.NEQ) {
@@ -184,10 +166,6 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 		else if (n.type == STRING) tmpTypes[n] = ClosedType.STR_T
 		null
 	}
-
-	//IVisitable exit(GroupExpr n, Map m) { null }
-
-	//IVisitable exit(VariableExpr n, Map m) { null }
 
 	private void coalesce() {
 		relationTypes.each { relation, types ->

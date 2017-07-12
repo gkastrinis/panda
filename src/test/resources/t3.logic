@@ -1,4 +1,4 @@
-@output, @Type Animal
+@Output, @Type Animal
 @Type AP
 
 @Type Cat -> Animal

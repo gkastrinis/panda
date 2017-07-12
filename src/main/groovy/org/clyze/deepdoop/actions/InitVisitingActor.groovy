@@ -32,8 +32,6 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 	Program origP
 	// Program after initialization (only a global component)
 	Program initP
-	// ToId x Set<FromId>
-	Map<String, Set<String>> reverseProps = [:].withDefault { [] as Set }
 	// Current name used for initialization
 	String currInitName
 	// Current component being initialized
@@ -56,7 +54,6 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 		initP = new Program(new Component())
 
 		origP.accept(infoActor)
-		origP.props.each { reverseProps[it.toId] << it.fromId }
 
 		// Initializations
 		origP.globalComp.accept(this)

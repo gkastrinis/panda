@@ -1,9 +1,9 @@
 TODO
 ====
-output relations from components
-aggregations need relations for binding
-consistent actors style
+entities isolated in components
 assert to errors
+output relations from components
+aggregations need relations for binding?
 `ord` in souffle
 constraints
 constructed entity -> capacity
@@ -13,9 +13,6 @@ TEST
 ====
 t1.logic -> souffle
 t6.logic -> souffle
-foo(x, y) -> string(y), int(x).
-entities isolated in components
-multiple components into component
 check order of rules, predicates etc
 
 

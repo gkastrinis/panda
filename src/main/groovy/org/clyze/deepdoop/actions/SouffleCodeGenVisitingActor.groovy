@@ -178,8 +178,6 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 	static def mini(def name) { name.replace ":", "_" }
 
 	static def mapType(def name) {
-		// TODO clean this
-		if (!name) throw new RuntimeException("********")
 		name == "string" ? "symbol" : "number"
 	}
 }

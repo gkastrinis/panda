@@ -34,12 +34,6 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 
 	IVisitable exit(Program n, Map m) { n }
 
-	IVisitable exit(CmdComponent n, Map m) { null }
-
-	IVisitable exit(Component n, Map m) { null }
-
-	IVisitable exit(Constraint n, Map m) { null }
-
 	IVisitable exit(Declaration n, Map m) {
 		n.annotations?.each {
 			if (TYPE in n.annotations) {
@@ -95,18 +89,6 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 		null
 	}
 
-	IVisitable exit(AggregationElement n, Map m) { null }
-
-	IVisitable exit(ComparisonElement n, Map m) { null }
-
-	IVisitable exit(GroupElement n, Map m) { null }
-
-	IVisitable exit(LogicalElement n, Map m) { null }
-
-	IVisitable exit(NegationElement n, Map m) { null }
-
-	IVisitable exit(Relation n, Map m) { null }
-
 	IVisitable exit(Constructor n, Map m) {
 		if (!(n.type.name in infoActor.allTypes))
 			ErrorManager.error(recall(n), ErrorId.TYPE_UNKNOWN, n.type.name)
@@ -120,8 +102,6 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 
 		null
 	}
-
-	IVisitable exit(Type n, Map m) { null }
 
 	IVisitable exit(Functional n, Map m) {
 		if (relationArities[n.name] && relationArities[n.name] != n.arity)
@@ -143,19 +123,11 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IA
 		null
 	}
 
-	IVisitable exit(Primitive n, Map m) { null }
-
-	IVisitable exit(BinaryExpr n, Map m) { null }
-
 	IVisitable exit(ConstantExpr n, Map m) {
 		if (n.type == REAL || n.type == BOOLEAN)
 			ErrorManager.error(ErrorId.TYPE_UNSUPP, n.type as String)
 		null
 	}
-
-	IVisitable exit(GroupExpr n, Map m) { null }
-
-	IVisitable exit(VariableExpr n, Map m) { null }
 
 	private static def recall(Object o) { SourceManager.instance.recall(o) }
 }
