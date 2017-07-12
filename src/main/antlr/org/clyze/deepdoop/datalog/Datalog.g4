@@ -96,7 +96,7 @@ annotation
 
 annotationList
 	: annotation
-	| annotationList ',' annotation
+	| annotationList annotation
 	;
 
 lineMarker

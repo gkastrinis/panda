@@ -1,4 +1,4 @@
-@Output, @Type Animal
+@Output @Type Animal
 @Type AP
 
 @Type Cat -> Animal
@@ -10,7 +10,7 @@ Foo(x, y) -> int(x), string(y).
 
 Foo(y, x) <- x = "J", y = 1.
 
-@Output, @Type, @Output Bar
+@Output @Type @Output Bar
 
 @Output {
 	FooBar(x, y) -> int(x), string(y).
@@ -18,7 +18,7 @@ Foo(y, x) <- x = "J", y = 1.
 	@Type Baz
 }
 
-@Output, @Type {
+@Output @Type {
 	@Output Dog1
 	Cat1
 }
