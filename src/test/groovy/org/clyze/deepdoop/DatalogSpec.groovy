@@ -66,6 +66,9 @@ class DatalogSpec extends Specification {
 		"fail21.logic" | ErrorId.REFMODE_ARITY
 		"fail22.logic" | ErrorId.REFMODE_KEY
 		"fail23.logic" | ErrorId.REL_EXT_HEAD
+		"fail24.logic" | ErrorId.DECL_MALFORMED
+		"fail25.logic" | ErrorId.DECL_MALFORMED
+		"fail26.logic" | ErrorId.DECL_MALFORMED
 		/*
 		"fail100.logic"  | ErrorId.DEP_CYCLE
 		"fail101.logic"  | ErrorId.CMD_RULE

@@ -12,6 +12,7 @@ enum ErrorId {
 	ANNOTATION_NON_EMPTY,
 	ANNOTATION_MULTIPLE,
 	DECL_MULTIPLE,
+	DECL_MALFORMED,
 	TYPE_UNKNOWN,
 	TYPE_UNSUPP,
 	TYPE_FIXED,
@@ -54,6 +55,7 @@ enum ErrorId {
 		msgMap[ANNOTATION_NON_EMPTY] = "Annotation `{0}` takes no arguments"
 		msgMap[ANNOTATION_MULTIPLE] = "Annotation `{0}` appears more than once in clause"
 		msgMap[DECL_MULTIPLE] = "Multiple declarations for relation `{0}`"
+		msgMap[DECL_MALFORMED] = "Malformed declaration"
 		msgMap[TYPE_UNKNOWN] = "Unknown type `{0}`"
 		msgMap[TYPE_UNSUPP] = "Unsupported type `{0}` (currently)"
 		msgMap[TYPE_FIXED] = "Fixed type `{0}` (at index {1}) for relation `{2}`"

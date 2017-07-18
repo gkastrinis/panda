@@ -99,7 +99,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 			rec(d, ctx)
 		} else if (!(CONSTRAINT in annotations)) {
 			def headCompound = values[ctx.compound(0)] as LogicalElement
-			assert headCompound.elements.size() == 1
+			if (headCompound.elements.size() != 1) ErrorManager.error(loc, ErrorId.DECL_MALFORMED)
 			def atom = headCompound.elements.first() as Relation
 
 			// Types might appear out of order in body
@@ -110,20 +110,18 @@ class DatalogListenerImpl extends DatalogBaseListener {
 					.accept(new NormalizeVisitingActor()) as LogicalElement
 			bodyCompound.elements.each { t ->
 				def p = t as Predicate
-				assert p.arity == 1
+				if (p.arity != 1) ErrorManager.error(loc, ErrorId.DECL_MALFORMED)
 				def type = Primitive.isPrimitive(p.name) ?
 						new Primitive(p.name, p.exprs.first() as VariableExpr) :
 						new Type(p.name, p.stage, p.exprs.first())
 
 				type.accept(infoActor)
 				def vars = infoActor.vars[type]
-				assert vars.size() == 1
 				def index = varsInHead.indexOf(vars.first())
-				if (index == -1)
-					ErrorManager.error(loc, ErrorId.VAR_UNKNOWN, vars.first().name)
+				if (index == -1) ErrorManager.error(loc, ErrorId.VAR_UNKNOWN, vars.first().name)
 				types[index] = type
 			}
-			assert types.size() == varsInHead.size()
+			if (types.size() != varsInHead.size()) ErrorManager.error(loc, ErrorId.DECL_MALFORMED)
 
 			if (CONSTRUCTOR in annotations) {
 				if (!(atom instanceof Functional))
