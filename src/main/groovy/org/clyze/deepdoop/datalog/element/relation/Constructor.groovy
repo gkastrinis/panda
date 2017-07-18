@@ -20,14 +20,9 @@ class Constructor extends Functional {
 	}
 
 	def getType() {
-		// TODO fix check
-		//if (type instanceof Relation)
-		type = new Type(type.name, valueExpr)
-		return type
-	}
-
-	Relation newAlias(String name, String stage, List<VariableExpr> vars) {
-		new Constructor(super.newAlias(name, stage, vars))
+		if (!(type instanceof Type))
+			type = new Type(type.name, valueExpr)
+		type
 	}
 
 	def <T> T accept(IVisitor<T> v) { v.visit(this) }

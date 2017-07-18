@@ -15,15 +15,6 @@ class Primitive extends Relation {
 
 	int getArity() { 1 }
 
-	Relation newRelation(String stage, List<VariableExpr> vars) {
-		assert arity == vars.size()
-		return this
-	}
-
-	Relation newAlias(String name, String stage, List<VariableExpr> vars) {
-		throw new UnsupportedOperationException()
-	}
-
 	def <T> T accept(IVisitor<T> v) { v.visit(this) }
 
 	static boolean isPrimitive(String name) {
