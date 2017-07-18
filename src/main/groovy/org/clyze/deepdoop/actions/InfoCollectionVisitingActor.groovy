@@ -24,9 +24,9 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 	Set<String> allTypes = [] as Set
 	Map<String, String> directSuperType = [:]
 	Map<String, Set<String>> superTypesOrdered = [:]
-	List<String> allConstructors = []
+	Set<String> allConstructors = [] as Set
 	Map<String, String> constructorBaseType = [:]
-	Map<String, List<String>> constructorsPerType = [:].withDefault { [] }
+	Map<String, Set<String>> constructorsPerType = [:].withDefault { [] as Set }
 
 	// Predicate Name x Set of Rules
 	Map<String, Set<Rule>> affectedRules = [:].withDefault { [] as Set }
