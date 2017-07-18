@@ -50,15 +50,16 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 	}
 
 	void enter(Program n) {
+		emit "/// Declarations of normal relations"
 		inferenceActor.inferredTypes.each { predName, types ->
 			def params = types.withIndex().collect { type, i -> "x$i:${mapType(type)}" }.join(", ")
-			emit ".decl ${mini(predName)}($params)  // ${types.join(" x ")}"
+			emit ".decl ${mini(predName)}($params) // ${types.join(" x ")}"
 		}
-		emit ""
+		emit "/// Declarations of type relations"
 		infoActor.allTypes.each { emit ".decl ${mini(it)}(x:symbol)" }
-		// Special rules to propagate info to supertypes
+		emit "/// Special rules to propagate data to supertypes"
 		infoActor.directSuperType.each { emit "${mini(it.value)}(x) :- ${mini(it.key)}(x)." }
-		emit ""
+		emit "/// Rules"
 	}
 
 	String exit(Program n, Map<IVisitable, String> m) {
