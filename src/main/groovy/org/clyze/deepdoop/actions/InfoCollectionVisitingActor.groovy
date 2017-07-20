@@ -115,7 +115,7 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 			constructorBaseType[predName] = type
 			constructorsPerType[type] << predName
 
-			def refmode = n.annotations[CONSTRUCTOR].values["refmode"]
+			def refmode = n.annotations[CONSTRUCTOR].args["refmode"]
 			if (refmode && refmode.type == ConstantExpr.Type.BOOLEAN && refmode.value)
 				refmodeRelations << n.atom.name
 		}

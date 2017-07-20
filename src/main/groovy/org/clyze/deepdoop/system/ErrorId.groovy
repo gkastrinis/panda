@@ -9,6 +9,7 @@ enum ErrorId {
 	ANNOTATION_INVALID,
 	ANNOTATION_INVALID_ARG,
 	ANNOTATION_MISSING_ARG,
+	ANNOTATION_MISTYPED_ARG,
 	ANNOTATION_NON_EMPTY,
 	ANNOTATION_MULTIPLE,
 	DECL_MULTIPLE,
@@ -52,6 +53,7 @@ enum ErrorId {
 		msgMap[ANNOTATION_INVALID] = "Invalid annotation `{0}` for `{1}`"
 		msgMap[ANNOTATION_INVALID_ARG] = "Invalid argument `{0}` for annotation `{1}`"
 		msgMap[ANNOTATION_MISSING_ARG] = "Missing mandatory argument `{0}` for annotation `{1}`"
+		msgMap[ANNOTATION_MISTYPED_ARG] = "Type mismatch ({0} instead of {1}) for argument `{2}` of annotation `{3}`"
 		msgMap[ANNOTATION_NON_EMPTY] = "Annotation `{0}` takes no arguments"
 		msgMap[ANNOTATION_MULTIPLE] = "Annotation `{0}` appears more than once in clause"
 		msgMap[DECL_MULTIPLE] = "Multiple declarations for relation `{0}`"

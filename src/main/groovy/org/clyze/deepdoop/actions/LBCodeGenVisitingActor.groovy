@@ -60,7 +60,7 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 		if (TYPE in n.annotations) {
 			emit "lang:entity(`$name)."
 			emit """lang:physical:storageModel[`$name] = "ScalableSparse"."""
-			def cap = n.annotations[TYPE].values["capacity"]
+			def cap = n.annotations[TYPE].args["capacity"]
 			if (cap) emit "lang:physical:capacity[`$name] = $cap."
 		}
 		if (CONSTRUCTOR in n.annotations && !(name in infoActor.refmodeRelations)) {
@@ -156,7 +156,7 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 			results << new Result(Result.Kind.IMPORT, latestFile)
 
 			c.declarations.each {
-				def atom = infoActor.getDeclaringAtoms(it).values().first() as Relation
+				def atom = infoActor.getDeclaringAtoms(it).args().first() as Relation
 				emitFilePredicate(atom, it, latestFile)
 			}
 		}

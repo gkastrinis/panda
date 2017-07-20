@@ -92,7 +92,7 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 		// Potentially a rule for partial predicates
 		emit(n.body ? "${m[n.head]} :- ${m[n.body]}." : "${m[n.head]}.")
 		// TODO TEMP HACK
-		if (PLAN in n.annotations) emit ".plan ${n.annotations[PLAN].values["val"]}"
+		if (PLAN in n.annotations) emit ".plan ${n.annotations[PLAN].args["plan"]}"
 
 		// Rules for populating full predicates from partial ones
 		extra.unboundVarsForRelation.each { atom, vars ->

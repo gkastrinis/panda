@@ -29,6 +29,7 @@ class DatalogSpec extends Specification {
 		"t6.logic" | _
 		"t7.logic" | _
 		"t8.logic" | _
+		"t9.logic" | _
 		//"t100.logic" | _
 	}
 
@@ -69,6 +70,7 @@ class DatalogSpec extends Specification {
 		"fail24.logic" | ErrorId.DECL_MALFORMED
 		"fail25.logic" | ErrorId.DECL_MALFORMED
 		"fail26.logic" | ErrorId.DECL_MALFORMED
+		"fail27.logic" | ErrorId.ANNOTATION_MISTYPED_ARG
 		/*
 		"fail100.logic"  | ErrorId.DEP_CYCLE
 		"fail101.logic"  | ErrorId.CMD_RULE
