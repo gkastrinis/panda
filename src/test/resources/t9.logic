@@ -2,7 +2,7 @@ component Foo {
 	P(x) <- Q(x).
 	R(x) <- P(x).
 	W(x) -> string(x).
-	@type Animal
+	@type(capacity = 100000) Animal
 	@Constructor
     cons:An[x] = y -> string(x), Animal(y).
 

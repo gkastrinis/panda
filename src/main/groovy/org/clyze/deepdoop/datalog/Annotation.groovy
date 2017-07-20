@@ -80,6 +80,8 @@ class Annotation {
 				MANDATORY_VALIDATOR.call(a, ["val"])
 				OPTIONAL_VALIDATOR.call(a, ["val"])
 			},
-			(TYPE)       : EMPTY_VALIDATOR,
+			(TYPE)       : { Annotation a ->
+				OPTIONAL_VALIDATOR.call(a, ["capacity"])
+			},
 	]
 }
