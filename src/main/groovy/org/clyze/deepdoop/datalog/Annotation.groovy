@@ -29,6 +29,10 @@ class Annotation {
 	Annotation(String name, Map<String, ConstantExpr> values = [:]) {
 		this.kind = findKind(name)
 		this.values = values
+		this.values.values().each {
+			if (it.type == ConstantExpr.Type.STRING)
+				it.value = (it.value as String)[1..-2]
+		}
 	}
 
 	void validate() { VALIDATORS[kind].call(this) }
