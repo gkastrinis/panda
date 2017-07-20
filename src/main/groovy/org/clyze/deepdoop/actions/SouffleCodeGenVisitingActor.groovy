@@ -122,7 +122,7 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 		def pred = n.predicate.name
 		def soufflePred = n.predicate.exprs ? "$pred(${m[n.predicate.exprs.first()]})" : pred
 		if (pred == "count" || pred == "min" || pred == "max" || pred == "sum")
-			"${m[n.var]} = $soufflePred : { ${m[n.body]} }"
+			"${m[n.body]}, ${m[n.var]} = $soufflePred : { ${m[n.body]} }"
 		else null
 	}
 
