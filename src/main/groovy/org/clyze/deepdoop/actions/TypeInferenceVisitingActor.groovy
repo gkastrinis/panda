@@ -10,6 +10,7 @@ import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Functional
 import org.clyze.deepdoop.datalog.element.relation.Predicate
 import org.clyze.deepdoop.datalog.element.relation.Relation
+import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.BinaryExpr
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.IExpr
@@ -128,6 +129,11 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 
 	IVisitable exit(Constructor n, Map m) {
 		tmpTypes[n.valueExpr] = new ClosedType(n.type.name)
+		null
+	}
+
+	IVisitable exit(Type n, Map m) {
+		relationTypes[n.name] = [new ClosedType(n.name)]
 		null
 	}
 

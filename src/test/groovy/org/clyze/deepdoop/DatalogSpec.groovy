@@ -29,7 +29,7 @@ class DatalogSpec extends Specification {
 		"t6.logic" | _
 		"t7.logic" | _
 		"t8.logic" | _
-		//"t9.logic" | _
+		//"t100.logic" | _
 	}
 
 	@Unroll

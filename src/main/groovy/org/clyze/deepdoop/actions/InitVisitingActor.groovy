@@ -155,9 +155,17 @@ class InitVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<I
 		new NegationElement(m[n.element] as IElement)
 	}
 
-	Constructor exit(Constructor n, Map<IVisitable, IVisitable> m) { n }
+	Constructor exit(Constructor n, Map<IVisitable, IVisitable> m) {
+		def (String newName, String newStage) = rename(n)
+		def f = new Functional(newName, newStage, n.keyExprs, n.valueExpr)
+		def (String newTypeName, _) = rename(n.type)
+		new Constructor(f, new Type(newTypeName, n.type.exprs.first()))
+	}
 
-	Type exit(Type n, Map<IVisitable, IVisitable> m) { n }
+	Type exit(Type n, Map<IVisitable, IVisitable> m) {
+		def (String newName, _) = rename(n)
+		new Type(newName, n.exprs.first())
+	}
 
 	Functional exit(Functional n, Map<IVisitable, IVisitable> m) {
 		checkExt(n)

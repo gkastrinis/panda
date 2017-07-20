@@ -11,8 +11,8 @@ import org.clyze.deepdoop.datalog.expr.IExpr
 @ToString(includeSuper = true, includePackage = false)
 class Type extends Predicate {
 
-	Type(String name, String stage = null, IExpr expr) {
-		super(name, stage, [expr])
+	Type(String name, IExpr expr) {
+		super(name, null, [expr])
 	}
 
 	def <T> T accept(IVisitor<T> v) { v.visit(this) }

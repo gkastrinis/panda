@@ -31,6 +31,7 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 	}
 
 	void enter(Program n) {
+		emit "/// Declarations of normal relations"
 		inferenceActor.inferredTypes.each { predName, types ->
 			def functionalArity = infoActor.functionalRelations[predName]
 			def body = types.withIndex().collect { type, i -> "${mapTypes(type)}(x$i)" }.join(", ")
@@ -39,14 +40,15 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 			} else if (functionalArity) {
 				def head = (0..<(functionalArity - 1)).collect { "x$it" }.join(", ")
 				emit "$predName[$head] = x${functionalArity - 1} -> $body."
-			} else {
+			} else if (!(predName in infoActor.allTypes)) {
 				def head = (0..<(types.size())).collect { "x$it" }.join(", ")
 				emit "$predName($head) -> $body."
 			}
 		}
-		emit ""
+		emit "/// Declarations of types"
 		infoActor.allTypes.findAll { !infoActor.directSuperType[it] }.each { emit "$it(x) -> ." }
 		infoActor.directSuperType.each { emit "${it.key}(x) -> ${it.value}(x)." }
+		emit "/// Rules"
 	}
 
 	//String exit(Constraint n, Map<IVisitable, String> m) {
@@ -54,11 +56,11 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 	//}
 
 	String exit(Declaration n, Map<IVisitable, String> m) {
-		if (TYPE in n.annotations)
+		if (TYPE in n.annotations) {
 			emit "lang:entity(`${n.atom.name})."
+			emit """lang:physical:storageModel[`${n.atom.name}] = "ScalableSparse"."""
+		}
 		if (CONSTRUCTOR in n.annotations && !(n.atom.name in infoActor.refmodeRelations)) {
-			def type = n.types.last().name
-			emit """lang:physical:storageModel[`$type] = "ScalableSparse"."""
 			emit "lang:constructor(`${n.atom.name})."
 		}
 		null

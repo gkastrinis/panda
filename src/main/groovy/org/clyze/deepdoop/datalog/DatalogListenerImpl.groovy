@@ -113,7 +113,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 				if (p.arity != 1) ErrorManager.error(loc, ErrorId.DECL_MALFORMED)
 				def type = Primitive.isPrimitive(p.name) ?
 						new Primitive(p.name, p.exprs.first() as VariableExpr) :
-						new Type(p.name, p.stage, p.exprs.first())
+						new Type(p.name, p.exprs.first())
 
 				type.accept(infoActor)
 				def vars = infoActor.vars[type]

@@ -170,7 +170,8 @@ class SouffleCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 					.findAll { !((it[0] as IExpr) in unboundVars) }
 					.collect { expr, int i -> "var$i:${mapType(types[i])}" }
 					.join(", ")
-			partialDeclarations << "${mini(n.name)}__pArTiAl($partialTypes)"
+			if (partialTypes)
+				partialDeclarations << "${mini(n.name)}__pArTiAl($partialTypes)"
 			return partialPred
 		} else
 			return fullPred
