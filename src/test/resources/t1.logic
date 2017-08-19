@@ -15,7 +15,7 @@ p2(a,b) -> int(a), int(b).
 p3[a] = b -> int(a), int(b).
 p4(x) -> int(x).
 p5(x) -> int(x).
-p6(x) -> int(x).
+@output p6(x) -> int(x).
 
 p1(x) <- p2(x+1, y), p3[x] = z, z > y+10.
 p4(x) <- p1(x) ; p2(x, _).

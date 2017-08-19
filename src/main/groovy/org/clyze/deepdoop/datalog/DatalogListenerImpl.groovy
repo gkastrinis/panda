@@ -4,7 +4,7 @@ import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.ErrorNode
 import org.antlr.v4.runtime.tree.TerminalNode
 import org.clyze.deepdoop.actions.InfoCollectionVisitingActor
-import org.clyze.deepdoop.actions.NormalizeVisitingActor
+import org.clyze.deepdoop.actions.tranform.NormalizingTransformer
 import org.clyze.deepdoop.datalog.Annotation.Kind
 import org.clyze.deepdoop.datalog.clause.Constraint
 import org.clyze.deepdoop.datalog.clause.Declaration
@@ -107,7 +107,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 			atom.accept(infoActor)
 			def varsInHead = infoActor.vars[atom]
 			def bodyCompound = (values[ctx.compound(1)] as LogicalElement)
-					.accept(new NormalizeVisitingActor()) as LogicalElement
+					.accept(new NormalizingTransformer()) as LogicalElement
 			bodyCompound.elements.each { t ->
 				def p = t as Predicate
 				if (p.arity != 1) ErrorManager.error(loc, ErrorId.DECL_MALFORMED)

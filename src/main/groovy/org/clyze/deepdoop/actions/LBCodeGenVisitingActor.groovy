@@ -1,6 +1,8 @@
 package org.clyze.deepdoop.actions
 
 import groovy.transform.InheritConstructors
+import org.clyze.deepdoop.actions.tranform.InitializingTransformer
+import org.clyze.deepdoop.actions.tranform.NormalizingTransformer
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
@@ -21,8 +23,8 @@ class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
 		results << new Result(Result.Kind.LOGIC, currentFile)
 
 		// Transform program before visiting nodes
-		def n = p.accept(new NormalizeVisitingActor())
-				.accept(new InitVisitingActor())
+		def n = p.accept(new NormalizingTransformer())
+				.accept(new InitializingTransformer())
 				.accept(infoActor)
 				.accept(new ValidationVisitingActor(infoActor))
 				.accept(inferenceActor)

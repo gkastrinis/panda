@@ -33,7 +33,7 @@ class Compiler {
 		try {
 			return compile0(new ANTLRFileStream(filename), filename, codeGenActor)
 		} catch (e) {
-			log.error(e.message)
+			log.error(e.message, e)
 		}
 		return null
 	}
