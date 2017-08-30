@@ -5,7 +5,6 @@ import groovy.transform.ToString
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.system.ErrorId
 import org.clyze.deepdoop.system.ErrorManager
-import org.clyze.deepdoop.system.SourceLocation
 import org.clyze.deepdoop.system.SourceManager
 
 import static org.clyze.deepdoop.datalog.Annotation.Kind.*

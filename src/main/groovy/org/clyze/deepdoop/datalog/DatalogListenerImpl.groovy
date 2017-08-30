@@ -87,7 +87,9 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		def loc = rec(null, ctx)
 
 		def annotations = gatherAnnotations(ctx.annotationList())
-		annotations.keySet().each { if (it in pendingAnnotations) ErrorManager.warn(loc, ErrorId.ANNOTATION_MULTIPLE, it) }
+		annotations.keySet().each {
+			if (it in pendingAnnotations) ErrorManager.warn(loc, ErrorId.ANNOTATION_MULTIPLE, it)
+		}
 		annotations += pendingAnnotations
 
 		if (ctx.predicateName(0)) {
@@ -185,7 +187,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		values[ctx] = new Predicate(
 				values[ctx.predicateName()] as String,
 				ctx.AT_STAGE()?.text,
-				values[ctx.exprList()] as List<IExpr>)
+				(ctx.exprList() ? values[ctx.exprList()]  : []) as List<IExpr>)
 	}
 
 	void exitAggregation(AggregationContext ctx) {
@@ -211,6 +213,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	void exitCompoundElement(CompoundElementContext ctx) {
 		if (ctx.predicate()) values[ctx] = values[ctx.predicate()] as IElement
 		else if (ctx.comparison()) values[ctx] = values[ctx.comparison()] as IElement
+		else if (ctx.assignment()) values[ctx] = values[ctx.assignment()] as IElement
 	}
 
 	void exitCompound(CompoundContext ctx) {
@@ -357,6 +360,10 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		else op = BinOperator.NEQ
 
 		values[ctx] = new ComparisonElement(e0, op, e1)
+	}
+
+	void exitAssignment(AssignmentContext ctx) {
+		values[ctx] = new ComparisonElement(new VariableExpr(ctx.IDENTIFIER().text), BinOperator.ASGN, values[ctx.expr()] as IExpr)
 	}
 
 	void visitErrorNode(ErrorNode node) {

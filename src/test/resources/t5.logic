@@ -6,11 +6,11 @@ cons:Shape[x] = y -> string(x), Shape(y).
 
 // string x Circle
 cons:Shape[x] = y new Circle,
-PredC(x, y) <- x = "circle".
+PredC(x, y) <- x := "circle".
 
 // string x RightTriangle
 cons:Shape[x] = y new RightTriangle,
-PredT(x, y) <- x = "triangle".
+PredT(x, y) <- x := "triangle".
 
 // Shape
 Pred(x) <- PredC(_, x).

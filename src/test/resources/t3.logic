@@ -8,7 +8,7 @@
 @Output
 Foo(x, y) -> int(x), string(y).
 
-Foo(y, x) <- x = "J", y = 1.
+Foo(y, x) <- x := "J", y := 1.
 
 @Output @Type @Output Bar
 

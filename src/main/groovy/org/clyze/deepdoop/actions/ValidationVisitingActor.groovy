@@ -1,17 +1,10 @@
 package org.clyze.deepdoop.actions
 
 import org.clyze.deepdoop.datalog.Program
-import org.clyze.deepdoop.datalog.clause.Constraint
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
-import org.clyze.deepdoop.datalog.component.CmdComponent
-import org.clyze.deepdoop.datalog.component.Component
-import org.clyze.deepdoop.datalog.element.*
 import org.clyze.deepdoop.datalog.element.relation.*
-import org.clyze.deepdoop.datalog.expr.BinaryExpr
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
-import org.clyze.deepdoop.datalog.expr.GroupExpr
-import org.clyze.deepdoop.datalog.expr.VariableExpr
 import org.clyze.deepdoop.system.ErrorId
 import org.clyze.deepdoop.system.ErrorManager
 import org.clyze.deepdoop.system.SourceManager

@@ -6,8 +6,8 @@ import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTreeWalker
 import org.apache.commons.logging.LogFactory
 import org.apache.log4j.*
-import org.clyze.deepdoop.actions.LBCodeGenVisitingActor
-import org.clyze.deepdoop.actions.SouffleCodeGenVisitingActor
+import org.clyze.deepdoop.actions.code.LBCodeGenerator
+import org.clyze.deepdoop.actions.code.SouffleCodeGenerator
 import org.clyze.deepdoop.datalog.DatalogLexer
 import org.clyze.deepdoop.datalog.DatalogListenerImpl
 import org.clyze.deepdoop.datalog.DatalogParser
@@ -19,11 +19,11 @@ class Compiler {
 	}
 
 	static List<Result> compileToLB3(String filename, File outDir) {
-		compile(filename, new LBCodeGenVisitingActor(outDir))
+		compile(filename, new LBCodeGenerator(outDir))
 	}
 
 	static List<Result> compileToSouffle(String filename, File outDir) {
-		compile(filename, new SouffleCodeGenVisitingActor(outDir))
+		compile(filename, new SouffleCodeGenerator(outDir))
 	}
 
 	static List<Result> compile(String filename, def codeGenActor) {

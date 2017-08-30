@@ -1,8 +1,8 @@
 package org.clyze.deepdoop
 
 import org.antlr.v4.runtime.ANTLRInputStream
-import org.clyze.deepdoop.actions.LBCodeGenVisitingActor
-import org.clyze.deepdoop.actions.SouffleCodeGenVisitingActor
+import org.clyze.deepdoop.actions.code.LBCodeGenerator
+import org.clyze.deepdoop.actions.code.SouffleCodeGenerator
 import org.clyze.deepdoop.system.Compiler
 import org.clyze.deepdoop.system.DeepDoopException
 import org.clyze.deepdoop.system.ErrorId
@@ -91,7 +91,7 @@ class DatalogSpec extends Specification {
 		DeepDoopException e1 = null
 		try {
 			def inputStream = new ANTLRInputStream(this.class.getResourceAsStream(resourcePath))
-			Compiler.compile0(inputStream, resource, new LBCodeGenVisitingActor("build"))
+			Compiler.compile0(inputStream, resource, new LBCodeGenerator("build"))
 		} catch (DeepDoopException e) {
 			e1 = e
 		}
@@ -99,7 +99,7 @@ class DatalogSpec extends Specification {
 		DeepDoopException e2 = null
 		try {
 			def inputStream = new ANTLRInputStream(this.class.getResourceAsStream(resourcePath))
-			Compiler.compile0(inputStream, resource, new SouffleCodeGenVisitingActor("build"))
+			Compiler.compile0(inputStream, resource, new SouffleCodeGenerator("build"))
 		} catch (DeepDoopException e) {
 			e2 = e
 		}

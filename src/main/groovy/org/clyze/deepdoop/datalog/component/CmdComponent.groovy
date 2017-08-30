@@ -2,12 +2,8 @@ package org.clyze.deepdoop.datalog.component
 
 import groovy.transform.Canonical
 import org.clyze.deepdoop.actions.IVisitor
-import org.clyze.deepdoop.datalog.clause.Constraint
 import org.clyze.deepdoop.datalog.clause.Declaration
-import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.element.relation.Relation
-import org.clyze.deepdoop.system.ErrorId
-import org.clyze.deepdoop.system.ErrorManager
 
 @Canonical
 class CmdComponent extends Component {
@@ -30,10 +26,10 @@ class CmdComponent extends Component {
 	//void addCons(Constraint c) { ErrorManager.error(ErrorId.CMD_CONSTRAINT) }
 
 	//void addFOO(Rule r) {
-		//if (!r.isDirective) {
-		//super.addFOO(r)
-		//return
-		//}
+	//if (!r.isDirective) {
+	//super.addFOO(r)
+	//return
+	//}
 /*
 		def d = r.getDirective()
 		switch (d.name) {

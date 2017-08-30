@@ -63,6 +63,7 @@ predicateListExt
 compoundElement
 	: predicate
 	| comparison
+	| assignment
 	;
 
 compound
@@ -128,6 +129,9 @@ exprList
 
 comparison
 	: expr ('=' | '<' | '<=' | '>' | '>=' | '!=') expr ;
+
+assignment
+	: IDENTIFIER ':=' expr ;
 
 
 

@@ -7,7 +7,6 @@ import org.clyze.deepdoop.actions.IVisitor
 import org.clyze.deepdoop.datalog.clause.Constraint
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
-import org.clyze.deepdoop.datalog.element.relation.Constructor
 
 @Canonical
 @ToString(includePackage = false)

@@ -8,7 +8,7 @@ p(07).
 p(0xFf).
 
 r2(x) -> int(x).
-r1(t) <- r2(x), t = x + 10.
+r1(t) <- r2(x), t := x + 10.
 
 p1(x) -> int(x).
 p2(a,b) -> int(a), int(b).
@@ -20,7 +20,10 @@ p5(x) -> int(x).
 p1(x) <- p2(x+1, y), p3[x] = z, z > y+10.
 p4(x) <- p1(x) ; p2(x, _).
 p5(x) <- ((p1(x), x > 10) ; p4(x)), !p2(x, _).
-p6(t) <- p4(x), t = x + 10.
+
+p6(w) <- p4(x), t := x + 10, p4(z), w := t + z.
+p6(t) <- p4(x), p4(t), t = x + 20.
+p6(t) <- p4(x), p4(t), t := x * 30.
 
 
 //t1(x) <- t2@previous(x).

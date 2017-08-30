@@ -1,6 +1,8 @@
-package org.clyze.deepdoop.actions
+package org.clyze.deepdoop.actions.code
 
 import groovy.transform.InheritConstructors
+import org.clyze.deepdoop.actions.IVisitable
+import org.clyze.deepdoop.actions.ValidationVisitingActor
 import org.clyze.deepdoop.actions.tranform.InitializingTransformer
 import org.clyze.deepdoop.actions.tranform.NormalizingTransformer
 import org.clyze.deepdoop.datalog.Program
@@ -16,7 +18,7 @@ import static org.clyze.deepdoop.datalog.Annotation.Kind.CONSTRUCTOR
 import static org.clyze.deepdoop.datalog.Annotation.Kind.TYPE
 
 @InheritConstructors
-class LBCodeGenVisitingActor extends DefaultCodeGenVisitingActor {
+class LBCodeGenerator extends DefaultCodeGenerator {
 
 	String visit(Program p) {
 		currentFile = createUniqueFile("out_", ".logic")
