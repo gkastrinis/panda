@@ -76,19 +76,22 @@ class SouffleConstructorTransformer extends DummyTransformer {
 		def boundParams = exprs.findAll { !(unboundVar[it]) }
 		def types = inferenceActor.inferredTypes[n.name]
 		def boundTypes = exprs.withIndex()
-				.findAll { expr, int i -> expr in boundParams }
+				.findAll { expr, int i -> !(unboundVar[expr]) }
 				.collect { expr, int i -> new Predicate(types[i], null, [new VariableExpr("var$i")]) }
-		def p = new Predicate("${n.name}__pArTiAl", n.stage, newVars(boundParams.size()))
+		def suffix = exprs.withIndex()
+				.findAll { expr, int i -> !(unboundVar[expr]) }
+				.collect { expr, int i -> i }.join("")
+		def p = new Predicate("${n.name}__pArTiAl$suffix", n.stage, newVars(boundParams.size()))
 		newDeclarations << new Declaration(p, boundTypes)
 
 		if (n.name in infoActor.allConstructors && !(n.name in infoActor.refmodeRelations)) {
 			def vars = newVars(boundParams.size())
 			newRules << new Rule(
 					new LogicalElement(new Functional(n.name, n.stage, vars, new VariableExpr('$'))),
-					new LogicalElement(new Predicate("${n.name}__pArTiAl", n.stage, vars)))
+					new LogicalElement(new Predicate("${n.name}__pArTiAl$suffix", n.stage, vars)))
 		}
 
-		return new Predicate("${n.name}__pArTiAl", n.stage, boundParams)
+		return new Predicate("${n.name}__pArTiAl$suffix", n.stage, boundParams)
 	}
 
 	static def newVars(int n) { (0..<n).collect { new VariableExpr("var$it") } }

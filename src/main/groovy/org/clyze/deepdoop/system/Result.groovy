@@ -22,5 +22,5 @@ class Result {
 		this.cmd = cmd
 	}
 
-	String toString() { "($kind) " + (file ?: cmd) }
+	String toString() { "($kind) " + (file ? file.canonicalPath : cmd) }
 }
