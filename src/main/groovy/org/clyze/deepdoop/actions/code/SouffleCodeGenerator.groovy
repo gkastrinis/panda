@@ -5,8 +5,8 @@ import org.clyze.deepdoop.actions.IVisitable
 import org.clyze.deepdoop.actions.ValidationVisitingActor
 import org.clyze.deepdoop.actions.tranform.InitializingTransformer
 import org.clyze.deepdoop.actions.tranform.NormalizingTransformer
-import org.clyze.deepdoop.actions.tranform.SouffleAssignTransformer
-import org.clyze.deepdoop.actions.tranform.SouffleConstructorTransformer
+import org.clyze.deepdoop.actions.tranform.souffle.AssignTransformer
+import org.clyze.deepdoop.actions.tranform.souffle.ConstructorTransformer
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
@@ -27,7 +27,7 @@ import static org.clyze.deepdoop.datalog.expr.VariableExpr.genN as varN
 @InheritConstructors
 class SouffleCodeGenerator extends DefaultCodeGenerator {
 
-	SouffleConstructorTransformer constructorTransformer
+	ConstructorTransformer constructorTransformer
 
 	// Relations that have an explicit declaration
 	Set<String> explicitDeclarations = [] as Set
@@ -36,7 +36,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		currentFile = createUniqueFile("out_", ".dl")
 		results << new Result(Result.Kind.LOGIC, currentFile)
 
-		constructorTransformer = new SouffleConstructorTransformer(infoActor, inferenceActor)
+		constructorTransformer = new ConstructorTransformer(infoActor, inferenceActor)
 
 		// Transform program before visiting nodes
 		def n = p.accept(new NormalizingTransformer())
@@ -44,7 +44,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 				.accept(infoActor)
 				.accept(new ValidationVisitingActor(infoActor))
 				.accept(inferenceActor)
-				.accept(new SouffleAssignTransformer())
+				.accept(new AssignTransformer())
 				.accept(constructorTransformer)
 
 		return super.visit(n as Program)

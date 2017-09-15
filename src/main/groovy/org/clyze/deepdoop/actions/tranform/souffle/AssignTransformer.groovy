@@ -8,7 +8,7 @@ import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.IExpr
 import org.clyze.deepdoop.datalog.expr.VariableExpr
 
-class SouffleAssignTransformer extends DummyTransformer {
+class AssignTransformer extends DummyTransformer {
 
 	// Keep track of all assignments in current rule
 	Map<VariableExpr, IExpr> assignments

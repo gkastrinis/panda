@@ -24,7 +24,7 @@ import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.genN as varN
 
 @Canonical
-class SouffleConstructorTransformer extends DummyTransformer {
+class ConstructorTransformer extends DummyTransformer {
 
 	InfoCollectionVisitingActor infoActor
 	TypeInferenceVisitingActor inferenceActor
