@@ -42,7 +42,6 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 	IVisitable visit(Component n) {
 		actor.enter(n)
 		n.declarations.each { it.accept(this) }
-		n.constraints.each { it.accept(this) }
 
 		Set<Rule> oldDeltaRules = n.rules
 		while (!oldDeltaRules.isEmpty()) {

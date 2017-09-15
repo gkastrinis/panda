@@ -61,7 +61,7 @@ class SouffleConstructorTransformer extends DummyTransformer {
 	IVisitable exit(Component n, Map<IVisitable, IVisitable> m) {
 		def ds = (n.declarations.collect { m[it] as Declaration } + recordDeclarations) as Set
 		def rs = (n.rules.collect { m[it] as Rule } + recordRules) as Set
-		new Component(n.name, n.superComp, ds, n.constraints, rs)
+		new Component(n.name, n.superComp, ds, rs)
 	}
 
 	IVisitable exit(Declaration n, Map<IVisitable, IVisitable> m) {

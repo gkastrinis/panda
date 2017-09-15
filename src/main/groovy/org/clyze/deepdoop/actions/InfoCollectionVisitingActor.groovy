@@ -1,7 +1,6 @@
 package org.clyze.deepdoop.actions
 
 import org.clyze.deepdoop.datalog.Program
-import org.clyze.deepdoop.datalog.clause.Constraint
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.Component
@@ -93,12 +92,7 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 
 	IVisitable exit(Component n, Map m) {
 		declaringAtoms[n] = (n.declarations + n.rules).collect { declaringAtoms[it] }.flatten() as Set<Relation>
-		usedAtoms[n] = (n.declarations + n.constraints + n.rules).collect { usedAtoms[it] }.flatten() as Set<Relation>
-		null
-	}
-
-	IVisitable exit(Constraint n, Map m) {
-		usedAtoms[n] = usedAtoms[n.head] + usedAtoms[n.body]
+		usedAtoms[n] = (n.declarations + n.rules).collect { usedAtoms[it] }.flatten() as Set<Relation>
 		null
 	}
 

@@ -40,8 +40,6 @@ class DefaultCodeGenerator extends PostOrderVisitor<String> implements IActor<St
 
 	//String exit(Component n, Map<IVisitable, String> m) { null }
 
-	//String exit(Constraint n, Map<IVisitable, String> m) { null }
-
 	//String exit(Declaration n, Map<IVisitable, String> m) { null }
 
 	//String exit(Rule n, Map<IVisitable, String> m) { null }

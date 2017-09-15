@@ -15,7 +15,6 @@ import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.*
 class Annotation {
 
 	static enum Kind {
-		CONSTRAINT,
 		CONSTRUCTOR,
 		INPUT,
 		OUTPUT,
@@ -41,7 +40,6 @@ class Annotation {
 	private static def findKind(String name) {
 		name = name.toLowerCase()
 		switch (name) {
-			case "constraint": return CONSTRAINT
 			case "constructor": return CONSTRUCTOR
 			case "input": return INPUT
 			case "output": return OUTPUT
@@ -77,7 +75,6 @@ class Annotation {
 	}
 
 	private static final Map<Kind, Closure> VALIDATORS = [
-			(CONSTRAINT) : EMPTY_VALIDATOR,
 			(CONSTRUCTOR): { Annotation a ->
 				OPTIONAL_VALIDATOR.call(a, ["refmode": BOOLEAN])
 			},

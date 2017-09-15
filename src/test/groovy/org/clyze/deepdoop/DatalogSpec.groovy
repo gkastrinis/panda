@@ -74,7 +74,6 @@ class DatalogSpec extends Specification {
 		/*
 		"fail100.logic"  | ErrorId.DEP_CYCLE
 		"fail101.logic"  | ErrorId.CMD_RULE
-		"fail102.logic"  | ErrorId.CMD_CONSTRAINT
 		"fail103.logic"  | ErrorId.CMD_DIRECTIVE
 		"fail104.logic"  | ErrorId.CMD_NO_DECL
 		"fail105.logic"  | ErrorId.CMD_NO_IMPORT

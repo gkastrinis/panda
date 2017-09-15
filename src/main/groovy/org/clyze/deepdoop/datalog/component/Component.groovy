@@ -4,7 +4,6 @@ import groovy.transform.Canonical
 import groovy.transform.ToString
 import org.clyze.deepdoop.actions.IVisitable
 import org.clyze.deepdoop.actions.IVisitor
-import org.clyze.deepdoop.datalog.clause.Constraint
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
 
@@ -15,7 +14,6 @@ class Component implements IVisitable {
 	String name
 	String superComp
 	Set<Declaration> declarations = [] as Set
-	Set<Constraint> constraints = [] as Set
 	Set<Rule> rules = [] as Set
 
 	Component clone() {
@@ -23,13 +21,11 @@ class Component implements IVisitable {
 				name: name,
 				superComp: superComp,
 				declarations: ([] + declarations) as Set,
-				constraints: ([] + constraints) as Set,
 				rules: ([] + rules) as Set)
 	}
 
 	void add(Component other) {
 		declarations += other.declarations
-		constraints += other.constraints
 		rules += other.rules
 	}
 

@@ -37,7 +37,6 @@ enum ErrorId {
 	MULTIPLE_ENT_DECLS,
 	DEP_CYCLE,
 	DEP_GLOBAL,
-	CMD_CONSTRAINT,
 	CMD_DIRECTIVE,
 	CMD_EVAL,
 	CMD_RULE,
@@ -81,7 +80,6 @@ enum ErrorId {
 		msgMap[MULTIPLE_ENT_DECLS] = "Multiple declarations for Type `{0}` in previous components"
 		msgMap[DEP_CYCLE] = "Cycle detected in the dependency graph of components"
 		msgMap[DEP_GLOBAL] = "Reintroducing relation `{0}` to global space"
-		msgMap[CMD_CONSTRAINT] = "Constraints are not supported in a command block"
 		msgMap[CMD_DIRECTIVE] = "Invalid directive in command block `{0}`"
 		msgMap[CMD_EVAL] = "EVAL property already specified in command block `{0}`"
 		msgMap[CMD_RULE] = "Normal rules are not supported in a command block"

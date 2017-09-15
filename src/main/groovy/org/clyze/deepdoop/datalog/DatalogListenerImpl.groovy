@@ -6,7 +6,6 @@ import org.antlr.v4.runtime.tree.TerminalNode
 import org.clyze.deepdoop.actions.InfoCollectionVisitingActor
 import org.clyze.deepdoop.actions.tranform.NormalizingTransformer
 import org.clyze.deepdoop.datalog.Annotation.Kind
-import org.clyze.deepdoop.datalog.clause.Constraint
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.CmdComponent
@@ -21,7 +20,6 @@ import org.clyze.deepdoop.system.ErrorManager
 import org.clyze.deepdoop.system.SourceLocation
 import org.clyze.deepdoop.system.SourceManager
 
-import static org.clyze.deepdoop.datalog.Annotation.Kind.CONSTRAINT
 import static org.clyze.deepdoop.datalog.Annotation.Kind.CONSTRUCTOR
 import static org.clyze.deepdoop.datalog.DatalogParser.*
 
@@ -99,7 +97,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 			def d = new Declaration(type, supertype, annotations)
 			currComp.declarations << d
 			rec(d, ctx)
-		} else if (!(CONSTRAINT in annotations)) {
+		} else {
 			def headCompound = values[ctx.compound(0)] as LogicalElement
 			if (headCompound.elements.size() != 1) ErrorManager.error(loc, ErrorId.DECL_MALFORMED)
 			def atom = headCompound.elements.first() as Relation
@@ -134,12 +132,6 @@ class DatalogListenerImpl extends DatalogBaseListener {
 			def d = new Declaration(atom, types, annotations)
 			currComp.declarations << d
 			rec(d, ctx)
-		} else {
-			def headCompound = values[ctx.compound(0)] as LogicalElement
-			def bodyCompound = values[ctx.compound(1)] as LogicalElement
-			def c = new Constraint(headCompound, bodyCompound)
-			currComp.constraints << c
-			rec(c, ctx)
 		}
 	}
 

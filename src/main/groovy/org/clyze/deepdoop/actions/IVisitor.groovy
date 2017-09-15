@@ -1,7 +1,6 @@
 package org.clyze.deepdoop.actions
 
 import org.clyze.deepdoop.datalog.Program
-import org.clyze.deepdoop.datalog.clause.Constraint
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.CmdComponent
@@ -16,8 +15,6 @@ interface IVisitor<T> {
 	T visit(CmdComponent n)
 
 	T visit(Component n)
-
-	T visit(Constraint n)
 
 	T visit(Declaration n)
 

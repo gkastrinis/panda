@@ -13,7 +13,7 @@ class CmdComponent extends Component {
 	Set<Relation> imports
 
 	CmdComponent(String name, Set<Declaration> declarations, String eval, Set<Relation> imports, Set<Relation> exports) {
-		super(name, null, declarations, [], [])
+		super(name, null, declarations, [])
 		this.eval = eval
 		this.imports = imports
 		this.exports = exports
@@ -22,8 +22,6 @@ class CmdComponent extends Component {
 	CmdComponent(String name) {
 		this(name, [] as Set, null, [] as Set, [] as Set)
 	}
-
-	//void addCons(Constraint c) { ErrorManager.error(ErrorId.CMD_CONSTRAINT) }
 
 	//void addFOO(Rule r) {
 	//if (!r.isDirective) {

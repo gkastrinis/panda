@@ -1,7 +1,6 @@
 package org.clyze.deepdoop.actions
 
 import org.clyze.deepdoop.datalog.Program
-import org.clyze.deepdoop.datalog.clause.Constraint
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.CmdComponent
@@ -36,15 +35,7 @@ class PostOrderVisitor<T> implements IVisitor<T> {
 	T visit(Component n) {
 		actor.enter(n)
 		n.declarations.each { m[it] = it.accept(this) as T }
-		n.constraints.each { m[it] = it.accept(this) as T }
 		n.rules.each { m[it] = it.accept(this) as T }
-		actor.exit(n, m)
-	}
-
-	T visit(Constraint n) {
-		actor.enter(n)
-		m[n.head] = n.head.accept(this) as T
-		m[n.body] = n.body.accept(this) as T
 		actor.exit(n, m)
 	}
 

@@ -55,10 +55,6 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 		emit "/// Rules"
 	}
 
-	//String exit(Constraint n, Map<IVisitable, String> m) {
-	//	"${m[n.head]} -> ${m[n.body]}."
-	//}
-
 	String exit(Declaration n, Map<IVisitable, String> m) {
 		def name = n.atom.name
 		if (TYPE in n.annotations) {
@@ -115,7 +111,6 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 				def c = n.comps[node.name]
 				List<String> l = []
 				c.declarations.each { l << m[it] }
-				c.constraints.each { l << m[it] }
 				c.rules.each { l << m[it] }
 				write(latestFile, l)
 			} else if (node instanceof DependencyGraph.CmdNode)
@@ -128,7 +123,6 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 		println handledAtoms
 
 		handle(m, unhandledGlobal.declarations, latestFile)
-		handle(m, unhandledGlobal.constraints, latestFile)
 		handle(m, unhandledGlobal.rules, latestFile)
 	}*/
 

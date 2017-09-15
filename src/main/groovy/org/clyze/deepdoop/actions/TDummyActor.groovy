@@ -1,7 +1,6 @@
 package org.clyze.deepdoop.actions
 
 import org.clyze.deepdoop.datalog.Program
-import org.clyze.deepdoop.datalog.clause.Constraint
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.CmdComponent
@@ -22,10 +21,6 @@ trait TDummyActor<T> implements IActor<T> {
 	void enter(Component n) {}
 
 	T exit(Component n, Map<IVisitable, T> m) { null }
-
-	void enter(Constraint n) {}
-
-	T exit(Constraint n, Map<IVisitable, T> m) { null }
 
 	void enter(Declaration n) {}
 

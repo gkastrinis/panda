@@ -2,7 +2,6 @@ package org.clyze.deepdoop.actions.tranform
 
 import org.clyze.deepdoop.actions.IVisitable
 import org.clyze.deepdoop.datalog.Program
-import org.clyze.deepdoop.datalog.clause.Constraint
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.CmdComponent
@@ -37,13 +36,8 @@ class NormalizingTransformer extends DummyTransformer {
 	Component exit(Component n, Map<IVisitable, IVisitable> m) {
 		def newComp = new Component(n.name, n.superComp)
 		n.declarations.each { newComp.declarations << (m[it] as Declaration) }
-		//n.constraints.each { newComp.addCons(m[it] as Constraint) }
 		n.rules.each { newComp.rules << (m[it] as Rule) }
 		return newComp
-	}
-
-	Constraint exit(Constraint n, Map<IVisitable, IVisitable> m) {
-		new Constraint(m[n.head], m[n.body])
 	}
 
 	Declaration exit(Declaration n, Map<IVisitable, IVisitable> m) { n }
