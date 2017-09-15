@@ -187,7 +187,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		values[ctx] = new Predicate(
 				values[ctx.predicateName()] as String,
 				ctx.AT_STAGE()?.text,
-				(ctx.exprList() ? values[ctx.exprList()]  : []) as List<IExpr>)
+				(ctx.exprList() ? values[ctx.exprList()] : []) as List<IExpr>)
 	}
 
 	void exitAggregation(AggregationContext ctx) {

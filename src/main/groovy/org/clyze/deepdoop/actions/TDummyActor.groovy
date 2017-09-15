@@ -8,10 +8,7 @@ import org.clyze.deepdoop.datalog.component.CmdComponent
 import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.*
 import org.clyze.deepdoop.datalog.element.relation.*
-import org.clyze.deepdoop.datalog.expr.BinaryExpr
-import org.clyze.deepdoop.datalog.expr.ConstantExpr
-import org.clyze.deepdoop.datalog.expr.GroupExpr
-import org.clyze.deepdoop.datalog.expr.VariableExpr
+import org.clyze.deepdoop.datalog.expr.*
 
 trait TDummyActor<T> implements IActor<T> {
 	void enter(Program n) {}
@@ -93,6 +90,14 @@ trait TDummyActor<T> implements IActor<T> {
 	void enter(GroupExpr n) {}
 
 	T exit(GroupExpr n, Map<IVisitable, T> m) { null }
+
+	// Handling of RecordExpr is not supported in general since it is reserved for interal use
+	// Individual implementations should override this method
+	void enter(RecordExpr n) { throw new UnsupportedOperationException() }
+
+	// Handling of RecordExpr is not supported in general since it is reserved for interal use
+	// Individual implementations should override this method
+	T exit(RecordExpr n, Map<IVisitable, T> m) { throw new UnsupportedOperationException() }
 
 	void enter(VariableExpr n) {}
 

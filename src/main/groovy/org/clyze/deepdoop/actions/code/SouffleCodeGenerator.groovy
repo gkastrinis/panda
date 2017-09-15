@@ -17,16 +17,26 @@ import org.clyze.deepdoop.datalog.element.relation.Functional
 import org.clyze.deepdoop.datalog.element.relation.Predicate
 import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.expr.IExpr
+import org.clyze.deepdoop.datalog.expr.RecordExpr
 import org.clyze.deepdoop.system.Result
 
 import static org.clyze.deepdoop.datalog.Annotation.Kind.*
+import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
+import static org.clyze.deepdoop.datalog.expr.VariableExpr.genN as varN
 
 @InheritConstructors
 class SouffleCodeGenerator extends DefaultCodeGenerator {
 
+	SouffleConstructorTransformer constructorTransformer
+
+	// Relations that have an explicit declaration
+	Set<String> explicitDeclarations = [] as Set
+
 	String visit(Program p) {
 		currentFile = createUniqueFile("out_", ".dl")
 		results << new Result(Result.Kind.LOGIC, currentFile)
+
+		constructorTransformer = new SouffleConstructorTransformer(infoActor, inferenceActor)
 
 		// Transform program before visiting nodes
 		def n = p.accept(new NormalizingTransformer())
@@ -35,37 +45,42 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 				.accept(new ValidationVisitingActor(infoActor))
 				.accept(inferenceActor)
 				.accept(new SouffleAssignTransformer())
-				.accept(new SouffleConstructorTransformer(infoActor, inferenceActor))
+				.accept(constructorTransformer)
 
 		return super.visit(n as Program)
 	}
 
 	String visit(Component n) {
-		emit "/// Declarations"
-		inferenceActor.inferredTypes.each { predName, types -> decl(predName, types) }
+		actor.enter(n)
 		n.declarations.each { m[it] = it.accept(this) }
 
-		//emit "/// Constraints"
-		//n.constraints.each { m[it] = it.accept(this) }
+		// Handle explicit declarations
+		inferenceActor.inferredTypes
+				.findAll { rel, types -> !(rel in explicitDeclarations) }
+				.each { rel, typeNames ->
+			def types = typeNames.withIndex().collect { String t, int i -> new Predicate(t, null, [var1(i)]) }
+			def d = new Declaration(new Predicate(rel, null, varN(types.size())), types)
+			m[d] = d.accept(this)
+		}
 
-		emit "/// Special rules to propagate data to supertypes"
-		infoActor.directSuperType.each { emit "${mini(it.value)}(x) :- ${mini(it.key)}(x)." }
-		emit "/// Rules"
 		n.rules.each { m[it] = it.accept(this) }
-	}
-
-	def decl(def predName, def types) {
-		def params = types.withIndex().collect { type, i -> "var$i:${map(type)}" }.join(", ")
-		emit ".decl ${mini(predName)}($params) // ${types.join(" x ")}"
+		actor.exit(n, m)
 	}
 
 	String exit(Declaration n, Map<IVisitable, String> m) {
-		if (!inferenceActor.inferredTypes[n.atom.name])
-			decl(n.atom.name, n.types.collect { it.name })
+		def name = n.atom.name
+		explicitDeclarations << name
+
+		def params = n.types.withIndex().collect { t, int i -> "${var1(i)}:${map(t.name)}" }.join(", ")
+		if (n in constructorTransformer.recordDeclarations)
+			emit ".type ${mini(name)} = [$params]"
+		else
+			emit ".decl ${mini(name)}($params)"
+
 		if (INPUT in n.annotations)
-			emit ".input ${mini(n.atom.name)}"
+			emit ".input ${mini(name)}"
 		if (OUTPUT in n.annotations)
-			emit ".output ${mini(n.atom.name)}"
+			emit ".output ${mini(name)}"
 		null
 	}
 
@@ -99,7 +114,26 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		"${mini(n.name)}(${exprs.collect { m[it] }.join(", ")})"
 	}
 
+	// Must override since the default implementation throws an exception
+	String visit(RecordExpr n) {
+		actor.enter(n)
+		n.exprs.each { m[it] = it.accept(this) }
+		actor.exit(n, m)
+	}
+
+	// Must override since the default implementation throws an exception
+	void enter(RecordExpr n) {}
+
+	String exit(RecordExpr n, Map<IVisitable, String> m) {
+		"[${n.exprs.collect { m[it] }.join(", ")}]"
+	}
+
 	static def mini(def name) { name.replace ":", "_" }
 
-	static def map(def name) { name == "string" ? "symbol" : "number" }
+	static def map(def name) {
+		//name == "string" ? "symbol" : "number"
+		if (name == "string") return "symbol"
+		else if (name == "int") return "number"
+		else return name
+	}
 }

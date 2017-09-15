@@ -24,6 +24,7 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 	Set<String> allTypes = [] as Set
 	Map<String, String> directSuperType = [:]
 	Map<String, Set<String>> superTypesOrdered = [:]
+	Map<String, Set<String>> subTypes = [:].withDefault { [] as Set }
 	Set<String> allConstructors = [] as Set
 	Map<String, String> constructorBaseType = [:]
 	Map<String, Set<String>> constructorsPerType = [:].withDefault { [] as Set }
@@ -60,6 +61,8 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 			}
 			oldDeltaTypes = deltaTypes
 		}
+
+		superTypesOrdered.each { t, superTypes -> superTypes.each { subTypes[it] << t } }
 
 		return n
 	}

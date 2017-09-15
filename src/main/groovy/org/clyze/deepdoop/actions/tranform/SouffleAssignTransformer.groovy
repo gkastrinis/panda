@@ -37,7 +37,7 @@ class SouffleAssignTransformer extends DummyTransformer {
 		}
 		assignments = null
 
-		return actor.exit(n, m)
+		actor.exit(n, m)
 	}
 
 	IVisitable exit(BinaryExpr n, Map<IVisitable, IVisitable> m) {

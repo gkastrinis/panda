@@ -1,0 +1,25 @@
+@type T1
+@constructor con1[x] = y -> string(x), T1(y).
+@constructor con2[x] = y -> int(x), T1(y).
+
+@type T2 -> T1
+@constructor con3[x, y] = z -> string(x), string(y), T2(z).
+
+@type T3 -> T1
+@constructor con4[x, y] = z -> int(x), int(y), T3(z).
+@constructor con5[x, y, z] = w -> int(x), string(y), string(z), T3(w).
+
+@type T4 -> T3
+@constructor con6[x, y] = z -> string(x), int(y), T4(z).
+@constructor con7[x] = y -> int(x), T4(y).
+
+foo(x, z),
+con6[x, y] = z new T4
+<- x = "Hello", y = 42.
+
+@type F1
+@constructor concon[x, y] = z -> T4(x), string(y), F1(z).
+
+concon[a, x] = b new F1,
+con6[x, y] = a new T4
+<- x = "World", y = 10.

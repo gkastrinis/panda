@@ -8,10 +8,7 @@ import org.clyze.deepdoop.datalog.component.CmdComponent
 import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.*
 import org.clyze.deepdoop.datalog.element.relation.*
-import org.clyze.deepdoop.datalog.expr.BinaryExpr
-import org.clyze.deepdoop.datalog.expr.ConstantExpr
-import org.clyze.deepdoop.datalog.expr.GroupExpr
-import org.clyze.deepdoop.datalog.expr.VariableExpr
+import org.clyze.deepdoop.datalog.expr.*
 
 class PostOrderVisitor<T> implements IVisitor<T> {
 
@@ -105,7 +102,7 @@ class PostOrderVisitor<T> implements IVisitor<T> {
 	T visit(Constructor n) {
 		actor.enter(n)
 		n.keyExprs.each { m[it] = it.accept(this) }
-		if (n.valueExpr) m[n.valueExpr] = n.valueExpr.accept(this)
+		m[n.valueExpr] = n.valueExpr.accept(this)
 		m[n.type] = n.type.accept(this)
 		return actor.exit(n, m)
 	}
@@ -152,6 +149,10 @@ class PostOrderVisitor<T> implements IVisitor<T> {
 		m[n.expr] = n.expr.accept(this)
 		return actor.exit(n, m)
 	}
+
+	// Handling of RecordExpr is not supported in general since it is reserved for interal use
+	// Individual implementations should override this method
+	T visit(RecordExpr n) { throw new UnsupportedOperationException() }
 
 	T visit(VariableExpr n) {
 		actor.enter(n)

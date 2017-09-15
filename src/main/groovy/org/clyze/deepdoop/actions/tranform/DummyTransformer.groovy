@@ -22,10 +22,12 @@ class DummyTransformer extends PostOrderVisitor<IVisitable> implements IActor<IV
 	}
 
 	IVisitable exit(Component n, Map<IVisitable, IVisitable> m) {
-		(n.rules.find { it != m[it] }) ?
-				rec(new Component(n.name, n.superComp, n.declarations, n.constraints, n.rules.collect {
-					m[it] as Rule
-				} as Set)) : n
+		def ds = (n.declarations.find { it != m[it] }) ?
+				n.declarations.collect { m[it] as Declaration } as Set : n.declarations
+		def rs = (n.rules.find { it != m[it] }) ?
+				n.rules.collect { m[it] as Rule } as Set : n.rules
+		(ds != n.declarations || rs != n.rules) ?
+				rec(new Component(n.name, n.superComp, ds, n.constraints, rs)) : n
 	}
 
 	IVisitable exit(Declaration n, Map<IVisitable, IVisitable> m) { n }
