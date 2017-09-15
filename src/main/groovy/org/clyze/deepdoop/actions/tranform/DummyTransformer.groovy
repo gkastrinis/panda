@@ -1,6 +1,5 @@
 package org.clyze.deepdoop.actions.tranform
 
-import org.clyze.deepdoop.actions.IActor
 import org.clyze.deepdoop.actions.IVisitable
 import org.clyze.deepdoop.actions.PostOrderVisitor
 import org.clyze.deepdoop.actions.TDummyActor
@@ -12,99 +11,77 @@ import org.clyze.deepdoop.datalog.element.*
 import org.clyze.deepdoop.datalog.element.relation.*
 import org.clyze.deepdoop.datalog.expr.*
 
-class DummyTransformer extends PostOrderVisitor<IVisitable> implements IActor<IVisitable>, TDummyActor<IVisitable> {
+class DummyTransformer extends PostOrderVisitor<IVisitable> implements TDummyActor<IVisitable> {
 
 	DummyTransformer() { actor = this }
 
 	IVisitable exit(Program n, Map<IVisitable, IVisitable> m) {
-		def g = m[n.globalComp] as Component
-		(n.globalComp != g) ? rec(new Program(g, [:], [:], [] as Set)) : n
+		new Program(m[n.globalComp] as Component, [:], [:], [] as Set)
 	}
 
 	IVisitable exit(Component n, Map<IVisitable, IVisitable> m) {
-		def ds = (n.declarations.find { it != m[it] }) ?
-				n.declarations.collect { m[it] as Declaration } as Set : n.declarations
-		def rs = (n.rules.find { it != m[it] }) ?
-				n.rules.collect { m[it] as Rule } as Set : n.rules
-		(ds != n.declarations || rs != n.rules) ?
-				rec(new Component(n.name, n.superComp, ds, n.constraints, rs)) : n
+		def ds = n.declarations.collect { m[it] as Declaration } as Set
+		def rs = n.rules.collect { m[it] as Rule } as Set
+		new Component(n.name, n.superComp, ds, n.constraints, rs)
 	}
 
 	IVisitable exit(Declaration n, Map<IVisitable, IVisitable> m) { n }
 
 	IVisitable exit(Rule n, Map<IVisitable, IVisitable> m) {
-		def head = m[n.head] as LogicalElement
-		def body = m[n.body] as LogicalElement
-		(n.head != head || n.body != body) ? rec(new Rule(head, body, n.annotations)) : n
+		new Rule(m[n.head] as LogicalElement, m[n.body] as LogicalElement, n.annotations)
 	}
 
 	IVisitable exit(AggregationElement n, Map<IVisitable, IVisitable> m) {
-		def v = m[n.var] as VariableExpr
-		def p = m[n.predicate] as Predicate
-		def body = m[n.body] as IElement
-		(n.var != v || n.predicate != p || n.body != body) ?
-				rec(new AggregationElement(v, p, body)) : n
+		new AggregationElement(
+				m[n.var] as VariableExpr,
+				m[n.predicate] as Predicate,
+				m[n.body] as IElement)
 	}
 
 	IVisitable exit(ComparisonElement n, Map<IVisitable, IVisitable> m) {
-		def e = m[n.expr] as BinaryExpr
-		(n.expr != e) ? rec(new ComparisonElement(e)) : n
+		new ComparisonElement(m[n.expr] as BinaryExpr)
 	}
 
 	IVisitable exit(GroupElement n, Map<IVisitable, IVisitable> m) {
-		def e = m[n.element] as IElement
-		(n.element != e) ? rec(new GroupElement(e)) : n
+		new GroupElement(m[n.element] as IElement)
 	}
 
 	IVisitable exit(LogicalElement n, Map<IVisitable, IVisitable> m) {
-		(n.elements.find { it != m[it] }) ?
-				rec(new LogicalElement(n.type, n.elements.collect { m[it] as IElement })) : n
+		new LogicalElement(n.type, n.elements.collect { m[it] as IElement })
 	}
 
 	IVisitable exit(NegationElement n, Map<IVisitable, IVisitable> m) {
-		def e = m[n.element] as IElement
-		(n.element != e) ? rec(new NegationElement(e)) : n
+		new NegationElement(m[n.element] as IElement)
 	}
 
 	IVisitable exit(Relation n, Map<IVisitable, IVisitable> m) { n }
 
 	IVisitable exit(Constructor n, Map<IVisitable, IVisitable> m) {
-		def f = n as Functional
-		if ((n.keyExprs + n.valueExpr).find { it != m[it] })
-			f = new Functional(n.name, n.stage, n.keyExprs.collect { m[it] as IExpr }, m[n.valueExpr] as IExpr)
-		(n != f) ? rec(new Constructor(f, n.type)) : n
+		def f = new Functional(n.name, n.stage, n.keyExprs.collect { m[it] as IExpr }, m[n.valueExpr] as IExpr)
+		new Constructor(f, n.type)
 	}
 
 	IVisitable exit(Type n, Map<IVisitable, IVisitable> m) { n }
 
 	IVisitable exit(Functional n, Map<IVisitable, IVisitable> m) {
-		((n.keyExprs + n.valueExpr).find { it != m[it] }) ?
-				rec(new Functional(n.name, n.stage, n.keyExprs.collect { m[it] as IExpr }, m[n.valueExpr] as IExpr)) : n
+		new Functional(n.name, n.stage, n.keyExprs.collect { m[it] as IExpr }, m[n.valueExpr] as IExpr)
 	}
 
 	IVisitable exit(Predicate n, Map<IVisitable, IVisitable> m) {
-		(n.exprs.find { it != m[it] }) ?
-				rec(new Predicate(n.name, n.stage, n.exprs.collect { m[it] as IExpr })) : n
+		new Predicate(n.name, n.stage, n.exprs.collect { m[it] as IExpr })
 	}
 
 	IVisitable exit(Primitive n, Map<IVisitable, IVisitable> m) { n }
 
 	IVisitable exit(BinaryExpr n, Map<IVisitable, IVisitable> m) {
-		def l = m[n.left] as IExpr
-		def r = m[n.right] as IExpr
-		(n.left != l || n.right != r) ? rec(new BinaryExpr(l, n.op, r)) : n
+		new BinaryExpr(m[n.left] as IExpr, n.op, m[n.right] as IExpr)
 	}
 
 	IVisitable exit(ConstantExpr n, Map<IVisitable, IVisitable> m) { n }
 
 	IVisitable exit(GroupExpr n, Map<IVisitable, IVisitable> m) {
-		def e = m[n.expr] as IExpr
-		(n.expr != e) ? rec(new GroupExpr(e)) : n
+		new GroupExpr(m[n.expr] as IExpr)
 	}
 
 	IVisitable exit(VariableExpr n, Map<IVisitable, IVisitable> m) { n }
-
-	// Generic method to keep track of changed elements
-	// Should be overwritten when needed
-	def rec(IVisitable e) { e }
 }

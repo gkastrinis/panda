@@ -11,7 +11,7 @@ import org.clyze.deepdoop.datalog.expr.VariableExpr
 class SouffleAssignTransformer extends DummyTransformer {
 
 	// Keep track of all assignments in current rule
-	Map<String, IExpr> assignments
+	Map<VariableExpr, IExpr> assignments
 	// Dummy expression to replace assignment expressions
 	BinaryExpr dummyExpr = new BinaryExpr(new ConstantExpr(1), BinOperator.EQ, new ConstantExpr(1))
 	// For transitive closure computation
@@ -23,18 +23,15 @@ class SouffleAssignTransformer extends DummyTransformer {
 
 		changed = true
 		assignments = [:]
-		def curHead = n.head
-		def curBody = n.body
+		def head = n.head
+		def body = n.body
 		while (changed) {
 			changed = false
-			def newAssignments = [:]
-			assignments.each { var, e -> newAssignments[var] = e.accept(this) }
-			assignments = newAssignments
-			m[curHead] = curHead.accept(this)
-			if (curBody) m[curBody] = curBody.accept(this)
-			curHead = m[curHead]
-			curBody = m[curBody]
+			head = head.accept(this)
+			body = body?.accept(this)
 		}
+		m[n.head] = head
+		m[n.body] = body
 		assignments = null
 
 		actor.exit(n, m)
@@ -43,8 +40,7 @@ class SouffleAssignTransformer extends DummyTransformer {
 	IVisitable exit(BinaryExpr n, Map<IVisitable, IVisitable> m) {
 		if (n.op == BinOperator.ASGN) {
 			changed = true
-			assignments[(n.left as VariableExpr).name] = n.right
-			//rec(dummyExpr)
+			assignments[n.left as VariableExpr] = n.right
 			return dummyExpr
 		}
 		super.exit(n, m)
@@ -52,13 +48,10 @@ class SouffleAssignTransformer extends DummyTransformer {
 
 	IVisitable exit(VariableExpr n, Map<IVisitable, IVisitable> m) {
 		if (!assignments) return n
-		def e = assignments[n.name]
-		e ? rec(e) : n
-	}
-
-	@Override
-	def rec(IVisitable e) {
-		changed = true
-		return e
+		if (assignments[n]) {
+			changed = true
+			return assignments[n]
+		}
+		return n
 	}
 }
