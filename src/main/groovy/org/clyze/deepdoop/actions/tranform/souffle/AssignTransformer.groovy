@@ -1,6 +1,7 @@
-package org.clyze.deepdoop.actions.tranform
+package org.clyze.deepdoop.actions.tranform.souffle
 
 import org.clyze.deepdoop.actions.IVisitable
+import org.clyze.deepdoop.actions.tranform.DummyTransformer
 import org.clyze.deepdoop.datalog.BinOperator
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.expr.BinaryExpr

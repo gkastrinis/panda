@@ -1,9 +1,10 @@
-package org.clyze.deepdoop.actions.tranform
+package org.clyze.deepdoop.actions.tranform.souffle
 
 import groovy.transform.Canonical
 import org.clyze.deepdoop.actions.IVisitable
 import org.clyze.deepdoop.actions.InfoCollectionVisitingActor
 import org.clyze.deepdoop.actions.TypeInferenceVisitingActor
+import org.clyze.deepdoop.actions.tranform.DummyTransformer
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
