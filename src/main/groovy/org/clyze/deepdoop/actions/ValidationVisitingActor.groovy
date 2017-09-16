@@ -13,7 +13,7 @@ import static org.clyze.deepdoop.datalog.Annotation.Kind.*
 import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.BOOLEAN
 import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.REAL
 
-class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<IVisitable>, TDummyActor<IVisitable> {
+class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements TDummyActor<IVisitable> {
 
 	InfoCollectionVisitingActor infoActor
 

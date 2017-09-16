@@ -14,16 +14,20 @@ import org.clyze.deepdoop.datalog.expr.VariableExpr
 import static org.clyze.deepdoop.datalog.Annotation.Kind.CONSTRUCTOR
 import static org.clyze.deepdoop.datalog.Annotation.Kind.TYPE
 
-class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<IVisitable>, TDummyActor<IVisitable> {
+class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implements TDummyActor<IVisitable> {
 
+	// Symbol table information
 	Map<IVisitable, Set<Relation>> declaringAtoms = [:].withDefault { [] as Set }
 	Map<IVisitable, Set<Relation>> usedAtoms = [:].withDefault { [] as Set }
 	Map<IVisitable, List<VariableExpr>> vars = [:].withDefault { [] }
 
+	// Type information
 	Set<String> allTypes = [] as Set
 	Map<String, String> directSuperType = [:]
-	Map<String, Set<String>> superTypesOrdered = [:]
+	Map<String, List<String>> superTypesOrdered = [:].withDefault { [] }
 	Map<String, Set<String>> subTypes = [:].withDefault { [] as Set }
+
+	// Constructor information
 	Set<String> allConstructors = [] as Set
 	Map<String, String> constructorBaseType = [:]
 	Map<String, Set<String>> constructorsPerType = [:].withDefault { [] as Set }
@@ -38,29 +42,30 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 	InfoCollectionVisitingActor() { actor = this }
 
 	IVisitable exit(Program n, Map m) {
-		declaringAtoms[n] = declaringAtoms[n.globalComp] + (n.comps.values().collect {
-			declaringAtoms[it]
-		}.flatten() as Set<Relation>)
+		declaringAtoms[n] = declaringAtoms[n.globalComp] +
+				(n.comps.values().collect { declaringAtoms[it] }.flatten() as Set<Relation>)
 		usedAtoms[n] = usedAtoms[n.globalComp] +
 				(n.comps.collect { usedAtoms[it.value] }.flatten() as Set<Relation>)
 
 		// Base case for supertypes
-		allTypes.each { type ->
-			def superType = directSuperType[type]
-			superTypesOrdered[type] = (superType ? [superType] : []) as Set
+		allTypes.each {
+			def superType = directSuperType[it]
+			if (superType) superTypesOrdered[it] << superType
 		}
 		// Transitive closure on supertypes
-		def oldDeltaTypes = superTypesOrdered.keySet()
-		while (!oldDeltaTypes.isEmpty()) {
-			def deltaTypes = [] as Set
-			oldDeltaTypes.each { type ->
-				def newSuperTypes = [] as Set
-				superTypesOrdered[type].each { superType -> newSuperTypes += superTypesOrdered[superType] }
-				if (superTypesOrdered[type].addAll(newSuperTypes)) deltaTypes << type
+		def deltaTypes = superTypesOrdered.keySet() + []
+		while (!deltaTypes.isEmpty()) {
+			def newDeltaTypes = [] as Set
+			deltaTypes.each {
+				def lastSuperType = superTypesOrdered[it].last()
+				def newTypes = lastSuperType ? superTypesOrdered[lastSuperType] : []
+				if (newTypes) {
+					superTypesOrdered[it].addAll(newTypes)
+					newDeltaTypes << it
+				}
 			}
-			oldDeltaTypes = deltaTypes
+			deltaTypes = newDeltaTypes
 		}
-
 		superTypesOrdered.each { t, superTypes -> superTypes.each { subTypes[it] << t } }
 
 		return n

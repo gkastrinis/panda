@@ -18,7 +18,7 @@ import org.clyze.deepdoop.system.ErrorManager
 import static org.clyze.deepdoop.datalog.Annotation.Kind.TYPE
 import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.*
 
-class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements IActor<IVisitable>, TDummyActor<IVisitable> {
+class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements TDummyActor<IVisitable> {
 
 	// Relation name x Type (types are final)
 	Map<String, List<String>> inferredTypes = [:].withDefault { [] }
