@@ -31,6 +31,7 @@ enum ErrorId {
 	CONSTR_INCOMP,
 	CONSTR_NON_FUNC,
 	CONSTR_EXT_HEAD,
+	CONSTR_RULE_CYCLE,
 	REFMODE_ARITY,
 	REFMODE_KEY,
 
@@ -74,6 +75,7 @@ enum ErrorId {
 		msgMap[CONSTR_INCOMP] = "Constructor `{0}` used with incompatible type `{1}`"
 		msgMap[CONSTR_NON_FUNC] = "Constructor `{0}` must be a functional relation"
 		msgMap[CONSTR_EXT_HEAD] = "Constructor `{0}` cannot be used with `@ext` in rule head"
+		msgMap[CONSTR_RULE_CYCLE] = "Constructor `{0}` appears in a cycle in rule head"
 		msgMap[REFMODE_ARITY] = "Refmode `{0}` arity must be 2"
 		msgMap[REFMODE_KEY] = "Refmode `{0}` key argument must be primitive"
 

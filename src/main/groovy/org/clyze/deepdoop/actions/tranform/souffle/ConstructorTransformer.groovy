@@ -18,6 +18,9 @@ import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.IExpr
 import org.clyze.deepdoop.datalog.expr.RecordExpr
 import org.clyze.deepdoop.datalog.expr.VariableExpr
+import org.clyze.deepdoop.system.ErrorId
+import org.clyze.deepdoop.system.ErrorManager
+import org.clyze.deepdoop.system.SourceManager
 
 import static org.clyze.deepdoop.datalog.Annotation.Kind.CONSTRUCTOR
 import static org.clyze.deepdoop.datalog.Annotation.Kind.TYPE
@@ -119,10 +122,20 @@ class ConstructorTransformer extends DummyTransformer {
 				.findAll { it instanceof Constructor }
 				.collect { it as Constructor }
 				.each { con ->
-			def max = con.keyExprs
-					.collect { e -> constructorsOrdered.indexOf { it.valueExpr == e } }
-					.max() as int
-			constructorsOrdered.add(max >= 0 ? max : 0, con)
+			// Max index of a constructor that constructs a variable used by `con`
+			def maxBefore = con.keyExprs
+					.collect { e -> constructorsOrdered.findIndexOf { it.valueExpr == e } }
+					.max()
+			// Min index of a constructor that uses the variable constructed by `con`
+			def minAfter = constructorsOrdered.findIndexValues { con.valueExpr in it.keyExprs }
+					.min()
+			// `maxBefore` should be strictly before `minAfter`
+			maxBefore = (maxBefore != -1 ? maxBefore : -2)
+			minAfter = (minAfter != null ? minAfter : -1)
+			if (maxBefore >= minAfter)
+				ErrorManager.error(SourceManager.instance.recall(con), ErrorId.CONSTR_RULE_CYCLE, con.name)
+
+			constructorsOrdered.add(maxBefore >= 0 ? maxBefore : 0, con)
 		}
 
 		inRuleHead = true
