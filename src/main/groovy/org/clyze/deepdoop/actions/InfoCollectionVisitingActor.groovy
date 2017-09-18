@@ -10,6 +10,9 @@ import org.clyze.deepdoop.datalog.expr.BinaryExpr
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.GroupExpr
 import org.clyze.deepdoop.datalog.expr.VariableExpr
+import org.clyze.deepdoop.system.ErrorId
+import org.clyze.deepdoop.system.ErrorManager
+import org.clyze.deepdoop.system.SourceManager
 
 import static org.clyze.deepdoop.datalog.Annotation.Kind.CONSTRUCTOR
 import static org.clyze.deepdoop.datalog.Annotation.Kind.TYPE
@@ -31,6 +34,7 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 	Set<String> allConstructors = [] as Set
 	Map<String, String> constructorBaseType = [:]
 	Map<String, Set<String>> constructorsPerType = [:].withDefault { [] as Set }
+	Map<Rule, List<Constructor>> constructorsOrderedPerRule = [:]
 
 	// Predicate Name x Set of Rules
 	Map<String, Set<Rule>> affectedRules = [:].withDefault { [] as Set }
@@ -102,8 +106,8 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 	}
 
 	IVisitable exit(Declaration n, Map m) {
-		declaringAtoms[n] = [n.atom]
-		usedAtoms[n] = n.types
+		declaringAtoms[n] = [n.atom] as Set
+		usedAtoms[n] = n.types as Set
 
 		def predName = n.atom.name
 
@@ -130,10 +134,43 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 		declaringAtoms[n] = usedAtoms[n.head]
 		usedAtoms[n] = usedAtoms[n.body]
 
-		if (n.body)
-			n.body.elements
-					.findAll { it instanceof Relation }
-					.each { affectedRules[(it as Relation).name] << n }
+		n.body?.elements
+				?.findAll { it instanceof Relation }
+				?.each { affectedRules[(it as Relation).name] << n }
+
+		// Count how many times a variable is constructed in the head
+		// It should be at max once
+		def varConstructionCounter = [:].withDefault { 0 }
+		// Order constructors appearing in the head based on their dependencies
+		// If C2 needs a variable constructed by C1 it will be after C1
+		List<Constructor> constructorsOrdered = []
+		n.head?.elements
+				?.findAll { it instanceof Constructor }
+				?.collect { it as Constructor }
+				?.each { con ->
+			def loc = SourceManager.instance.recall(con)
+
+			varConstructionCounter[con.valueExpr]++
+			if (varConstructionCounter[con.valueExpr] > 1)
+				ErrorManager.error(loc, ErrorId.VAR_MULTIPLE_CONSTR, con.valueExpr)
+
+			// Max index of a constructor that constructs a variable used by `con`
+			def maxBefore = con.keyExprs
+					.collect { e -> constructorsOrdered.findIndexOf { it.valueExpr == e } }
+					.max()
+			// Min index of a constructor that uses the variable constructed by `con`
+			def minAfter = constructorsOrdered.findIndexValues { con.valueExpr in it.keyExprs }
+					.min()
+			// `maxBefore` should be strictly before `minAfter`
+			maxBefore = (maxBefore != -1 ? maxBefore : -2)
+			minAfter = (minAfter != null ? minAfter : -1)
+			if (maxBefore >= minAfter)
+				ErrorManager.error(loc, ErrorId.CONSTR_RULE_CYCLE, con.name)
+
+			constructorsOrdered.add(maxBefore >= 0 ? maxBefore : 0, con)
+		}
+		constructorsOrderedPerRule[n] = constructorsOrdered
+
 		null
 	}
 
@@ -157,7 +194,7 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 	}
 
 	IVisitable exit(LogicalElement n, Map m) {
-		usedAtoms[n] = n.elements.collect { usedAtoms[it] }.flatten() as List<Relation>
+		usedAtoms[n] = n.elements.collect { usedAtoms[it] }.flatten() as Set<Relation>
 
 		vars[n] = n.elements.collect { vars[it] }.flatten() as List<VariableExpr>
 		null
@@ -181,7 +218,7 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 	}
 
 	IVisitable exit(Functional n, Map m) {
-		usedAtoms[n] = [n]
+		usedAtoms[n] = [n] as Set
 
 		vars[n] = (n.keyExprs + [n.valueExpr]).collect { vars[it] }.flatten() as List<VariableExpr>
 
@@ -190,7 +227,7 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 	}
 
 	IVisitable exit(Predicate n, Map m) {
-		usedAtoms[n] = [n]
+		usedAtoms[n] = [n] as Set
 
 		vars[n] = n.exprs.collect { vars[it] }.flatten() as List<VariableExpr>
 		null

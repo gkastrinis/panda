@@ -15,8 +15,7 @@ class NormalizingTransformer extends DummyTransformer {
 
 	Program exit(Program n, Map<IVisitable, IVisitable> m) {
 		// Flatten components that extend other components
-		def newComps = [:]
-		n.comps.values().each {
+		def newComps = n.comps.values().collectEntries {
 			Component currComp = m[it] as Component
 			Component flatComp
 			if (currComp.superComp) {
@@ -28,7 +27,7 @@ class NormalizingTransformer extends DummyTransformer {
 			} else
 				flatComp = currComp
 
-			newComps[flatComp.name] = flatComp
+			[(flatComp.name): flatComp]
 		}
 		return new Program(m[n.globalComp] as Component, newComps, n.inits, n.props)
 	}
@@ -43,23 +42,23 @@ class NormalizingTransformer extends DummyTransformer {
 	Declaration exit(Declaration n, Map<IVisitable, IVisitable> m) { n }
 
 	Rule exit(Rule n, Map<IVisitable, IVisitable> m) {
-		new Rule(m[n.head], m[n.body], n.annotations)
+		new Rule(m[n.head] as LogicalElement, m[n.body] as LogicalElement, n.annotations)
 	}
 
 	AggregationElement exit(AggregationElement n, Map<IVisitable, IVisitable> m) {
-		new AggregationElement(n.var, n.predicate, m[n.body])
+		new AggregationElement(n.var, n.predicate, m[n.body] as IElement)
 	}
 
 	GroupElement exit(GroupElement n, Map<IVisitable, IVisitable> m) {
-		new GroupElement(m[n.element])
+		new GroupElement(m[n.element] as IElement)
 	}
 
 	// Flatten LogicalElement "trees"
 	LogicalElement exit(LogicalElement n, Map<IVisitable, IVisitable> m) {
 		def newElements = []
-		n.elements.each { e ->
-			def flatE = m[e] as IElement
-			if (flatE instanceof LogicalElement && (flatE as LogicalElement).type == n.type)
+		n.elements.each {
+			def flatE = m[it] as IElement
+			if (flatE instanceof LogicalElement && flatE.type == n.type)
 				newElements += (flatE as LogicalElement).elements
 			else
 				newElements << flatE
@@ -68,7 +67,7 @@ class NormalizingTransformer extends DummyTransformer {
 	}
 
 	NegationElement exit(NegationElement n, Map<IVisitable, IVisitable> m) {
-		new NegationElement(m[n.element])
+		new NegationElement(m[n.element] as IElement)
 	}
 
 	CmdComponent exit(CmdComponent n, Map<IVisitable, IVisitable> m) { n }

@@ -36,14 +36,14 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		currentFile = createUniqueFile("out_", ".dl")
 		results << new Result(Result.Kind.LOGIC, currentFile)
 
-		constructorTransformer = new ConstructorTransformer(infoActor, inferenceActor)
+		constructorTransformer = new ConstructorTransformer(infoActor, typeInferenceActor)
 
 		// Transform program before visiting nodes
 		def n = p.accept(new NormalizingTransformer())
 				.accept(new InitializingTransformer())
 				.accept(infoActor)
 				.accept(new ValidationVisitingActor(infoActor))
-				.accept(inferenceActor)
+				.accept(typeInferenceActor)
 				.accept(new AssignTransformer())
 				.accept(constructorTransformer)
 
@@ -55,7 +55,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		n.declarations.each { m[it] = it.accept(this) }
 
 		// Handle explicit declarations
-		inferenceActor.inferredTypes
+		typeInferenceActor.inferredTypes
 				.findAll { rel, types -> !(rel in explicitDeclarations) }
 				.each { rel, typeNames ->
 			def types = typeNames.withIndex().collect { String t, int i -> new Predicate(t, null, [var1(i)]) }

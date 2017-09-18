@@ -26,6 +26,7 @@ enum ErrorId {
 	REL_EXT_HEAD,
 	VAR_UNKNOWN,
 	VAR_UNUSED,
+	VAR_MULTIPLE_CONSTR,
 	CONSTR_UNKNOWN,
 	CONSTR_RULE,
 	CONSTR_INCOMP,
@@ -70,6 +71,7 @@ enum ErrorId {
 		msgMap[REL_EXT_HEAD] = "Relation `{0}` used with `@ext` in rule head, inside a component"
 		msgMap[VAR_UNKNOWN] = "Unknown var `{0}`"
 		msgMap[VAR_UNUSED] = "Unused var `{0}`"
+		msgMap[VAR_MULTIPLE_CONSTR] = "Var `{0}` constructed by multiple constructors"
 		msgMap[CONSTR_UNKNOWN] = "Unknown constructor `{0}`"
 		msgMap[CONSTR_RULE] = "Constructor `{0}` used as a normal relation in rule head"
 		msgMap[CONSTR_INCOMP] = "Constructor `{0}` used with incompatible type `{1}`"

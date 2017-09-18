@@ -29,14 +29,14 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 				.accept(new InitializingTransformer())
 				.accept(infoActor)
 				.accept(new ValidationVisitingActor(infoActor))
-				.accept(inferenceActor)
+				.accept(typeInferenceActor)
 
 		return super.visit(n as Program)
 	}
 
 	void enter(Program n) {
 		emit "/// Declarations of normal relations"
-		inferenceActor.inferredTypes.each { predName, types ->
+		typeInferenceActor.inferredTypes.each { predName, types ->
 			def functionalArity = infoActor.functionalRelations[predName]
 			def body = types.withIndex().collect { type, i -> "${mapTypes(type)}(x$i)" }.join(", ")
 			if (predName in infoActor.refmodeRelations) {

@@ -72,6 +72,7 @@ class DatalogSpec extends Specification {
 		"fail26.logic" | ErrorId.DECL_MALFORMED
 		"fail27.logic" | ErrorId.ANNOTATION_MISTYPED_ARG
 		"fail28.logic" | ErrorId.CONSTR_RULE_CYCLE
+		"fail29.logic" | ErrorId.VAR_MULTIPLE_CONSTR
 		/*
 		"fail100.logic"  | ErrorId.DEP_CYCLE
 		"fail101.logic"  | ErrorId.CMD_RULE

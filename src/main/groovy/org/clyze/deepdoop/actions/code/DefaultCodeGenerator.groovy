@@ -24,7 +24,7 @@ class DefaultCodeGenerator extends PostOrderVisitor<String> implements IActor<St
 	File currentFile
 
 	InfoCollectionVisitingActor infoActor = new InfoCollectionVisitingActor()
-	TypeInferenceVisitingActor inferenceActor = new TypeInferenceVisitingActor(infoActor)
+	TypeInferenceVisitingActor typeInferenceActor = new TypeInferenceVisitingActor(infoActor)
 	List<Result> results = []
 
 	DefaultCodeGenerator(File outDir) {
