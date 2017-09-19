@@ -23,3 +23,7 @@ con6[x, y] = z new T4
 concon[a, x] = b new F1,
 con6[x, y] = a new T4
 <- x = "World", y = 10.
+
+@Type Animal
+@type Cat -> Animal
+@type Dog -> Animal

@@ -28,7 +28,7 @@ import static org.clyze.deepdoop.datalog.expr.VariableExpr.genN as varN
 class ConstructorTransformer extends DummyTransformer {
 
 	InfoCollectionVisitingActor infoActor
-	TypeInferenceVisitingActor inferenceActor
+	TypeInferenceVisitingActor typeInferenceActor
 
 	// Recurring constant
 	IExpr NIL = new ConstantExpr("nil")
@@ -42,7 +42,12 @@ class ConstructorTransformer extends DummyTransformer {
 	Set<Rule> recordRules = [] as Set
 	// Map external types to internal record ones
 	// e.g. T1 --> [_R0, _R1, _R2]
+	// Each type in the hierarchy needs to have the same structure
+	// in order to achieve polymorphism
 	Map<String, List<String>> typeToRecords = [:]
+	// Each type in the hierarchy is mapped to a common raw type
+	// representing the common structure
+	Map<String, String> typeToRawType = [:]
 
 	boolean inRuleHead
 	// The variable currently being constructed
@@ -51,12 +56,31 @@ class ConstructorTransformer extends DummyTransformer {
 	RecordExpr constructedRecord
 	// The internal record type, e.g. _R01
 	String constructedRecordType
-	//
+	// Type for current relation parameter (in rule head)
 	String currentType
 
 	void enter(Program n) {
 		recordTypes = infoActor.allConstructors.withIndex()
 				.collectEntries { con, i -> [(con): "_R$i" as String] }
+
+		def mapToRecords = { String t -> infoActor.constructorsPerType[t].collect { recordTypes[it] } }
+		// Find all types that are roots in the type hierarchy trees
+		infoActor.allTypes
+				.findAll { !infoActor.directSuperType[it] }
+				.each { root ->
+
+			def record = mapToRecords(root) + infoActor.subTypes[root].collect { mapToRecords(it) }.flatten()
+
+			([root] + infoActor.subTypes[root]).each {
+				typeToRecords[it] = record
+				typeToRawType[it] = "_${root}_RAW" as String
+			}
+
+			def rawType = new Predicate(typeToRawType[root], null, varN(record.size()))
+			def typePreds = record.withIndex()
+					.collect { String t, int i -> new Predicate(t, null, [var1(i)]) }
+			recordDeclarations << new Declaration(rawType, typePreds)
+		}
 	}
 
 	IVisitable exit(Component n, Map<IVisitable, IVisitable> m) {
@@ -66,44 +90,27 @@ class ConstructorTransformer extends DummyTransformer {
 	}
 
 	IVisitable exit(Declaration n, Map<IVisitable, IVisitable> m) {
-		def mapToRecords = { String t -> infoActor.constructorsPerType[t].collect { recordTypes[it] } }
-
 		if (CONSTRUCTOR in n.annotations) {
 			def name = n.atom.name
-			def record = inferenceActor.inferredTypes[name].withIndex()
+			def record = typeInferenceActor.inferredTypes[name].withIndex()
 					.dropRight(1)
 					.collect { String t, int i -> new Predicate(t, null, [var1(i)]) }
-			recordDeclarations << new Declaration(new Predicate(recordTypes[name], null, varN(record.size())), record)
+			recordDeclarations << new Declaration(new Predicate(recordTypes[name], null, varN(record.size())), record, n.annotations)
 		}
 
 		if (TYPE in n.annotations) {
 			def type = n.atom.name
-			def mainRecords = mapToRecords(type)
-			// TODO: ordered?
-			def rest = infoActor.subTypes[type].collect { mapToRecords(it) }.flatten()
-			def typeRecords = mainRecords + rest
-			typeToRecords[type] = typeRecords
-
-			def record = typeRecords.withIndex()
-					.collect { String t, int i -> new Predicate(t, null, [var1(i)]) }
-			n = new Declaration(new Predicate(type, null, varN(record.size())), record)
+			def rawType = new Predicate(typeToRawType[type], null, [var1(0)])
+			n = new Declaration(new Predicate(type, null, [var1(0)]), [rawType], n.annotations)
 			recordDeclarations << n
 
 			// Generate extra rule for supertype
 			def superType = infoActor.directSuperType[type]
 			if (superType) {
-				def superTypeRecords = typeToRecords[superType]
-				def curIndex = superTypeRecords.indexOf(typeRecords.first())
-				def headExprs = (0..<superTypeRecords.size()).collect { NIL }
-				def bodyExprs = []
-				typeRecords.each {
-					def v = var1(curIndex)
-					headExprs[curIndex++] = v
-					bodyExprs << v
-				}
+				def vars = [var1(0)]
 				recordRules << new Rule(
-						new LogicalElement(new Predicate(superType, null, [new RecordExpr(headExprs)])),
-						new LogicalElement(new Predicate(type, null, [new RecordExpr(bodyExprs)])))
+						new LogicalElement(new Predicate(superType, null, vars)),
+						new LogicalElement(new Predicate(type, null, vars)))
 			}
 		}
 		return n
@@ -140,7 +147,7 @@ class ConstructorTransformer extends DummyTransformer {
 		actor.enter(n)
 		if (!inRuleHead) return n
 		exprs.withIndex().each { IExpr e, int i ->
-			currentType = inferenceActor.inferredTypes[n.name][i]
+			currentType = typeInferenceActor.inferredTypes[n.name][i]
 			m[e] = e.accept(this)
 		}
 		actor.exit(n, m)
