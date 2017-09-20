@@ -12,7 +12,7 @@ class VariableExpr implements IExpr {
 
 	String toString() { name }
 
-	static VariableExpr gen1(int i) { new VariableExpr("var$i") }
+	static VariableExpr gen1(int i) { new VariableExpr("v$i") }
 
 	static List<VariableExpr> genN(int n) { (0..<n).collect { gen1(n) } }
 }

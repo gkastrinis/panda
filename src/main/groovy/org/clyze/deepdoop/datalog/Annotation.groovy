@@ -30,7 +30,7 @@ class Annotation {
 		this.kind = findKind(name)
 		this.args = values
 		this.args.values().each {
-			if (it.type == ConstantExpr.Type.STRING)
+			if (it.type == STRING)
 				it.value = (it.value as String)[1..-2]
 		}
 	}
