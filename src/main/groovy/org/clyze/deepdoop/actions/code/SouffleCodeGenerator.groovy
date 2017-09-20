@@ -5,12 +5,10 @@ import org.clyze.deepdoop.actions.IVisitable
 import org.clyze.deepdoop.actions.ValidationVisitingActor
 import org.clyze.deepdoop.actions.tranform.InitializingTransformer
 import org.clyze.deepdoop.actions.tranform.NormalizingTransformer
-import org.clyze.deepdoop.actions.tranform.souffle.AssignTransformer
 import org.clyze.deepdoop.actions.tranform.souffle.ConstructorTransformer
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
-import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.AggregationElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Functional
@@ -22,21 +20,13 @@ import org.clyze.deepdoop.system.Result
 
 import static org.clyze.deepdoop.datalog.Annotation.Kind.*
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
-import static org.clyze.deepdoop.datalog.expr.VariableExpr.genN as varN
 
 @InheritConstructors
 class SouffleCodeGenerator extends DefaultCodeGenerator {
 
-	ConstructorTransformer constructorTransformer
-
-	// Relations that have an explicit declaration
-	Set<String> explicitDeclarations = [] as Set
-
 	String visit(Program p) {
 		currentFile = createUniqueFile("out_", ".dl")
 		results << new Result(Result.Kind.LOGIC, currentFile)
-
-		constructorTransformer = new ConstructorTransformer(infoActor, typeInferenceActor)
 
 		// Transform program before visiting nodes
 		def n = p.accept(new NormalizingTransformer())
@@ -44,36 +34,17 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 				.accept(infoActor)
 				.accept(new ValidationVisitingActor(infoActor))
 				.accept(typeInferenceActor)
-				.accept(constructorTransformer)
+				.accept(new ConstructorTransformer(infoActor, typeInferenceActor))
 				//.accept(new AssignTransformer())
 
 		return super.visit(n as Program)
 	}
 
-	String visit(Component n) {
-		actor.enter(n)
-		n.declarations.each { m[it] = it.accept(this) }
-
-		// Handle explicit declarations
-		typeInferenceActor.inferredTypes
-				.findAll { rel, types -> !(rel in explicitDeclarations) }
-				.each { rel, typeNames ->
-			def types = typeNames.withIndex().collect { String t, int i -> new Predicate(t, null, [var1(i)]) }
-			def d = new Declaration(new Predicate(rel, null, varN(types.size())), types)
-			m[d] = d.accept(this)
-		}
-
-		n.rules.each { m[it] = it.accept(this) }
-		actor.exit(n, m)
-	}
-
 	String exit(Declaration n, Map<IVisitable, String> m) {
 		def name = n.atom.name
-		explicitDeclarations << name
-
 		def params = n.types.withIndex().collect { t, int i -> "${var1(i)}:${map(t.name)}" }.join(", ")
-		if (n in constructorTransformer.recordDeclarations)
-			emit ".type ${mini(name)} = [$params]"
+		if (TYPE in n.annotations)
+			emit ".type ${map(mini(name))} = [$params]"
 		else
 			emit ".decl ${mini(name)}($params)"
 
@@ -131,9 +102,8 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	static def mini(def name) { name.replace ":", "_" }
 
 	static def map(def name) {
-		//name == "string" ? "symbol" : "number"
 		if (name == "string") return "symbol"
 		else if (name == "int") return "number"
-		else return name
+		else return "_T_$name"
 	}
 }
