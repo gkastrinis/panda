@@ -104,6 +104,6 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	static def map(def name) {
 		if (name == "string") return "symbol"
 		else if (name == "int") return "number"
-		else return "_T_$name"
+		else return "__T_$name"
 	}
 }

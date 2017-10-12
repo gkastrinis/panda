@@ -24,7 +24,7 @@ import static org.clyze.deepdoop.datalog.expr.VariableExpr.genN as varN
 
 // (1) For each constructor, a new type is generated that
 // represents its structure. The structure is a record of
-// all key expressions.
+// all key parameters.
 // (2) Every type in the same hierarchy must have the same
 // structure in order to enable polymorphism. The structure
 // comprises of a selector record, i.e. only one part is
@@ -33,13 +33,13 @@ import static org.clyze.deepdoop.datalog.expr.VariableExpr.genN as varN
 // defined but it is consistent throughout the transformations.
 // (3) For every type, a new relation is generated in order
 // to keep entries of that type.
-// (4) Also, additional rules are generate to propagate entries
+// (4) Additionally, rules are generate to propagate entries
 // from subtypes to supertypes.
 @Canonical
 class ConstructorTransformer extends DummyTransformer {
 
-	InfoCollectionVisitingActor I
-	TypeInferenceVisitingActor T
+	InfoCollectionVisitingActor infoActor
+	TypeInferenceVisitingActor typeActor
 
 	Set<Declaration> extraDecls = [] as Set
 	Set<Rule> extraRules = [] as Set
@@ -66,10 +66,10 @@ class ConstructorTransformer extends DummyTransformer {
 	void enter(Program n) {
 		// Re: (2)
 		// Find all types that are roots in the type hierarchy
-		I.allTypes.findAll { !I.directSuperType[it] }.each { root ->
-			def types = [root] + I.subTypes[root]
+		infoActor.allTypes.findAll { !infoActor.directSuperType[it] }.each { root ->
+			def types = [root] + infoActor.subTypes[root]
 			def record = types
-					.collect { I.constructorsPerType[it] }
+					.collect { infoActor.constructorsPerType[it] }
 					.flatten()
 					.withIndex()
 					.collect { String con, int i -> new Type(con, var1(i)) }
@@ -88,7 +88,7 @@ class ConstructorTransformer extends DummyTransformer {
 
 	IVisitable exit(Component n, Map<IVisitable, IVisitable> m) {
 		// Handle explicit declarations
-		T.inferredTypes
+		typeActor.inferredTypes
 				.findAll { rel, typeNames -> !(rel in explicitDeclarations) }
 				.each { rel, typeNames ->
 			def types = typeNames.withIndex().collect { String t, int i ->
@@ -126,11 +126,17 @@ class ConstructorTransformer extends DummyTransformer {
 					[new Type(typeToCommonType[type], var1(0))])
 
 			// Re: 4
-			def superType = I.directSuperType[type]
+			def superType = infoActor.directSuperType[type]
 			if (superType)
 				extraRules << new Rule(
 						new LogicalElement(new Predicate(superType, null, [var1(0)])),
 						new LogicalElement(new Predicate(type, null, [var1(0)])))
+		}
+		else {
+			def newTypes = n.types.collect {
+				it instanceof Type ? new Type(typeToCommonType[it.name], it.exprs.first()) : it
+			}
+			n = new Declaration(n.atom, newTypes, n.annotations)
 		}
 		return n
 	}
@@ -139,14 +145,15 @@ class ConstructorTransformer extends DummyTransformer {
 		actor.enter(n)
 
 		inRuleHead = true
-		def head = n.head
-		I.constructorsOrderedPerRule[n].each {
+		def head = n.head as LogicalElement
+		infoActor.constructorsOrderedPerRule[n].each {
 			// Map to the updated (from a previous iteration)
 			// version of the constructor, if any
 			def con = (m[it] ?: it) as Constructor
 			constructedVar = con.valueExpr as VariableExpr
 			constructedRecord = new RecordExpr(con.keyExprs)
 			constructedRecordType = con.name
+			head.elements << new Predicate(con.type.name, null, [constructedVar])
 			head = head.accept(this)
 		}
 		m[n.head] = head
@@ -166,7 +173,7 @@ class ConstructorTransformer extends DummyTransformer {
 		actor.enter(n)
 		if (!inRuleHead) return n
 		exprs.withIndex().each { IExpr e, int i ->
-			currentType = T.inferredTypes[n.name][i]
+			currentType = typeActor.inferredTypes[n.name][i]
 			m[e] = e.accept(this)
 		}
 		actor.exit(n, m)

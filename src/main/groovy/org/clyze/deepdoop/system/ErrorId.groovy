@@ -61,7 +61,7 @@ enum ErrorId {
 		msgMap[DECL_MALFORMED] = "Malformed declaration"
 		msgMap[TYPE_UNKNOWN] = "Unknown type `{0}`"
 		msgMap[TYPE_UNSUPP] = "Unsupported type `{0}` (currently)"
-		msgMap[TYPE_FIXED] = "Fixed type `{0}` (at index {1}) for relation `{2}`"
+		msgMap[TYPE_FIXED] = "Declared type `{0}` (at index {1}) for relation `{2}`"
 		msgMap[TYPE_INCOMP] = "Incompatible types for relation `{0}` (at index {1})"
 		msgMap[TYPE_INFERENCE_FAIL] = "Type inference was inconclusive: cannot reach fixpoint"
 		msgMap[TYPE_RULE] = "Type `{0}` used as a normal relation in rule head"
