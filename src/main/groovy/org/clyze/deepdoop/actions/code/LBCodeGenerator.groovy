@@ -10,8 +10,6 @@ import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.element.AggregationElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
-import org.clyze.deepdoop.datalog.element.relation.Functional
-import org.clyze.deepdoop.datalog.element.relation.Predicate
 import org.clyze.deepdoop.system.Result
 
 import static org.clyze.deepdoop.datalog.Annotation.Kind.CONSTRUCTOR
@@ -75,31 +73,31 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 	}
 
 	String exit(AggregationElement n, Map<IVisitable, String> m) {
-		def pred = n.predicate.name
-		def lbPred = m[n.predicate].replaceFirst("sum", "total")
+		def pred = n.relation.name
+		def lbPred = m[n.relation].replaceFirst("sum", "total")
 		if (pred == "count" || pred == "min" || pred == "max" || pred == "sum")
 			"agg<<${m[n.var]} = $lbPred>> ${m[n.body]}"
 		else null
 	}
 
 	String exit(Constructor n, Map<IVisitable, String> m) {
-		def constructor = exit(n as Functional, m)
-		"$constructor, ${n.type.name}(${m[n.valueExpr]})"
+//		def constructor = exit(n as Functional, m)
+//		"$constructor, ${n.type.name}(${m[n.valueExpr]})"
 	}
 
-	String exit(Functional n, Map<IVisitable, String> m) {
-		if (n.name in infoActor.refmodeRelations) {
-			return "${n.name}(${m[n.valueExpr]}:${m[n.keyExprs.first()]})"
-		} else {
-			def keyParams = n.keyExprs.collect { m[it] }.join(", ")
-			return "${n.name}[$keyParams] = ${m[n.valueExpr]}"
-		}
-	}
-
-	String exit(Predicate n, Map<IVisitable, String> m) {
-		def params = n.exprs.collect { m[it] }.join(", ")
-		return "${n.name}($params)"
-	}
+//	String exit(Functional n, Map<IVisitable, String> m) {
+//		if (n.name in infoActor.refmodeRelations) {
+//			return "${n.name}(${m[n.valueExpr]}:${m[n.keyExprs.first()]})"
+//		} else {
+//			def keyParams = n.keyExprs.collect { m[it] }.join(", ")
+//			return "${n.name}[$keyParams] = ${m[n.valueExpr]}"
+//		}
+//	}
+//
+//	String exit(Predicate n, Map<IVisitable, String> m) {
+//		def params = n.exprs.collect { m[it] }.join(", ")
+//		return "${n.name}($params)"
+//	}
 
 	/*void emit(Program n, Map<IVisitable, String> m, Set<DependencyGraph.Node> nodes) {
 		latestFile = createUniqueFile("out_", ".logic")

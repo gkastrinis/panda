@@ -6,7 +6,9 @@ import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.CmdComponent
 import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.*
-import org.clyze.deepdoop.datalog.element.relation.*
+import org.clyze.deepdoop.datalog.element.relation.Constructor
+import org.clyze.deepdoop.datalog.element.relation.Relation
+import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.*
 
 interface IVisitor<T> {
@@ -24,23 +26,19 @@ interface IVisitor<T> {
 
 	T visit(ComparisonElement n)
 
+	T visit(ConstructionElement n)
+
 	T visit(GroupElement n)
 
 	T visit(LogicalElement n)
 
 	T visit(NegationElement n)
 
-	T visit(Relation n)
-
 	T visit(Constructor n)
 
+	T visit(Relation n)
+
 	T visit(Type n)
-
-	T visit(Functional n)
-
-	T visit(Predicate n)
-
-	T visit(Primitive n)
 
 	T visit(BinaryExpr n)
 

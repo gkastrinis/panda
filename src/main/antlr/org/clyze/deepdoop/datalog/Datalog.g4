@@ -7,7 +7,6 @@ package org.clyze.deepdoop.datalog;
 program
 	: (component | cmd | initialize | propagate | datalog)* ;
 
-
 component
 	: COMP IDENTIFIER (':' IDENTIFIER)? '{' datalog* '}' (AS identifierList)? ;
 
@@ -21,91 +20,55 @@ propagate
 	: IDENTIFIER '{' propagationList '}' '->' (IDENTIFIER | GLOBAL) ;
 
 datalog
-	: rightArrow | rightArrowBlock | leftArrow | lineMarker ;
+	: declaration | annotationBlock | rule_ | lineMarker ;
 
-
-rightArrow
-	: annotationList? predicateName ('->' predicateName)?
-	| annotationList? compound '->' compound '.'
+declaration
+	: annotationList? relationName ('<:' relationName)?
+	| annotationList? (relation | constructor) ':' relationNameList
 	;
 
-rightArrowBlock
-	: annotationList '{' rightArrow+ '}' ;
+annotationBlock
+	: annotationList '{' declaration+ '}' ;
 
-leftArrow
-	: annotationList? predicateListExt ('<-' compound)? '.'
-	| functional '<-' aggregation '.'
+rule_
+	: annotationList? headList ('<-' bodyList)? '.'
+	| relation '<-' aggregation '.'
 	;
 
+relation
+	: relationName AT_STAGE? '(' exprList? ')' ;
 
-predicate
-	: functional
-	| normalPredicate
-	;
-
-functional
-	: predicateName AT_STAGE? '[' exprList? ']' '=' expr ;
-
-normalPredicate
-	: predicateName AT_STAGE? '(' exprList? ')' ;
-
-aggregation
-	: AGG '<<' IDENTIFIER '=' predicate '>>' compound ;
+constructor
+	: relationName '[' exprList? ']' '=' expr ;
 
 construction
-	: functional NEW predicateName ;
+	: constructor NEW relationName ;
 
-predicateListExt
-	: (predicate | construction)
-	| predicateListExt ',' (predicate | construction)
-	;
+aggregation
+	: AGG '<<' IDENTIFIER '=' relation '>>' bodyList ;
 
-compoundElement
-	: predicate
+bodyList
+	: relation
+	| constructor
 	| comparison
-	| assignment
-	;
-
-compound
-	: compoundElement
-	| '!' compound
-	| '(' compound ')'
-	| compound (',' | ';') compound
-	;
-
-identifierList
-	: IDENTIFIER
-	| identifierList ',' IDENTIFIER
-	;
-
-propagationList
-    : ALL
-	| predicateName
-	| propagationList ',' predicateName
+	| assignment // TODO remove as well
+	| '!' bodyList
+	| '(' bodyList ')'
+	| bodyList (',' | ';') bodyList
 	;
 
 value
 	: IDENTIFIER '=' constant ;
 
-valueList
-	: value
-	| valueList ',' value
-	;
-
 annotation
 	: '@' IDENTIFIER ('(' valueList ')')? ;
-
-annotationList
-	: annotation
-	| annotationList annotation
-	;
 
 lineMarker
 	: '#' INTEGER STRING INTEGER* ;
 
-predicateName
+relationName
 	: '$'? IDENTIFIER
-	| predicateName ':' IDENTIFIER
+	| relationName ':' IDENTIFIER
 	;
 
 constant
@@ -122,16 +85,51 @@ expr
 	| '(' expr ')'
 	;
 
-exprList
-	: expr
-	| exprList ',' expr
-	;
-
 comparison
 	: expr ('=' | '<' | '<=' | '>' | '>=' | '!=') expr ;
 
 assignment
 	: IDENTIFIER ':=' expr ;
+
+
+
+// Various lists
+
+propagationList
+    : ALL
+	| relationName
+	| propagationList ',' relationName
+	;
+
+annotationList
+	: annotation
+	| annotationList annotation
+	;
+
+relationNameList
+	: relationName
+	| relationNameList ',' relationName
+	;
+
+headList
+	: (relation | construction)
+	| headList ',' (relation | construction)
+	;
+
+identifierList
+	: IDENTIFIER
+	| identifierList ',' IDENTIFIER
+	;
+
+valueList
+    : value
+    | valueList ',' value
+    ;
+
+exprList
+	: expr
+	| exprList ',' expr
+	;
 
 
 

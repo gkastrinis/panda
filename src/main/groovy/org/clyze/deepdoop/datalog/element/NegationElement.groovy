@@ -8,7 +8,6 @@ import org.clyze.deepdoop.actions.IVisitor
 @ToString(includePackage = false)
 class NegationElement implements IElement {
 
-	@Delegate
 	IElement element
 
 	def <T> T accept(IVisitor<T> v) { v.visit(this) }

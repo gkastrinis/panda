@@ -6,7 +6,9 @@ import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.CmdComponent
 import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.*
-import org.clyze.deepdoop.datalog.element.relation.*
+import org.clyze.deepdoop.datalog.element.relation.Constructor
+import org.clyze.deepdoop.datalog.element.relation.Relation
+import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.*
 
 interface IActor<T> {
@@ -38,6 +40,10 @@ interface IActor<T> {
 
 	T exit(ComparisonElement n, Map<IVisitable, T> m)
 
+	void enter(ConstructionElement n)
+
+	T exit(ConstructionElement n, Map<IVisitable, T> m)
+
 	void enter(GroupElement n)
 
 	T exit(GroupElement n, Map<IVisitable, T> m)
@@ -61,18 +67,6 @@ interface IActor<T> {
 	void enter(Type n)
 
 	T exit(Type n, Map<IVisitable, T> m)
-
-	void enter(Functional n)
-
-	T exit(Functional n, Map<IVisitable, T> m)
-
-	void enter(Predicate n)
-
-	T exit(Predicate n, Map<IVisitable, T> m)
-
-	void enter(Primitive n)
-
-	T exit(Primitive n, Map<IVisitable, T> m)
 
 	void enter(BinaryExpr n)
 

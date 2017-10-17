@@ -6,7 +6,6 @@ import org.clyze.deepdoop.datalog.element.ComparisonElement
 import org.clyze.deepdoop.datalog.element.GroupElement
 import org.clyze.deepdoop.datalog.element.LogicalElement
 import org.clyze.deepdoop.datalog.element.NegationElement
-import org.clyze.deepdoop.datalog.element.relation.Primitive
 import org.clyze.deepdoop.datalog.expr.BinaryExpr
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.GroupExpr
@@ -18,7 +17,7 @@ import java.nio.file.Paths
 
 import static org.clyze.deepdoop.datalog.element.LogicalElement.LogicType.AND
 
-class DefaultCodeGenerator extends PostOrderVisitor<String> implements IActor<String>, TDummyActor<String> {
+class DefaultCodeGenerator extends PostOrderVisitor<String> implements TDummyActor<String> {
 
 	File outDir
 	File currentFile
@@ -31,8 +30,6 @@ class DefaultCodeGenerator extends PostOrderVisitor<String> implements IActor<St
 		actor = this
 		this.outDir = outDir
 	}
-
-	DefaultCodeGenerator(String outDir) { this(new File(outDir)) }
 
 	//String exit(Program n, Map<IVisitable, String> m) { null }
 
@@ -48,6 +45,8 @@ class DefaultCodeGenerator extends PostOrderVisitor<String> implements IActor<St
 
 	String exit(ComparisonElement n, Map<IVisitable, String> m) { m[n.expr] }
 
+	//String exit(ConstructorElement n, Map<IVisitable, String> m) { null }
+
 	String exit(GroupElement n, Map<IVisitable, String> m) { "(${m[n.element]})" }
 
 	String exit(LogicalElement n, Map<IVisitable, String> m) {
@@ -61,12 +60,6 @@ class DefaultCodeGenerator extends PostOrderVisitor<String> implements IActor<St
 	//String exit(Constructor n, Map<IVisitable, String> m) { null }
 
 	//String exit(Type n, Map<IVisitable, String> m) { null }
-
-	//String exit(Functional n, Map<IVisitable, String> m) { null }
-
-	//String exit(Predicate n, Map<IVisitable, String> m) { null }
-
-	String exit(Primitive n, Map<IVisitable, String> m) { "${n.name}(${m[n.var]})" }
 
 	String exit(BinaryExpr n, Map<IVisitable, String> m) { "${m[n.left]} ${mapOp(n.op)} ${m[n.right]}" }
 

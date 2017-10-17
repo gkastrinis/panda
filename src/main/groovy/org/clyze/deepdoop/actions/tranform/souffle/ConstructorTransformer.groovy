@@ -10,8 +10,11 @@ import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.Component
+import org.clyze.deepdoop.datalog.element.ConstructionElement
 import org.clyze.deepdoop.datalog.element.LogicalElement
-import org.clyze.deepdoop.datalog.element.relation.*
+import org.clyze.deepdoop.datalog.element.relation.Constructor
+import org.clyze.deepdoop.datalog.element.relation.Relation
+import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.IExpr
 import org.clyze.deepdoop.datalog.expr.RecordExpr
@@ -75,7 +78,7 @@ class ConstructorTransformer extends DummyTransformer {
 					.collect { String con, int i -> new Type(con, var1(i)) }
 
 			extraDecls << new Declaration(
-					new Predicate("ROOT_${root}", null, []),
+					new Type("ROOT_${root}"),
 					record,
 					[(TYPE): new Annotation("type")])
 
@@ -92,11 +95,9 @@ class ConstructorTransformer extends DummyTransformer {
 				.findAll { rel, typeNames -> !(rel in explicitDeclarations) }
 				.each { rel, typeNames ->
 			def types = typeNames.withIndex().collect { String t, int i ->
-				Primitive.isPrimitive(t) ?
-						new Primitive(t, var1(i)) :
-						new Type(typeToCommonType[t], var1(i))
+				new Type(typeToCommonType[t] ?: t, var1(i))
 			}
-			extraDecls << new Declaration(new Predicate(rel, null, varN(types.size())), types)
+			extraDecls << new Declaration(new Relation(rel, null, varN(types.size())), types)
 		}
 
 		def ds = (n.declarations.collect { m[it] as Declaration } + extraDecls) as Set
@@ -110,29 +111,27 @@ class ConstructorTransformer extends DummyTransformer {
 		if (CONSTRUCTOR in n.annotations) {
 			// Re: (1)
 			def newTypes = n.types.collect {
-				it instanceof Type ? new Type(typeToCommonType[it.name], it.exprs.first()) : it
+				new Type(typeToCommonType[it.name] ?: it.name)
 			}
 			extraDecls << new Declaration(
-					new Predicate(n.atom.name, null, []),
+					new Type(n.atom.name),
 					newTypes.dropRight(1),
 					n.annotations + [(TYPE): new Annotation("type")])
 			n = new Declaration(n.atom, newTypes, n.annotations)
-		}
-		else if (TYPE in n.annotations) {
+		} else if (TYPE in n.annotations) {
 			def type = n.atom.name
 			// Re: 3
 			n = new Declaration(
-					new Predicate(type, null, [var1(0)]),
-					[new Type(typeToCommonType[type], var1(0))])
+					new Type(type),
+					[new Type(typeToCommonType[type])])
 
 			// Re: 4
 			def superType = infoActor.directSuperType[type]
 			if (superType)
 				extraRules << new Rule(
-						new LogicalElement(new Predicate(superType, null, [var1(0)])),
-						new LogicalElement(new Predicate(type, null, [var1(0)])))
-		}
-		else {
+						new LogicalElement(new Relation(superType, null, [var1(0)])),
+						new LogicalElement(new Relation(type, null, [var1(0)])))
+		} else {
 			def newTypes = n.types.collect {
 				it instanceof Type ? new Type(typeToCommonType[it.name], it.exprs.first()) : it
 			}
@@ -146,14 +145,14 @@ class ConstructorTransformer extends DummyTransformer {
 
 		inRuleHead = true
 		def head = n.head as LogicalElement
-		infoActor.constructorsOrderedPerRule[n].each {
+		infoActor.constructionsOrderedPerRule[n].each {
 			// Map to the updated (from a previous iteration)
 			// version of the constructor, if any
-			def con = (m[it] ?: it) as Constructor
-			constructedVar = con.valueExpr as VariableExpr
-			constructedRecord = new RecordExpr(con.keyExprs)
-			constructedRecordType = con.name
-			head.elements << new Predicate(con.type.name, null, [constructedVar])
+			def con = (m[it] ?: it) as ConstructionElement
+			constructedVar = con.constructor.valueExpr as VariableExpr
+			constructedRecord = new RecordExpr(con.constructor.keyExprs)
+			constructedRecordType = con.constructor.name
+			con.type.exprs = [constructedVar]
 			head = head.accept(this)
 		}
 		m[n.head] = head
@@ -163,21 +162,23 @@ class ConstructorTransformer extends DummyTransformer {
 		actor.exit(n, m)
 	}
 
-	IVisitable visit(Constructor n) { visit(n as Functional) }
+	IVisitable exit(ConstructionElement n, Map<IVisitable, IVisitable> m) {
+		new ConstructionElement(m[n.constructor] as Constructor, m[n.type] as Type)
+	}
 
-	IVisitable visit(Functional n) { visit(n, n.keyExprs + [n.valueExpr]) }
+	IVisitable visit(Constructor n) { visit(n as Relation) }
 
-	IVisitable visit(Predicate n) { visit(n, n.exprs) }
-
-	IVisitable visit(Relation n, List<IExpr> exprs) {
+	IVisitable visit(Relation n) {
 		actor.enter(n)
 		if (!inRuleHead) return n
-		exprs.withIndex().each { IExpr e, int i ->
+		n.exprs.withIndex().each { IExpr e, int i ->
 			currentType = typeActor.inferredTypes[n.name][i]
 			m[e] = e.accept(this)
 		}
 		actor.exit(n, m)
 	}
+
+	IVisitable visit(Type n) { visit(n as Relation) }
 
 	// Must override since the default implementation throws an exception
 	IVisitable visit(RecordExpr n) {

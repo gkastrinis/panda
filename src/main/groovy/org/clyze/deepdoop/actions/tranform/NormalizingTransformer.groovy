@@ -7,7 +7,8 @@ import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.CmdComponent
 import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.*
-import org.clyze.deepdoop.datalog.element.relation.*
+import org.clyze.deepdoop.datalog.element.relation.Constructor
+import org.clyze.deepdoop.datalog.element.relation.Relation
 
 class NormalizingTransformer extends DummyTransformer {
 
@@ -39,14 +40,12 @@ class NormalizingTransformer extends DummyTransformer {
 		return newComp
 	}
 
-	Declaration exit(Declaration n, Map<IVisitable, IVisitable> m) { n }
-
 	Rule exit(Rule n, Map<IVisitable, IVisitable> m) {
 		new Rule(m[n.head] as LogicalElement, m[n.body] as LogicalElement, n.annotations)
 	}
 
 	AggregationElement exit(AggregationElement n, Map<IVisitable, IVisitable> m) {
-		new AggregationElement(n.var, n.predicate, m[n.body] as IElement)
+		new AggregationElement(n.var, n.relation, m[n.body] as LogicalElement)
 	}
 
 	GroupElement exit(GroupElement n, Map<IVisitable, IVisitable> m) {
@@ -76,11 +75,5 @@ class NormalizingTransformer extends DummyTransformer {
 
 	Constructor exit(Constructor n, Map<IVisitable, IVisitable> m) { n }
 
-	Type exit(Type n, Map<IVisitable, IVisitable> m) { n }
-
-	Functional exit(Functional n, Map<IVisitable, IVisitable> m) { n }
-
-	Predicate exit(Predicate n, Map<IVisitable, IVisitable> m) { n }
-
-	Primitive exit(Primitive n, Map<IVisitable, IVisitable> m) { n }
+	Relation exit(Relation n, Map<IVisitable, IVisitable> m) { n }
 }

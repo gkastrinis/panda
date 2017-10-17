@@ -5,9 +5,8 @@ import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.AggregationElement
+import org.clyze.deepdoop.datalog.element.ConstructionElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
-import org.clyze.deepdoop.datalog.element.relation.Functional
-import org.clyze.deepdoop.datalog.element.relation.Predicate
 import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.expr.BinaryExpr
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
@@ -80,7 +79,7 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 
 	IVisitable exit(Rule n, Map m) {
 		n.head.elements.each {
-			def relation = (it as Relation).name
+			def relation = (it instanceof ConstructionElement ? it.constructor.name : (it as Relation).name)
 			// null for relations without explicit declarations
 			def declaredTypes = inferredTypes[relation]
 			tmpExprIndices[relation].each { expr, i ->
@@ -112,32 +111,27 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 		null
 	}
 
+	IVisitable exit(ConstructionElement n, Map m) {
+		tmpExprTypes[n.constructor.valueExpr] << n.type.name
+		null
+	}
+
 	IVisitable exit(Constructor n, Map m) {
 		def types = tmpRelationTypes[n.name]
 		n.keyExprs.eachWithIndex { expr, i ->
 			tmpExprIndices[n.name][expr] = i
 			if (types) tmpExprTypes[expr] += types[i]
 		}
-		tmpExprTypes[n.valueExpr] << n.type.name
 		null
 	}
 
-	IVisitable exit(Functional n, Map m) {
-		exitRelation(n.name, n.keyExprs + [n.valueExpr])
-		null
-	}
-
-	IVisitable exit(Predicate n, Map m) {
-		exitRelation(n.name, n.exprs)
-		null
-	}
-
-	private void exitRelation(String relation, List<IExpr> exprs) {
-		def types = tmpRelationTypes[relation]
-		exprs.eachWithIndex { expr, i ->
-			tmpExprIndices[relation][expr] = i
+	IVisitable exit(Relation n, Map m) {
+		def types = tmpRelationTypes[n.name]
+		n.exprs.eachWithIndex { expr, i ->
+			tmpExprIndices[n.name][expr] = i
 			if (types) tmpExprTypes[expr] += types[i]
 		}
+		null
 	}
 
 	IVisitable exit(BinaryExpr n, Map m) {

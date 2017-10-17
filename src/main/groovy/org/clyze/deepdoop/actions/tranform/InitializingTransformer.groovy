@@ -7,7 +7,9 @@ import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.*
-import org.clyze.deepdoop.datalog.element.relation.*
+import org.clyze.deepdoop.datalog.element.relation.Constructor
+import org.clyze.deepdoop.datalog.element.relation.Relation
+import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.BinaryExpr
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.GroupExpr
@@ -109,8 +111,9 @@ class InitializingTransformer extends DummyTransformer {
 	}
 
 	Declaration exit(Declaration n, Map<IVisitable, IVisitable> m) {
-		mayHaveDecl(n)
-		new Declaration(m[n.atom] as Relation, n.types.collect { m[it] as Relation }, n.annotations)
+		// Ignore declarations in global scope
+		if (currComp) haveDeclaration << n.atom.name
+		new Declaration(m[n.atom] as Relation, n.types.collect { m[it] as Type }, n.annotations)
 	}
 
 	// Override to keep track of when in rule's head
@@ -128,11 +131,15 @@ class InitializingTransformer extends DummyTransformer {
 	}
 
 	AggregationElement exit(AggregationElement n, Map<IVisitable, IVisitable> m) {
-		new AggregationElement(m[n.var] as VariableExpr, m[n.predicate] as Predicate, m[n.body] as IElement)
+		new AggregationElement(m[n.var] as VariableExpr, m[n.relation] as Relation, m[n.body] as LogicalElement)
 	}
 
 	ComparisonElement exit(ComparisonElement n, Map<IVisitable, IVisitable> m) {
 		new ComparisonElement(m[n.expr] as BinaryExpr)
+	}
+
+	ConstructionElement exit(ConstructionElement n, Map<IVisitable, IVisitable> m) {
+		new ConstructionElement(m[n.constructor] as Constructor, m[n.type] as Type)
 	}
 
 	GroupElement exit(GroupElement n, Map<IVisitable, IVisitable> m) {
@@ -148,32 +155,27 @@ class InitializingTransformer extends DummyTransformer {
 	}
 
 	Constructor exit(Constructor n, Map<IVisitable, IVisitable> m) {
+		def (String newName, _) = rename(n)
+		new Constructor(newName, n.exprs)
+	}
+
+	Relation exit(Relation n, Map<IVisitable, IVisitable> m) {
+		def loc = SourceManager.instance.recall(n)
+		// @ext is allowed in the rule's head only in global space
+		if (inRuleHead && currInitName && n.stage == "@ext")
+			ErrorManager.error(loc, ErrorId.REL_EXT_HEAD, n.name)
+
+		// Ignore relations in global scope or without an "@ext" stage
+		if (currComp && n.stage == "@ext") needDeclaration << n.name
+
 		def (String newName, String newStage) = rename(n)
-		def f = new Functional(newName, newStage, n.keyExprs, n.valueExpr)
-		def (String newTypeName, _) = rename(n.type)
-		new Constructor(f, new Type(newTypeName, n.type.exprs.first()))
+		new Relation(newName, newStage, n.exprs)
 	}
 
 	Type exit(Type n, Map<IVisitable, IVisitable> m) {
 		def (String newName, _) = rename(n)
-		new Type(newName, n.exprs.first())
+		new Type(newName)
 	}
-
-	Functional exit(Functional n, Map<IVisitable, IVisitable> m) {
-		checkExt(n)
-		mayNeedDecl(n)
-		def (String newName, String newStage) = rename(n)
-		new Functional(newName, newStage, n.keyExprs, n.valueExpr)
-	}
-
-	Predicate exit(Predicate n, Map<IVisitable, IVisitable> m) {
-		checkExt(n)
-		mayNeedDecl(n)
-		def (String newName, String newStage) = rename(n)
-		new Predicate(newName, newStage, n.exprs)
-	}
-
-	Primitive exit(Primitive n, Map<IVisitable, IVisitable> m) { n }
 
 	BinaryExpr exit(BinaryExpr n, Map<IVisitable, IVisitable> m) { n }
 
@@ -202,27 +204,6 @@ class InitializingTransformer extends DummyTransformer {
 		def prefix = initName ? "$initName:" : ""
 		def suffix = withExt ? ":__eXt" : ""
 		def name = "$prefix${n.name}$suffix"
-		if (n instanceof Functional)
-			return new Functional(name, null, n.keyExprs, n.valueExpr)
-		else if (n instanceof Predicate)
-			return new Predicate(name, null, n.exprs)
-		else throw new RuntimeException()
-	}
-
-	def mayHaveDecl(Declaration n) {
-		// Ignore declarations in global scope
-		if (currComp) haveDeclaration << n.atom.name
-	}
-
-	def mayNeedDecl(Relation n) {
-		// Ignore relations in global scope or without an "@ext" stage
-		if (currComp && n.stage == "@ext") needDeclaration << n.name
-	}
-
-	def checkExt(Relation r) {
-		def loc = SourceManager.instance.recall(r)
-		// @ext is allowed in the rule's head only in global space
-		if (inRuleHead && currInitName && r.stage == "@ext")
-			ErrorManager.error(loc, ErrorId.REL_EXT_HEAD, r.name)
+		new Relation(name, null, n.exprs)
 	}
 }

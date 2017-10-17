@@ -8,7 +8,9 @@ import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.*
-import org.clyze.deepdoop.datalog.element.relation.*
+import org.clyze.deepdoop.datalog.element.relation.Constructor
+import org.clyze.deepdoop.datalog.element.relation.Relation
+import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.*
 
 class DummyTransformer extends PostOrderVisitor<IVisitable> implements TDummyActor<IVisitable> {
@@ -34,13 +36,15 @@ class DummyTransformer extends PostOrderVisitor<IVisitable> implements TDummyAct
 	IVisitable exit(AggregationElement n, Map<IVisitable, IVisitable> m) {
 		new AggregationElement(
 				m[n.var] as VariableExpr,
-				m[n.predicate] as Predicate,
-				m[n.body] as IElement)
+				m[n.relation] as Relation,
+				m[n.body] as LogicalElement)
 	}
 
 	IVisitable exit(ComparisonElement n, Map<IVisitable, IVisitable> m) {
 		new ComparisonElement(m[n.expr] as BinaryExpr)
 	}
+
+	IVisitable exit(ConstructionElement n, Map<IVisitable, IVisitable> m) { n }
 
 	IVisitable exit(GroupElement n, Map<IVisitable, IVisitable> m) {
 		new GroupElement(m[n.element] as IElement)
@@ -54,24 +58,17 @@ class DummyTransformer extends PostOrderVisitor<IVisitable> implements TDummyAct
 		new NegationElement(m[n.element] as IElement)
 	}
 
-	IVisitable exit(Relation n, Map<IVisitable, IVisitable> m) { n }
-
 	IVisitable exit(Constructor n, Map<IVisitable, IVisitable> m) {
-		def f = new Functional(n.name, n.stage, n.keyExprs.collect { m[it] as IExpr }, m[n.valueExpr] as IExpr)
-		new Constructor(f, n.type)
+		new Constructor(n.name, n.exprs.collect { m[it] as IExpr })
 	}
 
-	IVisitable exit(Type n, Map<IVisitable, IVisitable> m) { n }
-
-	IVisitable exit(Functional n, Map<IVisitable, IVisitable> m) {
-		new Functional(n.name, n.stage, n.keyExprs.collect { m[it] as IExpr }, m[n.valueExpr] as IExpr)
+	IVisitable exit(Relation n, Map<IVisitable, IVisitable> m) {
+		new Relation(n.name, n.stage, n.exprs.collect { m[it] as IExpr })
 	}
 
-	IVisitable exit(Predicate n, Map<IVisitable, IVisitable> m) {
-		new Predicate(n.name, n.stage, n.exprs.collect { m[it] as IExpr })
+	IVisitable exit(Type n, Map<IVisitable, IVisitable> m) {
+		new Type(n.name, m[n.exprs?.first()] as IExpr)
 	}
-
-	IVisitable exit(Primitive n, Map<IVisitable, IVisitable> m) { n }
 
 	IVisitable exit(BinaryExpr n, Map<IVisitable, IVisitable> m) {
 		new BinaryExpr(m[n.left] as IExpr, n.op, m[n.right] as IExpr)

@@ -6,7 +6,9 @@ import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.CmdComponent
 import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.*
-import org.clyze.deepdoop.datalog.element.relation.*
+import org.clyze.deepdoop.datalog.element.relation.Constructor
+import org.clyze.deepdoop.datalog.element.relation.Relation
+import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.*
 
 class PostOrderVisitor<T> implements IVisitor<T> {
@@ -56,7 +58,7 @@ class PostOrderVisitor<T> implements IVisitor<T> {
 	T visit(AggregationElement n) {
 		actor.enter(n)
 		m[n.var] = n.var.accept(this) as T
-		m[n.predicate] = n.predicate.accept(this) as T
+		m[n.relation] = n.relation.accept(this) as T
 		m[n.body] = n.body.accept(this) as T
 		actor.exit(n, m)
 	}
@@ -64,6 +66,13 @@ class PostOrderVisitor<T> implements IVisitor<T> {
 	T visit(ComparisonElement n) {
 		actor.enter(n)
 		m[n.expr] = n.expr.accept(this) as T
+		actor.exit(n, m)
+	}
+
+	T visit(ConstructionElement n) {
+		actor.enter(n)
+		m[n.constructor] = n.constructor.accept(this) as T
+		m[n.type] = n.type.accept(this) as T
 		actor.exit(n, m)
 	}
 
@@ -85,41 +94,21 @@ class PostOrderVisitor<T> implements IVisitor<T> {
 		actor.exit(n, m)
 	}
 
-	T visit(Relation n) {
+	T visit(Constructor n) {
 		actor.enter(n)
+		n.exprs.each { m[it] = it.accept(this) as T }
 		actor.exit(n, m)
 	}
 
-	T visit(Constructor n) {
+	T visit(Relation n) {
 		actor.enter(n)
-		n.keyExprs.each { m[it] = it.accept(this) as T }
-		m[n.valueExpr] = n.valueExpr.accept(this) as T
-		m[n.type] = n.type.accept(this) as T
+		n.exprs.each { m[it] = it.accept(this) as T }
 		actor.exit(n, m)
 	}
 
 	T visit(Type n) {
 		actor.enter(n)
 		n.exprs.each { m[it] = it.accept(this) as T }
-		actor.exit(n, m)
-	}
-
-	T visit(Functional n) {
-		actor.enter(n)
-		n.keyExprs.each { m[it] = it.accept(this) as T }
-		m[n.valueExpr] = n.valueExpr.accept(this) as T
-		actor.exit(n, m)
-	}
-
-	T visit(Predicate n) {
-		actor.enter(n)
-		n.exprs.each { m[it] = it.accept(this) as T }
-		actor.exit(n, m)
-	}
-
-	T visit(Primitive n) {
-		actor.enter(n)
-		m[n.var] = n.var.accept(this) as T
 		actor.exit(n, m)
 	}
 

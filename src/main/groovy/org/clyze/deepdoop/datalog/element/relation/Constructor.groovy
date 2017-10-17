@@ -1,28 +1,17 @@
 package org.clyze.deepdoop.datalog.element.relation
 
-import groovy.transform.Canonical
-import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 import org.clyze.deepdoop.actions.IVisitor
+import org.clyze.deepdoop.datalog.expr.IExpr
 
-@Canonical
-@EqualsAndHashCode(callSuper = true)
 @ToString(includeSuper = true, includePackage = false)
-class Constructor extends Functional {
+class Constructor extends Relation {
 
-	// The constructed type
-	Relation type
+	Constructor(String name, List<IExpr> exprs) { super(name, null, exprs) }
 
-	Constructor(Functional f, Relation type) {
-		super(f.name, f.stage, f.keyExprs, f.valueExpr)
-		this.type = type
-	}
+	def getKeyExprs() { exprs.dropRight(1) }
 
-	def getType() {
-		if (!(type instanceof Type))
-			type = new Type(type.name, valueExpr)
-		type
-	}
+	def getValueExpr() { exprs.last() }
 
 	def <T> T accept(IVisitor<T> v) { v.visit(this) }
 }

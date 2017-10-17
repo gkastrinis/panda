@@ -10,11 +10,10 @@ import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.element.AggregationElement
+import org.clyze.deepdoop.datalog.element.ConstructionElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
-import org.clyze.deepdoop.datalog.element.relation.Functional
-import org.clyze.deepdoop.datalog.element.relation.Predicate
 import org.clyze.deepdoop.datalog.element.relation.Relation
-import org.clyze.deepdoop.datalog.expr.IExpr
+import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.RecordExpr
 import org.clyze.deepdoop.system.Result
 
@@ -62,28 +61,24 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	}
 
 	String exit(AggregationElement n, Map<IVisitable, String> m) {
-		def pred = n.predicate.name
-		def soufflePred = n.predicate.exprs ? "$pred(${m[n.predicate.exprs.first()]})" : pred
+		def pred = n.relation.name
+		def soufflePred = n.relation.exprs ? "$pred(${m[n.relation.exprs.first()]})" : pred
 		if (pred == "count" || pred == "min" || pred == "max" || pred == "sum")
 			"${m[n.body]}, ${m[n.var]} = $soufflePred : { ${m[n.body]} }"
 		else null
 	}
 
-	String exit(Constructor n, Map<IVisitable, String> m) {
-		exitRelation(n, m, n.keyExprs + [n.valueExpr])
+	String exit(ConstructionElement n, Map<IVisitable, String> m) {
+		"${m[n.constructor]}, ${m[n.type]}"
 	}
 
-	String exit(Functional n, Map<IVisitable, String> m) {
-		exitRelation(n, m, n.keyExprs + [n.valueExpr])
+	String exit(Constructor n, Map<IVisitable, String> m) { exit(n as Relation, m) }
+
+	String exit(Relation n, Map<IVisitable, String> m) {
+		"${mini(n.name)}(${n.exprs.collect { m[it] }.join(", ")})"
 	}
 
-	String exit(Predicate n, Map<IVisitable, String> m) {
-		exitRelation(n, m, n.exprs)
-	}
-
-	static String exitRelation(Relation n, Map<IVisitable, String> m, List<IExpr> exprs) {
-		"${mini(n.name)}(${exprs.collect { m[it] }.join(", ")})"
-	}
+	String exit(Type n, Map<IVisitable, String> m) { exit(n as Relation, m) }
 
 	// Must override since the default implementation throws an exception
 	String visit(RecordExpr n) {

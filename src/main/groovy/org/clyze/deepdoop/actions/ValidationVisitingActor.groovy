@@ -3,7 +3,10 @@ package org.clyze.deepdoop.actions
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
-import org.clyze.deepdoop.datalog.element.relation.*
+import org.clyze.deepdoop.datalog.element.ConstructionElement
+import org.clyze.deepdoop.datalog.element.relation.Constructor
+import org.clyze.deepdoop.datalog.element.relation.Relation
+import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.system.ErrorId
 import org.clyze.deepdoop.system.ErrorManager
@@ -18,7 +21,7 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements TD
 	InfoCollectionVisitingActor infoActor
 
 	Set<String> declaredRelations = [] as Set
-	Map<String, Integer> relationArities = [:]
+	Map<String, Integer> arities = [:]
 
 	ValidationVisitingActor(InfoCollectionVisitingActor infoActor) {
 		actor = this
@@ -28,28 +31,29 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements TD
 	IVisitable exit(Program n, Map m) { n }
 
 	IVisitable exit(Declaration n, Map m) {
-		n.annotations?.each {
-			if (TYPE in n.annotations) {
-				if (!(it.key in [TYPE, OUTPUT]))
-					ErrorManager.error(recall(it), ErrorId.ANNOTATION_INVALID, it.key, "type")
-			} else if (!(it.key in [CONSTRUCTOR, INPUT, OUTPUT]))
-				ErrorManager.error(recall(it), ErrorId.ANNOTATION_INVALID, it.key, "declaration")
-
-			it.value.validate()
-		}
-
 		if (n.atom.name in declaredRelations)
 			ErrorManager.error(recall(n), ErrorId.DECL_MULTIPLE, n.atom.name)
 		declaredRelations << n.atom.name
 
-		n.types.findAll { !(it instanceof Primitive) }
+		if (TYPE in n.annotations) {
+			def a = n.annotations.find { !(it.key in [TYPE, OUTPUT]) }
+			if (a) ErrorManager.error(recall(a), ErrorId.ANNOTATION_INVALID, a.key, "type")
+		} else {
+			def a = n.annotations.find { !(it.key in [CONSTRUCTOR, INPUT, OUTPUT]) }
+			if (a) ErrorManager.error(recall(a), ErrorId.ANNOTATION_INVALID, a.key, "declaration")
+
+			arities[n.atom.name] = n.types.size()
+		}
+		n.annotations?.each { it.value.validate() }
+
+		n.types.findAll { !it.isPrimitive() }
 				.findAll { !(it.name in infoActor.allTypes) }
 				.each { ErrorManager.error(recall(it), ErrorId.TYPE_UNKNOWN, it.name) }
 
 		if (n.atom.name in infoActor.refmodeRelations) {
 			if (n.atom.arity != 2)
 				ErrorManager.error(ErrorId.REFMODE_ARITY, n.atom.name)
-			if (!Primitive.isPrimitive(n.types.first().name))
+			if (!(n.types.first() as Type).isPrimitive())
 				ErrorManager.error(ErrorId.REFMODE_KEY, n.atom.name)
 		}
 		null
@@ -70,11 +74,6 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements TD
 				.findAll { Collections.frequency(varsInBody, it) == 1 }
 				.each { ErrorManager.warn(recall(n), ErrorId.VAR_UNUSED, it.name) }
 
-		n.head.elements.findAll { it instanceof Functional && !(it instanceof Constructor) }
-				.collect { (it as Functional).name }
-				.findAll { it in infoActor.allConstructors }
-				.each { ErrorManager.error(recall(n), ErrorId.CONSTR_RULE, it) }
-
 		n.head.elements.findAll { it instanceof Relation }
 				.collect { it as Relation }
 				.findAll { it.name in infoActor.allTypes }
@@ -82,37 +81,28 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements TD
 		null
 	}
 
-	IVisitable exit(Constructor n, Map m) {
+	IVisitable exit(ConstructionElement n, Map m) {
 		if (!(n.type.name in infoActor.allTypes))
 			ErrorManager.error(recall(n), ErrorId.TYPE_UNKNOWN, n.type.name)
 
-		def baseType = infoActor.constructorBaseType[n.name]
-		// TODO should be more general check for predicates
+		def baseType = infoActor.constructorBaseType[n.constructor.name]
 		if (!baseType)
-			ErrorManager.error(recall(n), ErrorId.CONSTR_UNKNOWN, n.name)
+			ErrorManager.error(recall(n), ErrorId.CONSTR_UNKNOWN, n.constructor.name)
 		if (n.type.name != baseType && !(baseType in infoActor.superTypesOrdered[n.type.name]))
-			ErrorManager.error(recall(n), ErrorId.CONSTR_INCOMP, n.name, n.type.name)
-
+			ErrorManager.error(recall(n), ErrorId.CONSTR_INCOMP, n.constructor.name, n.type.name)
 		null
 	}
 
-	IVisitable exit(Functional n, Map m) {
-		if (relationArities[n.name] && relationArities[n.name] != n.arity)
+	IVisitable exit(Constructor n, Map m) {
+		if (arities[n.name] && arities[n.name] != n.arity)
 			ErrorManager.error(recall(n), ErrorId.REL_ARITY, n.name)
-		relationArities[n.name] = n.arity
-
-		if (n.name.endsWith("__pArTiAl"))
-			ErrorManager.error(recall(n), ErrorId.SUFFIX_RESERVED)
 		null
 	}
 
-	IVisitable exit(Predicate n, Map m) {
-		if (relationArities[n.name] && relationArities[n.name] != n.arity)
+	IVisitable exit(Relation n, Map m) {
+		if (arities[n.name] && arities[n.name] != n.arity)
 			ErrorManager.error(recall(n), ErrorId.REL_ARITY, n.name)
-		relationArities[n.name] = n.arity
-
-		if (n.name.endsWith("__pArTiAl"))
-			ErrorManager.error(recall(n), ErrorId.SUFFIX_RESERVED)
+		if (!arities[n.name]) arities[n.name] = n.arity
 		null
 	}
 
@@ -122,5 +112,5 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements TD
 		null
 	}
 
-	private static def recall(Object o) { SourceManager.instance.recall(o) }
+	static def recall(Object o) { SourceManager.instance.recall(o) }
 }

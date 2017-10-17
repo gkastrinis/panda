@@ -1,8 +1,8 @@
 @Type Shape
-@Type Circle -> Shape
-@Type Triangle -> Shape
+@Type Circle <: Shape
+@Type Triangle <: Shape
 @Constructor
-cons:Shape[x] = y -> string(x), Shape(y).
+cons:Shape[x] = y : string, Shape
 
 // string x Circle
 cons:Shape[x] = y new Circle,
@@ -16,4 +16,4 @@ PredT(x, y) <- x := "triangle".
 Pred(x) <- PredC(_, x).
 Pred(x) <- PredT(_, x).
 
-@Type RightTriangle -> Triangle
+@Type RightTriangle <: Triangle

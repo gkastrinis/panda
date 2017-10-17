@@ -3,8 +3,6 @@ package org.clyze.deepdoop.datalog
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.ErrorNode
 import org.antlr.v4.runtime.tree.TerminalNode
-import org.clyze.deepdoop.actions.InfoCollectionVisitingActor
-import org.clyze.deepdoop.actions.tranform.NormalizingTransformer
 import org.clyze.deepdoop.datalog.Annotation.Kind
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
@@ -13,22 +11,22 @@ import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.component.Propagation
 import org.clyze.deepdoop.datalog.element.*
 import org.clyze.deepdoop.datalog.element.LogicalElement.LogicType
-import org.clyze.deepdoop.datalog.element.relation.*
+import org.clyze.deepdoop.datalog.element.relation.Constructor
+import org.clyze.deepdoop.datalog.element.relation.Relation
+import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.*
 import org.clyze.deepdoop.system.ErrorId
 import org.clyze.deepdoop.system.ErrorManager
 import org.clyze.deepdoop.system.SourceLocation
 import org.clyze.deepdoop.system.SourceManager
 
-import static org.clyze.deepdoop.datalog.Annotation.Kind.CONSTRUCTOR
 import static org.clyze.deepdoop.datalog.DatalogParser.*
 
 class DatalogListenerImpl extends DatalogBaseListener {
 
 	def values = [:]
-	def inRArrow = false
+	def inDecl = false
 	Component currComp
-	InfoCollectionVisitingActor infoActor = new InfoCollectionVisitingActor()
 	Map<Kind, Annotation> pendingAnnotations = [:]
 
 	def program = new Program()
@@ -75,188 +73,106 @@ class DatalogListenerImpl extends DatalogBaseListener {
 				ctx.IDENTIFIER(1)?.text)
 	}
 
-	void enterRightArrow(RightArrowContext ctx) {
-		inRArrow = true
+	void enterDeclaration(DeclarationContext ctx) {
+		inDecl = true
 	}
 
-	void exitRightArrow(RightArrowContext ctx) {
-		inRArrow = false
+	void exitDeclaration(DeclarationContext ctx) {
+		inDecl = false
 
 		def loc = rec(null, ctx)
-
 		def annotations = gatherAnnotations(ctx.annotationList())
 		annotations.keySet().each {
 			if (it in pendingAnnotations) ErrorManager.warn(loc, ErrorId.ANNOTATION_MULTIPLE, it)
 		}
 		annotations += pendingAnnotations
 
-		if (ctx.predicateName(0)) {
-			def var = new VariableExpr("x")
-			def type = new Type(values[ctx.predicateName(0)] as String, var)
-			def supertype = ctx.predicateName(1) ? [new Type(values[ctx.predicateName(1)] as String, var)] : []
-			def d = new Declaration(type, supertype, annotations)
-			currComp.declarations << d
-			rec(d, ctx)
+		Declaration d
+		if (ctx.relationName(0)) {
+			def type = new Type(values[ctx.relationName(0)] as String)
+			def supertype = ctx.relationName(1) ? [new Type(values[ctx.relationName(1)] as String)] : []
+			d = new Declaration(type, supertype, annotations)
 		} else {
-			def headCompound = values[ctx.compound(0)] as LogicalElement
-			if (headCompound.elements.size() != 1) ErrorManager.error(loc, ErrorId.DECL_MALFORMED)
-			def atom = headCompound.elements.first() as Relation
-
-			// Types might appear out of order in body
-			def types = []
-			atom.accept(infoActor)
-			def varsInHead = infoActor.vars[atom]
-			def bodyCompound = (values[ctx.compound(1)] as LogicalElement)
-					.accept(new NormalizingTransformer()) as LogicalElement
-			bodyCompound.elements.each { t ->
-				def p = t as Predicate
-				if (p.arity != 1) ErrorManager.error(loc, ErrorId.DECL_MALFORMED)
-				def type = Primitive.isPrimitive(p.name) ?
-						new Primitive(p.name, p.exprs.first() as VariableExpr) :
-						new Type(p.name, p.exprs.first())
-
-				type.accept(infoActor)
-				def vars = infoActor.vars[type]
-				def index = varsInHead.indexOf(vars.first())
-				if (index == -1) ErrorManager.error(loc, ErrorId.VAR_UNKNOWN, vars.first().name)
-				types[index] = type
-			}
-			if (types.size() != varsInHead.size()) ErrorManager.error(loc, ErrorId.DECL_MALFORMED)
-
-			if (CONSTRUCTOR in annotations) {
-				if (!(atom instanceof Functional))
-					ErrorManager.error(loc, ErrorId.CONSTR_NON_FUNC, atom.name)
-				atom = new Constructor(atom as Functional, types.last() as Relation)
-			}
-
-			def d = new Declaration(atom, types, annotations)
-			currComp.declarations << d
-			rec(d, ctx)
+			def rel = ctx.relation() ? values[ctx.relation()] as Relation : values[ctx.constructor()] as Constructor
+			def types = values[ctx.relationNameList()].collect { new Type(it as String) }
+			d = new Declaration(rel, types, annotations)
 		}
+		currComp.declarations << d
+		rec(d, ctx)
 	}
 
-	void enterRightArrowBlock(RightArrowBlockContext ctx) {
+	void enterAnnotationBlock(AnnotationBlockContext ctx) {
 		pendingAnnotations = gatherAnnotations(ctx.annotationList())
 	}
 
-	void exitRightArrowBlock(RightArrowBlockContext ctx) {
+	void exitAnnotationBlock(AnnotationBlockContext ctx) {
 		pendingAnnotations = [:]
 	}
 
-	void exitLeftArrow(LeftArrowContext ctx) {
+	void exitRule_(Rule_Context ctx) {
 		Rule r
 		def annotations = gatherAnnotations(ctx.annotationList())
-		if (ctx.predicateListExt()) {
-			def headAtoms = values[ctx.predicateListExt()] as List<Relation>
-			def head = new LogicalElement(headAtoms)
-			def body = ctx.compound() ? values[ctx.compound()] as LogicalElement : null
+		if (ctx.headList()) {
+			def head = new LogicalElement(values[ctx.headList()] as List)
+			def body = ctx.bodyList() ? values[ctx.bodyList()] as LogicalElement : null
 			r = new Rule(head, body, annotations)
 			currComp.rules << r
 		} else {
-			def head = new LogicalElement(values[ctx.functional()] as Functional)
-			def aggregation = values[ctx.aggregation()] as AggregationElement
-			r = new Rule(head, new LogicalElement(aggregation))
+			def head = new LogicalElement(values[ctx.relation()] as Relation)
+			def body = new LogicalElement(values[ctx.aggregation()] as AggregationElement)
+			r = new Rule(head, body)
 			currComp.rules << r
 		}
 		rec(r, ctx)
 	}
 
-	void exitPredicate(PredicateContext ctx) {
-		if (ctx.functional()) values[ctx] = values[ctx.functional()]
-		else if (ctx.normalPredicate()) values[ctx] = values[ctx.normalPredicate()]
+	void exitRelation(RelationContext ctx) {
+		values[ctx] = new Relation(
+				values[ctx.relationName()] as String,
+				ctx.AT_STAGE()?.text,
+				ctx.exprList() ? values[ctx.exprList()] as List : [])
 		rec(values[ctx], ctx)
 	}
 
-	void exitFunctional(FunctionalContext ctx) {
-		def name = values[ctx.predicateName()] as String
-		def stage = ctx.AT_STAGE()?.text
-		def keyExprs = (ctx.exprList() ? values[ctx.exprList()] : []) as List<IExpr>
-		def valueExpr = values[ctx.expr()] as IExpr
-		values[ctx] = new Functional(name, stage, keyExprs, valueExpr)
+	void exitConstructor(ConstructorContext ctx) {
+		def name = values[ctx.relationName()] as String
+		def exprs = (ctx.exprList() ? values[ctx.exprList()] as List : []) << values[ctx.expr()]
+		values[ctx] = new Constructor(name, exprs)
+		rec(values[ctx], ctx)
 	}
 
-	void exitNormalPredicate(NormalPredicateContext ctx) {
-		values[ctx] = new Predicate(
-				values[ctx.predicateName()] as String,
-				ctx.AT_STAGE()?.text,
-				(ctx.exprList() ? values[ctx.exprList()] : []) as List<IExpr>)
+	void exitConstruction(ConstructionContext ctx) {
+		values[ctx] = new ConstructionElement(
+				values[ctx.constructor()] as Constructor,
+				new Type(values[ctx.relationName()] as String))
 	}
 
 	void exitAggregation(AggregationContext ctx) {
 		values[ctx] = new AggregationElement(
 				new VariableExpr(ctx.IDENTIFIER().text),
-				values[ctx.predicate()] as Predicate,
-				values[ctx.compound()] as IElement)
+				values[ctx.relation()] as Relation,
+				values[ctx.bodyList()] as LogicalElement)
 		rec(values[ctx], ctx)
 	}
 
-	void exitConstruction(ConstructionContext ctx) {
-		values[ctx] = new Constructor(
-				values[ctx.functional()] as Functional,
-				new Relation(values[ctx.predicateName()] as String))
-		rec(values[ctx], ctx)
-	}
-
-	void exitPredicateListExt(PredicateListExtContext ctx) {
-		def el = ctx.predicate() ? values[ctx.predicate()] : values[ctx.construction()]
-		values[ctx] = (values[ctx.predicateListExt()] ?: []) << el
-	}
-
-	void exitCompoundElement(CompoundElementContext ctx) {
-		if (ctx.predicate()) values[ctx] = values[ctx.predicate()] as IElement
-		else if (ctx.comparison()) values[ctx] = values[ctx.comparison()] as IElement
-		else if (ctx.assignment()) values[ctx] = values[ctx.assignment()] as IElement
-	}
-
-	void exitCompound(CompoundContext ctx) {
-		if (ctx.compoundElement()) {
-			def el = values[ctx.compoundElement()] as IElement
-			values[ctx] = new LogicalElement(el)
-		} else if (hasToken(ctx, "!")) {
-			def el = values[ctx.compound(0)] as IElement
-			values[ctx] = new NegationElement(el)
-		} else if (hasToken(ctx, "(")) {
-			def el = values[ctx.compound(0)] as IElement
-			values[ctx] = new GroupElement(el)
-		} else {
-			def el0 = values[ctx.compound(0)] as IElement
-			def el1 = values[ctx.compound(1)] as IElement
-			def type = hasToken(ctx, ",") ? LogicType.AND : LogicType.OR
-			values[ctx] = new LogicalElement(type, [el0, el1])
-		}
-	}
-
-	void exitIdentifierList(IdentifierListContext ctx) {
-		values[ctx] = ((values[ctx.identifierList()] ?: []) as List<String>) << ctx.IDENTIFIER().text
-	}
-
-	void exitPropagationList(PropagationListContext ctx) {
-		if (ctx.ALL())
-			values[ctx] = null
+	void exitBodyList(BodyListContext ctx) {
+		if (ctx.relation())
+			values[ctx] = new LogicalElement(values[ctx.relation()] as Relation)
+		else if (ctx.constructor())
+			values[ctx] = new LogicalElement(values[ctx.constructor()] as Relation)
+		else if (ctx.comparison())
+			values[ctx] = new LogicalElement(values[ctx.comparison()] as ComparisonElement)
+		else if (ctx.assignment())
+			values[ctx] = new LogicalElement(values[ctx.assignment()] as ComparisonElement)
+		else if (hasToken(ctx, "("))
+			values[ctx] = new LogicalElement(new NegationElement(values[ctx.bodyList(0)] as IElement))
+		else if (hasToken(ctx, "("))
+			values[ctx] = new LogicalElement(new GroupElement(values[ctx.bodyList(0)] as IElement))
 		else {
-			def val = values[ctx.predicateName()] as String
-			values[ctx] = (values[ctx.propagationList()] ?: []) << val
+			def list = (0..1).collect { values[ctx.bodyList(it)] as IElement }
+			def type = hasToken(ctx, ", ") ? LogicType.AND : LogicType.OR
+			values[ctx] = new LogicalElement(type, list)
 		}
-	}
-
-	// Special handling (instead of using "exit")
-	private Map<String, ConstantExpr> gatherValues(ValueListContext ctx) {
-		if (!ctx) return [:]
-		exitConstant(ctx.value().constant())
-		def constant = values[ctx.value().constant()] as ConstantExpr
-		def value = [(ctx.value().IDENTIFIER().text): constant]
-		return gatherValues(ctx.valueList()) << value
-	}
-
-	// Special handling (instead of using "exit")
-	private Map<Kind, Annotation> gatherAnnotations(AnnotationListContext ctx) {
-		if (!ctx) return [:]
-		def valueMap = gatherValues(ctx.annotation().valueList())
-		def annotation = new Annotation(ctx.annotation().IDENTIFIER().text, valueMap)
-		def map = gatherAnnotations(ctx.annotationList())
-		def loc = rec(annotation, ctx)
-		if (annotation.kind in map) ErrorManager.warn(loc, ErrorId.ANNOTATION_MULTIPLE, annotation.kind)
-		return map << [(annotation.kind): annotation]
 	}
 
 	void enterLineMarker(LineMarkerContext ctx) {
@@ -287,10 +203,10 @@ class DatalogListenerImpl extends DatalogBaseListener {
 			println "*** Weird line marker flag: $t ***"
 	}
 
-	void exitPredicateName(PredicateNameContext ctx) {
+	void exitRelationName(RelationNameContext ctx) {
 		def name = ctx.IDENTIFIER().text
-		if (ctx.predicateName())
-			name = values[ctx.predicateName()] + ":" + name
+		if (ctx.relationName())
+			name = values[ctx.relationName()] + ":" + name
 		values[ctx] = name
 	}
 
@@ -311,7 +227,8 @@ class DatalogListenerImpl extends DatalogBaseListener {
 				constant = Long.parseLong(str, 10)
 			}
 			values[ctx] = new ConstantExpr(constant)
-		} else if (ctx.REAL()) values[ctx] = new ConstantExpr(Double.parseDouble(ctx.REAL().text))
+		}
+		else if (ctx.REAL()) values[ctx] = new ConstantExpr(Double.parseDouble(ctx.REAL().text))
 		else if (ctx.BOOLEAN()) values[ctx] = new ConstantExpr(Boolean.parseBoolean(ctx.BOOLEAN().text))
 		else if (ctx.STRING()) values[ctx] = new ConstantExpr(ctx.STRING().text)
 	}
@@ -336,10 +253,6 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		}
 	}
 
-	void exitExprList(ExprListContext ctx) {
-		values[ctx] = (values[ctx.exprList()] ?: []) << values[ctx.expr()]
-	}
-
 	void exitComparison(ComparisonContext ctx) {
 		def e0 = values[ctx.expr(0)] as IExpr
 		def e1 = values[ctx.expr(1)] as IExpr
@@ -358,15 +271,54 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		values[ctx] = new ComparisonElement(new VariableExpr(ctx.IDENTIFIER().text), BinOperator.ASGN, values[ctx.expr()] as IExpr)
 	}
 
+	void exitPropagationList(PropagationListContext ctx) {
+		values[ctx] = (ctx.ALL() ? null :
+				(values[ctx.propagationList()] ?: []) << values[ctx.relationName()] as String)
+	}
+
+	// Special handling (instead of using "exit")
+	private Map<Kind, Annotation> gatherAnnotations(AnnotationListContext ctx) {
+		if (!ctx) return [:]
+		def valueMap = gatherValues(ctx.annotation().valueList())
+		def annotation = new Annotation(ctx.annotation().IDENTIFIER().text, valueMap)
+		def map = gatherAnnotations(ctx.annotationList())
+		def loc = rec(annotation, ctx)
+		if (annotation.kind in map) ErrorManager.warn(loc, ErrorId.ANNOTATION_MULTIPLE, annotation.kind)
+		return map << [(annotation.kind): annotation]
+	}
+
+	void exitRelationNameList(RelationNameListContext ctx) {
+		values[ctx] = ((values[ctx.relationNameList()] ?: []) as List) << values[ctx.relationName()]
+	}
+
+	void exitHeadList(HeadListContext ctx) {
+		def t = ctx.relation() ? values[ctx.relation()] : values[ctx.construction()]
+		values[ctx] = ((values[ctx.headList()] ?: []) as List) << t
+	}
+
+	void exitIdentifierList(IdentifierListContext ctx) {
+		values[ctx] = ((values[ctx.identifierList()] ?: []) as List) << ctx.IDENTIFIER().text
+	}
+
+	// Special handling (instead of using "exit")
+	private Map<String, ConstantExpr> gatherValues(ValueListContext ctx) {
+		if (!ctx) return [:]
+		exitConstant(ctx.value().constant())
+		def constant = values[ctx.value().constant()] as ConstantExpr
+		def value = [(ctx.value().IDENTIFIER().text): constant]
+		return gatherValues(ctx.valueList()) << value
+	}
+
+	void exitExprList(ExprListContext ctx) {
+		values[ctx] = ((values[ctx.exprList()] ?: []) as List) << values[ctx.expr()]
+	}
+
 	void visitErrorNode(ErrorNode node) {
 		throw new RuntimeException("Parsing error")
 	}
 
 	static boolean hasToken(ParserRuleContext ctx, String token) {
-		for (def i = 0; i < ctx.getChildCount(); i++)
-			if (ctx.getChild(i) instanceof TerminalNode && (ctx.getChild(i) as TerminalNode).text == token)
-				return true
-		return false
+		return ctx.children.find { it instanceof TerminalNode && it.text == token } as boolean
 	}
 
 	static SourceLocation rec(Object o, ParserRuleContext ctx) {
