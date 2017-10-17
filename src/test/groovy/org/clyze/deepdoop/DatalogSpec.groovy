@@ -20,16 +20,17 @@ class DatalogSpec extends Specification {
 		notThrown(DeepDoopException)
 
 		where:
-		file       | _
-		"t1.logic" | _
-		"t2.logic" | _
-		"t3.logic" | _
-		"t4.logic" | _
-		"t5.logic" | _
-		"t6.logic" | _
-		"t7.logic" | _
-		"t8.logic" | _
-		"t9.logic" | _
+		file        | _
+		"t1.logic"  | _
+		"t2.logic"  | _
+		"t3.logic"  | _
+		"t4.logic"  | _
+		"t5.logic"  | _
+		"t6.logic"  | _
+		"t7.logic"  | _
+		"t8.logic"  | _
+		"t9.logic"  | _
+		"t10.logic" | _
 		//"t100.logic" | _
 	}
 
@@ -51,10 +52,10 @@ class DatalogSpec extends Specification {
 		"fail5.logic"  | ErrorId.REL_UNKNOWN
 		"fail6.logic"  | ErrorId.REL_NO_DECL_REC
 		"fail7.logic"  | ErrorId.CONSTR_INCOMP
-		"fail8.logic"  | ErrorId.CONSTR_RULE
+		"fail8.logic"  | ErrorId.FUNC_NON_CONSTR
 		"fail9.logic"  | ErrorId.TYPE_UNKNOWN
 		"fail10.logic" | ErrorId.CONSTR_UNKNOWN
-		"fail11.logic" | ErrorId.SUFFIX_RESERVED
+		"fail11.logic" | ErrorId.CONSTR_NON_FUNC
 		"fail12.logic" | ErrorId.TYPE_INCOMP
 		"fail13.logic" | ErrorId.REL_ARITY
 		"fail14.logic" | ErrorId.TYPE_FIXED

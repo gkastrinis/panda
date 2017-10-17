@@ -35,12 +35,17 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements TD
 			ErrorManager.error(recall(n), ErrorId.DECL_MULTIPLE, n.atom.name)
 		declaredRelations << n.atom.name
 
-		if (TYPE in n.annotations) {
+		if (n.annotations[TYPE]) {
 			def a = n.annotations.find { !(it.key in [TYPE, OUTPUT]) }
 			if (a) ErrorManager.error(recall(a), ErrorId.ANNOTATION_INVALID, a.key, "type")
 		} else {
 			def a = n.annotations.find { !(it.key in [CONSTRUCTOR, INPUT, OUTPUT]) }
 			if (a) ErrorManager.error(recall(a), ErrorId.ANNOTATION_INVALID, a.key, "declaration")
+
+			if (n.annotations[CONSTRUCTOR] && !(n.atom instanceof Constructor))
+				ErrorManager.error(recall(n), ErrorId.CONSTR_NON_FUNC, n.atom.name)
+			if (n.atom instanceof Constructor && !n.annotations[CONSTRUCTOR])
+				ErrorManager.error(recall(n), ErrorId.FUNC_NON_CONSTR, n.atom.name)
 
 			arities[n.atom.name] = n.types.size()
 		}

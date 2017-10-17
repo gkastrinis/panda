@@ -1,1 +1,4 @@
-Foo__pArTiAl(x, y) -> string(x), int(y).
+@type Shape
+@output @constructor
+cons:Shape(x, y) : string, Shape
+

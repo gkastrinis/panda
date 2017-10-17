@@ -31,6 +31,8 @@ class DefaultCodeGenerator extends PostOrderVisitor<String> implements TDummyAct
 		this.outDir = outDir
 	}
 
+	DefaultCodeGenerator(String outDir) { this(new File(outDir)) }
+
 	//String exit(Program n, Map<IVisitable, String> m) { null }
 
 	//String exit(CmdComponent n, Map<IVisitable, String> m) { null }

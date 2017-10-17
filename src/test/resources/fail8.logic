@@ -1,5 +1,3 @@
-@Type Shape
-@Constructor
-cons:Shape[x] = y -> string(x), Shape(y).
-
-cons:Shape[x] = y <- Ble(a, b).
+@type Shape
+@output
+cons:Shape[x] = y : string, Shape

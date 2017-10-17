@@ -4,7 +4,6 @@ import java.text.MessageFormat
 
 enum ErrorId {
 	ID_IN_USE,
-	SUFFIX_RESERVED,
 	COMP_UNKNOWN,
 	ANNOTATION_INVALID,
 	ANNOTATION_INVALID_ARG,
@@ -28,11 +27,10 @@ enum ErrorId {
 	VAR_UNUSED,
 	VAR_MULTIPLE_CONSTR,
 	CONSTR_UNKNOWN,
-	CONSTR_RULE,
 	CONSTR_INCOMP,
 	CONSTR_NON_FUNC,
-	CONSTR_EXT_HEAD,
 	CONSTR_RULE_CYCLE,
+	FUNC_NON_CONSTR,
 	REFMODE_ARITY,
 	REFMODE_KEY,
 
@@ -49,7 +47,6 @@ enum ErrorId {
 	static {
 		msgMap = new EnumMap<>(ErrorId.class)
 		msgMap[ID_IN_USE] = "Id `{0}` already in use to initialize a component"
-		msgMap[SUFFIX_RESERVED] = "Suffix `__pArTiAl` is reserved and cannot appear in a relation name"
 		msgMap[COMP_UNKNOWN] = "Unknown component `{0}`"
 		msgMap[ANNOTATION_INVALID] = "Invalid annotation `{0}` for `{1}`"
 		msgMap[ANNOTATION_INVALID_ARG] = "Invalid argument `{0}` for annotation `{1}`"
@@ -73,11 +70,10 @@ enum ErrorId {
 		msgMap[VAR_UNUSED] = "Unused var `{0}`"
 		msgMap[VAR_MULTIPLE_CONSTR] = "Var `{0}` constructed by multiple constructors"
 		msgMap[CONSTR_UNKNOWN] = "Unknown constructor `{0}`"
-		msgMap[CONSTR_RULE] = "Constructor `{0}` used as a normal relation in rule head"
 		msgMap[CONSTR_INCOMP] = "Constructor `{0}` used with incompatible type `{1}`"
-		msgMap[CONSTR_NON_FUNC] = "Constructor `{0}` must be a functional relation"
-		msgMap[CONSTR_EXT_HEAD] = "Constructor `{0}` cannot be used with `@ext` in rule head"
+		msgMap[CONSTR_NON_FUNC] = "Constructor `{0}` must use functional syntax"
 		msgMap[CONSTR_RULE_CYCLE] = "Constructor `{0}` appears in a cycle in rule head"
+		msgMap[FUNC_NON_CONSTR] = "Functional syntax available only for constructors (`{0}`)"
 		msgMap[REFMODE_ARITY] = "Refmode `{0}` arity must be 2"
 		msgMap[REFMODE_KEY] = "Refmode `{0}` key argument must be primitive"
 
