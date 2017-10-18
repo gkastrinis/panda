@@ -5,6 +5,7 @@ import org.clyze.deepdoop.actions.IVisitable
 import org.clyze.deepdoop.actions.ValidationVisitingActor
 import org.clyze.deepdoop.actions.tranform.InitializingTransformer
 import org.clyze.deepdoop.actions.tranform.NormalizingTransformer
+import org.clyze.deepdoop.actions.tranform.souffle.AssignTransformer
 import org.clyze.deepdoop.actions.tranform.souffle.ConstructorTransformer
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Declaration
@@ -34,7 +35,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 				.accept(new ValidationVisitingActor(infoActor))
 				.accept(typeInferenceActor)
 				.accept(new ConstructorTransformer(infoActor, typeInferenceActor))
-				//.accept(new AssignTransformer())
+				.accept(new AssignTransformer())
 
 		return super.visit(n as Program)
 	}

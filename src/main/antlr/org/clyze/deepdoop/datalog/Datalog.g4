@@ -51,7 +51,6 @@ bodyList
 	: relation
 	| constructor
 	| comparison
-	| assignment // TODO remove as well
 	| '!' bodyList
 	| '(' bodyList ')'
 	| bodyList (',' | ';') bodyList
@@ -87,9 +86,6 @@ expr
 
 comparison
 	: expr ('=' | '<' | '<=' | '>' | '>=' | '!=') expr ;
-
-assignment
-	: IDENTIFIER ':=' expr ;
 
 
 

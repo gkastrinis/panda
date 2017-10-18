@@ -17,68 +17,69 @@ class DummyTransformer extends PostOrderVisitor<IVisitable> implements TDummyAct
 
 	DummyTransformer() { actor = this }
 
-	IVisitable exit(Program n, Map<IVisitable, IVisitable> m) {
+	IVisitable exit(Program n, Map m) {
 		new Program(m[n.globalComp] as Component, [:], [:], [] as Set)
 	}
 
-	IVisitable exit(Component n, Map<IVisitable, IVisitable> m) {
+	IVisitable exit(Component n, Map m) {
 		def ds = n.declarations.collect { m[it] as Declaration } as Set
 		def rs = n.rules.collect { m[it] as Rule } as Set
 		new Component(n.name, n.superComp, ds, rs)
 	}
 
-	IVisitable exit(Declaration n, Map<IVisitable, IVisitable> m) { n }
+	IVisitable exit(Declaration n, Map m) {
+		new Declaration(m[n.atom] as Relation, n.types.collect { m[it] as Type }, n.annotations)
+	}
 
-	IVisitable exit(Rule n, Map<IVisitable, IVisitable> m) {
+	IVisitable exit(Rule n, Map m) {
 		new Rule(m[n.head] as LogicalElement, m[n.body] as LogicalElement, n.annotations)
 	}
 
-	IVisitable exit(AggregationElement n, Map<IVisitable, IVisitable> m) {
-		new AggregationElement(
-				m[n.var] as VariableExpr,
-				m[n.relation] as Relation,
-				m[n.body] as LogicalElement)
+	IVisitable exit(AggregationElement n, Map m) {
+		new AggregationElement(m[n.var] as VariableExpr, m[n.relation] as Relation, m[n.body] as LogicalElement)
 	}
 
-	IVisitable exit(ComparisonElement n, Map<IVisitable, IVisitable> m) {
+	IVisitable exit(ComparisonElement n, Map m) {
 		new ComparisonElement(m[n.expr] as BinaryExpr)
 	}
 
-	IVisitable exit(ConstructionElement n, Map<IVisitable, IVisitable> m) { n }
+	IVisitable exit(ConstructionElement n, Map m) {
+		new ConstructionElement(m[n.constructor] as Constructor, m[n.type] as Type)
+	}
 
-	IVisitable exit(GroupElement n, Map<IVisitable, IVisitable> m) {
+	IVisitable exit(GroupElement n, Map m) {
 		new GroupElement(m[n.element] as IElement)
 	}
 
-	IVisitable exit(LogicalElement n, Map<IVisitable, IVisitable> m) {
+	IVisitable exit(LogicalElement n, Map m) {
 		new LogicalElement(n.type, n.elements.collect { m[it] as IElement })
 	}
 
-	IVisitable exit(NegationElement n, Map<IVisitable, IVisitable> m) {
+	IVisitable exit(NegationElement n, Map m) {
 		new NegationElement(m[n.element] as IElement)
 	}
 
-	IVisitable exit(Constructor n, Map<IVisitable, IVisitable> m) {
+	IVisitable exit(Constructor n, Map m) {
 		new Constructor(n.name, n.exprs.collect { m[it] as IExpr })
 	}
 
-	IVisitable exit(Relation n, Map<IVisitable, IVisitable> m) {
+	IVisitable exit(Relation n, Map m) {
 		new Relation(n.name, n.stage, n.exprs.collect { m[it] as IExpr })
 	}
 
-	IVisitable exit(Type n, Map<IVisitable, IVisitable> m) {
-		new Type(n.name, m[n.exprs?.first()] as IExpr)
+	IVisitable exit(Type n, Map m) {
+		n.exprs ? new Type(n.name, m[n.exprs.first()] as IExpr) : n
 	}
 
-	IVisitable exit(BinaryExpr n, Map<IVisitable, IVisitable> m) {
+	IVisitable exit(BinaryExpr n, Map m) {
 		new BinaryExpr(m[n.left] as IExpr, n.op, m[n.right] as IExpr)
 	}
 
-	IVisitable exit(ConstantExpr n, Map<IVisitable, IVisitable> m) { n }
+	IVisitable exit(ConstantExpr n, Map m) { n }
 
-	IVisitable exit(GroupExpr n, Map<IVisitable, IVisitable> m) {
+	IVisitable exit(GroupExpr n, Map m) {
 		new GroupExpr(m[n.expr] as IExpr)
 	}
 
-	IVisitable exit(VariableExpr n, Map<IVisitable, IVisitable> m) { n }
+	IVisitable exit(VariableExpr n, Map m) { n }
 }

@@ -1,28 +1,43 @@
 @Type AP
 @Constructor
-byVar[x] = y -> string(x), AP(y).
-@Constructor
-byFld[x, y] = z -> string(x), string(y), AP(z).
+byVar[x] = y : string, AP
 
 byVar[x] = y new AP,
-Foo(y, x), Baz(x), BarBaz(y) <- x := "abc".
+Ble(y, x) <- x = "abc".
 
-@type AP2 -> AP
+@Constructor
+byFld[x, y] = z : string, string, AP
+
+byVar[x] = y new AP,
+Foo(y, x), Baz(x), BarBaz(y) <- x = "abc".
+
+@type AP2 <: AP
 
 byFld[x, y] = z new AP2,
-Foo2(z), Baz2(y, x) <- x := "x2", y := "f1".
+Foo2(z), Baz2(y, x) <- x = "x2", y = "f1".
 
 @Plan(plan = "1:(1,2)")
 Planned(x) <- Foo(_, x), Baz(x).
 
-
 @Type Shape
 @Constructor
-byLen[x] = y -> int(x), Shape(y).
+byLen[x] = y : int, Shape
 @Constructor
-byName[x] = y -> string(x), Shape(y).
+byName[x] = y : string, Shape
 @Constructor
-byPoints[x,y] = z -> int(x), int(y), Shape(z).
+byPoints[x,y] = z : int, int, Shape
 
 byLen[x1] = y1 new Shape, byLen[x2] = y2 new Shape,
 FooBer(x1, y1, x2, y2) <- x1 = 42, x2 = 10.
+
+// More tests for assignments
+Pred1(x1, y1) : int, int
+Pred1(x, y) <- x = y + 20, y = 10.
+
+// TODO why no error/warning?
+//Pred2(x, y) <- Pred1(x, x), x = 10 + t, Pred1(t, t).
+
+// TODO why is this needed?
+Pred3(x, y, z) : int, int, int
+
+Pred3(x, t, z) <- Pred1(x, x), x = 10 + t, Pred1(t, t), z = x + t.

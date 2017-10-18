@@ -9,7 +9,7 @@ class Type extends Relation {
 
 	Type(String name, IExpr expr) { super(name, null, [expr]) }
 
-	Type(String name) { super(name, null, null) }
+	Type(String name) { super(name, null, []) }
 
 	def <T> T accept(IVisitor<T> v) { v.visit(this) }
 

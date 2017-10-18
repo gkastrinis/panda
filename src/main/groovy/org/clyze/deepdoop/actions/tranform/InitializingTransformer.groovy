@@ -6,14 +6,12 @@ import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.Component
-import org.clyze.deepdoop.datalog.element.*
+import org.clyze.deepdoop.datalog.element.LogicalElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.BinaryExpr
-import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.GroupExpr
-import org.clyze.deepdoop.datalog.expr.VariableExpr
 import org.clyze.deepdoop.system.ErrorId
 import org.clyze.deepdoop.system.ErrorManager
 import org.clyze.deepdoop.system.SourceManager
@@ -100,7 +98,7 @@ class InitializingTransformer extends DummyTransformer {
 		needDeclaration = [] as Set
 	}
 
-	Component exit(Component n, Map<IVisitable, IVisitable> m) {
+	IVisitable exit(Component n, Map m) {
 		n.declarations.each { initP.globalComp.declarations << (m[it] as Declaration) }
 		n.rules.each { initP.globalComp.rules << (m[it] as Rule) }
 
@@ -110,10 +108,10 @@ class InitializingTransformer extends DummyTransformer {
 		null
 	}
 
-	Declaration exit(Declaration n, Map<IVisitable, IVisitable> m) {
+	IVisitable exit(Declaration n, Map m) {
 		// Ignore declarations in global scope
 		if (currComp) haveDeclaration << n.atom.name
-		new Declaration(m[n.atom] as Relation, n.types.collect { m[it] as Type }, n.annotations)
+		super.exit(n, m)
 	}
 
 	// Override to keep track of when in rule's head
@@ -126,40 +124,12 @@ class InitializingTransformer extends DummyTransformer {
 		return actor.exit(n, m)
 	}
 
-	Rule exit(Rule n, Map<IVisitable, IVisitable> m) {
-		new Rule(m[n.head] as LogicalElement, m[n.body] as LogicalElement, n.annotations)
-	}
-
-	AggregationElement exit(AggregationElement n, Map<IVisitable, IVisitable> m) {
-		new AggregationElement(m[n.var] as VariableExpr, m[n.relation] as Relation, m[n.body] as LogicalElement)
-	}
-
-	ComparisonElement exit(ComparisonElement n, Map<IVisitable, IVisitable> m) {
-		new ComparisonElement(m[n.expr] as BinaryExpr)
-	}
-
-	ConstructionElement exit(ConstructionElement n, Map<IVisitable, IVisitable> m) {
-		new ConstructionElement(m[n.constructor] as Constructor, m[n.type] as Type)
-	}
-
-	GroupElement exit(GroupElement n, Map<IVisitable, IVisitable> m) {
-		new GroupElement(m[n.element] as IElement)
-	}
-
-	LogicalElement exit(LogicalElement n, Map<IVisitable, IVisitable> m) {
-		new LogicalElement(n.type, n.elements.collect { m[it] as IElement })
-	}
-
-	NegationElement exit(NegationElement n, Map<IVisitable, IVisitable> m) {
-		new NegationElement(m[n.element] as IElement)
-	}
-
-	Constructor exit(Constructor n, Map<IVisitable, IVisitable> m) {
+	IVisitable exit(Constructor n, Map m) {
 		def (String newName, _) = rename(n)
 		new Constructor(newName, n.exprs)
 	}
 
-	Relation exit(Relation n, Map<IVisitable, IVisitable> m) {
+	IVisitable exit(Relation n, Map m) {
 		def loc = SourceManager.instance.recall(n)
 		// @ext is allowed in the rule's head only in global space
 		if (inRuleHead && currInitName && n.stage == "@ext")
@@ -172,18 +142,16 @@ class InitializingTransformer extends DummyTransformer {
 		new Relation(newName, newStage, n.exprs)
 	}
 
-	Type exit(Type n, Map<IVisitable, IVisitable> m) {
+	IVisitable exit(Type n, Map m) {
 		def (String newName, _) = rename(n)
 		new Type(newName)
 	}
 
-	BinaryExpr exit(BinaryExpr n, Map<IVisitable, IVisitable> m) { n }
+	// Overrides to avoid unneeded allocations
 
-	ConstantExpr exit(ConstantExpr n, Map<IVisitable, IVisitable> m) { n }
+	IVisitable exit(BinaryExpr n, Map m) { n }
 
-	GroupExpr exit(GroupExpr n, Map<IVisitable, IVisitable> m) { n }
-
-	VariableExpr exit(VariableExpr n, Map<IVisitable, IVisitable> m) { n }
+	IVisitable exit(GroupExpr n, Map m) { n }
 
 	def rename(Relation r) {
 		// Global Component

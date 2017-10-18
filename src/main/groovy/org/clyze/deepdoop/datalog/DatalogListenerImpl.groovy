@@ -162,15 +162,13 @@ class DatalogListenerImpl extends DatalogBaseListener {
 			values[ctx] = new LogicalElement(values[ctx.constructor()] as Relation)
 		else if (ctx.comparison())
 			values[ctx] = new LogicalElement(values[ctx.comparison()] as ComparisonElement)
-		else if (ctx.assignment())
-			values[ctx] = new LogicalElement(values[ctx.assignment()] as ComparisonElement)
 		else if (hasToken(ctx, "("))
 			values[ctx] = new LogicalElement(new NegationElement(values[ctx.bodyList(0)] as IElement))
 		else if (hasToken(ctx, "("))
 			values[ctx] = new LogicalElement(new GroupElement(values[ctx.bodyList(0)] as IElement))
 		else {
 			def list = (0..1).collect { values[ctx.bodyList(it)] as IElement }
-			def type = hasToken(ctx, ", ") ? LogicType.AND : LogicType.OR
+			def type = hasToken(ctx, ",") ? LogicType.AND : LogicType.OR
 			values[ctx] = new LogicalElement(type, list)
 		}
 	}
@@ -227,8 +225,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 				constant = Long.parseLong(str, 10)
 			}
 			values[ctx] = new ConstantExpr(constant)
-		}
-		else if (ctx.REAL()) values[ctx] = new ConstantExpr(Double.parseDouble(ctx.REAL().text))
+		} else if (ctx.REAL()) values[ctx] = new ConstantExpr(Double.parseDouble(ctx.REAL().text))
 		else if (ctx.BOOLEAN()) values[ctx] = new ConstantExpr(Boolean.parseBoolean(ctx.BOOLEAN().text))
 		else if (ctx.STRING()) values[ctx] = new ConstantExpr(ctx.STRING().text)
 	}
@@ -265,10 +262,6 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		else op = BinOperator.NEQ
 
 		values[ctx] = new ComparisonElement(e0, op, e1)
-	}
-
-	void exitAssignment(AssignmentContext ctx) {
-		values[ctx] = new ComparisonElement(new VariableExpr(ctx.IDENTIFIER().text), BinOperator.ASGN, values[ctx.expr()] as IExpr)
 	}
 
 	void exitPropagationList(PropagationListContext ctx) {

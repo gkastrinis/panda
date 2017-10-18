@@ -6,8 +6,6 @@ enum BinOperator {
 	GT(">"), GEQ(">="), NEQ("!="),
 	// Arithmetic
 	PLUS("+"), MINUS("-"), MULT("*"), DIV("/"),
-	// Assign
-	ASGN(":=")
 
 	private String op
 

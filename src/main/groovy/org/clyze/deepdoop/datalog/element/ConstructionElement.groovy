@@ -13,5 +13,11 @@ class ConstructionElement implements IElement {
 	Constructor constructor
 	Type type
 
+	ConstructionElement(Constructor constructor, Type type) {
+		this.constructor = constructor
+		this.type = type
+		this.type.exprs = [constructor.valueExpr]
+	}
+
 	def <T> T accept(IVisitor<T> v) { v.visit(this) }
 }

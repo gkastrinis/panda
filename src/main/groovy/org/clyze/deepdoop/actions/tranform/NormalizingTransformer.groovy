@@ -9,12 +9,15 @@ import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.*
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
+import org.clyze.deepdoop.datalog.element.relation.Type
+import org.clyze.deepdoop.datalog.expr.BinaryExpr
+import org.clyze.deepdoop.datalog.expr.GroupExpr
 
 class NormalizingTransformer extends DummyTransformer {
 
 	NormalizingTransformer() { actor = this }
 
-	Program exit(Program n, Map<IVisitable, IVisitable> m) {
+	IVisitable exit(Program n, Map m) {
 		// Flatten components that extend other components
 		def newComps = n.comps.values().collectEntries {
 			Component currComp = m[it] as Component
@@ -30,30 +33,18 @@ class NormalizingTransformer extends DummyTransformer {
 
 			[(flatComp.name): flatComp]
 		}
-		return new Program(m[n.globalComp] as Component, newComps, n.inits, n.props)
+		new Program(m[n.globalComp] as Component, newComps, n.inits, n.props)
 	}
 
-	Component exit(Component n, Map<IVisitable, IVisitable> m) {
+	IVisitable exit(Component n, Map m) {
 		def newComp = new Component(n.name, n.superComp)
 		n.declarations.each { newComp.declarations << (m[it] as Declaration) }
 		n.rules.each { newComp.rules << (m[it] as Rule) }
 		return newComp
 	}
 
-	Rule exit(Rule n, Map<IVisitable, IVisitable> m) {
-		new Rule(m[n.head] as LogicalElement, m[n.body] as LogicalElement, n.annotations)
-	}
-
-	AggregationElement exit(AggregationElement n, Map<IVisitable, IVisitable> m) {
-		new AggregationElement(n.var, n.relation, m[n.body] as LogicalElement)
-	}
-
-	GroupElement exit(GroupElement n, Map<IVisitable, IVisitable> m) {
-		new GroupElement(m[n.element] as IElement)
-	}
-
 	// Flatten LogicalElement "trees"
-	LogicalElement exit(LogicalElement n, Map<IVisitable, IVisitable> m) {
+	IVisitable exit(LogicalElement n, Map m) {
 		def newElements = []
 		n.elements.each {
 			def flatE = m[it] as IElement
@@ -62,18 +53,24 @@ class NormalizingTransformer extends DummyTransformer {
 			else
 				newElements << flatE
 		}
-		return new LogicalElement(n.type, newElements)
+		new LogicalElement(n.type, newElements)
 	}
 
-	NegationElement exit(NegationElement n, Map<IVisitable, IVisitable> m) {
-		new NegationElement(m[n.element] as IElement)
-	}
+	// Overrides to avoid unneeded allocations
 
-	CmdComponent exit(CmdComponent n, Map<IVisitable, IVisitable> m) { n }
+	IVisitable exit(CmdComponent n, Map m) { n }
 
-	ComparisonElement exit(ComparisonElement n, Map<IVisitable, IVisitable> m) { n }
+	IVisitable exit(ComparisonElement n, Map m) { n }
 
-	Constructor exit(Constructor n, Map<IVisitable, IVisitable> m) { n }
+	IVisitable exit(ConstructionElement n, Map m) { n }
 
-	Relation exit(Relation n, Map<IVisitable, IVisitable> m) { n }
+	IVisitable exit(Constructor n, Map m) { n }
+
+	IVisitable exit(Relation n, Map m) { n }
+
+	IVisitable exit(Type n, Map m) { n }
+
+	IVisitable exit(BinaryExpr n, Map m) { n }
+
+	IVisitable exit(GroupExpr n, Map m) { n }
 }

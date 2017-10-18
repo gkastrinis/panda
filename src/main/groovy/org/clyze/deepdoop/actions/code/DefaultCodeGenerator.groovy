@@ -63,7 +63,7 @@ class DefaultCodeGenerator extends PostOrderVisitor<String> implements TDummyAct
 
 	//String exit(Type n, Map<IVisitable, String> m) { null }
 
-	String exit(BinaryExpr n, Map<IVisitable, String> m) { "${m[n.left]} ${mapOp(n.op)} ${m[n.right]}" }
+	String exit(BinaryExpr n, Map<IVisitable, String> m) { "${m[n.left]} ${n.op} ${m[n.right]}" }
 
 	String exit(ConstantExpr n, Map<IVisitable, String> m) { n.value as String }
 
@@ -78,6 +78,4 @@ class DefaultCodeGenerator extends PostOrderVisitor<String> implements TDummyAct
 	protected void emit(String data) { write currentFile, data }
 
 	protected static void write(File file, String data) { file << data << "\n" }
-
-	static def mapOp(def op) { op == BinOperator.ASGN ? '=' : op as String }
 }
