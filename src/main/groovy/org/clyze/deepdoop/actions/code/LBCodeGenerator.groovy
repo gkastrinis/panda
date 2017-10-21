@@ -192,8 +192,8 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 
 	boolean allHandledFor(IVisitable n) {
 		Set<String> atoms = []
-		infoActor.declaringAtoms[n].each { atoms << it.name }
-		infoActor.usedAtoms[n].each { atoms << it.name }
+		infoActor.declaredRelations[n].each { atoms << it.name }
+		infoActor.usedRelations[n].each { atoms << it.name }
 		atoms.retainAll(globalAtoms)
 
 		return atoms.every { handledAtoms.contains(it) }

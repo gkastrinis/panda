@@ -20,7 +20,7 @@ class DependencyGraph {
 		def acVisitor = new PostOrderVisitor<IVisitable>(acActor)
 		p.accept(acVisitor)
 
-		Set<String> globalAtoms = acActor.getDeclaringAtoms(p.globalComp).keySet()
+		Set<String> globalAtoms = acActor.getDeclaredRelations(p.globalComp).keySet()
 		Set<String> handledGlobalAtoms = []
 
 		p.props.each { prop ->
@@ -40,7 +40,7 @@ class DependencyGraph {
 				}
 
 			// Dependencies from global space
-			Set<String> fromGlobal = acActor.getUsedAtoms(fromComp).keySet()
+			Set<String> fromGlobal = acActor.getUsedRelations(fromComp).keySet()
 			fromGlobal.retainAll(globalAtoms)
 
 			fromGlobal.each { globalAtomName -> getNode(globalAtomName).addEdgeTo(fromNode) }

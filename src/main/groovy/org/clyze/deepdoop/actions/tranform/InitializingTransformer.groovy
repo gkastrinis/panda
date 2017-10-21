@@ -67,7 +67,7 @@ class InitializingTransformer extends DummyTransformer {
 			// fromCompTemplate is the component before initialization
 			def fromCompTemplate = origP.comps[origP.inits[prop.fromId]]
 
-			def declaredRelations = infoActor.declaringAtoms[fromCompTemplate]
+			def declaredRelations = infoActor.declaredRelations[fromCompTemplate]
 
 			// If preds is null then "*" was used
 			def toPropagate = (prop.preds ?
@@ -81,7 +81,7 @@ class InitializingTransformer extends DummyTransformer {
 
 			toPropagate.each { rel ->
 				// Propagate to global scope and relation already declared there
-				if (!prop.toId && rel in infoActor.declaringAtoms[origP.globalComp])
+				if (!prop.toId && rel in infoActor.declaredRelations[origP.globalComp])
 					ErrorManager.error(ErrorId.DEP_GLOBAL, rel.name)
 
 				def head = new LogicalElement(rename(rel, prop.toId, prop.toId != null))
@@ -158,7 +158,7 @@ class InitializingTransformer extends DummyTransformer {
 		if (!currInitName)
 			return [rename(r, currInitName, r.stage == "@ext").name, null]
 
-		def declared = infoActor.declaringAtoms[currComp].collect { it.name }
+		def declared = infoActor.declaredRelations[currComp].collect { it.name }
 
 		if (r.stage == "@ext")
 			return [rename(r, currInitName, true).name, null]

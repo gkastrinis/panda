@@ -7,10 +7,7 @@ import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.*
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
-import org.clyze.deepdoop.datalog.element.relation.Type
-import org.clyze.deepdoop.datalog.expr.BinaryExpr
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
-import org.clyze.deepdoop.datalog.expr.GroupExpr
 import org.clyze.deepdoop.datalog.expr.VariableExpr
 import org.clyze.deepdoop.system.ErrorId
 import org.clyze.deepdoop.system.ErrorManager
@@ -22,9 +19,17 @@ import static org.clyze.deepdoop.datalog.Annotation.Kind.TYPE
 class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implements TDummyActor<IVisitable> {
 
 	// Symbol table information
-	Map<IVisitable, Set<Relation>> declaringAtoms = [:].withDefault { [] as Set }
-	Map<IVisitable, Set<Relation>> usedAtoms = [:].withDefault { [] as Set }
-	Map<IVisitable, List<VariableExpr>> vars = [:].withDefault { [] }
+	Map<IVisitable, Set<Relation>> declaredRelations = [:]
+	Map<IVisitable, Set<Relation>> usedRelations = [:]
+	Map<String, Set<Rule>> usedInRules = [:].withDefault { [] as Set }
+	Map<IVisitable, Set<VariableExpr>> vars = [:]
+	// Constructor information
+	Map<Rule, Set<VariableExpr>> constructedVars = [:]
+	Set<String> allConstructors = [] as Set
+	Map<String, String> constructorBaseType = [:]
+	Map<String, Set<String>> constructorsPerType = [:].withDefault { [] as Set }
+	Map<Rule, List<ConstructionElement>> constructionsOrderedPerRule = [:]
+	List<String> refmodeRelations = []
 
 	// Type information
 	Set<String> allTypes = [] as Set
@@ -32,26 +37,24 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 	Map<String, List<String>> superTypesOrdered = [:].withDefault { [] }
 	Map<String, Set<String>> subTypes = [:].withDefault { [] as Set }
 
-	// Constructor information
-	Set<String> allConstructors = [] as Set
-	Map<String, String> constructorBaseType = [:]
-	Map<String, Set<String>> constructorsPerType = [:].withDefault { [] as Set }
-	Map<Rule, List<ConstructionElement>> constructionsOrderedPerRule = [:]
 
-	// Predicate Name x Set of Rules
-	Map<String, Set<Rule>> affectedRules = [:].withDefault { [] as Set }
-
-	List<String> refmodeRelations = []
-	// Map functional relations to their arity
-	Map<String, Integer> functionalRelations = [:]
+	Set<Relation> tmpRelations = [] as Set
+	Set<VariableExpr> tmpVars = [] as Set
+	Set<VariableExpr> tmpConVars
+	// Count how many times a variable is constructed in a rule head
+	// It should be at max once
+	Map<VariableExpr, Integer> conVarCounter = [:].withDefault { 0 }
+	// Order constructors appearing in a rule head based on their dependencies
+	// If C2 needs a variable constructed by C1 it will be after C1
+	List<ConstructionElement> constructionsOrdered
 
 	InfoCollectionVisitingActor() { actor = this }
 
 	IVisitable exit(Program n, Map m) {
-		declaringAtoms[n] = declaringAtoms[n.globalComp] +
-				(n.comps.values().collect { declaringAtoms[it] }.flatten() as Set<Relation>)
-		usedAtoms[n] = usedAtoms[n.globalComp] +
-				(n.comps.collect { usedAtoms[it.value] }.flatten() as Set<Relation>)
+		declaredRelations[n] = declaredRelations[n.globalComp] +
+				(n.comps.values().collect { declaredRelations[it] }.flatten() as Set<Relation>)
+		usedRelations[n] = usedRelations[n.globalComp] +
+				(n.comps.collect { usedRelations[it.value] }.flatten() as Set<Relation>)
 
 		// Base case for supertypes
 		allTypes.each {
@@ -81,7 +84,7 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 	IVisitable exit(CmdComponent n, Map m) {
 		Map<String, Relation> declMap = [:]
 		n.declarations.each { declMap << getDeclaringAtoms(it) }
-		declaringAtoms[n] = declMap
+		declaredRelations[n] = declMap
 
 		Set<String> importPreds = [] as Set
 		n.imports.each { p ->
@@ -96,28 +99,26 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 		}
 		Map<String, Relation> usedMap = [:]
 		n.exports.each { usedMap[it.name] = it }
-		usedAtoms[n] = usedMap
+		usedRelations[n] = usedMap
 		null
 	}
 	*/
 
 	IVisitable exit(Component n, Map m) {
-		declaringAtoms[n] = (n.declarations + n.rules).collect { declaringAtoms[it] }.flatten() as Set<Relation>
-		usedAtoms[n] = (n.declarations + n.rules).collect { usedAtoms[it] }.flatten() as Set<Relation>
+		declaredRelations[n] = (n.declarations + n.rules).collect { declaredRelations[it] }.flatten() as Set<Relation>
+		usedRelations[n] = (n.declarations + n.rules).collect { usedRelations[it] }.flatten() as Set<Relation>
 		null
 	}
 
 	IVisitable exit(Declaration n, Map m) {
-		declaringAtoms[n] = [n.atom] as Set
-		usedAtoms[n] = n.types as Set
+		declaredRelations[n] = [n.atom] as Set
+		usedRelations[n] = n.types as Set
 
 		def predName = n.atom.name
-
 		if (TYPE in n.annotations) {
 			allTypes << predName
-			if (!n.types.isEmpty()) directSuperType[predName] = n.types.first().name
+			if (n.types) directSuperType[predName] = n.types.first().name
 		}
-
 		if (CONSTRUCTOR in n.annotations) {
 			def type = n.types.last().name
 			constructorBaseType[predName] = type
@@ -127,125 +128,66 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 			if (refmode && refmode.type == ConstantExpr.Type.BOOLEAN && refmode.value)
 				refmodeRelations << n.atom.name
 		}
-
 		null
 	}
 
-	IVisitable exit(Rule n, Map m) {
-		// Atoms used in the head, are declared in the rule
-		declaringAtoms[n] = usedAtoms[n.head]
-		usedAtoms[n] = usedAtoms[n.body]
+	IVisitable visit(Rule n) {
+		actor.enter(n)
 
-		n.body?.elements
-				?.findAll { it instanceof Relation }
-				?.each { affectedRules[(it as Relation).name] << n }
-
-		// Count how many times a variable is constructed in the head
-		// It should be at max once
-		def varConstructionCounter = [:].withDefault { 0 }
-		// Order constructors appearing in the head based on their dependencies
-		// If C2 needs a variable constructed by C1 it will be after C1
-		List<ConstructionElement> constructionsOrdered = []
-		n.head?.elements
-				?.findAll { it instanceof ConstructionElement }
-				?.collect { it as ConstructionElement }
-				?.each { con ->
-			def loc = SourceManager.instance.recall(con)
-
-			def constructedVar = con.constructor.valueExpr
-			varConstructionCounter[constructedVar]++
-			if (varConstructionCounter[constructedVar] > 1)
-				ErrorManager.error(loc, ErrorId.VAR_MULTIPLE_CONSTR, constructedVar)
-
-			// Max index of a constructor that constructs a variable used by `con`
-			def maxBefore = con.constructor.keyExprs
-					.collect { e -> constructionsOrdered.findIndexOf { it.constructor.valueExpr == e } }
-					.max()
-			// Min index of a constructor that uses the variable constructed by `con`
-			def minAfter = constructionsOrdered.findIndexValues { con.constructor.valueExpr in it.constructor.keyExprs }
-					.min()
-			// `maxBefore` should be strictly before `minAfter`
-			maxBefore = (maxBefore != -1 ? maxBefore : -2)
-			minAfter = (minAfter != null ? minAfter : -1)
-			if (maxBefore >= minAfter)
-				ErrorManager.error(loc, ErrorId.CONSTR_RULE_CYCLE, con.constructor.name)
-
-			constructionsOrdered.add(maxBefore >= 0 ? maxBefore : 0, con)
-		}
+		tmpRelations = [] as Set
+		tmpVars = [] as Set
+		tmpConVars = [] as Set
+		conVarCounter.clear()
+		constructionsOrdered = []
+		n.head.accept(this)
+		// Relations used in the head (except in constructions)
+		// are implicitly declared by the rule
+		declaredRelations[n] = tmpRelations.findAll { it instanceof Relation } as Set
+		usedRelations[n] = tmpRelations
+		vars[n.head] = tmpVars
+		constructedVars[n] = tmpConVars
 		constructionsOrderedPerRule[n] = constructionsOrdered
 
-		null
+		tmpRelations = [] as Set
+		tmpVars = [] as Set
+		n.body?.accept(this)
+		usedRelations[n] += tmpRelations
+		tmpRelations.each { usedInRules[it.name] << n }
+		vars[n.body] = tmpVars
+
+		actor.exit(n, m)
 	}
 
-	IVisitable exit(AggregationElement n, Map m) {
-		usedAtoms[n] = usedAtoms[n.body]
+	void enter(ConstructionElement n) {
+		tmpRelations << n.type
+		allConstructors << n.constructor.name
 
-		vars[n] = vars[n.body] + vars[n.relation]
-		null
+		def loc = SourceManager.instance.recall(n)
+		def conVar = n.constructor.valueExpr as VariableExpr
+		tmpConVars << conVar
+		conVarCounter[conVar]++
+		if (conVarCounter[conVar] > 1)
+			ErrorManager.error(loc, ErrorId.VAR_MULTIPLE_CONSTR, conVar)
+
+		// Max index of a constructor that constructs a variable used by `n`
+		def maxBefore = n.constructor.keyExprs
+				.collect { e -> constructionsOrdered.findIndexOf { it.constructor.valueExpr == e } }
+				.max()
+		// Min index of a constructor that uses the variable constructed by `con`
+		def minAfter = constructionsOrdered.findIndexValues { n.constructor.valueExpr in it.constructor.keyExprs }
+				.min()
+		// `maxBefore` should be strictly before `minAfter`
+		maxBefore = (maxBefore != -1 ? maxBefore : -2)
+		minAfter = (minAfter != null ? minAfter : -1)
+		if (maxBefore >= minAfter)
+			ErrorManager.error(loc, ErrorId.CONSTR_RULE_CYCLE, n.constructor.name)
+
+		constructionsOrdered.add(maxBefore >= 0 ? maxBefore : 0, n)
 	}
 
-	IVisitable exit(ComparisonElement n, Map m) {
-		vars[n] = vars[n.expr]
-		null
-	}
+	void enter(Constructor n) { tmpRelations << n }
 
-	IVisitable exit(ConstructionElement n, Map m) {
-		usedAtoms[n] = [n.type] as Set
+	void enter(Relation n) { tmpRelations << n }
 
-		vars[n] = vars[n.constructor]
-		null
-	}
-
-	IVisitable exit(GroupElement n, Map m) {
-		usedAtoms[n] = usedAtoms[n.element]
-
-		vars[n] = vars[n.element]
-		null
-	}
-
-	IVisitable exit(LogicalElement n, Map m) {
-		usedAtoms[n] = n.elements.collect { usedAtoms[it] }.flatten() as Set<Relation>
-
-		vars[n] = n.elements.collect { vars[it] }.flatten() as List<VariableExpr>
-		null
-	}
-
-	IVisitable exit(NegationElement n, Map m) {
-		usedAtoms[n] = usedAtoms[n.element]
-
-		vars[n] = vars[n.element]
-		null
-	}
-
-	IVisitable exit(Constructor n, Map m) {
-		exit(n as Relation, m)
-		allConstructors << n.name
-		null
-	}
-
-	IVisitable exit(Relation n, Map m) {
-		usedAtoms[n] = [n] as Set
-
-		vars[n] = n.exprs.collect { vars[it] }.flatten() as List<VariableExpr>
-		null
-	}
-
-	IVisitable exit(Type n, Map m) {
-		exit(n as Relation, m)
-	}
-
-	IVisitable exit(BinaryExpr n, Map m) {
-		vars[n] = vars[n.left] + vars[n.right]
-		null
-	}
-
-	IVisitable exit(GroupExpr n, Map m) {
-		vars[n] = vars[n.expr]
-		null
-	}
-
-	IVisitable exit(VariableExpr n, Map m) {
-		vars[n] = [n]
-		null
-	}
+	void enter(VariableExpr n) { tmpVars << n }
 }

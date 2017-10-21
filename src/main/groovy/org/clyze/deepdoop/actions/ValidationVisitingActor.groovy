@@ -72,17 +72,23 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements TD
 			it.value.validate()
 		}
 
+		def loc = recall(n)
+
+		def conVars = infoActor.constructedVars[n]
 		def varsInHead = infoActor.vars[n.head]
 		def varsInBody = infoActor.vars[n.body]
+		varsInHead.findAll { !(it in varsInBody) && !(it in conVars) }
+				.each { ErrorManager.error(loc, ErrorId.VAR_UNKNOWN, it.name) }
+
 		varsInBody.findAll { it.name != "_" }
-				.findAll { !varsInHead.contains(it) }
+				.findAll { !(it in varsInHead) }
 				.findAll { Collections.frequency(varsInBody, it) == 1 }
-				.each { ErrorManager.warn(recall(n), ErrorId.VAR_UNUSED, it.name) }
+				.each { ErrorManager.warn(loc, ErrorId.VAR_UNUSED, it.name) }
 
 		n.head.elements.findAll { it instanceof Relation }
 				.collect { it as Relation }
 				.findAll { it.name in infoActor.allTypes }
-				.each { ErrorManager.error(recall(n), ErrorId.TYPE_RULE, it.name) }
+				.each { ErrorManager.error(loc, ErrorId.TYPE_RULE, it.name) }
 		null
 	}
 

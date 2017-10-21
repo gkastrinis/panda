@@ -28,7 +28,6 @@ class AssignTransformer extends DummyTransformer {
 	boolean changed
 	boolean inRule = false
 
-	// Overwrite to compute transitive closure of changes
 	IVisitable visit(Rule n) {
 		if (!n.body) return super.visit(n)
 

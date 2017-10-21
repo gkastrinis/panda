@@ -31,13 +31,5 @@ byLen[x1] = y1 new Shape, byLen[x2] = y2 new Shape,
 FooBer(x1, y1, x2, y2) <- x1 = 42, x2 = 10.
 
 // More tests for assignments
-Pred1(x1, y1) : int, int
 Pred1(x, y) <- x = y + 20, y = 10.
-
-// TODO why no error/warning?
-//Pred2(x, y) <- Pred1(x, x), x = 10 + t, Pred1(t, t).
-
-// TODO why is this needed?
-Pred3(x, y, z) : int, int, int
-
-Pred3(x, t, z) <- Pred1(x, x), x = 10 + t, Pred1(t, t), z = x + t.
+Pred2(x, t, z) <- Pred1(x, x), x = 10 + t, Pred1(t, t), z = x + t.
