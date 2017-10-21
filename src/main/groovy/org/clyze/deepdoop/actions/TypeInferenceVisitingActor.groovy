@@ -1,10 +1,12 @@
 package org.clyze.deepdoop.actions
 
+import org.clyze.deepdoop.datalog.BinOperator
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.AggregationElement
+import org.clyze.deepdoop.datalog.element.ComparisonElement
 import org.clyze.deepdoop.datalog.element.ConstructionElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
@@ -97,7 +99,7 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 					def newTypeSet = (prevTypeSet + currTypeSet) as Set
 					if (prevTypeSet != newTypeSet) {
 						tmpRelationTypes[relation][i] = newTypeSet
-						deltaRules += infoActor.affectedRules[relation]
+						deltaRules += infoActor.usedInRules[relation]
 					}
 				} else
 					deltaRules << n
@@ -108,6 +110,11 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 
 	IVisitable exit(AggregationElement n, Map m) {
 		tmpExprTypes[n.var] << "int"
+		null
+	}
+
+	IVisitable exit(ComparisonElement n, Map m) {
+		tmpExprTypes[n] = tmpExprTypes[n.expr]
 		null
 	}
 
@@ -135,8 +142,11 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 	}
 
 	IVisitable exit(BinaryExpr n, Map m) {
-		// TODO numeric checks
-		tmpExprTypes[n] = tmpExprTypes[n.left] + tmpExprTypes[n.right]
+		def union = tmpExprTypes[n.left] + tmpExprTypes[n.right]
+		// Numeric operations
+		if (n.op != BinOperator.EQ && n.op != BinOperator.NEQ)
+			union.findAll { it != "int" || it != "float" }.each { ErrorManager.error(ErrorId.TYPE_INCOMP_EXPR) }
+		tmpExprTypes[n] = tmpExprTypes[n.left] = tmpExprTypes[n.right] = union
 		null
 	}
 

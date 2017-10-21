@@ -17,6 +17,7 @@ enum ErrorId {
 	TYPE_UNSUPP,
 	TYPE_FIXED,
 	TYPE_INCOMP,
+	TYPE_INCOMP_EXPR,
 	TYPE_INFERENCE_FAIL,
 	TYPE_RULE,
 	REL_UNKNOWN,
@@ -60,6 +61,7 @@ enum ErrorId {
 		msgMap[TYPE_UNSUPP] = "Unsupported type `{0}` (currently)"
 		msgMap[TYPE_FIXED] = "Declared type `{0}` (at index {1}) for relation `{2}`"
 		msgMap[TYPE_INCOMP] = "Incompatible types for relation `{0}` (at index {1})"
+		msgMap[TYPE_INCOMP_EXPR] = "Incompatible types for numeric expression"
 		msgMap[TYPE_INFERENCE_FAIL] = "Type inference was inconclusive: cannot reach fixpoint"
 		msgMap[TYPE_RULE] = "Type `{0}` used as a normal relation in rule head"
 		msgMap[REL_UNKNOWN] = "Unknown relation `{0}` used in propagation"
