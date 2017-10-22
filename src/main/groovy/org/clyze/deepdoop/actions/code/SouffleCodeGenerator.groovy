@@ -35,7 +35,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 				.accept(new ValidationVisitingActor(infoActor))
 				.accept(typeInferenceActor)
 				.accept(new ConstructorTransformer(infoActor, typeInferenceActor))
-				.accept(new AssignTransformer())
+				.accept(new AssignTransformer(infoActor))
 
 		return super.visit(n as Program)
 	}

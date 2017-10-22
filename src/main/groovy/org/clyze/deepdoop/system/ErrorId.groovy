@@ -27,6 +27,8 @@ enum ErrorId {
 	VAR_UNKNOWN,
 	VAR_UNUSED,
 	VAR_MULTIPLE_CONSTR,
+	VAR_ASGN_CYCLE,
+	VAR_ASGN_COMPLEX,
 	CONSTR_UNKNOWN,
 	CONSTR_INCOMP,
 	CONSTR_NON_FUNC,
@@ -71,6 +73,8 @@ enum ErrorId {
 		msgMap[VAR_UNKNOWN] = "Unknown var `{0}`"
 		msgMap[VAR_UNUSED] = "Unused var `{0}`"
 		msgMap[VAR_MULTIPLE_CONSTR] = "Var `{0}` constructed by multiple constructors"
+		msgMap[VAR_ASGN_CYCLE] = "Assignment of var `{0}` is part of a cycle"
+		msgMap[VAR_ASGN_COMPLEX] = "Assignment of var `{0}` is part of a complicated logical structure"
 		msgMap[CONSTR_UNKNOWN] = "Unknown constructor `{0}`"
 		msgMap[CONSTR_INCOMP] = "Constructor `{0}` used with incompatible type `{1}`"
 		msgMap[CONSTR_NON_FUNC] = "Constructor `{0}` must use functional syntax"

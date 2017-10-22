@@ -23,6 +23,7 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 	Map<IVisitable, Set<Relation>> usedRelations = [:]
 	Map<String, Set<Rule>> usedInRules = [:].withDefault { [] as Set }
 	Map<IVisitable, Set<VariableExpr>> vars = [:]
+	Map<Rule, Set<VariableExpr>> boundVars = [:]
 	// Constructor information
 	Map<Rule, Set<VariableExpr>> constructedVars = [:]
 	Set<String> allConstructors = [] as Set
@@ -40,6 +41,7 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 
 	Set<Relation> tmpRelations = [] as Set
 	Set<VariableExpr> tmpVars = [] as Set
+	Set<VariableExpr> tmpBoundVars = [] as Set
 	Set<VariableExpr> tmpConVars
 	// Count how many times a variable is constructed in a rule head
 	// It should be at max once
@@ -150,10 +152,12 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 
 		tmpRelations = [] as Set
 		tmpVars = [] as Set
+		tmpBoundVars = [] as Set
 		n.body?.accept(this)
 		usedRelations[n] += tmpRelations
 		tmpRelations.each { usedInRules[it.name] << n }
 		vars[n.body] = tmpVars
+		boundVars[n] = tmpBoundVars
 
 		actor.exit(n, m)
 	}
@@ -185,9 +189,12 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 		constructionsOrdered.add(maxBefore >= 0 ? maxBefore : 0, n)
 	}
 
-	void enter(Constructor n) { tmpRelations << n }
+	void enter(Constructor n) { enter(n as Relation) }
 
-	void enter(Relation n) { tmpRelations << n }
+	void enter(Relation n) {
+		tmpRelations << n
+		tmpBoundVars += n.exprs.findAll { it instanceof VariableExpr }
+	}
 
 	void enter(VariableExpr n) { tmpVars << n }
 }

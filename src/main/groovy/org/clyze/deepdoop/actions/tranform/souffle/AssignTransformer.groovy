@@ -1,72 +1,67 @@
 package org.clyze.deepdoop.actions.tranform.souffle
 
 import org.clyze.deepdoop.actions.IVisitable
+import org.clyze.deepdoop.actions.InfoCollectionVisitingActor
 import org.clyze.deepdoop.actions.tranform.DummyTransformer
 import org.clyze.deepdoop.datalog.BinOperator
+import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.element.ComparisonElement
 import org.clyze.deepdoop.datalog.element.LogicalElement
-import org.clyze.deepdoop.datalog.element.relation.Constructor
-import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.expr.*
+import org.clyze.deepdoop.system.ErrorId
+import org.clyze.deepdoop.system.ErrorManager
 
 class AssignTransformer extends DummyTransformer {
 
-	enum Mode {
-		GATHER, ASSIGN, CLEANUP
-	}
+	InfoCollectionVisitingActor infoActor
 
-	// Current mode of operation
-	Mode mode
-	// Variables that are bound by relations, in the body of a rule
-	Set<VariableExpr> boundVars
 	// Variables that are assigned some expression, in the body of a rule
 	Map<VariableExpr, IExpr> assignments
+	// Variables already replaced by an assignment
+	Set<VariableExpr> replacedVars
 	// Dummy expression to replace assignment expressions
 	ComparisonElement dummyComparison = new ComparisonElement(new ConstantExpr(1), BinOperator.EQ, new ConstantExpr(1))
 	// For transitive closure computation
 	boolean changed
-	boolean inRule = false
+
+	int complexLogic
+
+	Set<VariableExpr> boundVars
+
+	AssignTransformer(InfoCollectionVisitingActor infoActor) { this.infoActor = infoActor }
+
+	IVisitable visit(Program n) {
+		def n1 = super.visit(n) as Program
+		new CleanupTransformer(dummyComparison).visit(n1)
+	}
 
 	IVisitable visit(Rule n) {
 		if (!n.body) return super.visit(n)
-
 		actor.enter(n)
-		inRule = true
+		assignments = [:]
+		replacedVars = [] as Set
+		boundVars = infoActor.boundVars[n]
+		complexLogic = 0
+		changed = true
 		def head = n.head
 		def body = n.body
-
-		mode = Mode.GATHER
-		boundVars = [] as Set
-		body.accept(this)
-
-		mode = Mode.ASSIGN
-		assignments = [:]
-		changed = true
 		while (changed) {
 			changed = false
 			body = body.accept(this)
 			head = head.accept(this)
 		}
-
-		mode = Mode.CLEANUP
-		changed = true
-		while (changed && body) {
-			changed = false
-			body = body.accept(this)
-		}
-
 		m[n.head] = head
 		m[n.body] = body
-
-		inRule = false
 		actor.exit(n, m)
 	}
 
 	IVisitable exit(ComparisonElement n, Map m) {
-		if (n.expr.op == BinOperator.EQ && n.expr.left instanceof VariableExpr && mode == Mode.ASSIGN) {
+		if (n.expr.op == BinOperator.EQ && n.expr.left instanceof VariableExpr /*&& mode == Mode.ASSIGN*/) {
 			def var = n.expr.left as VariableExpr
 			if (!(var in boundVars)) {
+				if (complexLogic > 1)
+					ErrorManager.error(ErrorId.VAR_ASGN_COMPLEX, var)
 				changed = true
 				assignments[var] = n.expr.right
 				return dummyComparison
@@ -75,31 +70,14 @@ class AssignTransformer extends DummyTransformer {
 		super.exit(n, m)
 	}
 
-	IVisitable visit(LogicalElement n) {
-		if (mode == Mode.CLEANUP && n.elements.find { it == dummyComparison }) {
-			def newElements = n.elements.findAll { it != dummyComparison }
-			if (newElements) {
-				changed = true
-				return new LogicalElement(n.type, newElements)
-			} else
-				return null
-		}
-		super.visit(n)
+	void enter(LogicalElement n) {
+		if (n.type == LogicalElement.LogicType.OR) complexLogic += 2
+		else complexLogic++
 	}
 
-	IVisitable exit(Constructor n, Map m) {
-		if (inRule && mode == Mode.GATHER) {
-			boundVars += n.exprs.findAll { it instanceof VariableExpr }
-			return n
-		}
-		super.exit(n, m)
-	}
-
-	IVisitable exit(Relation n, Map m) {
-		if (inRule && mode == Mode.GATHER) {
-			boundVars += n.exprs.findAll { it instanceof VariableExpr }
-			return n
-		}
+	IVisitable exit(LogicalElement n, Map m) {
+		if (n.type == LogicalElement.LogicType.OR) complexLogic -= 2
+		else complexLogic--
 		super.exit(n, m)
 	}
 
@@ -119,8 +97,11 @@ class AssignTransformer extends DummyTransformer {
 	}
 
 	IVisitable exit(VariableExpr n, Map m) {
-		if (mode == Mode.ASSIGN && assignments[n]) {
+		if (assignments && assignments[n]) {
 			changed = true
+			if (n in replacedVars)
+				ErrorManager.error(ErrorId.VAR_ASGN_CYCLE, n.name)
+			replacedVars << n
 			return assignments[n]
 		}
 		return n

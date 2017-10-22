@@ -145,7 +145,7 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 		def union = tmpExprTypes[n.left] + tmpExprTypes[n.right]
 		// Numeric operations
 		if (n.op != BinOperator.EQ && n.op != BinOperator.NEQ)
-			union.findAll { it != "int" || it != "float" }.each { ErrorManager.error(ErrorId.TYPE_INCOMP_EXPR) }
+			union.findAll { it != "int" && it != "float" }.each { ErrorManager.error(ErrorId.TYPE_INCOMP_EXPR) }
 		tmpExprTypes[n] = tmpExprTypes[n.left] = tmpExprTypes[n.right] = union
 		null
 	}

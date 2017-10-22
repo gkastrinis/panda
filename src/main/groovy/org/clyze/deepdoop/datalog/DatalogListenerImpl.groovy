@@ -162,7 +162,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 			values[ctx] = new LogicalElement(values[ctx.constructor()] as Relation)
 		else if (ctx.comparison())
 			values[ctx] = new LogicalElement(values[ctx.comparison()] as ComparisonElement)
-		else if (hasToken(ctx, "("))
+		else if (hasToken(ctx, "!"))
 			values[ctx] = new LogicalElement(new NegationElement(values[ctx.bodyList(0)] as IElement))
 		else if (hasToken(ctx, "("))
 			values[ctx] = new LogicalElement(new GroupElement(values[ctx.bodyList(0)] as IElement))
