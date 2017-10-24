@@ -1,7 +1,6 @@
 package org.clyze.deepdoop.actions.code
 
 import org.clyze.deepdoop.actions.*
-import org.clyze.deepdoop.datalog.BinOperator
 import org.clyze.deepdoop.datalog.element.ComparisonElement
 import org.clyze.deepdoop.datalog.element.GroupElement
 import org.clyze.deepdoop.datalog.element.LogicalElement

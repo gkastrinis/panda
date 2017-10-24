@@ -73,8 +73,6 @@ class DatalogSpec extends Specification {
 		"fail25.logic" | ErrorId.CONSTR_RULE_CYCLE
 		"fail26.logic" | ErrorId.VAR_MULTIPLE_CONSTR
 		"fail27.logic" | ErrorId.TYPE_INCOMP_EXPR
-		"fail28.logic" | ErrorId.VAR_ASGN_CYCLE
-		"fail29.logic" | ErrorId.VAR_ASGN_COMPLEX
 //		"fail100.logic" | ErrorId.DEP_CYCLE
 //		"fail101.logic" | ErrorId.CMD_RULE
 //		"fail103.logic" | ErrorId.CMD_DIRECTIVE
@@ -85,28 +83,45 @@ class DatalogSpec extends Specification {
 //		"fail108.logic" | ErrorId.MULTIPLE_ENT_DECLS
 	}
 
-	def test(String file) {
+	@Unroll
+	def "DeepDoop Souffle-failing tests"() {
+		when:
+		souffleTest(file)
+
+		then:
+		def e = thrown(DeepDoopException)
+		e.errorId == expectedErrorId
+
+		where:
+		file            | expectedErrorId
+		"fail-S0.logic" | ErrorId.VAR_ASGN_CYCLE
+		"fail-S1.logic" | ErrorId.VAR_ASGN_COMPLEX
+	}
+
+	def lbTest(String file) {
 		def resourcePath = "/$file"
+		def inputStream = new ANTLRInputStream(this.class.getResourceAsStream(resourcePath))
 		def resource = this.class.getResource(resourcePath).file
+		Compiler.compile0(inputStream, resource, new LBCodeGenerator("build"))
+	}
 
-//		DeepDoopException e1 = null
-//		try {
-//			def inputStream = new ANTLRInputStream(this.class.getResourceAsStream(resourcePath))
-//			Compiler.compile0(inputStream, resource, new LBCodeGenerator("build"))
-//		} catch (DeepDoopException e) {
-//			e1 = e
-//		}
+	def souffleTest(String file) {
+		def resourcePath = "/$file"
+		def inputStream = new ANTLRInputStream(this.class.getResourceAsStream(resourcePath))
+		def resource = this.class.getResource(resourcePath).file
+		Compiler.compile0(inputStream, resource, new SouffleCodeGenerator("build"))
+	}
 
-		DeepDoopException e2 = null
-		try {
-			def inputStream = new ANTLRInputStream(this.class.getResourceAsStream(resourcePath))
-			Compiler.compile0(inputStream, resource, new SouffleCodeGenerator("build"))
-		} catch (DeepDoopException e) {
-			e2 = e
-		}
+	def test(String file) {
+		DeepDoopException e1 = null, e2 = null
 
-		//assert e1?.errorId == e2?.errorId
-		//if (e1) throw e1
-		if (e2) throw e2
+		try { lbTest(file) }
+		catch (DeepDoopException e) { e1 = e }
+
+		try { souffleTest(file) }
+		catch (DeepDoopException e) { e2 = e }
+
+		assert e1?.errorId == e2?.errorId
+		if (e1) throw e1
 	}
 }

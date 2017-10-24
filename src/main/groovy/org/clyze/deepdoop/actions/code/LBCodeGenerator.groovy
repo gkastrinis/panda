@@ -9,11 +9,16 @@ import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.element.AggregationElement
+import org.clyze.deepdoop.datalog.element.ConstructionElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
+import org.clyze.deepdoop.datalog.element.relation.Relation
+import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.system.Result
 
 import static org.clyze.deepdoop.datalog.Annotation.Kind.CONSTRUCTOR
 import static org.clyze.deepdoop.datalog.Annotation.Kind.TYPE
+import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
+import static org.clyze.deepdoop.datalog.expr.VariableExpr.genN as varN
 
 @InheritConstructors
 class LBCodeGenerator extends DefaultCodeGenerator {
@@ -32,27 +37,6 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 		return super.visit(n as Program)
 	}
 
-	void enter(Program n) {
-		emit "/// Declarations of normal relations"
-		typeInferenceActor.inferredTypes.each { predName, types ->
-			def functionalArity = infoActor.functionalRelations[predName]
-			def body = types.withIndex().collect { type, i -> "${mapTypes(type)}(x$i)" }.join(", ")
-			if (predName in infoActor.refmodeRelations) {
-				emit "${types.last()}(x), $predName(x:y) -> ${types.first()}(y)."
-			} else if (functionalArity) {
-				def head = (0..<(functionalArity - 1)).collect { "x$it" }.join(", ")
-				emit "$predName[$head] = x${functionalArity - 1} -> $body."
-			} else if (!(predName in infoActor.allTypes)) {
-				def head = (0..<(types.size())).collect { "x$it" }.join(", ")
-				emit "$predName($head) -> $body."
-			}
-		}
-		emit "/// Declarations of types"
-		infoActor.allTypes.findAll { !infoActor.directSuperType[it] }.each { emit "$it(x) -> ." }
-		infoActor.directSuperType.each { emit "${it.key}(x) -> ${it.value}(x)." }
-		emit "/// Rules"
-	}
-
 	String exit(Declaration n, Map<IVisitable, String> m) {
 		def name = n.atom.name
 		if (TYPE in n.annotations) {
@@ -60,6 +44,10 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 			emit """lang:physical:storageModel[`$name] = "ScalableSparse"."""
 			def cap = n.annotations[TYPE].args["capacity"]
 			if (cap) emit "lang:physical:capacity[`$name] = $cap."
+		} else {
+			def headVars = varN(n.types.size()).join(", ")
+			def types = n.types.withIndex().collect { Type t, int i -> "${map(t.name)}(${var1(i)})" }.join(", ")
+			emit "${n.atom.name}($headVars) -> $types."
 		}
 		if (CONSTRUCTOR in n.annotations && !(name in infoActor.refmodeRelations)) {
 			emit "lang:constructor(`$name)."
@@ -74,30 +62,26 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 
 	String exit(AggregationElement n, Map<IVisitable, String> m) {
 		def pred = n.relation.name
-		def lbPred = m[n.relation].replaceFirst("sum", "total")
+		def params = n.relation.exprs ? "${m[n.relation.exprs.first()]}" : ""
+		def lbPred = "${pred.replaceFirst("sum", "total")}($params)"
 		if (pred == "count" || pred == "min" || pred == "max" || pred == "sum")
 			"agg<<${m[n.var]} = $lbPred>> ${m[n.body]}"
 		else null
 	}
 
-	String exit(Constructor n, Map<IVisitable, String> m) {
-//		def constructor = exit(n as Functional, m)
-//		"$constructor, ${n.type.name}(${m[n.valueExpr]})"
+	String exit(ConstructionElement n, Map<IVisitable, String> m) {
+		"${m[n.constructor]}, ${m[n.type]}"
 	}
 
-//	String exit(Functional n, Map<IVisitable, String> m) {
-//		if (n.name in infoActor.refmodeRelations) {
-//			return "${n.name}(${m[n.valueExpr]}:${m[n.keyExprs.first()]})"
-//		} else {
-//			def keyParams = n.keyExprs.collect { m[it] }.join(", ")
-//			return "${n.name}[$keyParams] = ${m[n.valueExpr]}"
-//		}
-//	}
-//
-//	String exit(Predicate n, Map<IVisitable, String> m) {
-//		def params = n.exprs.collect { m[it] }.join(", ")
-//		return "${n.name}($params)"
-//	}
+	String exit(Constructor n, Map<IVisitable, String> m) {
+		"${n.name}[${n.keyExprs.collect { m[it] }.join(", ")}] = ${m[n.valueExpr]}"
+	}
+
+	String exit(Relation n, Map<IVisitable, String> m) {
+		"${n.name}(${n.exprs.collect { m[it] }.join(", ")})"
+	}
+
+	String exit(Type n, Map<IVisitable, String> m) { exit(n as Relation, m) }
 
 	/*void emit(Program n, Map<IVisitable, String> m, Set<DependencyGraph.Node> nodes) {
 		latestFile = createUniqueFile("out_", ".logic")
@@ -199,7 +183,7 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 		return atoms.every { handledAtoms.contains(it) }
 	}*/
 
-	static def mapTypes(def name) {
+	static def map(def name) {
 		name == "int" ? "int[64]" : name
 	}
 }

@@ -56,7 +56,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	}
 
 	String exit(Rule n, Map<IVisitable, String> m) {
-		emit(m[n.body] ? "${m[n.head]} :- ${m[n.body]}." : "${m[n.head]}.")
+		emit(n.body ? "${m[n.head]} :- ${m[n.body]}." : "${m[n.head]}.")
 		if (PLAN in n.annotations) emit ".plan ${n.annotations[PLAN].args["plan"]}"
 		null
 	}

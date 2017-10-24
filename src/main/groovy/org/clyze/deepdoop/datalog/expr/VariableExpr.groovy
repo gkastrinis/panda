@@ -14,5 +14,5 @@ class VariableExpr implements IExpr {
 
 	static VariableExpr gen1(int i) { new VariableExpr("v$i") }
 
-	static List<VariableExpr> genN(int n) { (0..<n).collect { gen1(n) } }
+	static List<VariableExpr> genN(int n) { (0..<n).collect { gen1(it) } }
 }
