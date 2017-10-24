@@ -1,22 +1,29 @@
-component Foo {
-	P(x) <- Q(x).
-	R(x) <- P(x).
-	W(x) : string
-	@type(capacity = 100000) Animal
-	@Constructor
-    cons:An[x] = y : string, Animal
+@type T1
+@constructor con1[x] = y : string, T1
+@constructor con2[x] = y : int, T1
 
-    cons:An[x] = y new Animal, foo(y) <- x = "cat".
-}
-as S1
+@type T2 <: T1
+@constructor con3[x, y] = z : string, string, T2
 
-component Bar {
-	R(x) <- Q(x).
-}
-as S2
+@type T3 <: T1
+@constructor con4[x, y] = z : int, int, T3
+@constructor con5[x, y, z] = w : int, string, string, T3
 
-Q(1).
-Q(2).
+@type T4 <: T3
+@constructor con6[x, y] = z : string, int, T4
+@constructor con7[x] = y : int, T4
 
-S1 {*} -> S2
-S2 {*} -> .
+foo(x, z),
+con6[x, y] = z new T4
+<- x = "Hello", y = 42.
+
+@type F1
+@constructor concon[x, y] = z : T4, string, F1
+
+concon[a, x] = b new F1,
+con6[x, y] = a new T4
+<- x = "World", y = 10.
+
+@Type Animal
+@type Cat <: Animal
+@type Dog <: Animal

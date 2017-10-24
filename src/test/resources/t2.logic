@@ -1,21 +1,41 @@
-foo(1,2).
-bar(3,4).
+@Output @Type Animal
+@Type AP
 
-// TODO functional
-@output t(x, c) : int, int
+@Type Cat <: Animal
+@Type Dog <: Animal
+@Type PersianCat <: Cat
 
-t1(1, c) <- agg<<c = count( )>> foo(_,_).
-t2(2, c) <- agg<<c = count()>> (foo(_, x), bar(x, _)).
-t3(3, m) <- agg<<m = max( ?y)>> bar(_, ?y).
-t4(4, m) <- agg<<m = min(x)>> foo(_, x).
-t5(5, c) <- agg<<c = sum(x)>> foo(x, _).
+@Output
+Foo(x, y) : int, string
 
-t6(6, x, c) <- agg<<c = count()>> foo(x, _).
+Foo(y, x) <- x = "J", y = 1.
 
-t(x, y) <-
-	t1(x, y) ;
-	t2(x, y) ;
-	t3(x, y) ;
-	t4(x, y) ;
-	t5(x, y) ;
-	t6(x, _, y).
+@Output @Type @Output Bar
+
+@Output {
+	FooBar(x, y) : int, string
+
+	@Type Baz
+}
+
+@Output @Type {
+	@Output Dog1
+	Cat1
+}
+
+@Input {
+	P1(x) : string
+	P2(x) : int
+	P3(x) : string
+}
+
+/*
+@Type T
+
+@Constructor(refmode=true)
+tref[x] = y : string, T
+
+TPred(x, y) <- FooBar(_, x), tref[x] = y.
+*/
+
+FooBar(42, "bla").

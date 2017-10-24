@@ -1,3 +1,2 @@
-@type Shape
-@output
-cons:Shape[x] = y : string, Shape
+Foo123(x) <- x = "a".
+Bar123(x) : ABC

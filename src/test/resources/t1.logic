@@ -1,35 +1,21 @@
-__f:oo:bar(x) : string
-__f:oo:bar("abc").
-f:oo:bar2(y, ?x) : int, string
-f:oo:bar2(2, "bar").
+foo(1,2).
+bar(3,4).
 
-p(1).
-p(07).
-p(0xFf).
+// TODO functional
+@output t(x, c) : int, int
 
-r2(x) : int
-r1(t) <- r2(x), t = x + 10.
+t1(1, c) <- agg<<c = count( )>> foo(_,_).
+t2(2, c) <- agg<<c = count()>> (foo(_, x), bar(x, _)).
+t3(3, m) <- agg<<m = max( ?y)>> bar(_, ?y).
+t4(4, m) <- agg<<m = min(x)>> foo(_, x).
+t5(5, c) <- agg<<c = sum(x)>> foo(x, _).
 
-p1(x) : int
-p2(a,b) : int, int
-p3(a, b) : int, int
-p4(x) : int
-p5(x) : int
-@output p6(x) : int
+t6(6, x, c) <- agg<<c = count()>> foo(x, _).
 
-p1(x) <- p2(x+1, y), p3(x, z), z > y+10.
-p4(x) <- p1(x) ; p2(x, _).
-p5(x) <- ((p1(x), x > 10) ; p4(x)), !p2(x, _).
-
-p6(w) <- p4(x), t = x + 10, p4(z), w = t + z.
-p6(t) <- p4(x), p4(t), t = x + 20.
-p6(t) <- p4(x), p4(t), t = x * 30.
-
-/*
-baz(x) -> float(x).
-test9(x) <- baz(x), x > 10.5.
-test9(x) <- baz(x), x > .5.
-test9(x) <- baz(x), x > 10f.
-test9(x) <- baz(x), x > 0.6F.
-test9(x) <- baz(x), x > 10e2.
-*/
+t(x, y) <-
+	t1(x, y) ;
+	t2(x, y) ;
+	t3(x, y) ;
+	t4(x, y) ;
+	t5(x, y) ;
+	t6(x, _, y).

@@ -1,7 +1,11 @@
 component Foo {
-	P(x) <- x = 10.
-	BaZ(x, y) <- P(x), P(y).
-	BarBaz(x) <- BaZ(_, x).
-} as Foo1
+	P(x) <- Q(x).
+	Bar(x) <- P(x), Bar@ext(x).
+}
+as Foo1, Foo2
 
-Foo1 { P, Bar } -> .
+Q(1).
+Q(2).
+
+Foo1 {*} -> Foo2
+Foo2 {*} -> .

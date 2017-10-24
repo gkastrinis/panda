@@ -1,2 +1,5 @@
-@type Animal
-Animal(1).
+@Type Animal
+@Type Shape
+
+Foo(x, y) : Animal, string
+Foo(x, y) : Shape, string

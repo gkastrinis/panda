@@ -20,17 +20,17 @@ class DatalogSpec extends Specification {
 		notThrown(DeepDoopException)
 
 		where:
-		file        | _
-		"t1.logic"  | _
-		"t2.logic"  | _
-		"t3.logic"  | _
-		"t4.logic"  | _
-		"t5.logic"  | _
-		"t6.logic"  | _
-		"t7.logic"  | _
-		"t8.logic"  | _
-		"t9.logic"  | _
-		"t10.logic" | _
+		file       | _
+		"t0.logic" | _
+		"t1.logic" | _
+		"t2.logic" | _
+		"t3.logic" | _
+		"t4.logic" | _
+		"t5.logic" | _
+		"t6.logic" | _
+		"t7.logic" | _
+		"t8.logic" | _
+		"t9.logic" | _
 		//"t100.logic" | _
 	}
 
@@ -45,46 +45,44 @@ class DatalogSpec extends Specification {
 
 		where:
 		file           | expectedErrorId
-		"fail1.logic"  | ErrorId.DEP_GLOBAL
-		"fail2.logic"  | ErrorId.ID_IN_USE
+		"fail0.logic"  | ErrorId.DEP_GLOBAL
+		"fail1.logic"  | ErrorId.ID_IN_USE
+		"fail2.logic"  | ErrorId.COMP_UNKNOWN
 		"fail3.logic"  | ErrorId.COMP_UNKNOWN
-		"fail4.logic"  | ErrorId.COMP_UNKNOWN
-		"fail5.logic"  | ErrorId.REL_UNKNOWN
-		"fail6.logic"  | ErrorId.REL_NO_DECL_REC
-		"fail7.logic"  | ErrorId.CONSTR_INCOMP
-		"fail8.logic"  | ErrorId.FUNC_NON_CONSTR
-		"fail9.logic"  | ErrorId.TYPE_UNKNOWN
-		"fail10.logic" | ErrorId.CONSTR_UNKNOWN
-		"fail11.logic" | ErrorId.CONSTR_NON_FUNC
-		"fail12.logic" | ErrorId.TYPE_INCOMP
-		"fail13.logic" | ErrorId.REL_ARITY
-		"fail14.logic" | ErrorId.TYPE_FIXED
-		"fail15.logic" | ErrorId.TYPE_RULE
-		"fail16.logic" | ErrorId.DECL_MULTIPLE
-		"fail17.logic" | ErrorId.ANNOTATION_NON_EMPTY
-		"fail18.logic" | ErrorId.ANNOTATION_MISSING_ARG
-		"fail19.logic" | ErrorId.ANNOTATION_INVALID_ARG
-		"fail20.logic" | ErrorId.ANNOTATION_INVALID
-		"fail21.logic" | ErrorId.REFMODE_ARITY
-		"fail22.logic" | ErrorId.REFMODE_KEY
-		"fail23.logic" | ErrorId.REL_EXT_HEAD
-		"fail26.logic" | ErrorId.DECL_MALFORMED
-		"fail27.logic" | ErrorId.ANNOTATION_MISTYPED_ARG
-		"fail28.logic" | ErrorId.CONSTR_RULE_CYCLE
-		"fail29.logic" | ErrorId.VAR_MULTIPLE_CONSTR
-		"fail30.logic" | ErrorId.TYPE_INCOMP_EXPR
-		"fail31.logic" | ErrorId.VAR_ASGN_CYCLE
-		"fail32.logic" | ErrorId.VAR_ASGN_COMPLEX
-		/*
-		"fail100.logic"  | ErrorId.DEP_CYCLE
-		"fail101.logic"  | ErrorId.CMD_RULE
-		"fail103.logic"  | ErrorId.CMD_DIRECTIVE
-		"fail104.logic"  | ErrorId.CMD_NO_DECL
-		"fail105.logic"  | ErrorId.CMD_NO_IMPORT
-		"fail106.logic"  | ErrorId.CMD_EVAL
-		"fail107.logic" | ErrorId.VAR_UNKNOWN
-		"fail108.logic" | ErrorId.MULTIPLE_ENT_DECLS
-		*/
+		"fail4.logic"  | ErrorId.REL_UNKNOWN
+		"fail5.logic"  | ErrorId.REL_NO_DECL_REC
+		"fail6.logic"  | ErrorId.CONSTR_INCOMP
+		"fail7.logic"  | ErrorId.FUNC_NON_CONSTR
+		"fail8.logic"  | ErrorId.TYPE_UNKNOWN
+		"fail9.logic"  | ErrorId.CONSTR_UNKNOWN
+		"fail10.logic" | ErrorId.CONSTR_NON_FUNC
+		"fail11.logic" | ErrorId.TYPE_INCOMP
+		"fail12.logic" | ErrorId.REL_ARITY
+		"fail13.logic" | ErrorId.TYPE_FIXED
+		"fail14.logic" | ErrorId.TYPE_RULE
+		"fail15.logic" | ErrorId.DECL_MULTIPLE
+		"fail16.logic" | ErrorId.ANNOTATION_NON_EMPTY
+		"fail17.logic" | ErrorId.ANNOTATION_MISSING_ARG
+		"fail18.logic" | ErrorId.ANNOTATION_INVALID_ARG
+		"fail19.logic" | ErrorId.ANNOTATION_INVALID
+		"fail20.logic" | ErrorId.REFMODE_ARITY
+		"fail21.logic" | ErrorId.REFMODE_KEY
+		"fail22.logic" | ErrorId.REL_EXT_HEAD
+		"fail23.logic" | ErrorId.DECL_MALFORMED
+		"fail24.logic" | ErrorId.ANNOTATION_MISTYPED_ARG
+		"fail25.logic" | ErrorId.CONSTR_RULE_CYCLE
+		"fail26.logic" | ErrorId.VAR_MULTIPLE_CONSTR
+		"fail27.logic" | ErrorId.TYPE_INCOMP_EXPR
+		"fail28.logic" | ErrorId.VAR_ASGN_CYCLE
+		"fail29.logic" | ErrorId.VAR_ASGN_COMPLEX
+//		"fail100.logic" | ErrorId.DEP_CYCLE
+//		"fail101.logic" | ErrorId.CMD_RULE
+//		"fail103.logic" | ErrorId.CMD_DIRECTIVE
+//		"fail104.logic" | ErrorId.CMD_NO_DECL
+//		"fail105.logic" | ErrorId.CMD_NO_IMPORT
+//		"fail106.logic" | ErrorId.CMD_EVAL
+//		"fail107.logic" | ErrorId.VAR_UNKNOWN
+//		"fail108.logic" | ErrorId.MULTIPLE_ENT_DECLS
 	}
 
 	def test(String file) {

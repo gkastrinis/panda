@@ -1,5 +1,3 @@
-@Type Animal
-@Type Shape
+@Input(foo=true, bar="abc", baz=1) AP
 
-Foo(x, y) : Animal, string
-Foo(x, y) : Shape, string
+@Type Shape

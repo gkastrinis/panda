@@ -1,7 +1,0 @@
-Bar(x) : int
-
-Foo(x1) <- Bar(x1), (y1 = 10, Bar(y1)).
-Foo(x2) <- Bar(x2), !(y2 = 10, Bar(y2)).
-Foo(x3) <- Bar(a1), Bar(b1), x3 = a1+b1.
-Foo(x4) <- Bar(a2), (Bar(1) ; Bar(2)), x4 = 1 + a2.
-Foo(x5) <- Bar(1), (x5 = 10 ; x5 = 20).

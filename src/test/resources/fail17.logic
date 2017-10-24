@@ -1,3 +1,5 @@
-@Input(foo=true, bar="abc", baz=1) AP
+Foo(x) : string
+Baz(x) : string
 
-@Type Shape
+@Plan
+Planned(x) <- Foo(x), Baz(x).

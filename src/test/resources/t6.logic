@@ -1,35 +1,33 @@
-@Type AP
-@Constructor
-byVar[x] = y : string, AP
+P("hello").
+Q(x, 42) <- P(x).
 
-byVar[x] = y new AP,
-Ble(y, x) <- x = "abc".
+component First {
+	Z(x) : int
+}
+as S1
 
-@Constructor
-byFld[x, y] = z : string, string, AP
+component Base {
+	P1(x) <- P(x).
+	P1(x) : string
+}
+as S2
 
-byVar[x] = y new AP,
-Foo(y, x), Baz(x), BarBaz(y) <- x = "abc".
+First as S3
 
-@type AP2 <: AP
+component Core : Base {
+	P2(x) <- Q(x, _).
+	P3(x) <- Q(_, x).
+	W(x) <- Z@ext(x).
+	Z@ext(x) : int
+}
+as S4
 
-byFld[x, y] = z new AP2,
-Foo2(z), Baz2(y, x) <- x = "x2", y = "f1".
+S1 { * } -> S2
+S2 { * } -> .
+S3 { * } -> S4
+S4 { W, P1 } -> .
 
-@Plan(plan = "1:(1,2)")
-Planned(x) <- Foo(_, x), Baz(x).
 
-@Type Shape
-@Constructor
-byLen[x] = y : int, Shape
-@Constructor
-byName[x] = y : string, Shape
-@Constructor
-byPoints[x,y] = z : int, int, Shape
+Pred(x) <- W(x).
 
-byLen[x1] = y1 new Shape, byLen[x2] = y2 new Shape,
-FooBer(x1, y1, x2, y2) <- x1 = 42, x2 = 10.
-
-// More tests for assignments
-Pred1(x, y) <- x = y + 20, y = 10.
-Pred2(x, t, z) <- Pred1(x, x), x = 10 + t, Pred1(t, t), z = x + t.
+S4:P2@ext(x) <- S2:P1(x).

@@ -1,3 +1,6 @@
-Bar(x, y) <- x = "aaa", y = 1.
-Foo(x, y) <- x = "abc", y = 12.
-Foo(x) <- x = "def".
+@Type Animal
+@Type Cat <: Animal
+
+Foo(x, y) : string, Animal
+Pred(x, y) : string, Cat
+Pred(x, y) <- Foo(x, y).

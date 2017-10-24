@@ -1,33 +1,12 @@
-P("hello").
-Q(x, 42) <- P(x).
-
-component First {
-	Z(x) : int
+component Foo {
+	P(x) <- Q(x).
+	Bar(x) <- P(x), Bar@ext(x).
+	Bar@ext(x) : int
 }
-as S1
+as S1, S2
 
-component Base {
-	P1(x) <- P(x).
-	P1(x) : string
-}
-as S2
+Q(1).
+Q(2).
 
-First as S3
-
-component Core : Base {
-	P2(x) <- Q(x, _).
-	P3(x) <- Q(_, x).
-	W(x) <- Z@ext(x).
-	Z@ext(x) : int
-}
-as S4
-
-S1 { * } -> S2
-S2 { * } -> .
-S3 { * } -> S4
-S4 { W, P1 } -> .
-
-
-Pred(x) <- W(x).
-
-S4:P2@ext(x) <- S2:P1(x).
+S1 {*} -> S2
+S2 {*} -> .

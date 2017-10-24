@@ -1,14 +1,5 @@
-component First {
-	P(42).
-}
-as S1
+@Type Animal
+@Type Shape
 
-component Second {
-	Q(42).
-	Q(x), P@ext(x) <- W(x).
-}
-as S2
-
-S1 {*} -> S2
-
-W(x) : int
+Bar(x, y) : string
+Foo(x, y) : Shape, string

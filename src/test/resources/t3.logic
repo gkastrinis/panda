@@ -1,41 +1,50 @@
-@Output @Type Animal
-@Type AP
-
+@Type Animal
 @Type Cat <: Animal
-@Type Dog <: Animal
-@Type PersianCat <: Cat
 
-@Output
-Foo(x, y) : int, string
+@Constructor
+cons:A[x] = y : string, Animal
 
-Foo(y, x) <- x = "J", y = 1.
+Foo(a, b) : Animal, string
 
-@Output @Type @Output Bar
+cons:A[z] = x new Animal,
+Foo(x, z) <- z = "bird".
 
-@Output {
-	FooBar(x, y) : int, string
+// Animal x string
+cons:A[z] = x new Animal,
+Foo2(x, z) <- z = "bird".
 
-	@Type Baz
-}
+// string x Cat
+cons:A[z] = x new Cat,
+Bar(z, x) <- z = "kitty".
 
-@Output @Type {
-	@Output Dog1
-	Cat1
-}
+// string x Animal
+Ble(a, b) <- cons:A[a] = b.
 
-@Input {
-	P1(x) : string
-	P2(x) : int
-	P3(x) : string
-}
+// string x Animal
+FooBar(y, z) <- Ble(y, z), Baz(z).
 
-/*
-@Type T
+// string x Cat (see below)
+FooBar2(x, y) <- Bar(x, y).
 
-@Constructor(refmode=true)
-tref[x] = y : string, T
+// Animal
+Baz(x) <- Foo(x, _).
+Baz(x) <- Bar(_, x).
 
-TPred(x, y) <- FooBar(_, x), tref[x] = y.
-*/
+// string x Animal
+FooBar2(x, y) <- x = "foo", Baz(y).
 
-FooBar(42, "bla").
+// string x Cat (see below)
+Part1(x, y) <- Bar(x, y).
+
+// Cat x string (see below)
+Part2(x, y) <- Part1(y, x).
+
+// string x Animal
+// Also update Part2: Animal x string
+Part1(x, y) <- Foo2(y, x).
+
+// int
+BarI(x) <- x = 1.
+
+// int
+BarII(1).

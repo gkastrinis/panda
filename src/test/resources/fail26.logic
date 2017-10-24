@@ -1,5 +1,9 @@
-@Type Animal
-@Type Shape
+@type A
+@constructor conA[x,y] = z : int, int, A
 
-Bar(x, y) : string
-Foo(x, y) : Shape, string
+@type B
+@constructor conB[x,y] = z : int, int, B
+
+conA[a,b]=c new A,
+conB[b,a]=c new B
+<- a = 1, b = 2.

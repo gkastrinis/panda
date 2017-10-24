@@ -1,9 +1,19 @@
 component Foo {
 	P(x) <- Q(x).
-	Bar(x) <- P(x), Bar@ext(x).
-	Bar@ext(x) : int
+	R(x) <- P(x).
+	W(x) : string
+	@type(capacity = 100000) Animal
+	@Constructor
+    cons:An[x] = y : string, Animal
+
+    cons:An[x] = y new Animal, foo(y) <- x = "cat".
 }
-as S1, S2
+as S1
+
+component Bar {
+	R(x) <- Q(x).
+}
+as S2
 
 Q(1).
 Q(2).

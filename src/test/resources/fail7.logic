@@ -1,7 +1,3 @@
-@Type Shape
-@Constructor
+@type Shape
+@output
 cons:Shape[x] = y : string, Shape
-
-@Type Person
-cons:Shape[x] = y new Person,
-Foo123(y) <- x = "a".

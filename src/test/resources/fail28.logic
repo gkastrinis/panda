@@ -1,9 +1,2 @@
-@type A
-@constructor conA[x,y] = z : A, int, B
-
-@type B
-@constructor conB[x,y] = z : B, int, A
-
-conA[a,b]=c new B,
-conB[c,d]=a new A
-<- b = 1, d = 2.
+Foo(x) <- a = 42, b = a * 10, x = b + 2.
+Bar(x) <- b = 42 + x, x = b + 2.

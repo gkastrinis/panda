@@ -1,11 +1,7 @@
-component Foo {
-	P(x) <- Q(x).
-	Bar(x) <- P(x), Bar@ext(x).
-}
-as Foo1, Foo2
+@Type Shape
+@Constructor
+cons:Shape[x] = y : string, Shape
 
-Q(1).
-Q(2).
-
-Foo1 {*} -> Foo2
-Foo2 {*} -> .
+@Type Person
+cons:Shape[x] = y new Person,
+Foo123(y) <- x = "a".

@@ -1,8 +1,14 @@
-@Type T
+component First {
+	P(42).
+}
+as S1
 
-@Constructor(refmode=true)
-tref[x] = y : T, T
+component Second {
+	Q(42).
+	Q(x), P@ext(x) <- W(x).
+}
+as S2
 
-TPred(x, y) <- FooBar(_, x), tref[x] = y.
+S1 {*} -> S2
 
-Foo(x, y) : int, T
+W(x) : int

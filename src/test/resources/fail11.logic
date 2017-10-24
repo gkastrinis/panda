@@ -1,4 +1,3 @@
-@type Shape
-@output @constructor
-cons:Shape(x, y) : string, Shape
-
+@Type Animal
+Foo(x) : Animal
+Bar(y) <- Foo(y), y != "cat".

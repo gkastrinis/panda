@@ -1,11 +1,6 @@
-P(x) : string
-
 component Foo {
-	P1(x) <- P(x).
+	P(x) : string
 }
 as S1
 
-component Bar {
-	P2(x) <- x = 10.
-}
-as S2, S1
+S2 { * } -> .
