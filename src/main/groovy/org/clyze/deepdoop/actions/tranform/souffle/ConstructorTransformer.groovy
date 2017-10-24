@@ -56,7 +56,6 @@ class ConstructorTransformer extends DummyTransformer {
 	// Relations that have an explicit declaration
 	Set<String> explicitDeclarations = [] as Set
 
-	boolean inRuleHead
 	// The variable currently being constructed
 	VariableExpr constructedVar
 	// The internal record representing the constructed value

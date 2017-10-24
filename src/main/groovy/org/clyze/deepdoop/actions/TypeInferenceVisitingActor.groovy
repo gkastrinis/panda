@@ -36,8 +36,6 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 	// Implementing fix-point computation
 	Set<Rule> deltaRules
 
-	boolean inRuleBody
-
 	TypeInferenceVisitingActor(InfoCollectionVisitingActor infoActor) {
 		actor = this
 		this.infoActor = infoActor

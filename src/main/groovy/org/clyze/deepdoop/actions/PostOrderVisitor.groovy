@@ -15,6 +15,9 @@ class PostOrderVisitor<T> implements IVisitor<T> {
 
 	protected IActor<T> actor
 	protected Map<IVisitable, T> m = [:]
+	protected inRuleHead = false
+	protected inRuleBody = false
+	protected def getInRule() { inRuleHead || inRuleBody }
 
 	PostOrderVisitor(IActor<T> actor = null) { this.actor = actor }
 
@@ -50,8 +53,12 @@ class PostOrderVisitor<T> implements IVisitor<T> {
 
 	T visit(Rule n) {
 		actor.enter(n)
+		inRuleHead = true
 		m[n.head] = n.head.accept(this) as T
+		inRuleHead = false
+		inRuleBody = true
 		m[n.body] = n.body?.accept(this) as T
+		inRuleBody = false
 		actor.exit(n, m)
 	}
 

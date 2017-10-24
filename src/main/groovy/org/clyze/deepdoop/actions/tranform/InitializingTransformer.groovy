@@ -33,8 +33,6 @@ class InitializingTransformer extends DummyTransformer {
 	// Relations in a component that need a declaration (their stage is @ext)
 	Set<String> needDeclaration
 
-	boolean inRuleHead
-
 	InitializingTransformer() { actor = this }
 
 	// Initialize components (add transformed contents in a single component)
@@ -112,16 +110,6 @@ class InitializingTransformer extends DummyTransformer {
 		// Ignore declarations in global scope
 		if (currComp) haveDeclaration << n.atom.name
 		super.exit(n, m)
-	}
-
-	// Override to keep track of when in rule's head
-	IVisitable visit(Rule n) {
-		actor.enter(n)
-		inRuleHead = true
-		m[n.head] = n.head.accept(this)
-		inRuleHead = false
-		if (n.body) m[n.body] = n.body.accept(this)
-		return actor.exit(n, m)
 	}
 
 	IVisitable exit(Constructor n, Map m) {
