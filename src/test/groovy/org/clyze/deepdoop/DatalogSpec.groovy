@@ -68,8 +68,6 @@ class DatalogSpec extends Specification {
 		"fail21.logic" | ErrorId.REFMODE_ARITY
 		"fail22.logic" | ErrorId.REFMODE_KEY
 		"fail23.logic" | ErrorId.REL_EXT_HEAD
-		"fail24.logic" | ErrorId.DECL_MALFORMED
-		"fail25.logic" | ErrorId.DECL_MALFORMED
 		"fail26.logic" | ErrorId.DECL_MALFORMED
 		"fail27.logic" | ErrorId.ANNOTATION_MISTYPED_ARG
 		"fail28.logic" | ErrorId.CONSTR_RULE_CYCLE
@@ -93,13 +91,13 @@ class DatalogSpec extends Specification {
 		def resourcePath = "/$file"
 		def resource = this.class.getResource(resourcePath).file
 
-		DeepDoopException e1 = null
-		try {
-			def inputStream = new ANTLRInputStream(this.class.getResourceAsStream(resourcePath))
-			Compiler.compile0(inputStream, resource, new LBCodeGenerator("build"))
-		} catch (DeepDoopException e) {
-			e1 = e
-		}
+//		DeepDoopException e1 = null
+//		try {
+//			def inputStream = new ANTLRInputStream(this.class.getResourceAsStream(resourcePath))
+//			Compiler.compile0(inputStream, resource, new LBCodeGenerator("build"))
+//		} catch (DeepDoopException e) {
+//			e1 = e
+//		}
 
 		DeepDoopException e2 = null
 		try {
@@ -109,7 +107,8 @@ class DatalogSpec extends Specification {
 			e2 = e
 		}
 
-		assert e1?.errorId == e2?.errorId
-		if (e1) throw e1
+		//assert e1?.errorId == e2?.errorId
+		//if (e1) throw e1
+		if (e2) throw e2
 	}
 }

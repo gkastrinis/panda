@@ -1,5 +1,5 @@
 component Foo {
-	P(x) -> string(x).
+	P(x) : string
 }
 
 Bar as S1

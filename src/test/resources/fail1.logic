@@ -1,12 +1,12 @@
-P(x) -> string(x).
-Q(x, y) -> string(x), int(y).
+P(x) : string
+Q(x, y) : string, int
 
 Q(x, y) <- P(x), y = 10.
 
 component Foo {
 	P1(x) <- P(x).
 	Z(y) <- Q(_, y).
-	P(x) <- Q(x, _), !Q(_, x).
+	P(x) <- Q(x, _), !Q(_, 42).
 }
 as S1
 

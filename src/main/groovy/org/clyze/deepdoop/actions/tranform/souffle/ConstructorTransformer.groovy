@@ -152,6 +152,9 @@ class ConstructorTransformer extends DummyTransformer {
 			constructedRecordType = con.constructor.name
 			head = head.accept(this)
 		}
+		// Remove constructors from global map `m`
+		// since they might reappear in a different rule
+		infoActor.constructionsOrderedPerRule[n].each { m.remove(it) }
 		m[n.head] = head
 		inRuleHead = false
 		m[n.body] = n.body?.accept(this)

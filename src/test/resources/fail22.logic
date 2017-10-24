@@ -1,8 +1,8 @@
 @Type T
 
 @Constructor(refmode=true)
-tref[x] = y -> T(x), T(y).
+tref[x] = y : T, T
 
 TPred(x, y) <- FooBar(_, x), tref[x] = y.
 
-Foo(x, y) -> int(x), T(y).
+Foo(x, y) : int, T

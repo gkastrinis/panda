@@ -1,8 +1,8 @@
 @type A
-@constructor conA[x,y] = z -> int(x), int(y), A(z).
+@constructor conA[x,y] = z : int, int, A
 
 @type B
-@constructor conB[x,y] = z -> int(x), int(y), B(z).
+@constructor conB[x,y] = z : int, int, B
 
 conA[a,b]=c new A,
 conB[b,a]=c new B

@@ -1,6 +1,6 @@
 @Type Shape
 @Constructor
-cons:Shape[x] = y -> string(x), Shape(y).
+cons:Shape[x] = y : string, Shape
 
 @Type Person
 cons:Shape[x] = y new Person,

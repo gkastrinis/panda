@@ -1,21 +1,21 @@
 @Type Animal
-@Type Cat -> Animal
+@Type Cat <: Animal
 
 @Constructor
-cons:A[x] = y -> string(x), Animal(y).
+cons:A[x] = y : string, Animal
 
-Foo(a, b) -> Animal(a), string(b).
+Foo(a, b) : Animal, string
 
-//cons:A[z] = x new Animal,
-//Foo(x, z) <- z = "bird".
+cons:A[z] = x new Animal,
+Foo(x, z) <- z = "bird".
 
 // Animal x string
 cons:A[z] = x new Animal,
-Foo2(x, z) <- z := "bird".
+Foo2(x, z) <- z = "bird".
 
 // string x Cat
 cons:A[z] = x new Cat,
-Bar(z, x) <- z := "kitty".
+Bar(z, x) <- z = "kitty".
 
 // string x Animal
 Ble(a, b) <- cons:A[a] = b.
@@ -31,7 +31,7 @@ Baz(x) <- Foo(x, _).
 Baz(x) <- Bar(_, x).
 
 // string x Animal
-FooBar2(x, y) <- x := "foo", Baz(y).
+FooBar2(x, y) <- x = "foo", Baz(y).
 
 // string x Cat (see below)
 Part1(x, y) <- Bar(x, y).
@@ -44,7 +44,7 @@ Part2(x, y) <- Part1(y, x).
 Part1(x, y) <- Foo2(y, x).
 
 // int
-BarI(x) <- x := 1.
+BarI(x) <- x = 1.
 
 // int
 BarII(1).

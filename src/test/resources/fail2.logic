@@ -1,4 +1,4 @@
-P(x) -> string(x).
+P(x) : string
 
 component Foo {
 	P1(x) <- P(x).

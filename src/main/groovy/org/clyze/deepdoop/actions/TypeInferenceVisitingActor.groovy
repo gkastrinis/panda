@@ -36,6 +36,8 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 	// Implementing fix-point computation
 	Set<Rule> deltaRules
 
+	boolean inRuleBody
+
 	TypeInferenceVisitingActor(InfoCollectionVisitingActor infoActor) {
 		actor = this
 		this.infoActor = infoActor
@@ -74,12 +76,15 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 		null
 	}
 
-	void enter(Rule n) {
-		tmpExprTypes.clear()
-		tmpExprIndices.clear()
-	}
+	IVisitable visit(Rule n) {
+		tmpExprTypes = [:].withDefault { [] as Set }
+		tmpExprIndices = [:].withDefault { [:] }
 
-	IVisitable exit(Rule n, Map m) {
+		m[n.head] = n.head.accept(this) as IVisitable
+		inRuleBody = true
+		m[n.body] = n.body?.accept(this) as IVisitable
+		inRuleBody = false
+
 		n.head.elements.each {
 			def relation = (it instanceof ConstructionElement ? it.constructor.name : (it as Relation).name)
 			// null for relations without explicit declarations
@@ -127,7 +132,11 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 		def types = tmpRelationTypes[n.name]
 		n.keyExprs.eachWithIndex { expr, i ->
 			tmpExprIndices[n.name][expr] = i
-			if (types) tmpExprTypes[expr] += types[i]
+			if (types && types[i]) tmpExprTypes[expr] += types[i]
+		}
+		if (inRuleBody) {
+			int i = n.keyExprs.size()
+			if (types && types[i]) tmpExprTypes[n.valueExpr] += types[i]
 		}
 		null
 	}
@@ -136,7 +145,7 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 		def types = tmpRelationTypes[n.name]
 		n.exprs.eachWithIndex { expr, i ->
 			tmpExprIndices[n.name][expr] = i
-			if (types) tmpExprTypes[expr] += types[i]
+			if (types && types[i]) tmpExprTypes[expr] += types[i]
 		}
 		null
 	}

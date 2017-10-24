@@ -1,19 +1,19 @@
 @Output @Type Animal
 @Type AP
 
-@Type Cat -> Animal
-@Type Dog -> Animal
-@Type PersianCat -> Cat
+@Type Cat <: Animal
+@Type Dog <: Animal
+@Type PersianCat <: Cat
 
 @Output
-Foo(x, y) -> int(x), string(y).
+Foo(x, y) : int, string
 
-Foo(y, x) <- x := "J", y := 1.
+Foo(y, x) <- x = "J", y = 1.
 
 @Output @Type @Output Bar
 
 @Output {
-	FooBar(x, y) -> int(x), string(y).
+	FooBar(x, y) : int, string
 
 	@Type Baz
 }
@@ -24,17 +24,18 @@ Foo(y, x) <- x := "J", y := 1.
 }
 
 @Input {
-	P1(x) -> string(x).
-	P2(x) -> int(x).
-	P3(x) -> string(x).
+	P1(x) : string
+	P2(x) : int
+	P3(x) : string
 }
 
-
+/*
 @Type T
 
 @Constructor(refmode=true)
-tref[x] = y -> string(x), T(y).
+tref[x] = y : string, T
 
 TPred(x, y) <- FooBar(_, x), tref[x] = y.
+*/
 
 FooBar(42, "bla").

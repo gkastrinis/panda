@@ -11,4 +11,4 @@ as S2
 
 S1 {*} -> S2
 
-W(x) -> int(x).
+W(x) : int

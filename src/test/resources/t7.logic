@@ -2,13 +2,13 @@ P("hello").
 Q(x, 42) <- P(x).
 
 component First {
-	Z(x) -> int(x).
+	Z(x) : int
 }
 as S1
 
 component Base {
 	P1(x) <- P(x).
-	P1(x) -> string(x).
+	P1(x) : string
 }
 as S2
 
@@ -18,7 +18,7 @@ component Core : Base {
 	P2(x) <- Q(x, _).
 	P3(x) <- Q(_, x).
 	W(x) <- Z@ext(x).
-	Z@ext(x) -> int(x).
+	Z@ext(x) : int
 }
 as S4
 

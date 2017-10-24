@@ -17,9 +17,9 @@ class AssignTransformer extends DummyTransformer {
 	InfoCollectionVisitingActor infoActor
 
 	// Variables that are assigned some expression, in the body of a rule
-	Map<VariableExpr, IExpr> assignments
+	Map<VariableExpr, IExpr> assignments = [:]
 	// Variables already replaced by an assignment
-	Set<VariableExpr> replacedVars
+	Set<VariableExpr> replacedVars = [] as Set
 	// Dummy expression to replace assignment expressions
 	ComparisonElement dummyComparison = new ComparisonElement(new ConstantExpr(1), BinOperator.EQ, new ConstantExpr(1))
 	// For transitive closure computation
@@ -39,8 +39,8 @@ class AssignTransformer extends DummyTransformer {
 	IVisitable visit(Rule n) {
 		if (!n.body) return super.visit(n)
 		actor.enter(n)
-		assignments = [:]
-		replacedVars = [] as Set
+		assignments.clear()
+		replacedVars.clear()
 		boundVars = infoActor.boundVars[n]
 		complexLogic = 0
 		changed = true
@@ -49,15 +49,20 @@ class AssignTransformer extends DummyTransformer {
 		while (changed) {
 			changed = false
 			body = body.accept(this)
+			// Update expressions to assign as well
+			assignments.each { it.value = it.value.accept(this) as IExpr }
 			head = head.accept(this)
+			replacedVars += assignments.keySet()
+			assignments.clear()
 		}
+		replacedVars.clear()
 		m[n.head] = head
 		m[n.body] = body
 		actor.exit(n, m)
 	}
 
 	IVisitable exit(ComparisonElement n, Map m) {
-		if (n.expr.op == BinOperator.EQ && n.expr.left instanceof VariableExpr /*&& mode == Mode.ASSIGN*/) {
+		if (n.expr.op == BinOperator.EQ && n.expr.left instanceof VariableExpr) {
 			def var = n.expr.left as VariableExpr
 			if (!(var in boundVars)) {
 				if (complexLogic > 1)
@@ -97,11 +102,10 @@ class AssignTransformer extends DummyTransformer {
 	}
 
 	IVisitable exit(VariableExpr n, Map m) {
+		if (n in replacedVars)
+			ErrorManager.error(ErrorId.VAR_ASGN_CYCLE, n.name)
 		if (assignments && assignments[n]) {
 			changed = true
-			if (n in replacedVars)
-				ErrorManager.error(ErrorId.VAR_ASGN_CYCLE, n.name)
-			replacedVars << n
 			return assignments[n]
 		}
 		return n

@@ -1,7 +1,7 @@
 component Foo {
 	P(x) <- Q(x).
 	Bar(x) <- P(x), Bar@ext(x).
-	Bar@ext(x) -> int(x).
+	Bar@ext(x) : int
 }
 as S1, S2
 

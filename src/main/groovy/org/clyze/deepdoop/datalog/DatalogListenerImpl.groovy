@@ -95,6 +95,8 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		} else {
 			def rel = ctx.relation() ? values[ctx.relation()] as Relation : values[ctx.constructor()] as Constructor
 			def types = values[ctx.relationNameList()].collect { new Type(it as String) }
+			if (rel.exprs.size() != types.size())
+				ErrorManager.error(loc, ErrorId.DECL_MALFORMED)
 			d = new Declaration(rel, types, annotations)
 		}
 		currComp.declarations << d
@@ -265,8 +267,8 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	}
 
 	void exitPropagationList(PropagationListContext ctx) {
-		values[ctx] = (ctx.ALL() ? null :
-				(values[ctx.propagationList()] ?: []) << values[ctx.relationName()] as String)
+		if (ctx.ALL()) values[ctx] = null
+		else values[ctx] = (values[ctx.propagationList()] ?: []) << (values[ctx.relationName()] as String)
 	}
 
 	// Special handling (instead of using "exit")

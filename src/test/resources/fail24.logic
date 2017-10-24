@@ -1,5 +1,0 @@
-@Type Animal
-@Type Shape
-
-Bar(x, y), Baz(x) -> string(x), string(y).
-Foo(x, y) -> Shape(x), string(y).
