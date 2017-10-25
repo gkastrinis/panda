@@ -6,7 +6,10 @@ import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.CmdComponent
 import org.clyze.deepdoop.datalog.component.Component
-import org.clyze.deepdoop.datalog.element.*
+import org.clyze.deepdoop.datalog.element.ComparisonElement
+import org.clyze.deepdoop.datalog.element.ConstructionElement
+import org.clyze.deepdoop.datalog.element.IElement
+import org.clyze.deepdoop.datalog.element.LogicalElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.element.relation.Type

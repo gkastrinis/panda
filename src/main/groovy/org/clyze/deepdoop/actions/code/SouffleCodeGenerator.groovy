@@ -1,7 +1,6 @@
 package org.clyze.deepdoop.actions.code
 
 import groovy.transform.InheritConstructors
-import org.clyze.deepdoop.actions.IVisitable
 import org.clyze.deepdoop.actions.ValidationVisitingActor
 import org.clyze.deepdoop.actions.tranform.InitializingTransformer
 import org.clyze.deepdoop.actions.tranform.NormalizingTransformer

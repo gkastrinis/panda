@@ -1,7 +1,6 @@
 package org.clyze.deepdoop.actions.code
 
 import groovy.transform.InheritConstructors
-import org.clyze.deepdoop.actions.IVisitable
 import org.clyze.deepdoop.actions.ValidationVisitingActor
 import org.clyze.deepdoop.actions.tranform.InitializingTransformer
 import org.clyze.deepdoop.actions.tranform.NormalizingTransformer
@@ -82,8 +81,7 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 			def keyExprs = n.exprs.dropRight(1)
 			def valueExpr = n.exprs.last()
 			"${n.name}[${keyExprs.collect { m[it] }.join(", ")}] = ${m[valueExpr]}"
-		}
-		else
+		} else
 			"${n.name}(${n.exprs.collect { m[it] }.join(", ")})"
 	}
 

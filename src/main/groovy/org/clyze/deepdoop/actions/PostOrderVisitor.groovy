@@ -17,6 +17,7 @@ class PostOrderVisitor<T> implements IVisitor<T> {
 	protected Map<IVisitable, T> m = [:]
 	protected inRuleHead = false
 	protected inRuleBody = false
+
 	protected def getInRule() { inRuleHead || inRuleBody }
 
 	PostOrderVisitor(IActor<T> actor = null) { this.actor = actor }
