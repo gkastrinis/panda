@@ -32,43 +32,43 @@ class DefaultCodeGenerator extends PostOrderVisitor<String> implements TDummyAct
 
 	DefaultCodeGenerator(String outDir) { this(new File(outDir)) }
 
-	//String exit(Program n, Map<IVisitable, String> m) { null }
+	//String exit(Program n, Map m) { null }
 
-	//String exit(CmdComponent n, Map<IVisitable, String> m) { null }
+	//String exit(CmdComponent n, Map m) { null }
 
-	//String exit(Component n, Map<IVisitable, String> m) { null }
+	//String exit(Component n, Map m) { null }
 
-	//String exit(Declaration n, Map<IVisitable, String> m) { null }
+	//String exit(Declaration n, Map m) { null }
 
-	//String exit(Rule n, Map<IVisitable, String> m) { null }
+	//String exit(Rule n, Map m) { null }
 
-	//String exit(AggregationElement n, Map<IVisitable, String> m) { null }
+	//String exit(AggregationElement n, Map m) { null }
 
-	String exit(ComparisonElement n, Map<IVisitable, String> m) { m[n.expr] }
+	String exit(ComparisonElement n, Map m) { m[n.expr] }
 
-	//String exit(ConstructorElement n, Map<IVisitable, String> m) { null }
+	//String exit(ConstructorElement n, Map m) { null }
 
-	String exit(GroupElement n, Map<IVisitable, String> m) { "(${m[n.element]})" }
+	String exit(GroupElement n, Map m) { "(${m[n.element]})" }
 
-	String exit(LogicalElement n, Map<IVisitable, String> m) {
+	String exit(LogicalElement n, Map m) {
 		n.elements.findAll { m[it] }.collect { m[it] }.join(n.type == AND ? ", " : "; ")
 	}
 
-	String exit(NegationElement n, Map<IVisitable, String> m) { "!${m[n.element]}" }
+	String exit(NegationElement n, Map m) { "!${m[n.element]}" }
 
-	//String exit(Relation n, Map<IVisitable, String> m) { null }
+	//String exit(Relation n, Map m) { null }
 
-	//String exit(Constructor n, Map<IVisitable, String> m) { null }
+	//String exit(Constructor n, Map m) { null }
 
-	//String exit(Type n, Map<IVisitable, String> m) { null }
+	//String exit(Type n, Map m) { null }
 
-	String exit(BinaryExpr n, Map<IVisitable, String> m) { "${m[n.left]} ${n.op} ${m[n.right]}" }
+	String exit(BinaryExpr n, Map m) { "${m[n.left]} ${n.op} ${m[n.right]}" }
 
-	String exit(ConstantExpr n, Map<IVisitable, String> m) { n.value as String }
+	String exit(ConstantExpr n, Map m) { n.value as String }
 
-	String exit(GroupExpr n, Map<IVisitable, String> m) { "(${m[n.expr]})" }
+	String exit(GroupExpr n, Map m) { "(${m[n.expr]})" }
 
-	String exit(VariableExpr n, Map<IVisitable, String> m) { n.name }
+	String exit(VariableExpr n, Map m) { n.name }
 
 	protected def createUniqueFile(String prefix, String suffix) {
 		Files.createTempFile(Paths.get(outDir.name), prefix, suffix).toFile()

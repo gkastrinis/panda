@@ -16,6 +16,7 @@ class Annotation {
 
 	static enum Kind {
 		CONSTRUCTOR,
+		FUNCTIONAL,
 		INPUT,
 		OUTPUT,
 		PLAN,
@@ -41,6 +42,7 @@ class Annotation {
 		name = name.toLowerCase()
 		switch (name) {
 			case "constructor": return CONSTRUCTOR
+			case "functional": return FUNCTIONAL
 			case "input": return INPUT
 			case "output": return OUTPUT
 			case "plan": return PLAN
@@ -78,6 +80,7 @@ class Annotation {
 			(CONSTRUCTOR): { Annotation a ->
 				OPTIONAL_VALIDATOR.call(a, ["refmode": BOOLEAN])
 			},
+			(FUNCTIONAL) : EMPTY_VALIDATOR,
 			(INPUT)      : EMPTY_VALIDATOR,
 			(OUTPUT)     : EMPTY_VALIDATOR,
 			(PLAN)       : { Annotation a ->

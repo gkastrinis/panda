@@ -4,7 +4,7 @@ import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.Component
-import org.clyze.deepdoop.datalog.element.*
+import org.clyze.deepdoop.datalog.element.ConstructionElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
@@ -13,8 +13,7 @@ import org.clyze.deepdoop.system.ErrorId
 import org.clyze.deepdoop.system.ErrorManager
 import org.clyze.deepdoop.system.SourceManager
 
-import static org.clyze.deepdoop.datalog.Annotation.Kind.CONSTRUCTOR
-import static org.clyze.deepdoop.datalog.Annotation.Kind.TYPE
+import static org.clyze.deepdoop.datalog.Annotation.Kind.*
 
 class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implements TDummyActor<IVisitable> {
 
@@ -30,7 +29,8 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 	Map<String, String> constructorBaseType = [:]
 	Map<String, Set<String>> constructorsPerType = [:].withDefault { [] as Set }
 	Map<Rule, List<ConstructionElement>> constructionsOrderedPerRule = [:]
-	List<String> refmodeRelations = []
+	Set<String> refmodeRelations = [] as Set
+	Set<String> functionalRelations = [] as Set
 
 	// Type information
 	Set<String> allTypes = [] as Set
@@ -121,6 +121,9 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 			allTypes << predName
 			if (n.types) directSuperType[predName] = n.types.first().name
 		}
+		if (FUNCTIONAL in n.annotations)
+			functionalRelations << n.atom.name
+
 		if (CONSTRUCTOR in n.annotations) {
 			def type = n.types.last().name
 			constructorBaseType[predName] = type

@@ -1,8 +1,7 @@
 foo(1,2).
 bar(3,4).
 
-// TODO functional
-@output t(x, c) : int, int
+@functional @output t(x, c) : int, int
 
 t1(1, c) <- agg<<c = count( )>> foo(_,_).
 t2(2, c) <- agg<<c = count()>> (foo(_, x), bar(x, _)).

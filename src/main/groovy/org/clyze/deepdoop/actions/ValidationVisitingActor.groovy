@@ -39,7 +39,7 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements TD
 			def a = n.annotations.find { !(it.key in [TYPE, OUTPUT]) }
 			if (a) ErrorManager.error(recall(a), ErrorId.ANNOTATION_INVALID, a.key, "type")
 		} else {
-			def a = n.annotations.find { !(it.key in [CONSTRUCTOR, INPUT, OUTPUT]) }
+			def a = n.annotations.find { !(it.key in [CONSTRUCTOR, FUNCTIONAL, INPUT, OUTPUT]) }
 			if (a) ErrorManager.error(recall(a), ErrorId.ANNOTATION_INVALID, a.key, "declaration")
 
 			if (n.annotations[CONSTRUCTOR] && !(n.atom instanceof Constructor))

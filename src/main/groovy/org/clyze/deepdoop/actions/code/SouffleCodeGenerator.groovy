@@ -40,7 +40,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		return super.visit(n as Program)
 	}
 
-	String exit(Declaration n, Map<IVisitable, String> m) {
+	String exit(Declaration n, Map m) {
 		def name = n.atom.name
 		def params = n.types.withIndex().collect { t, int i -> "${var1(i)}:${map(t.name)}" }.join(", ")
 		if (TYPE in n.annotations)
@@ -55,13 +55,13 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		null
 	}
 
-	String exit(Rule n, Map<IVisitable, String> m) {
+	String exit(Rule n, Map m) {
 		emit(n.body ? "${m[n.head]} :- ${m[n.body]}." : "${m[n.head]}.")
 		if (PLAN in n.annotations) emit ".plan ${n.annotations[PLAN].args["plan"]}"
 		null
 	}
 
-	String exit(AggregationElement n, Map<IVisitable, String> m) {
+	String exit(AggregationElement n, Map m) {
 		def pred = n.relation.name
 		def soufflePred = n.relation.exprs ? "$pred(${m[n.relation.exprs.first()]})" : pred
 		if (pred == "count" || pred == "min" || pred == "max" || pred == "sum")
@@ -69,17 +69,17 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		else null
 	}
 
-	String exit(ConstructionElement n, Map<IVisitable, String> m) {
+	String exit(ConstructionElement n, Map m) {
 		"${m[n.constructor]}, ${m[n.type]}"
 	}
 
-	String exit(Constructor n, Map<IVisitable, String> m) { exit(n as Relation, m) }
+	String exit(Constructor n, Map m) { exit(n as Relation, m) }
 
-	String exit(Relation n, Map<IVisitable, String> m) {
+	String exit(Relation n, Map m) {
 		"${mini(n.name)}(${n.exprs.collect { m[it] }.join(", ")})"
 	}
 
-	String exit(Type n, Map<IVisitable, String> m) { exit(n as Relation, m) }
+	String exit(Type n, Map m) { exit(n as Relation, m) }
 
 	// Must override since the default implementation throws an exception
 	String visit(RecordExpr n) {
@@ -91,7 +91,8 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	// Must override since the default implementation throws an exception
 	void enter(RecordExpr n) {}
 
-	String exit(RecordExpr n, Map<IVisitable, String> m) {
+	// Must override since the default implementation throws an exception
+	String exit(RecordExpr n, Map m) {
 		"[${n.exprs.collect { m[it] }.join(", ")}]"
 	}
 

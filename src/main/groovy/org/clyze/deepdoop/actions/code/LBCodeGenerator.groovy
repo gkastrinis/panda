@@ -37,7 +37,7 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 		return super.visit(n as Program)
 	}
 
-	String exit(Declaration n, Map<IVisitable, String> m) {
+	String exit(Declaration n, Map m) {
 		def name = n.atom.name
 		if (TYPE in n.annotations) {
 			emit "lang:entity(`$name)."
@@ -55,12 +55,12 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 		null
 	}
 
-	String exit(Rule n, Map<IVisitable, String> m) {
+	String exit(Rule n, Map m) {
 		emit(n.body ? "${m[n.head]} <- ${m[n.body]}." : "${m[n.head]}.")
 		null
 	}
 
-	String exit(AggregationElement n, Map<IVisitable, String> m) {
+	String exit(AggregationElement n, Map m) {
 		def pred = n.relation.name
 		def params = n.relation.exprs ? "${m[n.relation.exprs.first()]}" : ""
 		def lbPred = "${pred.replaceFirst("sum", "total")}($params)"
@@ -69,21 +69,27 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 		else null
 	}
 
-	String exit(ConstructionElement n, Map<IVisitable, String> m) {
+	String exit(ConstructionElement n, Map m) {
 		"${m[n.constructor]}, ${m[n.type]}"
 	}
 
-	String exit(Constructor n, Map<IVisitable, String> m) {
-		"${n.name}[${n.keyExprs.collect { m[it] }.join(", ")}] = ${m[n.valueExpr]}"
+	String exit(Constructor n, Map m) { exit0(n, m) }
+
+	String exit(Relation n, Map m) { exit0(n, m) }
+
+	String exit0(Relation n, Map m) {
+		if (n.name in infoActor.functionalRelations) {
+			def keyExprs = n.exprs.dropRight(1)
+			def valueExpr = n.exprs.last()
+			"${n.name}[${keyExprs.collect { m[it] }.join(", ")}] = ${m[valueExpr]}"
+		}
+		else
+			"${n.name}(${n.exprs.collect { m[it] }.join(", ")})"
 	}
 
-	String exit(Relation n, Map<IVisitable, String> m) {
-		"${n.name}(${n.exprs.collect { m[it] }.join(", ")})"
-	}
+	String exit(Type n, Map m) { exit0(n, m) }
 
-	String exit(Type n, Map<IVisitable, String> m) { exit(n as Relation, m) }
-
-	/*void emit(Program n, Map<IVisitable, String> m, Set<DependencyGraph.Node> nodes) {
+	/*void emit(Program n, Map m, Set<DependencyGraph.Node> nodes) {
 		latestFile = createUniqueFile("out_", ".logic")
 		results << new Result(Result.Kind.LOGIC, latestFile)
 
@@ -183,7 +189,5 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 		return atoms.every { handledAtoms.contains(it) }
 	}*/
 
-	static def map(def name) {
-		name == "int" ? "int[64]" : name
-	}
+	static def map(def name) { name == "int" ? "int[64]" : name }
 }
