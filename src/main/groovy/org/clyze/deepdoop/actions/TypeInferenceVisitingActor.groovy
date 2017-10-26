@@ -10,6 +10,7 @@ import org.clyze.deepdoop.datalog.element.ComparisonElement
 import org.clyze.deepdoop.datalog.element.ConstructionElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
+import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.BinaryExpr
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.IExpr
@@ -18,6 +19,8 @@ import org.clyze.deepdoop.system.ErrorManager
 
 import static org.clyze.deepdoop.datalog.Annotation.Kind.TYPE
 import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.*
+import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
+import static org.clyze.deepdoop.datalog.expr.VariableExpr.genN as varN
 
 class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements TDummyActor<IVisitable> {
 
@@ -33,6 +36,8 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 	// Relation Name x Expression x Index (for current clause)
 	Map<String, Map<IExpr, Integer>> tmpExprIndices = [:].withDefault { [:] }
 
+	Set<String> relWithExplicitDeclaration = [] as Set
+
 	// Implementing fix-point computation
 	Set<Rule> deltaRules
 
@@ -41,8 +46,11 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 		this.infoActor = infoActor
 	}
 
+	IVisitable exit(Program n, Map m) {
+		new Program(m[n.globalComp] as Component, [:], [:], [] as Set)
+	}
+
 	IVisitable visit(Component n) {
-		actor.enter(n)
 		n.declarations.each { it.accept(this) }
 
 		Set<Rule> oldDeltaRules = n.rules
@@ -55,13 +63,20 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 		}
 		coalesce()
 
-		actor.exit(n, m)
-		null
+		// Add implicit declarations
+		def ds = (n.declarations + []) as Set
+		inferredTypes
+				.findAll { rel, typeNames -> !(rel in relWithExplicitDeclaration) }
+				.each { rel, typeNames ->
+			def types = typeNames.withIndex().collect { String t, int i -> new Type(t, var1(i)) }
+			ds << new Declaration(new Relation(rel, null, varN(types.size())), types)
+		}
+		new Component(n.name, n.superComp, ds, n.rules)
 	}
 
-	IVisitable exit(Program n, Map m) { n }
-
 	IVisitable visit(Declaration n) {
+		relWithExplicitDeclaration << n.atom.name
+
 		inferredTypes[n.atom.name] =
 				(TYPE in n.annotations) ?
 						[n.atom.name] :

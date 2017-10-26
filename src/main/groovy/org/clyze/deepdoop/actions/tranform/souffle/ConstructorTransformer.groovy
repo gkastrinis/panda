@@ -23,7 +23,6 @@ import org.clyze.deepdoop.datalog.expr.VariableExpr
 import static org.clyze.deepdoop.datalog.Annotation.Kind.CONSTRUCTOR
 import static org.clyze.deepdoop.datalog.Annotation.Kind.TYPE
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
-import static org.clyze.deepdoop.datalog.expr.VariableExpr.genN as varN
 
 // (1) For each constructor, a new type is generated that
 // represents its structure. The structure is a record of
@@ -89,16 +88,6 @@ class ConstructorTransformer extends DummyTransformer {
 	}
 
 	IVisitable exit(Component n, Map m) {
-		// Handle explicit declarations
-		typeActor.inferredTypes
-				.findAll { rel, typeNames -> !(rel in explicitDeclarations) }
-				.each { rel, typeNames ->
-			def types = typeNames.withIndex().collect { String t, int i ->
-				new Type(typeToCommonType[t] ?: t, var1(i))
-			}
-			extraDecls << new Declaration(new Relation(rel, null, varN(types.size())), types)
-		}
-
 		def ds = (n.declarations.collect { m[it] as Declaration } + extraDecls) as Set
 		def rs = (n.rules.collect { m[it] as Rule } + extraRules) as Set
 		new Component(n.name, n.superComp, ds, rs)
