@@ -38,7 +38,7 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 
 	String exit(Declaration n, Map m) {
 		def name = n.atom.name
-		if (TYPE in n.annotations) {
+		if (n.annotations[TYPE]) {
 			emit "lang:entity(`$name)."
 			emit """lang:physical:storageModel[`$name] = "ScalableSparse"."""
 			def cap = n.annotations[TYPE].args["capacity"]
@@ -48,7 +48,7 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 			def types = n.types.withIndex().collect { Type t, int i -> "${map(t.name)}(${var1(i)})" }.join(", ")
 			emit "${n.atom.name}($headVars) -> $types."
 		}
-		if (CONSTRUCTOR in n.annotations && !(name in infoActor.refmodeRelations)) {
+		if (n.annotations[CONSTRUCTOR] && !(name in infoActor.refmodeRelations)) {
 			emit "lang:constructor(`$name)."
 		}
 		null

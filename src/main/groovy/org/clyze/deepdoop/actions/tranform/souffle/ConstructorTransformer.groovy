@@ -96,7 +96,7 @@ class ConstructorTransformer extends DummyTransformer {
 	IVisitable exit(Declaration n, Map m) {
 		explicitDeclarations << n.atom.name
 
-		if (CONSTRUCTOR in n.annotations) {
+		if (n.annotations[CONSTRUCTOR]) {
 			// Re: (1)
 			def newTypes = n.types.collect {
 				new Type(typeToCommonType[it.name] ?: it.name)
@@ -106,7 +106,7 @@ class ConstructorTransformer extends DummyTransformer {
 					newTypes.dropRight(1),
 					n.annotations + [(TYPE): new Annotation("type")])
 			n = new Declaration(n.atom, newTypes, n.annotations)
-		} else if (TYPE in n.annotations) {
+		} else if (n.annotations[TYPE]) {
 			def type = n.atom.name
 			// Re: 3
 			n = new Declaration(

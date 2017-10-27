@@ -78,12 +78,12 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 		relWithExplicitDeclaration << n.atom.name
 
 		inferredTypes[n.atom.name] =
-				(TYPE in n.annotations) ?
+				(n.annotations[TYPE]) ?
 						[n.atom.name] :
 						n.types.collect { it.name }
 
 		tmpRelationTypes[n.atom.name] =
-				(TYPE in n.annotations) ?
+				(n.annotations[TYPE]) ?
 						[[n.atom.name] as Set] :
 						n.types.collect { [it.name] as Set }
 		null

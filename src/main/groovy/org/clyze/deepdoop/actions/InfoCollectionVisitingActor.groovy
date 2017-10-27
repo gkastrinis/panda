@@ -117,14 +117,14 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 		usedRelations[n] = n.types as Set
 
 		def predName = n.atom.name
-		if (TYPE in n.annotations) {
+		if (n.annotations[TYPE]) {
 			allTypes << predName
 			if (n.types) directSuperType[predName] = n.types.first().name
 		}
-		if (FUNCTIONAL in n.annotations)
+		if (n.annotations[FUNCTIONAL])
 			functionalRelations << n.atom.name
 
-		if (CONSTRUCTOR in n.annotations) {
+		if (n.annotations[CONSTRUCTOR]) {
 			def type = n.types.last().name
 			constructorBaseType[predName] = type
 			constructorsPerType[type] << predName

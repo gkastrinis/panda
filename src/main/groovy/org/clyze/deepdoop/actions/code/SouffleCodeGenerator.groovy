@@ -42,21 +42,21 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	String exit(Declaration n, Map m) {
 		def name = n.atom.name
 		def params = n.types.withIndex().collect { t, int i -> "${var1(i)}:${map(t.name)}" }.join(", ")
-		if (TYPE in n.annotations)
+		if (n.annotations[TYPE])
 			emit ".type ${map(mini(name))} = [$params]"
 		else
 			emit ".decl ${mini(name)}($params)"
 
-		if (INPUT in n.annotations)
+		if (n.annotations[INPUT])
 			emit ".input ${mini(name)}"
-		if (OUTPUT in n.annotations)
+		if (n.annotations[OUTPUT])
 			emit ".output ${mini(name)}"
 		null
 	}
 
 	String exit(Rule n, Map m) {
 		emit(n.body ? "${m[n.head]} :- ${m[n.body]}." : "${m[n.head]}.")
-		if (PLAN in n.annotations) emit ".plan ${n.annotations[PLAN].args["plan"]}"
+		if (n.annotations[PLAN]) emit ".plan ${n.annotations[PLAN].args["plan"]}"
 		null
 	}
 
