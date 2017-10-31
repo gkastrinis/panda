@@ -29,7 +29,6 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 	Map<String, String> constructorBaseType = [:]
 	Map<String, Set<String>> constructorsPerType = [:].withDefault { [] as Set }
 	Map<Rule, List<ConstructionElement>> constructionsOrderedPerRule = [:]
-	Set<String> refmodeRelations = [] as Set
 	Set<String> functionalRelations = [] as Set
 
 	// Type information
@@ -128,10 +127,6 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 			def type = n.types.last().name
 			constructorBaseType[predName] = type
 			constructorsPerType[type] << predName
-
-			def refmode = n.annotations[CONSTRUCTOR].args["refmode"]
-			if (refmode && refmode.type == ConstantExpr.Type.BOOLEAN && refmode.value)
-				refmodeRelations << n.atom.name
 		}
 		null
 	}

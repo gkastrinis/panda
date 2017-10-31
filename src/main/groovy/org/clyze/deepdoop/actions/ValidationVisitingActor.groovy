@@ -54,13 +54,6 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements TD
 		n.types.findAll { !it.isPrimitive() }
 				.findAll { !(it.name in infoActor.allTypes) }
 				.each { ErrorManager.error(recall(it), ErrorId.TYPE_UNKNOWN, it.name) }
-
-		if (n.atom.name in infoActor.refmodeRelations) {
-			if (n.atom.arity != 2)
-				ErrorManager.error(ErrorId.REFMODE_ARITY, n.atom.name)
-			if (!(n.types.first() as Type).isPrimitive())
-				ErrorManager.error(ErrorId.REFMODE_KEY, n.atom.name)
-		}
 		null
 	}
 

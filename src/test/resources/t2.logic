@@ -29,13 +29,4 @@ Foo(y, x) <- x = "J", y = 1.
 	P3(x) : string
 }
 
-/*
-@Type T
-
-@Constructor(refmode=true)
-tref[x] = y : string, T
-
-TPred(x, y) <- FooBar(_, x), tref[x] = y.
-*/
-
 FooBar(42, "bla").

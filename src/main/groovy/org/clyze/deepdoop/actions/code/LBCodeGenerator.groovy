@@ -48,7 +48,7 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 			def types = n.types.withIndex().collect { Type t, int i -> "${map(t.name)}(${var1(i)})" }.join(", ")
 			emit "${n.atom.name}($headVars) -> $types."
 		}
-		if (n.annotations[CONSTRUCTOR] && !(name in infoActor.refmodeRelations)) {
+		if (n.annotations[CONSTRUCTOR])
 			emit "lang:constructor(`$name)."
 		}
 		null

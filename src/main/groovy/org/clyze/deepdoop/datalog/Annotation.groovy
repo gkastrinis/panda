@@ -77,9 +77,7 @@ class Annotation {
 	}
 
 	private static final Map<Kind, Closure> VALIDATORS = [
-			(CONSTRUCTOR): { Annotation a ->
-				OPTIONAL_VALIDATOR.call(a, ["refmode": BOOLEAN])
-			},
+			(CONSTRUCTOR): EMPTY_VALIDATOR,
 			(FUNCTIONAL) : EMPTY_VALIDATOR,
 			(INPUT)      : EMPTY_VALIDATOR,
 			(OUTPUT)     : EMPTY_VALIDATOR,

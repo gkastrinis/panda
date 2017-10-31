@@ -34,8 +34,6 @@ enum ErrorId {
 	CONSTR_NON_FUNC,
 	CONSTR_RULE_CYCLE,
 	FUNC_NON_CONSTR,
-	REFMODE_ARITY,
-	REFMODE_KEY,
 
 	MULTIPLE_ENT_DECLS,
 	DEP_CYCLE,
@@ -80,8 +78,6 @@ enum ErrorId {
 		msgMap[CONSTR_NON_FUNC] = "Constructor `{0}` must use functional syntax"
 		msgMap[CONSTR_RULE_CYCLE] = "Constructor `{0}` appears in a cycle in rule head"
 		msgMap[FUNC_NON_CONSTR] = "Functional syntax available only for constructors (`{0}`)"
-		msgMap[REFMODE_ARITY] = "Refmode `{0}` arity must be 2"
-		msgMap[REFMODE_KEY] = "Refmode `{0}` key argument must be primitive"
 
 		msgMap[MULTIPLE_ENT_DECLS] = "Multiple declarations for Type `{0}` in previous components"
 		msgMap[DEP_CYCLE] = "Cycle detected in the dependency graph of components"
