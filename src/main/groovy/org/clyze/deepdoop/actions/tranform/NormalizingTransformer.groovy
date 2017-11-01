@@ -26,7 +26,8 @@ class NormalizingTransformer extends DummyTransformer {
 			Component currComp = m[it] as Component
 			Component flatComp
 			if (currComp.superComp) {
-				flatComp = currComp.clone()
+				flatComp = new Component(currComp.name, null)
+				flatComp.add(currComp)
 				while (currComp.superComp) {
 					currComp = m[n.comps[currComp.superComp]] as Component
 					flatComp.add(currComp)
@@ -40,10 +41,9 @@ class NormalizingTransformer extends DummyTransformer {
 	}
 
 	IVisitable exit(Component n, Map m) {
-		def newComp = new Component(n.name, n.superComp)
-		n.declarations.each { newComp.declarations << (m[it] as Declaration) }
-		n.rules.each { newComp.rules << (m[it] as Rule) }
-		return newComp
+		def ds = n.declarations.collect { m[it] as Declaration } as Set
+		def rs = n.rules.collect { m[it] as Rule } as Set
+		new Component(n.name, n.superComp, ds, rs)
 	}
 
 	// Flatten LogicalElement "trees"

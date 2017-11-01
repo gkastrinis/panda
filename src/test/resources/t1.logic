@@ -3,6 +3,12 @@ bar(3,4).
 
 @functional @output t(x, c) : int, int
 
+@functional t1
+@functional {
+	t2 t3 t4 t5
+}
+@output t5
+
 t1(1, c) <- agg<<c = count( )>> foo(_,_).
 t2(2, c) <- agg<<c = count()>> (foo(_, x), bar(x, _)).
 t3(3, m) <- agg<<m = max( ?y)>> bar(_, ?y).

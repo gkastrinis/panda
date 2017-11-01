@@ -14,13 +14,13 @@ import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.system.Result
 
-import static org.clyze.deepdoop.datalog.Annotation.Kind.CONSTRUCTOR
-import static org.clyze.deepdoop.datalog.Annotation.Kind.TYPE
+import static org.clyze.deepdoop.datalog.Annotation.Kind.*
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
-import static org.clyze.deepdoop.datalog.expr.VariableExpr.genN as varN
 
 @InheritConstructors
 class LBCodeGenerator extends DefaultCodeGenerator {
+
+	Set<String> functionalRelations
 
 	String visit(Program p) {
 		currentFile = createUniqueFile("out_", ".logic")
@@ -33,6 +33,10 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 				.accept(new ValidationVisitingActor(infoActor))
 				.accept(typeInferenceActor)
 
+		(n as Program).globalComp.declarations
+				.findAll { it.annotations[FUNCTIONAL] }
+				.collect { it.atom.name } as Set
+
 		return super.visit(n as Program)
 	}
 
@@ -44,13 +48,11 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 			def cap = n.annotations[TYPE].args["capacity"]
 			if (cap) emit "lang:physical:capacity[`$name] = $cap."
 		} else {
-			def headVars = varN(n.types.size()).join(", ")
 			def types = n.types.withIndex().collect { Type t, int i -> "${map(t.name)}(${var1(i)})" }.join(", ")
-			emit "${n.atom.name}($headVars) -> $types."
+			emit "${m[n.atom]} -> $types."
 		}
 		if (n.annotations[CONSTRUCTOR])
 			emit "lang:constructor(`$name)."
-		}
 		null
 	}
 
@@ -77,7 +79,7 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 	String exit(Relation n, Map m) { exit0(n, m) }
 
 	String exit0(Relation n, Map m) {
-		if (n.name in infoActor.functionalRelations) {
+		if (n.name in functionalRelations) {
 			def keyExprs = n.exprs.dropRight(1)
 			def valueExpr = n.exprs.last()
 			"${n.name}[${keyExprs.collect { m[it] }.join(", ")}] = ${m[valueExpr]}"

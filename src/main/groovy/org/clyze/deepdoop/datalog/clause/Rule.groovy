@@ -14,7 +14,7 @@ class Rule implements IVisitable {
 
 	LogicalElement head
 	LogicalElement body
-	Map<Kind, Annotation> annotations
+	Map<Kind, Annotation> annotations = [:]
 
 	def <T> T accept(IVisitor<T> v) { v.visit(this) }
 }

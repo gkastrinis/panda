@@ -15,7 +15,7 @@ class Declaration implements IVisitable {
 
 	Relation atom
 	List<Type> types
-	Map<Kind, Annotation> annotations
+	Map<Kind, Annotation> annotations = [:]
 
 	def <T> T accept(IVisitor<T> v) { v.visit(this) }
 }

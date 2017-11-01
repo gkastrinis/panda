@@ -16,14 +16,6 @@ class Component implements IVisitable {
 	Set<Declaration> declarations = [] as Set
 	Set<Rule> rules = [] as Set
 
-	Component clone() {
-		new Component(
-				name: name,
-				superComp: superComp,
-				declarations: ([] + declarations) as Set,
-				rules: ([] + rules) as Set)
-	}
-
 	void add(Component other) {
 		declarations += other.declarations
 		rules += other.rules

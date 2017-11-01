@@ -8,7 +8,8 @@ import org.clyze.deepdoop.system.ErrorManager
 import org.clyze.deepdoop.system.SourceManager
 
 import static org.clyze.deepdoop.datalog.Annotation.Kind.*
-import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.*
+import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.INTEGER
+import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.STRING
 
 @Canonical
 @ToString(includePackage = false)

@@ -36,7 +36,8 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 	// Relation Name x Expression x Index (for current clause)
 	Map<String, Map<IExpr, Integer>> tmpExprIndices = [:].withDefault { [:] }
 
-	Set<String> relWithExplicitDeclaration = [] as Set
+	Map<String, Declaration> fullDecls = [:]
+	Map<String, Declaration> partialDecls = [:]
 
 	// Implementing fix-point computation
 	Set<Rule> deltaRules
@@ -63,29 +64,43 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 		}
 		coalesce()
 
-		// Add implicit declarations
-		def ds = (n.declarations + []) as Set
-		inferredTypes
-				.findAll { rel, typeNames -> !(rel in relWithExplicitDeclaration) }
-				.each { rel, typeNames ->
+		// Fill partial declarations and add implicit ones
+		def ds = inferredTypes.collect { rel, typeNames ->
+			Declaration d = fullDecls[rel]
+			if (d) return d
+
 			def types = typeNames.withIndex().collect { String t, int i -> new Type(t, var1(i)) }
-			ds << new Declaration(new Relation(rel, null, varN(types.size())), types)
-		}
+			def vars = varN(types.size())
+			d = partialDecls[rel]
+			if (d) {
+				d.atom.exprs = vars
+				d.types = types
+				return d
+			}
+
+			return new Declaration(new Relation(rel, null, vars), types)
+		} as Set
+
 		new Component(n.name, n.superComp, ds, n.rules)
 	}
 
 	IVisitable visit(Declaration n) {
-		relWithExplicitDeclaration << n.atom.name
+		// Partial Declaration
+		if (!n.types && !n.annotations[TYPE])
+			partialDecls << [(n.atom.name): n]
+		else {
+			fullDecls << [(n.atom.name): n]
 
-		inferredTypes[n.atom.name] =
-				(n.annotations[TYPE]) ?
-						[n.atom.name] :
-						n.types.collect { it.name }
+			inferredTypes[n.atom.name] =
+					(n.annotations[TYPE]) ?
+							[n.atom.name] :
+							n.types.collect { it.name }
 
-		tmpRelationTypes[n.atom.name] =
-				(n.annotations[TYPE]) ?
-						[[n.atom.name] as Set] :
-						n.types.collect { [it.name] as Set }
+			tmpRelationTypes[n.atom.name] =
+					(n.annotations[TYPE]) ?
+							[[n.atom.name] as Set] :
+							n.types.collect { [it.name] as Set }
+		}
 		null
 	}
 
