@@ -14,8 +14,6 @@ class Relation implements IElement {
 
 	String name
 
-	String stage = null
-
 	List<IExpr> exprs
 
 	int getArity() { exprs ? exprs.size() : 0 }

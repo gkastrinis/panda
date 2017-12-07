@@ -7,7 +7,7 @@ import org.clyze.deepdoop.datalog.Annotation.Kind
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.Component
-import org.clyze.deepdoop.datalog.component.Propagation
+import org.clyze.deepdoop.datalog.component.Initialization
 import org.clyze.deepdoop.datalog.element.*
 import org.clyze.deepdoop.datalog.element.LogicalElement.LogicType
 import org.clyze.deepdoop.datalog.element.relation.Constructor
@@ -51,18 +51,35 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	}
 
 	void enterComponent(ComponentContext ctx) {
-		currComp = new Component(ctx.IDENTIFIER(0).text, ctx.IDENTIFIER(1)?.text)
+		currComp = new Component(ctx.IDENTIFIER().text, ctx.superComponent()?.IDENTIFIER()?.text)
 	}
 
 	void exitComponent(ComponentContext ctx) {
+		def params = values[ctx.parameterList()] as List ?: []
+		if (params.size() != params.toSet().size())
+			ErrorManager.error(ErrorId.COMP_DUPLICATE_PARAMS, params, currComp.name)
+		currComp.parameters = params
+
+		def superParams = ctx.superComponent()?.parameterList() ? values[ctx.superComponent().parameterList()] as List : []
+		if (superParams.any { !(it in params) })
+			ErrorManager.error(ErrorId.COMP_SUPER_PARAM_MISMATCH, superParams, currComp.superComp)
+		currComp.superParameters = superParams
+
 		values[ctx.identifierList()].each { String id ->
-			program.add id, currComp.name
+			if (program.inits.any { it.id == id })
+				ErrorManager.error(ErrorId.ID_IN_USE, id)
+			program.inits << new Initialization(currComp.name, [], id)
 		}
-		pendingAnnotations[currComp.name].each {
-			currComp.declarations << new Declaration(new Relation(it.key), [], it.value)
+
+		pendingAnnotations[currComp.name].each { String relName, Map annotations ->
+			currComp.declarations << new Declaration(new Relation(relName), [], annotations)
 		}
 		pendingAnnotations.remove(currComp.name)
-		program.add currComp
+
+		if (program.comps[currComp.name])
+			ErrorManager.error(ErrorId.COMP_ID_IN_USE, currComp.name)
+
+		program.comps[currComp.name] = currComp
 		currComp = program.globalComp
 	}
 
@@ -79,16 +96,12 @@ class DatalogListenerImpl extends DatalogBaseListener {
 //	}
 
 	void exitInitialize(InitializeContext ctx) {
+		def parameters = values[ctx.parameterList()] as List ?: []
 		values[ctx.identifierList()].each { String id ->
-			program.add id, ctx.IDENTIFIER().text
+			if (program.inits.any { it.id == id })
+				ErrorManager.error(ErrorId.ID_IN_USE, id)
+			program.inits << new Initialization(ctx.IDENTIFIER().text, parameters, id)
 		}
-	}
-
-	void exitPropagate(PropagateContext ctx) {
-		program.add new Propagation(
-				ctx.IDENTIFIER(0).text,
-				values[ctx.propagationList()] as Set,
-				ctx.IDENTIFIER(1)?.text)
 	}
 
 	void enterDeclaration(DeclarationContext ctx) {
@@ -157,10 +170,12 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	}
 
 	void exitRelation(RelationContext ctx) {
-		values[ctx] = new Relation(
-				values[ctx.relationName()] as String,
-				ctx.AT_STAGE()?.text,
-				ctx.exprList() ? values[ctx.exprList()] as List : [])
+		def name = values[ctx.relationName()]
+		if (inDecl && ctx.IDENTIFIER())
+			ErrorManager.error(ErrorId.REL_EXT_INVALID)
+		def at = ctx.IDENTIFIER() ? "@${ctx.IDENTIFIER().text}" : ""
+		def exprs = ctx.exprList() ? values[ctx.exprList()] as List : []
+		values[ctx] = new Relation("$name$at" as String, exprs)
 		rec(values[ctx], ctx)
 	}
 
@@ -294,11 +309,6 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		values[ctx] = new ComparisonElement(e0, op, e1)
 	}
 
-	void exitPropagationList(PropagationListContext ctx) {
-		if (ctx.ALL()) values[ctx] = null
-		else values[ctx] = (values[ctx.propagationList()] ?: []) << (values[ctx.relationName()] as String)
-	}
-
 	// Special handling (instead of using "exit")
 	private Map<Kind, Annotation> gatherAnnotations(AnnotationListContext ctx) {
 		if (!ctx) return [:]
@@ -334,6 +344,10 @@ class DatalogListenerImpl extends DatalogBaseListener {
 
 	void exitExprList(ExprListContext ctx) {
 		values[ctx] = ((values[ctx.exprList()] ?: []) as List) << values[ctx.expr()]
+	}
+
+	void exitParameterList(ParameterListContext ctx) {
+		values[ctx] = values[ctx.identifierList()]
 	}
 
 	void visitErrorNode(ErrorNode node) {

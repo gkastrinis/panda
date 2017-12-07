@@ -90,7 +90,7 @@ class ConstructorTransformer extends DummyTransformer {
 	IVisitable exit(Component n, Map m) {
 		def ds = (n.declarations.collect { m[it] as Declaration } + extraDecls) as Set
 		def rs = (n.rules.collect { m[it] as Rule } + extraRules) as Set
-		new Component(n.name, n.superComp, ds, rs)
+		new Component(n.name, n.superComp, [], [], ds, rs)
 	}
 
 	IVisitable exit(Declaration n, Map m) {
@@ -117,8 +117,8 @@ class ConstructorTransformer extends DummyTransformer {
 			def superType = infoActor.directSuperType[type]
 			if (superType)
 				extraRules << new Rule(
-						new LogicalElement(new Relation(superType, null, [var1(0)])),
-						new LogicalElement(new Relation(type, null, [var1(0)])))
+						new LogicalElement(new Relation(superType, [var1(0)])),
+						new LogicalElement(new Relation(type, [var1(0)])))
 		} else {
 			def newTypes = n.types.collect { new Type(typeToCommonType[it.name] ?: it.name) }
 			n = new Declaration(n.atom, newTypes, n.annotations)

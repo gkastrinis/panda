@@ -9,6 +9,6 @@ component Second {
 }
 as S2
 
-S1 {*} -> S2
+//S1 {*} -> S2
 
 W(x) : int

@@ -2,8 +2,8 @@ package org.clyze.deepdoop.actions.code
 
 import groovy.transform.InheritConstructors
 import org.clyze.deepdoop.actions.ValidationVisitingActor
+import org.clyze.deepdoop.actions.tranform.FlatteningTransformer
 import org.clyze.deepdoop.actions.tranform.InitializingTransformer
-import org.clyze.deepdoop.actions.tranform.NormalizingTransformer
 import org.clyze.deepdoop.actions.tranform.souffle.AssignTransformer
 import org.clyze.deepdoop.actions.tranform.souffle.ConstructorTransformer
 import org.clyze.deepdoop.datalog.Program
@@ -28,7 +28,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		results << new Result(Result.Kind.LOGIC, currentFile)
 
 		// Transform program before visiting nodes
-		def n = p.accept(new NormalizingTransformer())
+		def n = p.accept(new FlatteningTransformer())
 				.accept(new InitializingTransformer())
 				.accept(infoActor)
 				.accept(new ValidationVisitingActor(infoActor))

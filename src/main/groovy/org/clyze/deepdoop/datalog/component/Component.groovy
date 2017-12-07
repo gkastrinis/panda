@@ -13,13 +13,10 @@ class Component implements IVisitable {
 
 	String name
 	String superComp
+	List<String> parameters = []
+	List<String> superParameters = []
 	Set<Declaration> declarations = [] as Set
 	Set<Rule> rules = [] as Set
-
-	void add(Component other) {
-		declarations += other.declarations
-		rules += other.rules
-	}
 
 	def <T> T accept(IVisitor<T> v) { v.visit(this) }
 }

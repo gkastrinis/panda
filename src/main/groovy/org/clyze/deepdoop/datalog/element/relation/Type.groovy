@@ -7,9 +7,9 @@ import org.clyze.deepdoop.datalog.expr.IExpr
 @ToString(includeSuper = true, includePackage = false)
 class Type extends Relation {
 
-	Type(String name, IExpr expr) { super(name, null, [expr]) }
+	Type(String name, IExpr expr) { super(name, [expr]) }
 
-	Type(String name) { super(name, null, []) }
+	Type(String name) { super(name, []) }
 
 	def <T> T accept(IVisitor<T> v) { v.visit(this) }
 

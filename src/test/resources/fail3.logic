@@ -3,5 +3,3 @@ component Foo {
 }
 
 Bar as S1
-
-S1 { * } -> .

@@ -4,7 +4,11 @@ import java.text.MessageFormat
 
 enum ErrorId {
 	ID_IN_USE,
+	COMP_ID_IN_USE,
 	COMP_UNKNOWN,
+	COMP_DUPLICATE_PARAMS,
+	COMP_SUPER_PARAM_MISMATCH,
+	COMP_INIT_ARITY,
 	ANNOTATION_INVALID,
 	ANNOTATION_INVALID_ARG,
 	ANNOTATION_MISSING_ARG,
@@ -20,10 +24,10 @@ enum ErrorId {
 	TYPE_INCOMP_EXPR,
 	TYPE_INFERENCE_FAIL,
 	TYPE_RULE,
-	REL_UNKNOWN,
 	REL_NO_DECL_REC,
 	REL_ARITY,
-	REL_EXT_HEAD,
+	REL_EXT_UNKNOWN,
+	REL_EXT_INVALID,
 	VAR_UNKNOWN,
 	VAR_UNUSED,
 	VAR_MULTIPLE_CONSTR,
@@ -47,8 +51,12 @@ enum ErrorId {
 	static Map<ErrorId, String> msgMap
 	static {
 		msgMap = new EnumMap<>(ErrorId.class)
-		msgMap[ID_IN_USE] = "Id `{0}` already in use to initialize a component"
+		msgMap[ID_IN_USE] = "Initialization name `{0}` already in use"
+		msgMap[COMP_ID_IN_USE] = "Component name `{0}` already in use"
 		msgMap[COMP_UNKNOWN] = "Unknown component `{0}`"
+		msgMap[COMP_DUPLICATE_PARAMS] = "Duplicate parameters ({0}) in component `{1}`"
+		msgMap[COMP_SUPER_PARAM_MISMATCH] = "Non-matching parameters ({0}) for super component of `{1}`"
+		msgMap[COMP_INIT_ARITY] = "Wrong arity for initialization parameters ({0}) of component `{1}` as `{2}`"
 		msgMap[ANNOTATION_INVALID] = "Invalid annotation `{0}` for `{1}`"
 		msgMap[ANNOTATION_INVALID_ARG] = "Invalid argument `{0}` for annotation `{1}`"
 		msgMap[ANNOTATION_MISSING_ARG] = "Missing mandatory argument `{0}` for annotation `{1}`"
@@ -64,10 +72,10 @@ enum ErrorId {
 		msgMap[TYPE_INCOMP_EXPR] = "Incompatible types for numeric expression"
 		msgMap[TYPE_INFERENCE_FAIL] = "Type inference was inconclusive: cannot reach fixpoint"
 		msgMap[TYPE_RULE] = "Type `{0}` used as a normal relation in rule head"
-		msgMap[REL_UNKNOWN] = "Unknown relation `{0}` used in propagation"
-		msgMap[REL_NO_DECL_REC] = "Undeclared relation `{0}` used with `@ext`"
+		msgMap[REL_NO_DECL_REC] = "Unknown relation `{0}` used with a `@` parameter"
 		msgMap[REL_ARITY] = "Inconsistent arity for relation `{0}`"
-		msgMap[REL_EXT_HEAD] = "Relation `{0}` used with `@ext` in rule head, inside a component"
+		msgMap[REL_EXT_UNKNOWN] = "Relation used with an unknown `@` parameter `{0}`"
+		msgMap[REL_EXT_INVALID] = "Relation with a `@` parameter only allowed in a rule body, inside a component"
 		msgMap[VAR_UNKNOWN] = "Unknown var `{0}`"
 		msgMap[VAR_UNUSED] = "Unused var `{0}`"
 		msgMap[VAR_MULTIPLE_CONSTR] = "Var `{0}` constructed by multiple constructors"

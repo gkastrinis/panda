@@ -18,13 +18,13 @@ class DummyTransformer extends PostOrderVisitor<IVisitable> implements TDummyAct
 	DummyTransformer() { actor = this }
 
 	IVisitable exit(Program n, Map m) {
-		new Program(m[n.globalComp] as Component, [:], [:], [] as Set)
+		new Program(m[n.globalComp] as Component, [:], [] as Set)
 	}
 
 	IVisitable exit(Component n, Map m) {
 		def ds = n.declarations.collect { m[it] as Declaration } as Set
 		def rs = n.rules.collect { m[it] as Rule } as Set
-		new Component(n.name, n.superComp, ds, rs)
+		new Component(n.name, n.superComp, n.parameters, n.superParameters, ds, rs)
 	}
 
 	IVisitable exit(Declaration n, Map m) {
@@ -64,7 +64,7 @@ class DummyTransformer extends PostOrderVisitor<IVisitable> implements TDummyAct
 	}
 
 	IVisitable exit(Relation n, Map m) {
-		new Relation(n.name, n.stage, n.exprs.collect { m[it] as IExpr })
+		new Relation(n.name, n.exprs.collect { m[it] as IExpr })
 	}
 
 	IVisitable exit(Type n, Map m) {

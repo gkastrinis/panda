@@ -12,7 +12,7 @@ import spock.lang.Unroll
 class DatalogSpec extends Specification {
 
 	@Unroll
-	def "DeepDoop passing tests"() {
+	def "Passing tests"() {
 		when:
 		test(file)
 
@@ -35,7 +35,7 @@ class DatalogSpec extends Specification {
 	}
 
 	@Unroll
-	def "DeepDoop failing tests"() {
+	def "Failing tests"() {
 		when:
 		test(file)
 
@@ -45,11 +45,11 @@ class DatalogSpec extends Specification {
 
 		where:
 		file           | expectedErrorId
-		"fail0.logic"  | ErrorId.DEP_GLOBAL
+		//"fail0.logic"  | ErrorId.DEP_GLOBAL
 		"fail1.logic"  | ErrorId.ID_IN_USE
-		"fail2.logic"  | ErrorId.COMP_UNKNOWN
+		///"fail2.logic"  | ErrorId.COMP_UNKNOWN
 		"fail3.logic"  | ErrorId.COMP_UNKNOWN
-		"fail4.logic"  | ErrorId.REL_UNKNOWN
+		///"fail4.logic"  | ErrorId.REL_UNKNOWN
 		"fail5.logic"  | ErrorId.REL_NO_DECL_REC
 		"fail6.logic"  | ErrorId.CONSTR_INCOMP
 		"fail7.logic"  | ErrorId.FUNC_NON_CONSTR
@@ -65,12 +65,17 @@ class DatalogSpec extends Specification {
 		"fail17.logic" | ErrorId.ANNOTATION_MISSING_ARG
 		"fail18.logic" | ErrorId.ANNOTATION_INVALID_ARG
 		"fail19.logic" | ErrorId.ANNOTATION_INVALID
-		"fail20.logic" | ErrorId.REL_EXT_HEAD
+		"fail20.logic" | ErrorId.REL_EXT_INVALID
 		"fail21.logic" | ErrorId.DECL_MALFORMED
 		"fail22.logic" | ErrorId.ANNOTATION_MISTYPED_ARG
 		"fail23.logic" | ErrorId.CONSTR_RULE_CYCLE
 		"fail24.logic" | ErrorId.VAR_MULTIPLE_CONSTR
 		"fail25.logic" | ErrorId.TYPE_INCOMP_EXPR
+		"fail26.logic" | ErrorId.COMP_DUPLICATE_PARAMS
+		"fail27.logic" | ErrorId.COMP_SUPER_PARAM_MISMATCH
+		"fail28.logic" | ErrorId.COMP_INIT_ARITY
+		"fail29.logic" | ErrorId.REL_EXT_INVALID
+		"fail30.logic" | ErrorId.COMP_UNKNOWN
 //		"fail100.logic" | ErrorId.DEP_CYCLE
 //		"fail101.logic" | ErrorId.CMD_RULE
 //		"fail103.logic" | ErrorId.CMD_DIRECTIVE

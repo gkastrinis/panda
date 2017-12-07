@@ -1,5 +1,5 @@
 component Foo {
-	P(x) <- Q(x).
+	P(x) <- x = 10.
 	R(x) <- P(x).
 	W(x) : string
 	@type(capacity = 100000) Animal
@@ -10,13 +10,13 @@ component Foo {
 }
 as S1
 
-component Bar {
-	R(x) <- Q(x).
+component Bar <G> {
+	R(x) <- Q@G(x).
 }
-as S2
+Bar<_> as S2
 
 Q(1).
 Q(2).
 
-S1 {*} -> S2
-S2 {*} -> .
+W(x) <- W@S2(x).
+W(x):int

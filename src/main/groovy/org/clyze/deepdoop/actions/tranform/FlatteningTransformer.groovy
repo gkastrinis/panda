@@ -16,34 +16,54 @@ import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.BinaryExpr
 import org.clyze.deepdoop.datalog.expr.GroupExpr
 
-class NormalizingTransformer extends DummyTransformer {
+class FlatteningTransformer extends DummyTransformer {
 
-	NormalizingTransformer() { actor = this }
+	List<String> actualParameters = []
+	List<Integer> parameterIndexes = []
+	List<String> formalParameters = []
 
+	FlatteningTransformer() { actor = this }
+
+	// Merge a component with all its super components
 	IVisitable exit(Program n, Map m) {
-		// Flatten components that extend other components
 		def newComps = n.comps.values().collectEntries {
-			Component currComp = m[it] as Component
-			Component flatComp
+			def currComp = m[it] as Component
 			if (currComp.superComp) {
-				flatComp = new Component(currComp.name, null)
-				flatComp.add(currComp)
+				def flatComp = new Component(
+						currComp.name,
+						null,
+						currComp.parameters, [],
+						currComp.declarations,
+						currComp.rules + [])
+				actualParameters = currComp.parameters
+				parameterIndexes = (0..<actualParameters.size())
 				while (currComp.superComp) {
+					// A list of indexes of super parameters in the original parameter list
+					// e.g. in `component A <X,Y,Z> : B <Z, X>`, we get [2, 0]
+					parameterIndexes = currComp.superParameters.collect { superP ->
+						parameterIndexes[currComp.parameters.findIndexOf { it == superP }]
+					}
 					currComp = m[n.comps[currComp.superComp]] as Component
-					flatComp.add(currComp)
+					formalParameters = currComp.parameters
+					currComp.accept(this)
+					flatComp.declarations += currComp.declarations
+					flatComp.rules += currComp.rules.collect { m[it] as Rule }
 				}
+				[(flatComp.name): flatComp]
 			} else
-				flatComp = currComp
-
-			[(flatComp.name): flatComp]
+				[(currComp.name): currComp]
 		}
-		new Program(m[n.globalComp] as Component, newComps, n.inits, n.props)
+		new Program(m[n.globalComp] as Component, newComps, n.inits)
 	}
 
-	IVisitable exit(Component n, Map m) {
-		def ds = n.declarations.collect { m[it] as Declaration } as Set
-		def rs = n.rules.collect { m[it] as Rule } as Set
-		new Component(n.name, n.superComp, ds, rs)
+	IVisitable exit(Relation n, Map m) {
+		if (actualParameters && n.name.contains("@")) {
+			def (name, parameter) = n.name.split("@")
+			def index = formalParameters.findIndexOf { it == parameter }
+			def newParameter = actualParameters[parameterIndexes[index]]
+			return new Relation("$name@$newParameter", n.exprs)
+		} else
+			return n
 	}
 
 	// Flatten LogicalElement "trees"
@@ -52,7 +72,7 @@ class NormalizingTransformer extends DummyTransformer {
 		n.elements.each {
 			def flatE = m[it] as IElement
 			if (flatE instanceof LogicalElement && flatE.type == n.type)
-				newElements += (flatE as LogicalElement).elements
+				newElements += flatE.elements
 			else
 				newElements << flatE
 		}
@@ -63,13 +83,13 @@ class NormalizingTransformer extends DummyTransformer {
 
 	IVisitable exit(CmdComponent n, Map m) { n }
 
+	IVisitable exit(Declaration n, Map m) { n }
+
 	IVisitable exit(ComparisonElement n, Map m) { n }
 
 	IVisitable exit(ConstructionElement n, Map m) { n }
 
 	IVisitable exit(Constructor n, Map m) { n }
-
-	IVisitable exit(Relation n, Map m) { n }
 
 	IVisitable exit(Type n, Map m) { n }
 

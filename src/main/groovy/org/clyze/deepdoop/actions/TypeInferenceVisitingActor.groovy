@@ -48,7 +48,7 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 	}
 
 	IVisitable exit(Program n, Map m) {
-		new Program(m[n.globalComp] as Component, [:], [:], [] as Set)
+		new Program(m[n.globalComp] as Component, [:], [] as Set)
 	}
 
 	IVisitable visit(Component n) {
@@ -78,10 +78,10 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 				return d
 			}
 
-			return new Declaration(new Relation(rel, null, vars), types)
+			return new Declaration(new Relation(rel, vars), types)
 		} as Set
 
-		new Component(n.name, n.superComp, ds, n.rules)
+		new Component(n.name, n.superComp, [], [], ds, n.rules)
 	}
 
 	IVisitable visit(Declaration n) {

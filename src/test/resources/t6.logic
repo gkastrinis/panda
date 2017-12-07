@@ -3,31 +3,38 @@ Q(x, 42) <- P(x).
 
 component First {
 	Z(x) : int
+	P11(x) : string
 }
 as S1
 
-component Base {
-	P1(x) <- P(x).
+component Base <X> {
+	P1(x) <- P@X(x).
 	P1(x) : string
 }
-as S2
+Base <_> as S2
 
 First as S3
 
-component Core : Base {
-	P2(x) <- Q(x, _).
-	P3(x) <- Q(_, x).
-	W(x) <- Z@ext(x).
-	Z@ext(x) : int
+component Core <T, G> : Base <G>  {
+	P2(x) <- Q@G(x, _).
+	P3(x) <- Q@G(_, x).
+	W(x) <- Z@T(x).
 }
-as S4
 
-S1 { * } -> S2
-S2 { * } -> .
-S3 { * } -> S4
-S4 { W, P1 } -> .
+Core<S3, _> as S4
 
+component CoreA <X, Y> : Core<Y, X> {
+	ABC(x) <- Q@X(x, _).
+}
 
-Pred(x) <- W(x).
+CoreA<_, S3> as S5
 
-S4:P2@ext(x) <- S2:P1(x).
+//Pred(x) <- W(x).
+
+component Foo<T1, T2> {
+	P1(x) <- P@T2(x).
+	P1(x) <- P11@T1(x).
+	P1(x) : string
+}
+
+Foo<S3, _> as B1

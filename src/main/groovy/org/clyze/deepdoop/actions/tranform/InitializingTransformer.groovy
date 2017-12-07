@@ -6,6 +6,7 @@ import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.Component
+import org.clyze.deepdoop.datalog.element.ComparisonElement
 import org.clyze.deepdoop.datalog.element.LogicalElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
@@ -20,7 +21,7 @@ class InitializingTransformer extends DummyTransformer {
 
 	// Info collection actor for original program
 	InfoCollectionVisitingActor infoActor
-	// Program before initialization
+	// Original program before initialization
 	Program origP
 	// Program after initialization (only a global component)
 	Program initP
@@ -28,10 +29,8 @@ class InitializingTransformer extends DummyTransformer {
 	String currInitName
 	// Current component being initialized
 	Component currComp
-	// Relations in a component that have a declaration
-	Set<String> haveDeclaration
-	// Relations in a component that need a declaration (their stage is @ext)
-	Set<String> needDeclaration
+	// Relations originating from another component
+	Map<String, Rule> frameRules = [:]
 
 	InitializingTransformer() { actor = this }
 
@@ -39,127 +38,86 @@ class InitializingTransformer extends DummyTransformer {
 	// A component might be visited multiple times (depending on inits)
 	// Components with no inits are dropped
 	IVisitable visit(Program n) {
-		infoActor = new InfoCollectionVisitingActor()
 		origP = n
 		initP = new Program(new Component())
 
+		infoActor = new InfoCollectionVisitingActor()
 		origP.accept(infoActor)
 
-		// Initializations
 		origP.globalComp.accept(this)
-		origP.inits.each { initName, compName ->
-			currInitName = initName
-			currComp = origP.comps[compName]
-			if (!currComp) ErrorManager.error(ErrorId.COMP_UNKNOWN, compName)
+		origP.inits.each {
+			currInitName = it.id
+			currComp = n.comps[it.compName]
+			if (!currComp)
+				ErrorManager.error(ErrorId.COMP_UNKNOWN, it.compName)
+			if (currComp.parameters.size() != it.parameters.size())
+				ErrorManager.error(ErrorId.COMP_INIT_ARITY, it.parameters, it.compName, it.id)
 			currComp.accept(this)
 		}
-
-		// Propagation rules
-		origP.props.each { prop ->
-			if (!origP.inits[prop.fromId])
-				ErrorManager.error(ErrorId.COMP_UNKNOWN, prop.fromId)
-			if (!origP.inits[prop.toId] && prop.toId)
-				ErrorManager.error(ErrorId.COMP_UNKNOWN, prop.toId)
-
-			// fromId is the component name after initialization
-			// fromCompTemplate is the component before initialization
-			def fromCompTemplate = origP.comps[origP.inits[prop.fromId]]
-
-			def declaredRelations = infoActor.declaredRelations[fromCompTemplate]
-
-			// If preds is null then "*" was used
-			def toPropagate = (prop.preds ?
-					prop.preds.collect { p ->
-						def relation = declaredRelations.find { it.name == p }
-						if (!relation)
-							ErrorManager.error(ErrorId.REL_UNKNOWN, p)
-						return relation
-					} :
-					declaredRelations) as Set
-
-			toPropagate.each { rel ->
-				// Propagate to global scope and relation already declared there
-				if (!prop.toId && rel in infoActor.declaredRelations[origP.globalComp])
-					ErrorManager.error(ErrorId.DEP_GLOBAL, rel.name)
-
-				def head = new LogicalElement(rename(rel, prop.toId, prop.toId != null))
-				def body = new LogicalElement(rename(rel, prop.fromId, false))
-				initP.globalComp.rules << new Rule(head, body)
-			}
-		}
-
 		return initP
-	}
-
-	void enter(Component n) {
-		haveDeclaration = [] as Set
-		needDeclaration = [] as Set
 	}
 
 	IVisitable exit(Component n, Map m) {
 		n.declarations.each { initP.globalComp.declarations << (m[it] as Declaration) }
 		n.rules.each { initP.globalComp.rules << (m[it] as Rule) }
-
-		needDeclaration?.findAll { !(it in haveDeclaration) }?.each {
-			ErrorManager.error(ErrorId.REL_NO_DECL_REC, it)
-		}
+		frameRules.each { name, rule -> initP.globalComp.rules << rule }
+		frameRules = [:]
 		null
 	}
 
-	IVisitable exit(Declaration n, Map m) {
-		// Ignore declarations in global scope
-		if (currComp) haveDeclaration << n.atom.name
-		super.exit(n, m)
-	}
-
-	IVisitable exit(Constructor n, Map m) {
-		def (String newName, _) = rename(n)
-		new Constructor(newName, n.exprs)
-	}
+	IVisitable exit(Constructor n, Map m) { new Constructor(rename(n.name), n.exprs) }
 
 	IVisitable exit(Relation n, Map m) {
 		def loc = SourceManager.instance.recall(n)
-		// @ext is allowed in the rule's head only in global space
-		if (inRuleHead && currInitName && n.stage == "@ext")
-			ErrorManager.error(loc, ErrorId.REL_EXT_HEAD, n.name)
+		if (inRuleHead && n.name.contains("@"))
+			ErrorManager.error(loc, ErrorId.REL_EXT_INVALID)
 
-		// Ignore relations in global scope or without an "@ext" stage
-		if (currComp && n.stage == "@ext") needDeclaration << n.name
+		def origName = n.name
+		def newName = rename(origName)
+		if (origName.contains("@") && !currComp) {
+			def (simpleName, parameter) = origName.split("@")
+			if (!origP.inits.any { it.id == parameter})
+				ErrorManager.error(loc, ErrorId.COMP_UNKNOWN, parameter as String)
+			return new Relation("$parameter:$simpleName", n.exprs)
+		} else if (origName.contains("@")) {
+			newName = newName.replace("@", "__")
+			def newRelation = new Relation(newName, n.exprs)
 
-		def (String newName, String newStage) = rename(n)
-		new Relation(newName, newStage, n.exprs)
+			if (!frameRules[origName]) {
+				def (simpleName, parameter) = origName.split("@")
+				def paramIndex = currComp.parameters.findIndexOf { it == parameter }
+				if (paramIndex == -1)
+					ErrorManager.error(loc, ErrorId.REL_EXT_UNKNOWN, parameter as String)
+
+				def initParameter = origP.inits.find { it.id == currInitName }.parameters[paramIndex]
+				def externalName = initParameter == "_" ? simpleName : "$initParameter:$simpleName"
+				def externalTemplateComp = initParameter == "_" ?
+						origP.globalComp :
+						origP.comps[origP.inits.find { it.id == initParameter }.compName]
+				if (!infoActor.declaredRelations[externalTemplateComp].any { it.name == simpleName })
+					ErrorManager.error(loc, ErrorId.REL_NO_DECL_REC, simpleName as String)
+
+				frameRules[origName] = new Rule(
+						new LogicalElement(newRelation),
+						new LogicalElement(new Relation(externalName, n.exprs)))
+			}
+			return newRelation
+		} else {
+			//if (!infoActor.declaredRelations[currComp].any { it.name == origName })
+			//	ErrorManager.warn(loc, ErrorId.REL_UNKNOWN, origName as String)
+			return new Relation(newName, n.exprs)
+		}
 	}
 
-	IVisitable exit(Type n, Map m) {
-		def (String newName, _) = rename(n)
-		new Type(newName)
-	}
+	IVisitable exit(Type n, Map m) { n.isPrimitive() ? n : new Type(rename(n.name)) }
+
+	String rename(String name) { currInitName ? "$currInitName:$name" : name }
 
 	// Overrides to avoid unneeded allocations
+
+	IVisitable exit(ComparisonElement n, Map m) { n }
 
 	IVisitable exit(BinaryExpr n, Map m) { n }
 
 	IVisitable exit(GroupExpr n, Map m) { n }
-
-	def rename(Relation r) {
-		// Global Component
-		if (!currInitName)
-			return [rename(r, currInitName, r.stage == "@ext").name, null]
-
-		def declared = infoActor.declaredRelations[currComp].collect { it.name }
-
-		if (r.stage == "@ext")
-			return [rename(r, currInitName, true).name, null]
-		else if (r.name in declared)
-			return [rename(r, currInitName, false).name, null]
-		else
-			return [r.name, null]
-	}
-
-	static def rename(Relation n, String initName, boolean withExt) {
-		def prefix = initName ? "$initName:" : ""
-		def suffix = withExt ? ":__eXt" : ""
-		def name = "$prefix${n.name}$suffix"
-		new Relation(name, null, n.exprs)
-	}
 }

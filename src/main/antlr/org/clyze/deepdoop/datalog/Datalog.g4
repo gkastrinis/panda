@@ -5,19 +5,19 @@ package org.clyze.deepdoop.datalog;
 }
 
 program
-	: (component | cmd | initialize | propagate | datalog)* ;
+	: (component | cmd | initialize | datalog)* ;
 
 component
-	: COMP IDENTIFIER (':' IDENTIFIER)? '{' datalog* '}' (AS identifierList)? ;
+	: 'component' IDENTIFIER parameterList? (':' superComponent)? '{' datalog* '}' (AS identifierList)? ;
+
+superComponent
+	: IDENTIFIER parameterList? ;
 
 cmd
-	: CMD IDENTIFIER '{' datalog* '}' (AS identifierList)? ;
+	: 'cmd' IDENTIFIER '{' datalog* '}' (AS identifierList)? ;
 
 initialize
-	: IDENTIFIER AS identifierList ;
-
-propagate
-	: IDENTIFIER '{' propagationList '}' '->' (IDENTIFIER | GLOBAL) ;
+	: IDENTIFIER parameterList? AS identifierList ;
 
 datalog
 	: declaration | annotationBlock | rule_ | lineMarker ;
@@ -36,16 +36,16 @@ rule_
 	;
 
 relation
-	: relationName AT_STAGE? '(' exprList? ')' ;
+	: relationName ('@' IDENTIFIER)? '(' exprList? ')' ;
 
 constructor
 	: relationName '[' exprList? ']' '=' expr ;
 
 construction
-	: constructor NEW relationName ;
+	: constructor 'new' relationName ;
 
 aggregation
-	: AGG '<<' IDENTIFIER '=' relation '>>' bodyList ;
+	: 'agg' '<<' IDENTIFIER '=' relation '>>' bodyList ;
 
 bodyList
 	: relation
@@ -91,12 +91,6 @@ comparison
 
 // Various lists
 
-propagationList
-    : ALL
-	| relationName
-	| propagationList ',' relationName
-	;
-
 annotationList
 	: annotation
 	| annotationList annotation
@@ -127,41 +121,15 @@ exprList
 	| exprList ',' expr
 	;
 
+parameterList
+	: '<' identifierList '>' ;
+
 
 
 // Lexer
 
-AGG
-	: 'agg' ;
-
-NEW
-	: 'new' ;
-
-ALL
-	: '*' ;
-
 AS
 	: [aA][sS] ;
-
-AT_STAGE
-	: '@init'
-	| '@initial'
-	| '@prev'
-	| '@previous'
-	| '@ext'
-	;
-
-CAPACITY
-	: '[' ('32' | '64' | '128') ']' ;
-
-CMD
-	: 'command' ;
-
-COMP
-	: 'component' ;
-
-GLOBAL
-	: '.' ;
 
 INTEGER
 	: [0-9]+
@@ -188,7 +156,6 @@ STRING
 
 IDENTIFIER
 	: [?]?[a-zA-Z_][a-zA-Z_0-9]* ;
-
 
 LINE_COMMENT
 	: '//' ~[\r\n]* -> skip ;

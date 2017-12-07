@@ -34,7 +34,7 @@ class DependencyGraph {
 				fromNode.addEdgeTo(getNode(toComp))
 			// Propagate to global space
 			else
-				prop.preds.each { pred ->
+				prop.relation.each { pred ->
 					fromNode.addEdgeTo(getNode(pred))
 					handledGlobalAtoms.add(pred)
 				}

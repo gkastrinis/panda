@@ -1,0 +1,6 @@
+P(42).
+
+component Foo <X>{
+	Q(x) <- P@X(x).
+	W@X(x) : int
+}
