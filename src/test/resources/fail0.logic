@@ -1,13 +1,13 @@
 P(x) : string
 Q(x, y) : string, int
 
-Q(x, y) <- P(x), y = 10.
+Q(x, y) <- P(x), y = 10
 
 component Foo<G> {
-	P1(x) <- P@G(x).
-	Z(y) <- Q@G(_, y).
-	P(x) <- Q@G(x, _), !Q@G(_, 42).
+	P1(x) <- P@G(x)
+	Z(y) <- Q@G(_, y)
+	P(x) <- Q@G(x, _), !Q@G(_, 42)
 }
 as S1
 
-P(x) <- P@S1(x).
+P(x) <- P@S1(x)

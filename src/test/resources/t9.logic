@@ -15,14 +15,14 @@
 
 foo(x, z),
 con6[x, y] = z new T4
-<- x = "Hello", y = 42.
+<- x = "Hello", y = 42
 
 @type F1
 @constructor concon[x, y] = z : T4, string, F1
 
 concon[a, x] = b new F1,
 con6[x, y] = a new T4
-<- x = "World", y = 10.
+<- x = "World", y = 10
 
 @Type Animal
 @type Cat <: Animal

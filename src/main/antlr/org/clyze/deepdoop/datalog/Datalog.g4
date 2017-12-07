@@ -31,8 +31,8 @@ annotationBlock
 	: annotationList '{' declaration+ '}' ;
 
 rule_
-	: annotationList? headList ('<-' bodyList)? '.'
-	| relation '<-' aggregation '.'
+	: annotationList? headList ('<-' bodyList)?
+	| relation '<-' aggregation
 	;
 
 relation

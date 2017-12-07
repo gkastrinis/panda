@@ -3,21 +3,21 @@
 byVar[x] = y : string, AP
 
 byVar[x] = y new AP,
-Ble(y, x) <- x = "abc".
+Ble(y, x) <- x = "abc"
 
 @Constructor
 byFld[x, y] = z : string, string, AP
 
 byVar[x] = y new AP,
-Foo(y, x), Baz(x), BarBaz(y) <- x = "abc".
+Foo(y, x), Baz(x), BarBaz(y) <- x = "abc"
 
 @type AP2 <: AP
 
 byFld[x, y] = z new AP2,
-Foo2(z), Baz2(y, x) <- x = "x2", y = "f1".
+Foo2(z), Baz2(y, x) <- x = "x2", y = "f1"
 
 @Plan(plan = "1:(1,2)")
-Planned(x) <- Foo(_, x), Baz(x).
+Planned(x) <- Foo(_, x), Baz(x)
 
 @Type Shape
 @Constructor
@@ -28,8 +28,8 @@ byName[x] = y : string, Shape
 byPoints[x,y] = z : int, int, Shape
 
 byLen[x1] = y1 new Shape, byLen[x2] = y2 new Shape,
-FooBer(x1, y1, x2, y2) <- x1 = 42, x2 = 10.
+FooBer(x1, y1, x2, y2) <- x1 = 42, x2 = 10
 
 // More tests for assignments
-Pred1(x, y) <- x = y + 20, y = 10.
-Pred2(x, t, z) <- Pred1(x, x), x = 10 + t, Pred1(t, t), z = x + t.
+Pred1(x, y) <- x = y + 20, y = 10
+Pred2(x, t, z) <- Pred1(x, x), x = 10 + t, Pred1(t, t), z = x + t

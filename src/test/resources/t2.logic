@@ -8,7 +8,7 @@
 @Output
 Foo(x, y) : int, string
 
-Foo(y, x) <- x = "J", y = 1.
+Foo(y, x) <- x = "J", y = 1
 
 @Output @Type @Output Bar
 
@@ -29,4 +29,4 @@ Foo(y, x) <- x = "J", y = 1.
 	P3(x) : string
 }
 
-FooBar(42, "bla").
+FooBar(42, "bla")

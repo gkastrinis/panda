@@ -3,4 +3,4 @@
 
 Foo(x, y) : string, Animal
 Pred(x, y) : string, Cat
-Pred(x, y) <- Foo(x, y).
+Pred(x, y) <- Foo(x, y)

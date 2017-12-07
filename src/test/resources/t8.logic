@@ -1,22 +1,22 @@
 component Foo {
-	P(x) <- x = 10.
-	R(x) <- P(x).
+	P(x) <- x = 10
+	R(x) <- P(x)
 	W(x) : string
 	@type(capacity = 100000) Animal
 	@Constructor
     cons:An[x] = y : string, Animal
 
-    cons:An[x] = y new Animal, foo(y) <- x = "cat".
+    cons:An[x] = y new Animal, foo(y) <- x = "cat"
 }
 as S1
 
 component Bar <G> {
-	R(x) <- Q@G(x).
+	R(x) <- Q@G(x)
 }
 Bar<_> as S2
 
-Q(1).
-Q(2).
+Q(1)
+Q(2)
 
-W(x) <- W@S2(x).
+W(x) <- W@S2(x)
 W(x):int

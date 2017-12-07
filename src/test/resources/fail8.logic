@@ -1,2 +1,2 @@
-Foo123(x) <- x = "a".
+Foo123(x) <- x = "a"
 Bar123(x) : ABC
