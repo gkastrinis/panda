@@ -1,9 +1,9 @@
 @Output @Type Animal
 @Type AP
 
-@Type Cat <: Animal
-@Type Dog <: Animal
-@Type PersianCat <: Cat
+@Type Cat : Animal
+@Type Dog : Animal
+@Type PersianCat : Cat
 
 @Output
 Foo(x, y) : int, string

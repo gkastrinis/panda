@@ -1,5 +1,5 @@
 @Type Animal
-@Type Cat <: Animal
+@Type Cat : Animal
 
 Foo(x, y) : string, Animal
 Pred(x, y) : string, Cat

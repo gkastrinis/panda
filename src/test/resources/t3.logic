@@ -1,5 +1,5 @@
 @Type Animal
-@Type Cat <: Animal
+@Type Cat : Animal
 
 @Constructor
 cons:A[x] = y : string, Animal

@@ -11,7 +11,7 @@ byFld[x, y] = z : string, string, AP
 byVar[x] = y new AP,
 Foo(y, x), Baz(x), BarBaz(y) <- x = "abc"
 
-@type AP2 <: AP
+@type AP2 : AP
 
 byFld[x, y] = z new AP2,
 Foo2(z), Baz2(y, x) <- x = "x2", y = "f1"

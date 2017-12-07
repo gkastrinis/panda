@@ -23,7 +23,7 @@ datalog
 	: declaration | annotationBlock | rule_ | lineMarker ;
 
 declaration
-	: annotationList? relationName ('<:' relationName)?
+	: annotationList? relationName (':' relationName)?
 	| annotationList? (relation | constructor) ':' relationNameList
 	;
 
