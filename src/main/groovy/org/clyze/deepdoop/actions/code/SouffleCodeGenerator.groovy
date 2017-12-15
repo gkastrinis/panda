@@ -40,7 +40,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	}
 
 	String exit(Declaration n, Map m) {
-		def name = n.atom.name
+		def name = n.relation.name
 		def params = n.types.withIndex().collect { t, int i -> "${var1(i)}:${map(t.name)}" }.join(", ")
 		if (n.annotations[TYPE])
 			emit ".type ${map(mini(name))} = [$params]"

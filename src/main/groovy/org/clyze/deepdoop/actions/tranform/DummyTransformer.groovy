@@ -28,7 +28,7 @@ class DummyTransformer extends PostOrderVisitor<IVisitable> implements TDummyAct
 	}
 
 	IVisitable exit(Declaration n, Map m) {
-		new Declaration(m[n.atom] as Relation, n.types.collect { m[it] as Type }, n.annotations)
+		new Declaration(m[n.relation] as Relation, n.types.collect { m[it] as Type }, n.annotations)
 	}
 
 	IVisitable exit(Rule n, Map m) {

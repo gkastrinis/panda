@@ -35,13 +35,13 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 
 		(n as Program).globalComp.declarations
 				.findAll { it.annotations[FUNCTIONAL] }
-				.collect { it.atom.name } as Set
+				.collect { it.relation.name } as Set
 
 		return super.visit(n as Program)
 	}
 
 	String exit(Declaration n, Map m) {
-		def name = n.atom.name
+		def name = n.relation.name
 		if (n.annotations[TYPE]) {
 			emit "lang:entity(`$name)."
 			emit """lang:physical:storageModel[`$name] = "ScalableSparse"."""
@@ -49,7 +49,7 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 			if (cap) emit "lang:physical:capacity[`$name] = $cap."
 		} else {
 			def types = n.types.withIndex().collect { Type t, int i -> "${map(t.name)}(${var1(i)})" }.join(", ")
-			emit "${m[n.atom]} -> $types."
+			emit "${m[n.relation]} -> $types."
 		}
 		if (n.annotations[CONSTRUCTOR])
 			emit "lang:constructor(`$name)."
@@ -129,8 +129,8 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 
 			c.rules.each {
 				assert it.head.elements.size() == 1
-				def atom = it.head.elements.first() as Relation
-				emitFilePredicate(atom, null, latestFile)
+				def relation = it.head.elements.first() as Relation
+				emitFilePredicate(relation, null, latestFile)
 			}
 
 			//for (Stub export : c.exports)
@@ -142,18 +142,18 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 			results << new Result(Result.Kind.IMPORT, latestFile)
 
 			c.declarations.each {
-				def atom = infoActor.getDeclaringAtoms(it).args().first() as Relation
-				emitFilePredicate(atom, it, latestFile)
+				def relation = infoActor.getDeclaringAtoms(it).args().first() as Relation
+				emitFilePredicate(relation, it, latestFile)
 			}
 		}
 	}*/
 
-	/*void emitFilePredicate(Relation atom, Declaration d, File file) {
-		def atomName = atom.name
-		def vars = VariableExpr.genTempVars(atom.arity)
+	/*void emitFilePredicate(Relation relation, Declaration d, File file) {
+		def atomName = relation.name
+		def vars = VariableExpr.genTempVars(relation.arity)
 
 		def head = atomName + "(" + vars.collect { it.name }.join(', ') + ")"
-		def body = (0..atom.arity - 1).collect { i ->
+		def body = (0..relation.arity - 1).collect { i ->
 			(d != null ? d.types[i].name : "string") + "(" + vars[i].name + ")"
 		}.join(', ')
 		def decl = "_$head -> $body."

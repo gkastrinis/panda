@@ -47,7 +47,7 @@ class PostOrderVisitor<T> implements IVisitor<T> {
 
 	T visit(Declaration n) {
 		actor.enter(n)
-		m[n.atom] = n.atom.accept(this) as T
+		m[n.relation] = n.relation.accept(this) as T
 		n.types.each { m[it] = it.accept(this) as T }
 		actor.exit(n, m)
 	}

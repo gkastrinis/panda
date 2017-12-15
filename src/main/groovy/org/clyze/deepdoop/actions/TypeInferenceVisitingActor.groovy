@@ -73,7 +73,7 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 			def vars = varN(types.size())
 			d = partialDecls[rel]
 			if (d) {
-				d.atom.exprs = vars
+				d.relation.exprs = vars
 				d.types = types
 				return d
 			}
@@ -87,18 +87,18 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 	IVisitable visit(Declaration n) {
 		// Partial Declaration
 		if (!n.types && !n.annotations[TYPE])
-			partialDecls << [(n.atom.name): n]
+			partialDecls << [(n.relation.name): n]
 		else {
-			fullDecls << [(n.atom.name): n]
+			fullDecls << [(n.relation.name): n]
 
-			inferredTypes[n.atom.name] =
+			inferredTypes[n.relation.name] =
 					(n.annotations[TYPE]) ?
-							[n.atom.name] :
+							[n.relation.name] :
 							n.types.collect { it.name }
 
-			tmpRelationTypes[n.atom.name] =
+			tmpRelationTypes[n.relation.name] =
 					(n.annotations[TYPE]) ?
-							[[n.atom.name] as Set] :
+							[[n.relation.name] as Set] :
 							n.types.collect { [it.name] as Set }
 		}
 		null

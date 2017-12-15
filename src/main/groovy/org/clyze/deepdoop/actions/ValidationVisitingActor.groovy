@@ -30,9 +30,9 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements TD
 	IVisitable exit(Program n, Map m) { n }
 
 	IVisitable exit(Declaration n, Map m) {
-		if (n.atom.name in declaredRelations)
-			ErrorManager.error(recall(n), ErrorId.DECL_MULTIPLE, n.atom.name)
-		declaredRelations << n.atom.name
+		if (n.relation.name in declaredRelations)
+			ErrorManager.error(recall(n), ErrorId.DECL_MULTIPLE, n.relation.name)
+		declaredRelations << n.relation.name
 
 		if (n.annotations[TYPE]) {
 			def a = n.annotations.find { !(it.key in [TYPE, OUTPUT]) }
@@ -41,12 +41,12 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements TD
 			def a = n.annotations.find { !(it.key in [CONSTRUCTOR, FUNCTIONAL, INPUT, OUTPUT]) }
 			if (a) ErrorManager.error(recall(a), ErrorId.ANNOTATION_INVALID, a.key, "declaration")
 
-			if (n.annotations[CONSTRUCTOR] && !(n.atom instanceof Constructor))
-				ErrorManager.error(recall(n), ErrorId.CONSTR_NON_FUNC, n.atom.name)
-			if (n.atom instanceof Constructor && !n.annotations[CONSTRUCTOR])
-				ErrorManager.error(recall(n), ErrorId.FUNC_NON_CONSTR, n.atom.name)
+			if (n.annotations[CONSTRUCTOR] && !(n.relation instanceof Constructor))
+				ErrorManager.error(recall(n), ErrorId.CONSTR_NON_FUNC, n.relation.name)
+			if (n.relation instanceof Constructor && !n.annotations[CONSTRUCTOR])
+				ErrorManager.error(recall(n), ErrorId.FUNC_NON_CONSTR, n.relation.name)
 
-			arities[n.atom.name] = n.types.size()
+			arities[n.relation.name] = n.types.size()
 		}
 		n.annotations?.each { it.value.validate() }
 

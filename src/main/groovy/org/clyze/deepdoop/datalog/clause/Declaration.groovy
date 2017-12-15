@@ -13,7 +13,7 @@ import org.clyze.deepdoop.datalog.element.relation.Type
 @ToString(includePackage = false)
 class Declaration implements IVisitable {
 
-	Relation atom
+	Relation relation
 	List<Type> types
 	Map<Kind, Annotation> annotations = [:]
 

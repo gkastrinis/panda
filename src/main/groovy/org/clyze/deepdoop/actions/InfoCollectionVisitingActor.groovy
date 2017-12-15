@@ -111,10 +111,10 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 	}
 
 	IVisitable exit(Declaration n, Map m) {
-		declaredRelations[n] = [n.atom] as Set
+		declaredRelations[n] = [n.relation] as Set
 		usedRelations[n] = n.types as Set
 
-		def predName = n.atom.name
+		def predName = n.relation.name
 		if (n.annotations[TYPE]) {
 			allTypes << predName
 			if (n.types) directSuperType[predName] = n.types.first().name
