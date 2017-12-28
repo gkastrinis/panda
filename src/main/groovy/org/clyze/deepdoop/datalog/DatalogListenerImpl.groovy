@@ -122,20 +122,20 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		// Incomplete declarations are of the form: `@output Foo`
 		// i.e. they bind annotations with relation names without
 		// actually providing the structure of that relation.
-		if (ctx.relationName(0)) {
+		if (ctx.IDENTIFIER(0)) {
 			if (annotations[TYPE]) {
-				def type = new Type(values[ctx.relationName(0)] as String)
-				def supertype = ctx.relationName(1) ? [new Type(values[ctx.relationName(1)] as String)] : []
+				def type = new Type(ctx.IDENTIFIER(0).text)
+				def supertype = ctx.IDENTIFIER(1) ? [new Type(ctx.IDENTIFIER(1).text)] : []
 				def d = new Declaration(type, supertype, annotations)
 				currComp.declarations << d
 				rec(d, ctx)
 			} else {
-				def relName = values[ctx.relationName(0)] as String
+				def relName = ctx.IDENTIFIER(0).text
 				pendingAnnotations[currComp.name][relName] += annotations
 			}
 		} else {
 			def rel = ctx.relation() ? values[ctx.relation()] as Relation : values[ctx.constructor()] as Constructor
-			def types = values[ctx.relationNameList()].collect { new Type(it as String) }
+			def types = values[ctx.identifierList()].collect { new Type(it as String) }
 			if (rel.exprs.size() != types.size())
 				ErrorManager.error(loc, ErrorId.DECL_MALFORMED)
 			def d = new Declaration(rel, types, annotations)
@@ -170,26 +170,25 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	}
 
 	void exitRelation(RelationContext ctx) {
-		def name = values[ctx.relationName()]
-		if (inDecl && ctx.IDENTIFIER())
+		def name = ctx.IDENTIFIER(0).text
+		if (inDecl && ctx.IDENTIFIER(1))
 			ErrorManager.error(ErrorId.REL_EXT_INVALID)
-		def at = ctx.IDENTIFIER() ? "@${ctx.IDENTIFIER().text}" : ""
+		def at = ctx.IDENTIFIER(1) ? "@${ctx.IDENTIFIER(1).text}" : ""
 		def exprs = ctx.exprList() ? values[ctx.exprList()] as List : []
 		values[ctx] = new Relation("$name$at" as String, exprs)
 		rec(values[ctx], ctx)
 	}
 
 	void exitConstructor(ConstructorContext ctx) {
-		def name = values[ctx.relationName()] as String
+		def name = ctx.IDENTIFIER().text
 		def exprs = (ctx.exprList() ? values[ctx.exprList()] as List : []) << values[ctx.expr()]
 		values[ctx] = new Constructor(name, exprs)
 		rec(values[ctx], ctx)
 	}
 
 	void exitConstruction(ConstructionContext ctx) {
-		values[ctx] = new ConstructionElement(
-				values[ctx.constructor()] as Constructor,
-				new Type(values[ctx.relationName()] as String))
+		def cons = values[ctx.constructor()] as Constructor
+		values[ctx] = new ConstructionElement(cons, new Type(ctx.IDENTIFIER().text))
 	}
 
 	void exitAggregation(AggregationContext ctx) {
@@ -244,13 +243,6 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		// 4 - Following text should be treated as being wrapped in an implicit extern "C" block.
 		else
 			println "*** Weird line marker flag: $t ***"
-	}
-
-	void exitRelationName(RelationNameContext ctx) {
-		def name = ctx.IDENTIFIER().text
-		if (ctx.relationName())
-			name = values[ctx.relationName()] + ":" + name
-		values[ctx] = name
 	}
 
 	void exitConstant(ConstantContext ctx) {
@@ -318,10 +310,6 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		def loc = rec(annotation, ctx)
 		if (annotation.kind in map) ErrorManager.warn(loc, ErrorId.ANNOTATION_MULTIPLE, annotation.kind)
 		return map << [(annotation.kind): annotation]
-	}
-
-	void exitRelationNameList(RelationNameListContext ctx) {
-		values[ctx] = ((values[ctx.relationNameList()] ?: []) as List) << values[ctx.relationName()]
 	}
 
 	void exitHeadList(HeadListContext ctx) {

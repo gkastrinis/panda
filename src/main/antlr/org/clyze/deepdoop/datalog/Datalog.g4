@@ -8,23 +8,23 @@ program
 	: (component | cmd | initialize | datalog)* ;
 
 component
-	: 'component' IDENTIFIER parameterList? (':' superComponent)? '{' datalog* '}' (AS identifierList)? ;
+	: 'component' IDENTIFIER parameterList? (':' superComponent)? '{' datalog* '}' ('as' identifierList)? ;
 
 superComponent
 	: IDENTIFIER parameterList? ;
 
 cmd
-	: 'cmd' IDENTIFIER '{' datalog* '}' (AS identifierList)? ;
+	: 'cmd' IDENTIFIER '{' datalog* '}' ('as' identifierList)? ;
 
 initialize
-	: IDENTIFIER parameterList? AS identifierList ;
+	: IDENTIFIER parameterList? 'as' identifierList ;
 
 datalog
 	: declaration | annotationBlock | rule_ | lineMarker ;
 
 declaration
-	: annotationList? relationName (':' relationName)?
-	| annotationList? (relation | constructor) ':' relationNameList
+	: annotationList? IDENTIFIER (':' IDENTIFIER)?
+	| annotationList? (relation | constructor) ':' identifierList
 	;
 
 annotationBlock
@@ -36,13 +36,13 @@ rule_
 	;
 
 relation
-	: relationName ('@' IDENTIFIER)? '(' exprList? ')' ;
+	: IDENTIFIER ('@' IDENTIFIER)? '(' exprList? ')' ;
 
 constructor
-	: relationName '[' exprList? ']' '=' expr ;
+	: IDENTIFIER '[' exprList? ']' '=' expr ;
 
 construction
-	: constructor 'new' relationName ;
+	: constructor 'new' IDENTIFIER ;
 
 aggregation
 	: 'agg' '<<' IDENTIFIER '=' relation '>>' bodyList ;
@@ -65,11 +65,6 @@ annotation
 lineMarker
 	: '#' INTEGER STRING INTEGER* ;
 
-relationName
-	: '$'? IDENTIFIER
-	| relationName ':' IDENTIFIER
-	;
-
 constant
 	: INTEGER
 	| REAL
@@ -87,18 +82,11 @@ expr
 comparison
 	: expr ('=' | '<' | '<=' | '>' | '>=' | '!=') expr ;
 
-
-
 // Various lists
 
 annotationList
 	: annotation
 	| annotationList annotation
-	;
-
-relationNameList
-	: relationName
-	| relationNameList ',' relationName
 	;
 
 headList
@@ -128,9 +116,6 @@ parameterList
 
 // Lexer
 
-AS
-	: [aA][sS] ;
-
 INTEGER
 	: [0-9]+
 	| '0'[0-7]+
@@ -155,7 +140,7 @@ STRING
 	: '"' ~["]* '"' ;
 
 IDENTIFIER
-	: [?]?[a-zA-Z_][a-zA-Z_0-9]* ;
+	: [?]?[a-zA-Z_][a-zA-Z_0-9:]* ;
 
 LINE_COMMENT
 	: '//' ~[\r\n]* -> skip ;
