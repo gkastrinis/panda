@@ -41,7 +41,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 
 	String exit(Declaration n, Map m) {
 		def name = n.relation.name
-		def params = n.types.withIndex().collect { t, int i -> "${var1(i)}:${map(t.name)}" }.join(", ")
+		def params = n.types.withIndex().collect { t, int i -> "${var1(i)}:${map(mini(t.name))}" }.join(", ")
 		if (n.annotations[TYPE])
 			emit ".type ${map(mini(name))} = [$params]"
 		else
@@ -100,6 +100,6 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	static def map(def name) {
 		if (name == "string") return "symbol"
 		else if (name == "int") return "number"
-		else return "__T_$name"
+		else return "_T_$name"
 	}
 }

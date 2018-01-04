@@ -68,6 +68,7 @@ class ConstructorTransformer extends DummyTransformer {
 		// Re: (2)
 		// Find all types that are roots in the type hierarchy
 		infoActor.allTypes.findAll { !infoActor.directSuperType[it] }.each { root ->
+			def rootTypeName = "R_${root}"
 			def types = [root] + infoActor.subTypes[root]
 			def record = types
 					.collect { infoActor.constructorsPerType[it] }
@@ -75,14 +76,11 @@ class ConstructorTransformer extends DummyTransformer {
 					.withIndex()
 					.collect { String con, int i -> new Type(con, var1(i)) }
 
-			extraDecls << new Declaration(
-					new Type("ROOT_${root}"),
-					record,
-					[(TYPE): new Annotation("type")])
+			extraDecls << new Declaration(new Type(rootTypeName), record, [(TYPE): new Annotation("type")])
 
 			types.each {
 				typeToRecord[it] = record
-				typeToCommonType[it] = "ROOT_${root}"
+				typeToCommonType[it] = rootTypeName
 			}
 		}
 	}
