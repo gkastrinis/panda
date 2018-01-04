@@ -7,9 +7,16 @@ import org.clyze.deepdoop.datalog.expr.IExpr
 @ToString(includeSuper = true, includePackage = false)
 class Type extends Relation {
 
-	Type(String name, IExpr expr) { super(name, [expr]) }
+	// Initial values are of the form `key(value)`. E.g., PUBLIC('public')
+	// Keys are used to generate singleton relations. E.g., Modifier:PUBLIC(x)
+	Map<String, String> initValues
 
-	Type(String name) { super(name, []) }
+	Type(String name, Map<String, String> initValues = [:]) {
+		super(name, [])
+		this.initValues = initValues
+	}
+
+	Type(String name, IExpr expr) { super(name, [expr]) }
 
 	def <T> T accept(IVisitor<T> v) { v.visit(this) }
 

@@ -23,7 +23,7 @@ datalog
 	: declaration | annotationBlock | rule_ | lineMarker ;
 
 declaration
-	: annotationList? IDENTIFIER (':' IDENTIFIER)?
+	: annotationList? IDENTIFIER (':' IDENTIFIER)? ('with' initValueList)?
 	| annotationList? (relation | constructor) ':' identifierList
 	;
 
@@ -62,9 +62,6 @@ value
 annotation
 	: '@' IDENTIFIER ('(' valueList ')')? ;
 
-lineMarker
-	: '#' INTEGER STRING INTEGER* ;
-
 constant
 	: INTEGER
 	| REAL
@@ -79,14 +76,25 @@ expr
 	| '(' expr ')'
 	;
 
+initValue
+	: IDENTIFIER '(' STRING ')' ;
+
 comparison
 	: expr ('=' | '<' | '<=' | '>' | '>=' | '!=') expr ;
+
+lineMarker
+	: '#' INTEGER STRING INTEGER* ;
 
 // Various lists
 
 annotationList
 	: annotation
 	| annotationList annotation
+	;
+
+initValueList
+	: initValue
+	| initValueList ',' initValue
 	;
 
 headList
@@ -137,7 +145,9 @@ BOOLEAN
 	: 'true' | 'false' ;
 
 STRING
-	: '"' ~["]* '"' ;
+	: '"' ~["]* '"'
+	| '\'' ~[']* '\''
+	;
 
 IDENTIFIER
 	: [?]?[a-zA-Z_][a-zA-Z_0-9:]* ;

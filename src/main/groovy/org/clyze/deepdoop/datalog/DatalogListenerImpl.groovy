@@ -124,7 +124,8 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		// actually providing the structure of that relation.
 		if (ctx.IDENTIFIER(0)) {
 			if (annotations[TYPE]) {
-				def type = new Type(ctx.IDENTIFIER(0).text)
+				def initValues = ctx.initValueList() ? values[ctx.initValueList()] as Map : [:]
+				def type = new Type(ctx.IDENTIFIER(0).text, initValues)
 				def supertype = ctx.IDENTIFIER(1) ? [new Type(ctx.IDENTIFIER(1).text)] : []
 				def d = new Declaration(type, supertype, annotations)
 				currComp.declarations << d
@@ -217,34 +218,6 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		}
 	}
 
-	void enterLineMarker(LineMarkerContext ctx) {
-		// Line number of the original file (emitted by C-Preprocessor)
-		def markerLine = Integer.parseInt(ctx.INTEGER(0).text)
-		// Actual line in the output file for this line marker
-		def markerActualLine = ctx.start.getLine()
-		// Name of the original file (emitted by C-Preprocessor)
-		def sourceFile = ctx.STRING().text
-		// Remove quotes from file values
-		sourceFile = sourceFile.substring(1, sourceFile.length() - 1)
-
-		// Ignore first line of output. It reports the values of the C-Preprocessed file
-		if (markerActualLine == 1) return
-		// Ignore lines for system info (e.g. <built-in> or /usr/include/stdc-predef.h)
-		if (sourceFile.startsWith("<") || sourceFile.startsWith("/usr/include")) return
-
-		def t = (ctx.INTEGER(1) != null ? Integer.parseInt(ctx.INTEGER(1).text) : 0)
-		// 1 - Start of a new file
-		if (t == 0 || t == 1)
-			SourceManager.instance.lineMarkerStart(markerLine, markerActualLine, sourceFile)
-		// 2 - Returning to previous file
-		else if (t == 2)
-			SourceManager.instance.lineMarkerEnd()
-		// 3 - Following text comes from a system header file (#include <> vs #include "")
-		// 4 - Following text should be treated as being wrapped in an implicit extern "C" block.
-		else
-			println "*** Weird line marker flag: $t ***"
-	}
-
 	void exitConstant(ConstantContext ctx) {
 		if (ctx.INTEGER()) {
 			def str = ctx.INTEGER().text
@@ -287,6 +260,12 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		}
 	}
 
+	void exitInitValue(InitValueContext ctx) {
+		def literal = ctx.STRING().text
+		literal = literal.substring(1, literal.length() - 1)
+		values[ctx] = [(ctx.IDENTIFIER().text): literal]
+	}
+
 	void exitComparison(ComparisonContext ctx) {
 		def e0 = values[ctx.expr(0)] as IExpr
 		def e1 = values[ctx.expr(1)] as IExpr
@@ -301,6 +280,34 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		values[ctx] = new ComparisonElement(e0, op, e1)
 	}
 
+	void enterLineMarker(LineMarkerContext ctx) {
+		// Line number of the original file (emitted by C-Preprocessor)
+		def markerLine = Integer.parseInt(ctx.INTEGER(0).text)
+		// Actual line in the output file for this line marker
+		def markerActualLine = ctx.start.getLine()
+		// Name of the original file (emitted by C-Preprocessor)
+		def sourceFile = ctx.STRING().text
+		// Remove quotes from file values
+		sourceFile = sourceFile.substring(1, sourceFile.length() - 1)
+
+		// Ignore first line of output. It reports the values of the C-Preprocessed file
+		if (markerActualLine == 1) return
+		// Ignore lines for system info (e.g. <built-in> or /usr/include/stdc-predef.h)
+		if (sourceFile.startsWith("<") || sourceFile.startsWith("/usr/include")) return
+
+		def t = (ctx.INTEGER(1) != null ? Integer.parseInt(ctx.INTEGER(1).text) : 0)
+		// 1 - Start of a new file
+		if (t == 0 || t == 1)
+			SourceManager.instance.lineMarkerStart(markerLine, markerActualLine, sourceFile)
+		// 2 - Returning to previous file
+		else if (t == 2)
+			SourceManager.instance.lineMarkerEnd()
+		// 3 - Following text comes from a system header file (#include <> vs #include "")
+		// 4 - Following text should be treated as being wrapped in an implicit extern "C" block.
+		else
+			println "*** Weird line marker flag: $t ***"
+	}
+
 	// Special handling (instead of using "exit")
 	private Map<Kind, Annotation> gatherAnnotations(AnnotationListContext ctx) {
 		if (!ctx) return [:]
@@ -310,6 +317,10 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		def loc = rec(annotation, ctx)
 		if (annotation.kind in map) ErrorManager.warn(loc, ErrorId.ANNOTATION_MULTIPLE, annotation.kind)
 		return map << [(annotation.kind): annotation]
+	}
+
+	void exitInitValueList(InitValueListContext ctx) {
+		values[ctx] = ((values[ctx.initValueList()] ?: [:]) as Map) << (values[ctx.initValue()] as Map)
 	}
 
 	void exitHeadList(HeadListContext ctx) {
