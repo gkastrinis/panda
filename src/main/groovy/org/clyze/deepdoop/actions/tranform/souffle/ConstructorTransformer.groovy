@@ -115,8 +115,8 @@ class ConstructorTransformer extends DummyTransformer {
 			def superType = infoActor.directSuperType[type]
 			if (superType)
 				extraRules << new Rule(
-						new LogicalElement(new Relation(superType, [var1(0)])),
-						new LogicalElement(new Relation(type, [var1(0)])))
+						new LogicalElement(new Relation(superType, [var1()])),
+						new LogicalElement(new Relation(type, [var1()])))
 		} else {
 			def newTypes = n.types.collect { new Type(typeToCommonType[it.name] ?: it.name) }
 			n = new Declaration(n.relation, newTypes, n.annotations)

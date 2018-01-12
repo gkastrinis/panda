@@ -2,8 +2,8 @@ package org.clyze.deepdoop.actions.code
 
 import groovy.transform.InheritConstructors
 import org.clyze.deepdoop.actions.ValidationVisitingActor
-import org.clyze.deepdoop.actions.tranform.FlatteningTransformer
-import org.clyze.deepdoop.actions.tranform.InitializingTransformer
+import org.clyze.deepdoop.actions.tranform.ComponentInitializingTransformer
+import org.clyze.deepdoop.actions.tranform.SyntaxFlatteningTransformer
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
@@ -27,8 +27,8 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 		results << new Result(Result.Kind.LOGIC, currentFile)
 
 		// Transform program before visiting nodes
-		def n = p.accept(new FlatteningTransformer())
-				.accept(new InitializingTransformer())
+		def n = p.accept(new SyntaxFlatteningTransformer())
+				.accept(new ComponentInitializingTransformer())
 				.accept(infoActor)
 				.accept(new ValidationVisitingActor(infoActor))
 				.accept(typeInferenceActor)

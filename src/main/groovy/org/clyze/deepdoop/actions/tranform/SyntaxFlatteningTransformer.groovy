@@ -4,7 +4,6 @@ import org.clyze.deepdoop.actions.IVisitable
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
-import org.clyze.deepdoop.datalog.component.CmdComponent
 import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.ComparisonElement
 import org.clyze.deepdoop.datalog.element.ConstructionElement
@@ -16,13 +15,13 @@ import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.BinaryExpr
 import org.clyze.deepdoop.datalog.expr.GroupExpr
 
-class FlatteningTransformer extends DummyTransformer {
+class SyntaxFlatteningTransformer extends DummyTransformer {
 
 	List<String> actualParameters = []
 	List<Integer> parameterIndexes = []
 	List<String> formalParameters = []
 
-	FlatteningTransformer() { actor = this }
+	SyntaxFlatteningTransformer() { actor = this }
 
 	// Merge a component with all its super components
 	IVisitable exit(Program n, Map m) {
@@ -80,8 +79,6 @@ class FlatteningTransformer extends DummyTransformer {
 	}
 
 	// Overrides to avoid unneeded allocations
-
-	IVisitable exit(CmdComponent n, Map m) { n }
 
 	IVisitable exit(Declaration n, Map m) { n }
 

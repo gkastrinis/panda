@@ -18,7 +18,8 @@ class DummyTransformer extends PostOrderVisitor<IVisitable> implements TDummyAct
 	DummyTransformer() { actor = this }
 
 	IVisitable exit(Program n, Map m) {
-		new Program(m[n.globalComp] as Component, [:], [] as Set)
+		def newComps = n.comps.collectEntries { [(it.key): m[it.value]] } as Map
+		new Program(m[n.globalComp] as Component, newComps, n.inits)
 	}
 
 	IVisitable exit(Component n, Map m) {

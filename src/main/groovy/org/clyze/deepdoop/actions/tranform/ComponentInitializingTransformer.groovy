@@ -17,7 +17,7 @@ import org.clyze.deepdoop.system.ErrorId
 import org.clyze.deepdoop.system.ErrorManager
 import org.clyze.deepdoop.system.SourceManager
 
-class InitializingTransformer extends DummyTransformer {
+class ComponentInitializingTransformer extends DummyTransformer {
 
 	// Info collection actor for original program
 	InfoCollectionVisitingActor infoActor
@@ -32,7 +32,7 @@ class InitializingTransformer extends DummyTransformer {
 	// Relations originating from another component
 	Map<String, Rule> frameRules = [:]
 
-	InitializingTransformer() { actor = this }
+	ComponentInitializingTransformer() { actor = this }
 
 	// Initialize components (add transformed contents in a single component)
 	// A component might be visited multiple times (depending on inits)

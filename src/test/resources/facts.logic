@@ -1,0 +1,57 @@
+//component Facts {
+	@type Modifier with
+		ABSTRACT('abstract'),
+		FINAL('final'),
+		PUBLIC('public'),
+		PRIVATE('private'),
+		STATIC('static'),
+		TRANSIENT('transient')
+
+	/// Java Type Hierarchy
+	@type {
+		Type
+		PrimitiveType : Type with
+			BOOLEAN('boolean'),
+			BYTE('byte'),
+			CHAR('char'),
+			SHORT('short'),
+			INT('int'),
+			LONG('long'),
+			FLOAT('float'),
+			DOUBLE('double'),
+			VOID('void')
+		ReferenceType : Type
+		NullType : ReferenceType with NULL('null')
+		ArrayType : ReferenceType
+		ClassType : ReferenceType with OBJECT('java.lang.Object')
+		InterfaceType : ReferenceType
+	}
+
+	// Inheritance and Subtyping
+	DirectSuperClass(class, superclass) : ClassType, ClassType
+	DirectSuperInterface(class, interface) : ReferenceType, InterfaceType
+
+	// Important class subsets
+	ApplicationClass(class) : ReferenceType
+	ConcreteClass(class) : ReferenceType
+	MainClass(class) : ClassType
+
+	ClassModifier(mod, class) : Modifier, ReferenceType
+
+
+	/// Method
+	@type Method
+
+
+	/// Field
+	@type Field
+
+
+	/// Var
+	@type Var
+
+
+	/// Bytecode Instructions
+
+//}
+//as F

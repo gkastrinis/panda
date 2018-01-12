@@ -261,9 +261,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	}
 
 	void exitInitValue(InitValueContext ctx) {
-		def literal = ctx.STRING().text
-		literal = literal.substring(1, literal.length() - 1)
-		values[ctx] = [(ctx.IDENTIFIER().text): literal]
+		values[ctx] = [(ctx.IDENTIFIER().text): values[ctx.constant()]]
 	}
 
 	void exitComparison(ComparisonContext ctx) {

@@ -77,7 +77,7 @@ expr
 	;
 
 initValue
-	: IDENTIFIER '(' STRING ')' ;
+	: IDENTIFIER '(' constant ')' ;
 
 comparison
 	: expr ('=' | '<' | '<=' | '>' | '>=' | '!=') expr ;

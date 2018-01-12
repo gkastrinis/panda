@@ -30,7 +30,7 @@ class ConstantExpr implements IExpr {
 
 	ConstantExpr(String s) {
 		type = Type.STRING
-		value = s
+		value = s.startsWith("'") ? s.replaceAll(/^'|'$/, '"') : s
 	}
 
 	def <T> T accept(IVisitor<T> v) { v.visit(this) }

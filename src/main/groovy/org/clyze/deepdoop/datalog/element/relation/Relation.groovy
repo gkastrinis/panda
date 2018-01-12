@@ -14,9 +14,9 @@ class Relation implements IElement {
 
 	String name
 
-	List<IExpr> exprs
+	List<IExpr> exprs = []
 
-	int getArity() { exprs ? exprs.size() : 0 }
+	int getArity() { exprs.size() }
 
 	def <T> T accept(IVisitor<T> v) { v.visit(this) }
 }

@@ -1,9 +1,11 @@
 package org.clyze.deepdoop.actions.code
 
 import groovy.transform.InheritConstructors
+import org.clyze.deepdoop.actions.TypeHierarchyVisitingActor
 import org.clyze.deepdoop.actions.ValidationVisitingActor
-import org.clyze.deepdoop.actions.tranform.FlatteningTransformer
-import org.clyze.deepdoop.actions.tranform.InitializingTransformer
+import org.clyze.deepdoop.actions.tranform.ComponentInitializingTransformer
+import org.clyze.deepdoop.actions.tranform.SyntaxFlatteningTransformer
+import org.clyze.deepdoop.actions.tranform.TypeValuesTransformer
 import org.clyze.deepdoop.actions.tranform.souffle.AssignTransformer
 import org.clyze.deepdoop.actions.tranform.souffle.ConstructorTransformer
 import org.clyze.deepdoop.datalog.Program
@@ -27,9 +29,13 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		currentFile = createUniqueFile("out_", ".dl")
 		results << new Result(Result.Kind.LOGIC, currentFile)
 
+		def tmpTypeHierarchyVA = new TypeHierarchyVisitingActor()
+
 		// Transform program before visiting nodes
-		def n = p.accept(new FlatteningTransformer())
-				.accept(new InitializingTransformer())
+		def n = p.accept(new SyntaxFlatteningTransformer())
+				.accept(tmpTypeHierarchyVA)
+				.accept(new TypeValuesTransformer(tmpTypeHierarchyVA))
+				.accept(new ComponentInitializingTransformer())
 				.accept(infoActor)
 				.accept(new ValidationVisitingActor(infoActor))
 				.accept(typeInferenceActor)
@@ -55,7 +61,11 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	}
 
 	String exit(Rule n, Map m) {
-		emit(n.body ? "${m[n.head]} :- ${m[n.body]}." : "${m[n.head]}.")
+		def head = m[n.head]
+		if (n.head.elements.size() > 1 && !n.body) emit "$head :- 1 = 1"
+		else if (!n.body) emit "$head."
+		else emit "$head :- ${m[n.body]}."
+
 		if (n.annotations[PLAN]) emit ".plan ${n.annotations[PLAN].args["plan"]}"
 		null
 	}
@@ -66,6 +76,10 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		if (pred == "count" || pred == "min" || pred == "max" || pred == "sum")
 			"${m[n.body]}, ${m[n.var]} = $soufflePred : { ${m[n.body]} }"
 		else null
+	}
+
+	void enter(ConstructionElement n) {
+		n.type.exprs = [n.constructor.valueExpr]
 	}
 
 	String exit(ConstructionElement n, Map m) {
