@@ -136,14 +136,14 @@ class ConstructorTransformer extends DummyTransformer {
 			constructedVar = con.constructor.valueExpr as VariableExpr
 			constructedRecord = new RecordExpr(con.constructor.keyExprs)
 			constructedRecordType = con.constructor.name
-			head = head.accept(this)
+			head = visit head
 		}
 		// Remove constructors from global map `m`
 		// since they might reappear in a different rule
 		infoActor.constructionsOrderedPerRule[n].each { m.remove(it) }
 		m[n.head] = head
 		inRuleHead = false
-		m[n.body] = n.body?.accept(this)
+		if (n.body) m[n.body] = visit n.body
 
 		actor.exit(n, m)
 	}
@@ -155,7 +155,7 @@ class ConstructorTransformer extends DummyTransformer {
 		if (!inRuleHead) return n
 		n.exprs.withIndex().each { IExpr e, int i ->
 			currentType = typeActor.inferredTypes[n.name][i]
-			m[e] = e.accept(this)
+			m[e] = visit e
 		}
 		actor.exit(n, m)
 	}
@@ -165,7 +165,7 @@ class ConstructorTransformer extends DummyTransformer {
 	// Must override since the default implementation throws an exception
 	IVisitable visit(RecordExpr n) {
 		actor.enter(n)
-		n.exprs.each { m[it] = it.accept(this) }
+		n.exprs.each { m[it] = visit it }
 		actor.exit(n, m)
 	}
 

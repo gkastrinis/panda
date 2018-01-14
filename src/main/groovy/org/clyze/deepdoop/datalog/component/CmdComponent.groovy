@@ -1,7 +1,6 @@
 package org.clyze.deepdoop.datalog.component
 
 import groovy.transform.Canonical
-import org.clyze.deepdoop.actions.IVisitor
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.element.relation.Relation
 
@@ -47,6 +46,4 @@ class CmdComponent extends Component {
 	void add(Component other) {
 		throw new UnsupportedOperationException("`add` is not supported on a command block")
 	}
-
-	def <T> T accept(IVisitor<T> v) { v.visit(this) }
 }

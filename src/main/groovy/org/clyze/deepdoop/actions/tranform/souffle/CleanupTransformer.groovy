@@ -23,7 +23,7 @@ class CleanupTransformer extends DummyTransformer {
 		def body = n.body
 		while (changed && body) {
 			changed = false
-			body = body.accept(this)
+			body = visit body
 		}
 		m[n.head] = n.head
 		m[n.body] = body
@@ -45,7 +45,7 @@ class CleanupTransformer extends DummyTransformer {
 	// Must override since the default implementation throws an exception
 	IVisitable visit(RecordExpr n) {
 		actor.enter(n)
-		n.exprs.each { m[it] = it.accept(this) }
+		n.exprs.each { m[it] = visit it }
 		actor.exit(n, m)
 	}
 

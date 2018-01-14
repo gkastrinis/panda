@@ -22,6 +22,8 @@ interface IVisitor<T> {
 
 	T visit(Rule n)
 
+	T visit(IElement n)
+
 	T visit(AggregationElement n)
 
 	T visit(ComparisonElement n)
@@ -39,6 +41,8 @@ interface IVisitor<T> {
 	T visit(Relation n)
 
 	T visit(Type n)
+
+	T visit(IExpr n)
 
 	T visit(BinaryExpr n)
 

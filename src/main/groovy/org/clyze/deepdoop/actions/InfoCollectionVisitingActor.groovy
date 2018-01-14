@@ -135,7 +135,7 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 		tmpConVars = [] as Set
 		conVarCounter.clear()
 		constructionsOrdered = []
-		n.head.accept(this)
+		visit n.head
 		// Relations used in the head (except in constructions)
 		// are implicitly declared by the rule
 		declaredRelations[n] = tmpRelations.findAll { it instanceof Relation } as Set
@@ -147,7 +147,7 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 		tmpRelations = [] as Set
 		tmpVars = [] as Set
 		tmpBoundVars = [] as Set
-		n.body?.accept(this)
+		if (n.body) visit n.body
 		usedRelations[n] += tmpRelations
 		tmpRelations.each { usedInRules[it.name] << n }
 		vars[n.body] = tmpVars

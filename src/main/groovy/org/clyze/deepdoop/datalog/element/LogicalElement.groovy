@@ -2,7 +2,6 @@ package org.clyze.deepdoop.datalog.element
 
 import groovy.transform.Canonical
 import groovy.transform.ToString
-import org.clyze.deepdoop.actions.IVisitor
 
 @Canonical
 @ToString(includePackage = false)
@@ -24,6 +23,4 @@ class LogicalElement implements IElement {
 		this.type = LogicType.AND
 		this.elements = [element]
 	}
-
-	def <T> T accept(IVisitor<T> v) { v.visit(this) }
 }

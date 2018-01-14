@@ -7,6 +7,7 @@ import org.clyze.deepdoop.datalog.BinOperator
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.element.ComparisonElement
+import org.clyze.deepdoop.datalog.element.IElement
 import org.clyze.deepdoop.datalog.element.LogicalElement
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.IExpr
@@ -51,10 +52,10 @@ class AssignTransformer extends DummyTransformer {
 		def body = n.body
 		while (changed) {
 			changed = false
-			body = body.accept(this)
+			body = visit(body) as IElement
 			// Update expressions to assign as well
-			assignments.each { it.value = it.value.accept(this) as IExpr }
-			head = head.accept(this)
+			assignments.each { it.value = visit(it.value) as IExpr }
+			head = visit(head) as IElement
 			replacedVars += assignments.keySet()
 			assignments.clear()
 		}
@@ -92,7 +93,7 @@ class AssignTransformer extends DummyTransformer {
 	// Must override since the default implementation throws an exception
 	IVisitable visit(RecordExpr n) {
 		actor.enter(n)
-		n.exprs.each { m[it] = it.accept(this) }
+		n.exprs.each { m[it] = visit it }
 		actor.exit(n, m)
 	}
 

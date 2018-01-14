@@ -42,9 +42,9 @@ class ComponentInitializingTransformer extends DummyTransformer {
 		initP = new Program(new Component())
 
 		infoActor = new InfoCollectionVisitingActor()
-		origP.accept(infoActor)
+		infoActor.visit origP
 
-		origP.globalComp.accept(this)
+		visit origP.globalComp
 		origP.inits.each {
 			currInitName = it.id
 			currComp = n.comps[it.compName]
@@ -52,7 +52,7 @@ class ComponentInitializingTransformer extends DummyTransformer {
 				ErrorManager.error(ErrorId.COMP_UNKNOWN, it.compName)
 			if (currComp.parameters.size() != it.parameters.size())
 				ErrorManager.error(ErrorId.COMP_INIT_ARITY, it.parameters, it.compName, it.id)
-			currComp.accept(this)
+			visit currComp
 		}
 		return initP
 	}

@@ -1,7 +1,6 @@
 package org.clyze.deepdoop.datalog.element.relation
 
 import groovy.transform.ToString
-import org.clyze.deepdoop.actions.IVisitor
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.IExpr
 
@@ -18,8 +17,6 @@ class Type extends Relation {
 	}
 
 	Type(String name, IExpr expr) { super(name, [expr]) }
-
-	def <T> T accept(IVisitor<T> v) { v.visit(this) }
 
 	boolean isPrimitive() {
 		switch (name) {

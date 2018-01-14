@@ -52,12 +52,12 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 	}
 
 	IVisitable visit(Component n) {
-		n.declarations.each { it.accept(this) }
+		n.declarations.each { visit it }
 
 		Set<Rule> oldDeltaRules = n.rules
 		while (!oldDeltaRules.isEmpty()) {
 			deltaRules = [] as Set
-			oldDeltaRules.each { it.accept(this) }
+			oldDeltaRules.each { visit it }
 			if (oldDeltaRules == deltaRules)
 				ErrorManager.error(ErrorId.TYPE_INFERENCE_FAIL)
 			oldDeltaRules = deltaRules
@@ -108,9 +108,9 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 		tmpExprTypes = [:].withDefault { [] as Set }
 		tmpExprIndices = [:].withDefault { [:] }
 
-		m[n.head] = n.head.accept(this) as IVisitable
+		m[n.head] = visit n.head
 		inRuleBody = true
-		m[n.body] = n.body?.accept(this) as IVisitable
+		if (n.body) m[n.body] = visit n.body
 		inRuleBody = false
 
 		n.head.elements.each {

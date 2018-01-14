@@ -44,7 +44,7 @@ class SyntaxFlatteningTransformer extends DummyTransformer {
 					}
 					currComp = m[n.comps[currComp.superComp]] as Component
 					formalParameters = currComp.parameters
-					currComp.accept(this)
+					visit currComp
 					flatComp.declarations += currComp.declarations
 					flatComp.rules += currComp.rules.collect { m[it] as Rule }
 				}

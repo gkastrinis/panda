@@ -1,7 +1,6 @@
 package org.clyze.deepdoop.datalog.expr
 
 import groovy.transform.Canonical
-import org.clyze.deepdoop.actions.IVisitor
 
 @Canonical
 class ConstantExpr implements IExpr {
@@ -32,8 +31,6 @@ class ConstantExpr implements IExpr {
 		type = Type.STRING
 		value = s.startsWith("'") ? s.replaceAll(/^'|'$/, '"') : s
 	}
-
-	def <T> T accept(IVisitor<T> v) { v.visit(this) }
 
 	String toString() { value }
 }

@@ -18,112 +18,114 @@ class PostOrderVisitor<T> implements IVisitor<T> {
 	protected inRuleHead = false
 	protected inRuleBody = false
 
-	protected def getInRule() { inRuleHead || inRuleBody }
-
 	PostOrderVisitor(IActor<T> actor = null) { this.actor = actor }
 
 	T visit(Program n) {
 		actor.enter(n)
-		m[n.globalComp] = n.globalComp.accept(this) as T
-		n.comps.values().each { m[it] = it.accept(this) as T }
+		m[n.globalComp] = visit n.globalComp
+		n.comps.values().each { m[it] = visit it }
 		actor.exit(n, m)
 	}
 
 	T visit(CmdComponent n) {
 		actor.enter(n)
-		n.exports.each { m[it] = it.accept(this) as T }
-		n.imports.each { m[it] = it.accept(this) as T }
-		n.declarations.each { m[it] = it.accept(this) as T }
-		n.rules.each { m[it] = it.accept(this) as T }
+		n.exports.each { m[it] = visit it }
+		n.imports.each { m[it] = visit it }
+		n.declarations.each { m[it] = visit it }
+		n.rules.each { m[it] = visit it }
 		actor.exit(n, m)
 	}
 
 	T visit(Component n) {
 		actor.enter(n)
-		n.declarations.each { m[it] = it.accept(this) as T }
-		n.rules.each { m[it] = it.accept(this) as T }
+		n.declarations.each { m[it] = visit it }
+		n.rules.each { m[it] = visit it }
 		actor.exit(n, m)
 	}
 
 	T visit(Declaration n) {
 		actor.enter(n)
-		m[n.relation] = n.relation.accept(this) as T
-		n.types.each { m[it] = it.accept(this) as T }
+		m[n.relation] = visit n.relation
+		n.types.each { m[it] = visit it }
 		actor.exit(n, m)
 	}
 
 	T visit(Rule n) {
 		actor.enter(n)
 		inRuleHead = true
-		m[n.head] = n.head.accept(this) as T
+		m[n.head] = visit n.head
 		inRuleHead = false
 		inRuleBody = true
-		m[n.body] = n.body?.accept(this) as T
+		if (n.body) m[n.body] = visit n.body
 		inRuleBody = false
 		actor.exit(n, m)
 	}
 
+	T visit(IElement n) { null }
+
 	T visit(AggregationElement n) {
 		actor.enter(n)
-		m[n.var] = n.var.accept(this) as T
-		m[n.relation] = n.relation.accept(this) as T
-		m[n.body] = n.body.accept(this) as T
+		m[n.var] = visit n.var
+		m[n.relation] = visit n.relation
+		m[n.body] = visit n.body
 		actor.exit(n, m)
 	}
 
 	T visit(ComparisonElement n) {
 		actor.enter(n)
-		m[n.expr] = n.expr.accept(this) as T
+		m[n.expr] = visit n.expr
 		actor.exit(n, m)
 	}
 
 	T visit(ConstructionElement n) {
 		actor.enter(n)
-		m[n.constructor] = n.constructor.accept(this) as T
-		m[n.type] = n.type.accept(this) as T
+		m[n.constructor] = visit n.constructor
+		m[n.type] = visit n.type
 		actor.exit(n, m)
 	}
 
 	T visit(GroupElement n) {
 		actor.enter(n)
-		m[n.element] = n.element.accept(this) as T
+		m[n.element] = visit n.element
 		actor.exit(n, m)
 	}
 
 	T visit(LogicalElement n) {
 		actor.enter(n)
-		n.elements.each { m[it] = it.accept(this) as T }
+		n.elements.each { m[it] = visit it }
 		actor.exit(n, m)
 	}
 
 	T visit(NegationElement n) {
 		actor.enter(n)
-		m[n.element] = n.element.accept(this) as T
+		m[n.element] = visit n.element
 		actor.exit(n, m)
 	}
 
 	T visit(Constructor n) {
 		actor.enter(n)
-		n.exprs.each { m[it] = it.accept(this) as T }
+		n.exprs.each { m[it] = visit it }
 		actor.exit(n, m)
 	}
 
 	T visit(Relation n) {
 		actor.enter(n)
-		n.exprs.each { m[it] = it.accept(this) as T }
+		n.exprs.each { m[it] = visit it }
 		actor.exit(n, m)
 	}
 
 	T visit(Type n) {
 		actor.enter(n)
-		n.exprs.each { m[it] = it.accept(this) as T }
+		n.exprs.each { m[it] = visit it }
 		actor.exit(n, m)
 	}
 
+	T visit(IExpr n) { null }
+
 	T visit(BinaryExpr n) {
 		actor.enter(n)
-		m[n.left] = n.left.accept(this) as T
-		m[n.right] = n.right.accept(this) as T
+		m[n.left] = visit n.left
+		m[n.right] = visit n.right
 		actor.exit(n, m)
 	}
 
@@ -134,7 +136,7 @@ class PostOrderVisitor<T> implements IVisitor<T> {
 
 	T visit(GroupExpr n) {
 		actor.enter(n)
-		m[n.expr] = n.expr.accept(this) as T
+		m[n.expr] = visit n.expr
 		actor.exit(n, m)
 	}
 

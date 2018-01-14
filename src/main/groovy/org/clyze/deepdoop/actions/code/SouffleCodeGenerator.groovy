@@ -42,7 +42,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 				.accept(new ConstructorTransformer(infoActor, typeInferenceActor))
 				.accept(new AssignTransformer(infoActor))
 
-		return super.visit(n as Program)
+		return super.visit(n)
 	}
 
 	String exit(Declaration n, Map m) {
@@ -97,7 +97,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	// Must override since the default implementation throws an exception
 	String visit(RecordExpr n) {
 		actor.enter(n)
-		n.exprs.each { m[it] = it.accept(this) }
+		n.exprs.each { m[it] = visit it }
 		actor.exit(n, m)
 	}
 

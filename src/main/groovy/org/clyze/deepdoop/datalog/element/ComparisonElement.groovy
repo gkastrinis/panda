@@ -2,7 +2,6 @@ package org.clyze.deepdoop.datalog.element
 
 import groovy.transform.Canonical
 import groovy.transform.ToString
-import org.clyze.deepdoop.actions.IVisitor
 import org.clyze.deepdoop.datalog.BinOperator
 import org.clyze.deepdoop.datalog.expr.BinaryExpr
 import org.clyze.deepdoop.datalog.expr.IExpr
@@ -20,6 +19,4 @@ class ComparisonElement implements IElement {
 	ComparisonElement(BinaryExpr expr) {
 		this.expr = expr
 	}
-
-	def <T> T accept(IVisitor<T> v) { v.visit(this) }
 }
