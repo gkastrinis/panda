@@ -15,5 +15,5 @@ class Program implements IVisitable {
 	Map<String, Component> comps = [:]
 	Set<Initialization> inits = [] as Set
 
-	Program accept(IVisitor<IVisitable> v) { v.visit(this) as Program }
+	Program accept(IVisitor<IVisitable> v) { v.visit this }
 }

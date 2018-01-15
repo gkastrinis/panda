@@ -39,7 +39,7 @@ class Annotation {
 
 	void validate() { VALIDATORS[kind].call(this) }
 
-	private static def findKind(String name) {
+	static def findKind(String name) {
 		name = name.toLowerCase()
 		switch (name) {
 			case "constructor": return CONSTRUCTOR
@@ -52,12 +52,12 @@ class Annotation {
 		}
 	}
 
-	private static final def EMPTY_VALIDATOR = { Annotation a ->
+	static def EMPTY_VALIDATOR = { Annotation a ->
 		def loc = SourceManager.instance.recall(a)
 		if (!a.args.isEmpty()) ErrorManager.error(loc, ErrorId.ANNOTATION_NON_EMPTY, a.kind)
 	}
 
-	private static final def MANDATORY_VALIDATOR = { Annotation a, Map<String, ConstantExpr.Type> mandatory ->
+	static def MANDATORY_VALIDATOR = { Annotation a, Map<String, ConstantExpr.Type> mandatory ->
 		def loc = SourceManager.instance.recall(a)
 		mandatory.findAll { argName, type -> !a.args[argName] }.each {
 			ErrorManager.error(loc, ErrorId.ANNOTATION_MISSING_ARG, it, a.kind)
@@ -67,7 +67,7 @@ class Annotation {
 		}
 	}
 
-	private static final def OPTIONAL_VALIDATOR = { Annotation a, Map<String, ConstantExpr.Type> optional ->
+	static def OPTIONAL_VALIDATOR = { Annotation a, Map<String, ConstantExpr.Type> optional ->
 		def loc = SourceManager.instance.recall(a)
 		a.args.findAll { argName, value -> !optional[argName] }.each {
 			ErrorManager.error(loc, ErrorId.ANNOTATION_INVALID_ARG, it.key, a.kind)
@@ -77,7 +77,7 @@ class Annotation {
 		}
 	}
 
-	private static final Map<Kind, Closure> VALIDATORS = [
+	static Map<Kind, Closure> VALIDATORS = [
 			(CONSTRUCTOR): EMPTY_VALIDATOR,
 			(FUNCTIONAL) : EMPTY_VALIDATOR,
 			(INPUT)      : EMPTY_VALIDATOR,
