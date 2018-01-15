@@ -250,11 +250,11 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		else {
 			def e0 = values[ctx.expr(0)] as IExpr
 			def e1 = values[ctx.expr(1)] as IExpr
-			BinOperator op
-			if (hasToken(ctx, "+")) op = BinOperator.PLUS
-			else if (hasToken(ctx, "-")) op = BinOperator.MINUS
-			else if (hasToken(ctx, "*")) op = BinOperator.MULT
-			else op = BinOperator.DIV
+			BinaryOp op
+			if (hasToken(ctx, "+")) op = BinaryOp.PLUS
+			else if (hasToken(ctx, "-")) op = BinaryOp.MINUS
+			else if (hasToken(ctx, "*")) op = BinaryOp.MULT
+			else op = BinaryOp.DIV
 
 			values[ctx] = new BinaryExpr(e0, op, e1)
 		}
@@ -267,13 +267,13 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	void exitComparison(ComparisonContext ctx) {
 		def e0 = values[ctx.expr(0)] as IExpr
 		def e1 = values[ctx.expr(1)] as IExpr
-		BinOperator op
-		if (hasToken(ctx, "=")) op = BinOperator.EQ
-		else if (hasToken(ctx, "<")) op = BinOperator.LT
-		else if (hasToken(ctx, "<=")) op = BinOperator.LEQ
-		else if (hasToken(ctx, ">")) op = BinOperator.GT
-		else if (hasToken(ctx, ">=")) op = BinOperator.GEQ
-		else op = BinOperator.NEQ
+		BinaryOp op
+		if (hasToken(ctx, "=")) op = BinaryOp.EQ
+		else if (hasToken(ctx, "<")) op = BinaryOp.LT
+		else if (hasToken(ctx, "<=")) op = BinaryOp.LEQ
+		else if (hasToken(ctx, ">")) op = BinaryOp.GT
+		else if (hasToken(ctx, ">=")) op = BinaryOp.GEQ
+		else op = BinaryOp.NEQ
 
 		values[ctx] = new ComparisonElement(e0, op, e1)
 	}

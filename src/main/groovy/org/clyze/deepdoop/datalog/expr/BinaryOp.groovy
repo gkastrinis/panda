@@ -1,6 +1,6 @@
-package org.clyze.deepdoop.datalog
+package org.clyze.deepdoop.datalog.expr
 
-enum BinOperator {
+enum BinaryOp {
 	// Comparisons
 	EQ("="), LT("<"), LEQ("<="),
 	GT(">"), GEQ(">="), NEQ("!="),
@@ -9,7 +9,7 @@ enum BinOperator {
 
 	private String op
 
-	BinOperator(String op) { this.op = op }
+	BinaryOp(String op) { this.op = op }
 
 	String toString() { op }
 }

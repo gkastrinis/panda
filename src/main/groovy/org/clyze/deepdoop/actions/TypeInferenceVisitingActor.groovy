@@ -1,6 +1,6 @@
 package org.clyze.deepdoop.actions
 
-import org.clyze.deepdoop.datalog.BinOperator
+import org.clyze.deepdoop.datalog.expr.BinaryOp
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
@@ -181,7 +181,7 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 	IVisitable exit(BinaryExpr n, Map m) {
 		def union = tmpExprTypes[n.left] + tmpExprTypes[n.right]
 		// Numeric operations
-		if (n.op != BinOperator.EQ && n.op != BinOperator.NEQ)
+		if (n.op != BinaryOp.EQ && n.op != BinaryOp.NEQ)
 			union.findAll { it != "int" && it != "float" }.each { ErrorManager.error(ErrorId.TYPE_INCOMP_EXPR) }
 		tmpExprTypes[n] = tmpExprTypes[n.left] = tmpExprTypes[n.right] = union
 		null

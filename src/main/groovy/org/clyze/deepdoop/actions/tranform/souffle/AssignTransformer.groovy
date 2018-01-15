@@ -3,7 +3,7 @@ package org.clyze.deepdoop.actions.tranform.souffle
 import org.clyze.deepdoop.actions.IVisitable
 import org.clyze.deepdoop.actions.InfoCollectionVisitingActor
 import org.clyze.deepdoop.actions.tranform.DummyTransformer
-import org.clyze.deepdoop.datalog.BinOperator
+import org.clyze.deepdoop.datalog.expr.BinaryOp
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.element.ComparisonElement
@@ -25,7 +25,7 @@ class AssignTransformer extends DummyTransformer {
 	// Variables already replaced by an assignment
 	Set<VariableExpr> replacedVars = [] as Set
 	// Dummy expression to replace assignment expressions
-	ComparisonElement dummyComparison = new ComparisonElement(new ConstantExpr(1), BinOperator.EQ, new ConstantExpr(1))
+	ComparisonElement dummyComparison = new ComparisonElement(new ConstantExpr(1), BinaryOp.EQ, new ConstantExpr(1))
 	// For transitive closure computation
 	boolean changed
 
@@ -66,7 +66,7 @@ class AssignTransformer extends DummyTransformer {
 	}
 
 	IVisitable exit(ComparisonElement n, Map m) {
-		if (n.expr.op == BinOperator.EQ && n.expr.left instanceof VariableExpr) {
+		if (n.expr.op == BinaryOp.EQ && n.expr.left instanceof VariableExpr) {
 			def var = n.expr.left as VariableExpr
 			if (!(var in boundVars)) {
 				if (complexLogic > 1)
