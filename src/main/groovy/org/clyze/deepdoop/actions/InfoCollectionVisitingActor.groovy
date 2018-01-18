@@ -12,8 +12,8 @@ import org.clyze.deepdoop.system.ErrorId
 import org.clyze.deepdoop.system.ErrorManager
 import org.clyze.deepdoop.system.SourceManager
 
-import static org.clyze.deepdoop.datalog.Annotation.Kind.CONSTRUCTOR
-import static org.clyze.deepdoop.datalog.Annotation.Kind.TYPE
+import static org.clyze.deepdoop.datalog.Annotation.CONSTRUCTOR
+import static org.clyze.deepdoop.datalog.Annotation.TYPE
 
 class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implements TDummyActor<IVisitable> {
 
@@ -115,11 +115,11 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 		usedRelations[n] = n.types as Set
 
 		def predName = n.relation.name
-		if (n.annotations[TYPE]) {
+		if (TYPE in n.annotations) {
 			allTypes << predName
 			if (n.types) directSuperType[predName] = n.types.first().name
 		}
-		if (n.annotations[CONSTRUCTOR]) {
+		if (CONSTRUCTOR in n.annotations) {
 			def type = n.types.last().name
 			constructorBaseType[predName] = type
 			constructorsPerType[type] << predName

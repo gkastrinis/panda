@@ -41,7 +41,7 @@ class TypeValuesTransformer extends DummyTransformer {
 			extraDecls << new Declaration(
 					new Constructor("${t.name}:byStr", varN(2)),
 					[new Type("string"), t],
-					[(Annotation.Kind.CONSTRUCTOR): new Annotation("constructor")])
+					[new Annotation("constructor")] as Set)
 		}
 	}
 

@@ -19,7 +19,7 @@ import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.RecordExpr
 import org.clyze.deepdoop.system.Result
 
-import static org.clyze.deepdoop.datalog.Annotation.Kind.*
+import static org.clyze.deepdoop.datalog.Annotation.*
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
 
 @InheritConstructors
@@ -48,14 +48,14 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	String exit(Declaration n, Map m) {
 		def name = n.relation.name
 		def params = n.types.withIndex().collect { t, int i -> "${var1(i)}:${map(mini(t.name))}" }.join(", ")
-		if (n.annotations[TYPE])
+		if (TYPE in n.annotations)
 			emit ".type ${map(mini(name))} = [$params]"
 		else
 			emit ".decl ${mini(name)}($params)"
 
-		if (n.annotations[INPUT])
+		if (INPUT in n.annotations)
 			emit ".input ${mini(name)}"
-		if (n.annotations[OUTPUT])
+		if (OUTPUT in n.annotations)
 			emit ".output ${mini(name)}"
 		null
 	}
@@ -66,7 +66,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		else if (!n.body) emit "$head."
 		else emit "$head :- ${m[n.body]}."
 
-		if (n.annotations[PLAN]) emit ".plan ${n.annotations[PLAN].args["plan"]}"
+		if (PLAN in n.annotations) emit ".plan ${n.annotations.find { it == PLAN }.args["plan"]}"
 		null
 	}
 

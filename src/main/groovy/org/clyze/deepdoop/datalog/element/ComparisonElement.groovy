@@ -2,8 +2,8 @@ package org.clyze.deepdoop.datalog.element
 
 import groovy.transform.Canonical
 import groovy.transform.ToString
-import org.clyze.deepdoop.datalog.expr.BinaryOp
 import org.clyze.deepdoop.datalog.expr.BinaryExpr
+import org.clyze.deepdoop.datalog.expr.BinaryOp
 import org.clyze.deepdoop.datalog.expr.IExpr
 
 @Canonical

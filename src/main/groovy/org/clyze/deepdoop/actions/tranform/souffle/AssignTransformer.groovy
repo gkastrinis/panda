@@ -3,16 +3,12 @@ package org.clyze.deepdoop.actions.tranform.souffle
 import org.clyze.deepdoop.actions.IVisitable
 import org.clyze.deepdoop.actions.InfoCollectionVisitingActor
 import org.clyze.deepdoop.actions.tranform.DummyTransformer
-import org.clyze.deepdoop.datalog.expr.BinaryOp
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.element.ComparisonElement
 import org.clyze.deepdoop.datalog.element.IElement
 import org.clyze.deepdoop.datalog.element.LogicalElement
-import org.clyze.deepdoop.datalog.expr.ConstantExpr
-import org.clyze.deepdoop.datalog.expr.IExpr
-import org.clyze.deepdoop.datalog.expr.RecordExpr
-import org.clyze.deepdoop.datalog.expr.VariableExpr
+import org.clyze.deepdoop.datalog.expr.*
 import org.clyze.deepdoop.system.ErrorId
 import org.clyze.deepdoop.system.ErrorManager
 

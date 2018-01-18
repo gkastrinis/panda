@@ -1,6 +1,5 @@
 package org.clyze.deepdoop.actions
 
-import org.clyze.deepdoop.datalog.expr.BinaryOp
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
@@ -12,12 +11,13 @@ import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.BinaryExpr
+import org.clyze.deepdoop.datalog.expr.BinaryOp
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.IExpr
 import org.clyze.deepdoop.system.ErrorId
 import org.clyze.deepdoop.system.ErrorManager
 
-import static org.clyze.deepdoop.datalog.Annotation.Kind.TYPE
+import static org.clyze.deepdoop.datalog.Annotation.TYPE
 import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.*
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.genN as varN
@@ -86,18 +86,18 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 
 	IVisitable visit(Declaration n) {
 		// Partial Declaration
-		if (!n.types && !n.annotations[TYPE])
+		if (!n.types && !(TYPE in n.annotations))
 			partialDecls << [(n.relation.name): n]
 		else {
 			fullDecls << [(n.relation.name): n]
 
 			inferredTypes[n.relation.name] =
-					(n.annotations[TYPE]) ?
+					(TYPE in n.annotations) ?
 							[n.relation.name] :
 							n.types.collect { it.name }
 
 			tmpRelationTypes[n.relation.name] =
-					(n.annotations[TYPE]) ?
+					(TYPE in n.annotations) ?
 							[[n.relation.name] as Set] :
 							n.types.collect { [it.name] as Set }
 		}

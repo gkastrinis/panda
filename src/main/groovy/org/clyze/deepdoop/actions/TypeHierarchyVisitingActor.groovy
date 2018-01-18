@@ -5,7 +5,7 @@ import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.relation.Type
 
-import static org.clyze.deepdoop.datalog.Annotation.Kind.TYPE
+import static org.clyze.deepdoop.datalog.Annotation.TYPE
 
 class TypeHierarchyVisitingActor extends PostOrderVisitor<IVisitable> implements TDummyActor<IVisitable> {
 
@@ -56,7 +56,7 @@ class TypeHierarchyVisitingActor extends PostOrderVisitor<IVisitable> implements
 	}
 
 	IVisitable exit(Declaration n, Map m) {
-		if (n.annotations[TYPE])
+		if (TYPE in n.annotations)
 			tmpCurrentTypes[n.relation as Type] = n.types ? n.types.first().name : null
 		null
 	}

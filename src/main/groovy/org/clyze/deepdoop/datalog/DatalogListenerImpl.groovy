@@ -3,7 +3,6 @@ package org.clyze.deepdoop.datalog
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.ErrorNode
 import org.antlr.v4.runtime.tree.TerminalNode
-import org.clyze.deepdoop.datalog.Annotation.Kind
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.Component
@@ -19,7 +18,7 @@ import org.clyze.deepdoop.system.ErrorManager
 import org.clyze.deepdoop.system.SourceLocation
 import org.clyze.deepdoop.system.SourceManager
 
-import static org.clyze.deepdoop.datalog.Annotation.Kind.TYPE
+import static org.clyze.deepdoop.datalog.Annotation.TYPE
 import static org.clyze.deepdoop.datalog.DatalogParser.*
 
 class DatalogListenerImpl extends DatalogBaseListener {
@@ -28,15 +27,15 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	def values = [:]
 	Component currComp
 	// Extra annotations from an annotation block
-	Map<Kind, Annotation> extraAnnotations = [:]
+	Set<Annotation> extraAnnotations = [] as Set
 	// Component Name x Relation Name x Annotations
-	Map<String, Map<String, Map<Kind, Annotation>>> pendingAnnotations
+	Map<String, Map<String, Set<Annotation>>> pendingAnnotations
 
 	Program program
 
 	DatalogListenerImpl(String filename) {
 		SourceManager.instance.outputFile = new File(filename).absolutePath
-		pendingAnnotations = [:].withDefault { [:].withDefault { [:] } }
+		pendingAnnotations = [:].withDefault { [:].withDefault { [] as Set } }
 	}
 
 	void enterProgram(ProgramContext ctx) {
@@ -71,7 +70,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 			program.inits << new Initialization(currComp.name, [], id)
 		}
 
-		pendingAnnotations[currComp.name].each { String relName, Map annotations ->
+		pendingAnnotations[currComp.name].each { String relName, Set annotations ->
 			currComp.declarations << new Declaration(new Relation(relName), [], annotations)
 		}
 		pendingAnnotations.remove(currComp.name)
@@ -123,7 +122,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		// i.e. they bind annotations with relation names without
 		// actually providing the structure of that relation.
 		if (ctx.IDENTIFIER(0)) {
-			if (annotations[TYPE]) {
+			if (TYPE in annotations) {
 				def initValues = ctx.initValueList() ? values[ctx.initValueList()] as Map : [:]
 				def type = new Type(ctx.IDENTIFIER(0).text, initValues)
 				def supertype = ctx.IDENTIFIER(1) ? [new Type(ctx.IDENTIFIER(1).text)] : []
@@ -150,7 +149,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	}
 
 	void exitAnnotationBlock(AnnotationBlockContext ctx) {
-		extraAnnotations = [:]
+		extraAnnotations = [] as Set
 	}
 
 	void exitRule_(Rule_Context ctx) {
@@ -307,14 +306,14 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	}
 
 	// Special handling (instead of using "exit")
-	private Map<Kind, Annotation> gatherAnnotations(AnnotationListContext ctx) {
-		if (!ctx) return [:]
+	private Set<Annotation> gatherAnnotations(AnnotationListContext ctx) {
+		if (!ctx) return [] as Set
 		def valueMap = gatherValues(ctx.annotation().valueList())
 		def annotation = new Annotation(ctx.annotation().IDENTIFIER().text, valueMap)
-		def map = gatherAnnotations(ctx.annotationList())
-		def loc = rec(annotation, ctx)
-		if (annotation.kind in map) ErrorManager.warn(loc, ErrorId.ANNOTATION_MULTIPLE, annotation.kind)
-		return map << [(annotation.kind): annotation]
+		def set = gatherAnnotations(ctx.annotationList())
+		//def loc = rec(annotation, ctx)
+		//if (annotation.kind in set) ErrorManager.warn(loc, ErrorId.ANNOTATION_MULTIPLE, annotation.kind)
+		return set << annotation
 	}
 
 	void exitInitValueList(InitValueListContext ctx) {

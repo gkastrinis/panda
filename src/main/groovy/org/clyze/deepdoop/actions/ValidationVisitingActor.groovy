@@ -11,7 +11,7 @@ import org.clyze.deepdoop.system.ErrorId
 import org.clyze.deepdoop.system.ErrorManager
 import org.clyze.deepdoop.system.SourceManager
 
-import static org.clyze.deepdoop.datalog.Annotation.Kind.*
+import static org.clyze.deepdoop.datalog.Annotation.*
 import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.BOOLEAN
 import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.REAL
 
@@ -34,21 +34,21 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements TD
 			ErrorManager.error(recall(n), ErrorId.DECL_MULTIPLE, n.relation.name)
 		declaredRelations << n.relation.name
 
-		if (n.annotations[TYPE]) {
-			def a = n.annotations.find { !(it.key in [TYPE, OUTPUT]) }
-			if (a) ErrorManager.error(recall(a), ErrorId.ANNOTATION_INVALID, a.key, "type")
+		if (TYPE in n.annotations) {
+			def a = n.annotations.find { !(it in [TYPE, INPUT, OUTPUT]) }
+			if (a) ErrorManager.error(recall(a), ErrorId.ANNOTATION_INVALID, a, "type")
 		} else {
-			def a = n.annotations.find { !(it.key in [CONSTRUCTOR, FUNCTIONAL, INPUT, OUTPUT]) }
-			if (a) ErrorManager.error(recall(a), ErrorId.ANNOTATION_INVALID, a.key, "declaration")
+			def a = n.annotations.find { !(it in [CONSTRUCTOR, FUNCTIONAL, INPUT, OUTPUT]) }
+			if (a) ErrorManager.error(recall(a), ErrorId.ANNOTATION_INVALID, a, "declaration")
 
-			if (n.annotations[CONSTRUCTOR] && !(n.relation instanceof Constructor))
+			if (CONSTRUCTOR in n.annotations && !(n.relation instanceof Constructor))
 				ErrorManager.error(recall(n), ErrorId.CONSTR_NON_FUNC, n.relation.name)
-			if (n.relation instanceof Constructor && !n.annotations[CONSTRUCTOR])
+			if (n.relation instanceof Constructor && !(CONSTRUCTOR in n.annotations))
 				ErrorManager.error(recall(n), ErrorId.FUNC_NON_CONSTR, n.relation.name)
 
 			arities[n.relation.name] = n.types.size()
 		}
-		n.annotations?.each { it.value.validate() }
+		n.annotations?.each { it.validate() }
 
 		n.types.findAll { !it.isPrimitive() }
 				.findAll { !(it.name in infoActor.allTypes) }
@@ -58,10 +58,10 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements TD
 
 	IVisitable exit(Rule n, Map m) {
 		n.annotations?.each {
-			if (!(it.key in [PLAN]))
-				ErrorManager.error(recall(it), ErrorId.ANNOTATION_INVALID, it.key, "rule")
+			if (it != PLAN)
+				ErrorManager.error(recall(it), ErrorId.ANNOTATION_INVALID, it, "rule")
 
-			it.value.validate()
+			it.validate()
 		}
 
 		def loc = recall(n)

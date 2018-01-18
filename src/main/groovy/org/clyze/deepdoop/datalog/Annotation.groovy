@@ -1,35 +1,43 @@
 package org.clyze.deepdoop.datalog
 
-import groovy.transform.Canonical
+import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.system.ErrorId
 import org.clyze.deepdoop.system.ErrorManager
 import org.clyze.deepdoop.system.SourceManager
 
-import static org.clyze.deepdoop.datalog.Annotation.Kind.*
 import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.INTEGER
 import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.STRING
 
-@Canonical
+@EqualsAndHashCode(includes = "kind")
 @ToString(includePackage = false)
 class Annotation {
 
-	static enum Kind {
-		CONSTRUCTOR,
-		FUNCTIONAL,
-		INPUT,
-		OUTPUT,
-		PLAN,
-		TYPE,
-		UNDEF
-	}
+	public static final CONSTRUCTOR = new Annotation("CONSTRUCTOR")
+	public static final FUNCTIONAL = new Annotation("FUNCTIONAL")
+	public static final INPUT = new Annotation("INPUT")
+	public static final OUTPUT = new Annotation("OUTPUT")
+	public static final PLAN = new Annotation("PLAN")
+	public static final TYPE = new Annotation("TYPE")
 
-	Kind kind
+	String kind
 	Map<String, ConstantExpr> args
 
 	Annotation(String name, Map<String, ConstantExpr> values = [:]) {
-		this.kind = findKind(name)
+		name = name.toUpperCase()
+		switch (name) {
+			case "CONSTRUCTOR":
+			case "FUNCTIONAL":
+			case "INPUT":
+			case "OUTPUT":
+			case "PLAN":
+			case "TYPE":
+				this.kind = name
+				break
+			default:
+				this.kind = null
+		}
 		this.args = values
 		this.args.values().each {
 			if (it.type == STRING)
@@ -38,19 +46,6 @@ class Annotation {
 	}
 
 	void validate() { VALIDATORS[kind].call(this) }
-
-	static def findKind(String name) {
-		name = name.toLowerCase()
-		switch (name) {
-			case "constructor": return CONSTRUCTOR
-			case "functional": return FUNCTIONAL
-			case "input": return INPUT
-			case "output": return OUTPUT
-			case "plan": return PLAN
-			case "type": return TYPE
-			default: return UNDEF
-		}
-	}
 
 	static def EMPTY_VALIDATOR = { Annotation a ->
 		def loc = SourceManager.instance.recall(a)
@@ -77,16 +72,16 @@ class Annotation {
 		}
 	}
 
-	static Map<Kind, Closure> VALIDATORS = [
-			(CONSTRUCTOR): EMPTY_VALIDATOR,
-			(FUNCTIONAL) : EMPTY_VALIDATOR,
-			(INPUT)      : EMPTY_VALIDATOR,
-			(OUTPUT)     : EMPTY_VALIDATOR,
-			(PLAN)       : { Annotation a ->
+	static Map<String, Closure> VALIDATORS = [
+			"CONSTRUCTOR": EMPTY_VALIDATOR,
+			"FUNCTIONAL" : EMPTY_VALIDATOR,
+			"INPUT"      : EMPTY_VALIDATOR,
+			"OUTPUT"     : EMPTY_VALIDATOR,
+			"PLAN"       : { Annotation a ->
 				MANDATORY_VALIDATOR.call(a, ["plan": STRING])
 				OPTIONAL_VALIDATOR.call(a, ["plan": STRING])
 			},
-			(TYPE)       : { Annotation a ->
+			"TYPE"       : { Annotation a ->
 				OPTIONAL_VALIDATOR.call(a, ["capacity": INTEGER])
 			},
 	]

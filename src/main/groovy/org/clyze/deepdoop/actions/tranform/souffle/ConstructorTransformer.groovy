@@ -20,8 +20,8 @@ import org.clyze.deepdoop.datalog.expr.IExpr
 import org.clyze.deepdoop.datalog.expr.RecordExpr
 import org.clyze.deepdoop.datalog.expr.VariableExpr
 
-import static org.clyze.deepdoop.datalog.Annotation.Kind.CONSTRUCTOR
-import static org.clyze.deepdoop.datalog.Annotation.Kind.TYPE
+import static org.clyze.deepdoop.datalog.Annotation.CONSTRUCTOR
+import static org.clyze.deepdoop.datalog.Annotation.TYPE
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
 
 // (1) For each constructor, a new type is generated that
@@ -76,7 +76,7 @@ class ConstructorTransformer extends DummyTransformer {
 					.withIndex()
 					.collect { String con, int i -> new Type(con, var1(i)) }
 
-			extraDecls << new Declaration(new Type(rootTypeName), record, [(TYPE): new Annotation("type")])
+			extraDecls << new Declaration(new Type(rootTypeName), record, [new Annotation("type")] as Set)
 
 			types.each {
 				typeToRecord[it] = record
@@ -94,7 +94,7 @@ class ConstructorTransformer extends DummyTransformer {
 	IVisitable exit(Declaration n, Map m) {
 		explicitDeclarations << n.relation.name
 
-		if (n.annotations[CONSTRUCTOR]) {
+		if (CONSTRUCTOR in n.annotations) {
 			// Re: (1)
 			def newTypes = n.types.collect {
 				new Type(typeToCommonType[it.name] ?: it.name)
@@ -102,14 +102,15 @@ class ConstructorTransformer extends DummyTransformer {
 			extraDecls << new Declaration(
 					new Type(n.relation.name),
 					newTypes.dropRight(1),
-					n.annotations + [(TYPE): new Annotation("type")])
+					n.annotations + new Annotation("type"))
 			n = new Declaration(n.relation, newTypes, n.annotations)
-		} else if (n.annotations[TYPE]) {
+		} else if (TYPE in n.annotations) {
 			def type = n.relation.name
 			// Re: 3
 			n = new Declaration(
 					new Type(type),
-					[new Type(typeToCommonType[type])])
+					[new Type(typeToCommonType[type])],
+					n.annotations)
 
 			// Re: 4
 			def superType = infoActor.directSuperType[type]

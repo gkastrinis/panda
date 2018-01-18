@@ -14,7 +14,7 @@ import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.system.Result
 
-import static org.clyze.deepdoop.datalog.Annotation.Kind.*
+import static org.clyze.deepdoop.datalog.Annotation.*
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
 
 @InheritConstructors
@@ -34,7 +34,7 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 				.accept(typeInferenceActor)
 
 		(n as Program).globalComp.declarations
-				.findAll { it.annotations[FUNCTIONAL] }
+				.findAll { FUNCTIONAL in it.annotations }
 				.collect { it.relation.name } as Set
 
 		return super.visit(n as Program)
@@ -42,16 +42,16 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 
 	String exit(Declaration n, Map m) {
 		def name = n.relation.name
-		if (n.annotations[TYPE]) {
+		if (TYPE in n.annotations) {
 			emit "lang:entity(`$name)."
 			emit """lang:physical:storageModel[`$name] = "ScalableSparse"."""
-			def cap = n.annotations[TYPE].args["capacity"]
+			def cap = n.annotations.find { it == TYPE }.args["capacity"]
 			if (cap) emit "lang:physical:capacity[`$name] = $cap."
 		} else {
 			def types = n.types.withIndex().collect { Type t, int i -> "${map(t.name)}(${var1(i)})" }.join(", ")
 			emit "${m[n.relation]} -> $types."
 		}
-		if (n.annotations[CONSTRUCTOR])
+		if (CONSTRUCTOR in n.annotations)
 			emit "lang:constructor(`$name)."
 		null
 	}
