@@ -13,20 +13,20 @@ import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.BinaryExpr
-import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.GroupExpr
 
+import static org.clyze.deepdoop.datalog.Annotation.*
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.genN as varN
 
-class TypeValuesTransformer extends DummyTransformer {
+class TypeTransformer extends DummyTransformer {
 
 	TypeHierarchyVisitingActor typeHierarchyVA
 	Component currComp
 	Set<Declaration> extraDecls
 	Set<Rule> extraRules
 
-	TypeValuesTransformer(TypeHierarchyVisitingActor typeHierarchyVA) {
+	TypeTransformer(TypeHierarchyVisitingActor typeHierarchyVA) {
 		actor = this
 		this.typeHierarchyVA = typeHierarchyVA
 	}
@@ -37,9 +37,10 @@ class TypeValuesTransformer extends DummyTransformer {
 		extraRules = [] as Set
 
 		typeHierarchyVA.typeToRootType.values()
+		// For all root types
 		typeHierarchyVA.superTypesOrdered[n].findAll { !it.value }.each { t, superTs ->
 			extraDecls << new Declaration(
-					new Constructor("${t.name}:byStr", varN(2)),
+					new Constructor("${t.name}:byStr", []),
 					[new Type("string"), t],
 					[new Annotation("constructor")] as Set)
 		}
@@ -51,13 +52,27 @@ class TypeValuesTransformer extends DummyTransformer {
 		new Component(n.name, n.superComp, n.parameters, n.superParameters, ds, rs)
 	}
 
-	IVisitable exit(Type n, Map m) {
-		def rootT = typeHierarchyVA.typeToRootType[currComp][n]
-		n.initValues.each { key, ConstantExpr value ->
-			def rel = new Relation("${n.name}:$key", [var1()])
-			def con = new Constructor("${rootT.name}:byStr", [value, var1()])
-			extraDecls << new Declaration(rel, [n])
-			extraRules << new Rule(new LogicalElement([new ConstructionElement(con, n), rel]), null)
+	IVisitable exit(Declaration n, Map m) {
+		if (TYPE in n.annotations) {
+			def t = n.relation as Type
+			def rootT = typeHierarchyVA.typeToRootType[currComp][t]
+			if (TYPEVALUES in n.annotations) {
+				n.annotations.find { it == TYPEVALUES }.args.each { key, value ->
+					def rel = new Relation("${t.name}:$key", [var1()])
+					def con = new Constructor("${rootT.name}:byStr", [value, var1()])
+					extraDecls << new Declaration(rel, [t])
+					extraRules << new Rule(new LogicalElement([new ConstructionElement(con, t), rel]), null)
+				}
+			}
+			if (INPUT in n.annotations) {
+				def relName = "__SYS_INPUT_${n.relation.name}"
+				def con = new Constructor("${rootT.name}:byStr", varN(2))
+				extraDecls << new Declaration(new Relation(relName), [new Type("string")], [INPUT] as Set)
+				extraRules << new Rule(
+						new LogicalElement(new ConstructionElement(con, n.relation as Type)),
+						new LogicalElement(new Relation(relName, [var1(0)])))
+				n.annotations.remove(INPUT)
+			}
 		}
 		return n
 	}
@@ -66,8 +81,6 @@ class TypeValuesTransformer extends DummyTransformer {
 
 	IVisitable exit(LogicalElement n, Map m) { n }
 
-	IVisitable exit(Declaration n, Map m) { n }
-
 	IVisitable exit(ComparisonElement n, Map m) { n }
 
 	IVisitable exit(ConstructionElement n, Map m) { n }
@@ -75,6 +88,8 @@ class TypeValuesTransformer extends DummyTransformer {
 	IVisitable exit(Constructor n, Map m) { n }
 
 	IVisitable exit(Relation n, Map m) { n }
+
+	IVisitable exit(Type n, Map m) { n }
 
 	IVisitable exit(BinaryExpr n, Map m) { n }
 

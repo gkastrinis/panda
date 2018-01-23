@@ -13,6 +13,5 @@ class Declaration implements IVisitable {
 
 	Relation relation
 	List<Type> types
-	//Map<Kind, Annotation> annotations = [:]
 	Set<Annotation> annotations = [] as Set
 }

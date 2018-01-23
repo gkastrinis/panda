@@ -5,7 +5,7 @@ import org.clyze.deepdoop.actions.TypeHierarchyVisitingActor
 import org.clyze.deepdoop.actions.ValidationVisitingActor
 import org.clyze.deepdoop.actions.tranform.ComponentInitializingTransformer
 import org.clyze.deepdoop.actions.tranform.SyntaxFlatteningTransformer
-import org.clyze.deepdoop.actions.tranform.TypeValuesTransformer
+import org.clyze.deepdoop.actions.tranform.TypeTransformer
 import org.clyze.deepdoop.actions.tranform.souffle.AssignTransformer
 import org.clyze.deepdoop.actions.tranform.souffle.ConstructorTransformer
 import org.clyze.deepdoop.datalog.Program
@@ -34,7 +34,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		// Transform program before visiting nodes
 		def n = p.accept(new SyntaxFlatteningTransformer())
 				.accept(tmpTypeHierarchyVA)
-				.accept(new TypeValuesTransformer(tmpTypeHierarchyVA))
+				.accept(new TypeTransformer(tmpTypeHierarchyVA))
 				.accept(new ComponentInitializingTransformer())
 				.accept(infoActor)
 				.accept(new ValidationVisitingActor(infoActor))
@@ -47,11 +47,16 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 
 	String exit(Declaration n, Map m) {
 		def name = n.relation.name
-		def params = n.types.withIndex().collect { t, int i -> "${var1(i)}:${map(mini(t.name))}" }.join(", ")
-		if (TYPE in n.annotations)
-			emit ".type ${map(mini(name))} = [$params]"
-		else
-			emit ".decl ${mini(name)}($params)"
+		def params = n.types.withIndex().collect { t, int i -> "${var1(i)}:${map(mini(t.name))}" }
+
+		if (TYPE in n.annotations && __INTERNAL in n.annotations)
+			emit ".type ${map(mini(name))} = [${params.join(", ")}]"
+
+		if (CONSTRUCTOR in n.annotations)
+			emit ".type ${map(mini(name))} = [${params.dropRight(1).join(", ")}]"
+
+		if (!(__INTERNAL in n.annotations))
+			emit ".decl ${mini(name)}(${params.join(", ")})"
 
 		if (INPUT in n.annotations)
 			emit ".input ${mini(name)}"
@@ -114,6 +119,6 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	static def map(def name) {
 		if (name == "string") return "symbol"
 		else if (name == "int") return "number"
-		else return "_T_$name"
+		else return "__SYS_TYPE_$name"
 	}
 }

@@ -20,8 +20,7 @@ import org.clyze.deepdoop.datalog.expr.IExpr
 import org.clyze.deepdoop.datalog.expr.RecordExpr
 import org.clyze.deepdoop.datalog.expr.VariableExpr
 
-import static org.clyze.deepdoop.datalog.Annotation.CONSTRUCTOR
-import static org.clyze.deepdoop.datalog.Annotation.TYPE
+import static org.clyze.deepdoop.datalog.Annotation.*
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
 
 // (1) For each constructor, a new type is generated that
@@ -68,7 +67,7 @@ class ConstructorTransformer extends DummyTransformer {
 		// Re: (2)
 		// Find all types that are roots in the type hierarchy
 		infoActor.allTypes.findAll { !infoActor.directSuperType[it] }.each { root ->
-			def rootTypeName = "R_${root}"
+			def rootTypeName = "ROOT_${root}"
 			def types = [root] + infoActor.subTypes[root]
 			def record = types
 					.collect { infoActor.constructorsPerType[it] }
@@ -76,7 +75,7 @@ class ConstructorTransformer extends DummyTransformer {
 					.withIndex()
 					.collect { String con, int i -> new Type(con, var1(i)) }
 
-			extraDecls << new Declaration(new Type(rootTypeName), record, [new Annotation("type")] as Set)
+			extraDecls << new Declaration(new Type(rootTypeName), record, [new Annotation("type"), __INTERNAL] as Set)
 
 			types.each {
 				typeToRecord[it] = record
@@ -99,10 +98,6 @@ class ConstructorTransformer extends DummyTransformer {
 			def newTypes = n.types.collect {
 				new Type(typeToCommonType[it.name] ?: it.name)
 			}
-			extraDecls << new Declaration(
-					new Type(n.relation.name),
-					newTypes.dropRight(1),
-					n.annotations + new Annotation("type"))
 			n = new Declaration(n.relation, newTypes, n.annotations)
 		} else if (TYPE in n.annotations) {
 			def type = n.relation.name

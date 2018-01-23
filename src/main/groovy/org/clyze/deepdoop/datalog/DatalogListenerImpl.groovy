@@ -123,9 +123,11 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		// actually providing the structure of that relation.
 		if (ctx.IDENTIFIER(0)) {
 			if (TYPE in annotations) {
-				def initValues = ctx.initValueList() ? values[ctx.initValueList()] as Map : [:]
-				def type = new Type(ctx.IDENTIFIER(0).text, initValues)
+				def type = new Type(ctx.IDENTIFIER(0).text)
 				def supertype = ctx.IDENTIFIER(1) ? [new Type(ctx.IDENTIFIER(1).text)] : []
+				// Initial values are of the form `key(value)`. E.g., PUBLIC('public')
+				// Keys are used to generate singleton relations. E.g., Modifier:PUBLIC(x)
+				if (ctx.initValueList()) annotations << new Annotation("TYPEVALUES", values[ctx.initValueList()] as Map)
 				def d = new Declaration(type, supertype, annotations)
 				currComp.declarations << d
 				rec(d, ctx)

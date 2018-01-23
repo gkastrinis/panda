@@ -14,40 +14,24 @@ import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.STRING
 @ToString(includePackage = false)
 class Annotation {
 
-	public static final CONSTRUCTOR = new Annotation("CONSTRUCTOR")
-	public static final FUNCTIONAL = new Annotation("FUNCTIONAL")
-	public static final INPUT = new Annotation("INPUT")
-	public static final OUTPUT = new Annotation("OUTPUT")
-	public static final PLAN = new Annotation("PLAN")
-	public static final TYPE = new Annotation("TYPE")
-
 	String kind
 	Map<String, ConstantExpr> args
 
 	Annotation(String name, Map<String, ConstantExpr> values = [:]) {
 		name = name.toUpperCase()
-		switch (name) {
-			case "CONSTRUCTOR":
-			case "FUNCTIONAL":
-			case "INPUT":
-			case "OUTPUT":
-			case "PLAN":
-			case "TYPE":
-				this.kind = name
-				break
-			default:
-				this.kind = null
-		}
+		this.kind = VALIDATORS.containsKey(name) ? name : null
 		this.args = values
-		this.args.values().each {
-			if (it.type == STRING)
-				it.value = (it.value as String)[1..-2]
-		}
+//		this.args.values().each {
+//			if (it.type == STRING)
+//				it.value = (it.value as String)[1..-2]
+//		}
 	}
 
-	void validate() { VALIDATORS[kind].call(this) }
+	String toString() { "@$kind${ args ? "$args " : "" }" }
 
-	static def EMPTY_VALIDATOR = { Annotation a ->
+	void validate() { VALIDATORS[kind]?.call(this) }
+
+	static def NO_ARGS_VALIDATOR = { Annotation a ->
 		def loc = SourceManager.instance.recall(a)
 		if (!a.args.isEmpty()) ErrorManager.error(loc, ErrorId.ANNOTATION_NON_EMPTY, a.kind)
 	}
@@ -73,10 +57,10 @@ class Annotation {
 	}
 
 	static Map<String, Closure> VALIDATORS = [
-			"CONSTRUCTOR": EMPTY_VALIDATOR,
-			"FUNCTIONAL" : EMPTY_VALIDATOR,
-			"INPUT"      : EMPTY_VALIDATOR,
-			"OUTPUT"     : EMPTY_VALIDATOR,
+			"CONSTRUCTOR": NO_ARGS_VALIDATOR,
+			"FUNCTIONAL" : NO_ARGS_VALIDATOR,
+			"INPUT"      : NO_ARGS_VALIDATOR,
+			"OUTPUT"     : NO_ARGS_VALIDATOR,
 			"PLAN"       : { Annotation a ->
 				MANDATORY_VALIDATOR.call(a, ["plan": STRING])
 				OPTIONAL_VALIDATOR.call(a, ["plan": STRING])
@@ -84,5 +68,16 @@ class Annotation {
 			"TYPE"       : { Annotation a ->
 				OPTIONAL_VALIDATOR.call(a, ["capacity": INTEGER])
 			},
+			"TYPEVALUES" : {},
+			"__INTERNAL" : NO_ARGS_VALIDATOR,
 	]
+
+	public static final CONSTRUCTOR = new Annotation("CONSTRUCTOR")
+	public static final FUNCTIONAL = new Annotation("FUNCTIONAL")
+	public static final INPUT = new Annotation("INPUT")
+	public static final OUTPUT = new Annotation("OUTPUT")
+	public static final PLAN = new Annotation("PLAN")
+	public static final TYPE = new Annotation("TYPE")
+	public static final TYPEVALUES = new Annotation("TYPEVALUES")
+	public static final __INTERNAL = new Annotation("__INTERNAL")
 }

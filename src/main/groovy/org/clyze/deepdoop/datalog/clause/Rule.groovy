@@ -12,6 +12,5 @@ class Rule implements IVisitable {
 
 	LogicalElement head
 	LogicalElement body
-	//Map<Kind, Annotation> annotations = [:]
 	Set<Annotation> annotations = [] as Set
 }

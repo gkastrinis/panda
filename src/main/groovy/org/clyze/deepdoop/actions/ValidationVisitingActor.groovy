@@ -35,7 +35,7 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements TD
 		declaredRelations << n.relation.name
 
 		if (TYPE in n.annotations) {
-			def a = n.annotations.find { !(it in [TYPE, INPUT, OUTPUT]) }
+			def a = n.annotations.find { !(it in [INPUT, OUTPUT, TYPE, TYPEVALUES]) }
 			if (a) ErrorManager.error(recall(a), ErrorId.ANNOTATION_INVALID, a, "type")
 		} else {
 			def a = n.annotations.find { !(it in [CONSTRUCTOR, FUNCTIONAL, INPUT, OUTPUT]) }
