@@ -62,7 +62,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 
 	String exit(Rule n, Map m) {
 		def head = m[n.head]
-		if (n.head.elements.size() > 1 && !n.body) emit "$head :- 1 = 1"
+		if (n.head.elements.size() > 1 && !n.body) emit "$head :- 1 = 1."
 		else if (!n.body) emit "$head."
 		else emit "$head :- ${m[n.body]}."
 
