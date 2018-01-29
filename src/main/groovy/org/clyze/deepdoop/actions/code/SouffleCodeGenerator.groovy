@@ -67,10 +67,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	}
 
 	String exit(Rule n, Map m) {
-		def head = m[n.head]
-		if (n.head.elements.size() > 1 && !n.body) emit "$head :- 1 = 1."
-		else if (!n.body) emit "$head."
-		else emit "$head :- ${m[n.body]}."
+		emit "${m[n.head]} :- ${m[n.body] ?: "1 = 1."}"
 
 		if (PLAN in n.annotations) emit ".plan ${n.annotations.find { it == PLAN }.args["plan"]}"
 		null
