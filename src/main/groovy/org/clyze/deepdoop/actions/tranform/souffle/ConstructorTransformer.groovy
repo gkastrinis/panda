@@ -5,7 +5,6 @@ import org.clyze.deepdoop.actions.IVisitable
 import org.clyze.deepdoop.actions.InfoCollectionVisitingActor
 import org.clyze.deepdoop.actions.TypeInferenceVisitingActor
 import org.clyze.deepdoop.actions.tranform.DummyTransformer
-import org.clyze.deepdoop.datalog.Annotation
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
@@ -48,9 +47,14 @@ class ConstructorTransformer extends DummyTransformer {
 
 	// Recurring constant
 	IExpr NIL = new ConstantExpr("nil")
+
 	// Re: 2
 	Map<String, List<Type>> typeToRecord = [:]
-	Map<String, String> typeToCommonType = [:]
+	Map<String, Type> typeToCommonType = [:]
+
+	// Optimize for the case of a single constructor
+	Set<String> optimizedTypes = [] as Set
+	Set<Declaration> optimizedConstructors = [] as Set
 
 	// Relations that have an explicit declaration
 	Set<String> explicitDeclarations = [] as Set
@@ -68,19 +72,22 @@ class ConstructorTransformer extends DummyTransformer {
 		// Re: (2)
 		// Find all types that are roots in the type hierarchy
 		infoActor.allTypes.findAll { !infoActor.directSuperType[it] }.each { root ->
-			def rootTypeName = "R_${root}"
+			def rootType = new Type("R_${root}")
 			def types = [root] + infoActor.subTypes[root]
-			def record = types
-					.collect { infoActor.constructorsPerType[it] }
-					.flatten()
-					.withIndex()
-					.collect { String con, int i -> new Type(con, var1(i)) }
+			types.each { typeToCommonType[it] = rootType }
+			def constructors = types.collect { infoActor.constructorsPerType[it] }.flatten() as List<Declaration>
 
-			extraDecls << new Declaration(new Type(rootTypeName), record, [new Annotation("type"), __INTERNAL] as Set)
-
-			types.each {
-				typeToRecord[it] = record
-				typeToCommonType[it] = rootTypeName
+			// Optimize in the case of a single constructor with a single string key
+			if (constructors.size() == 1 && constructors[0].types.size() == 2 && constructors[0].types[0] == TYPE_STR) {
+				types.each { optimizedTypes << it }
+				optimizedConstructors << constructors[0]
+			} else {
+				constructors.each {
+					extraDecls << new Declaration(new Type(it.relation.name), it.types.dropRight(1), [TYPE, __INTERNAL] as Set)
+				}
+				def record = constructors.collect { new Type(it.relation.name) }
+				types.each { typeToRecord[it] = record }
+				extraDecls << new Declaration(rootType, record, [TYPE, __INTERNAL] as Set)
 			}
 		}
 	}
@@ -96,26 +103,21 @@ class ConstructorTransformer extends DummyTransformer {
 
 		if (CONSTRUCTOR in n.annotations) {
 			// Re: (1)
-			def newTypes = n.types.collect {
-				new Type(typeToCommonType[it.name] ?: it.name)
-			}
+			def newTypes = n.types.collect { map(it) }
 			n = new Declaration(n.relation, newTypes, n.annotations)
 		} else if (TYPE in n.annotations) {
-			def type = n.relation.name
+			def type = n.relation as Type
 			// Re: 3
-			n = new Declaration(
-					new Type(type),
-					[new Type(typeToCommonType[type])],
-					n.annotations)
+			n = new Declaration(type, [map(type)], n.annotations)
 
 			// Re: 4
-			def superType = infoActor.directSuperType[type]
+			def superType = infoActor.directSuperType[type.name]
 			if (superType)
 				extraRules << new Rule(
 						new LogicalElement(new Relation(superType, [var1()])),
-						new LogicalElement(new Relation(type, [var1()])))
+						new LogicalElement(new Relation(type.name, [var1()])))
 		} else {
-			def newTypes = n.types.collect { new Type(typeToCommonType[it.name] ?: it.name) }
+			def newTypes = n.types.collect { map(it) }
 			n = new Declaration(n.relation, newTypes, n.annotations)
 		}
 		return n
@@ -170,16 +172,19 @@ class ConstructorTransformer extends DummyTransformer {
 	void enter(RecordExpr n) {}
 
 	// Must override since the default implementation throws an exception
-	IVisitable exit(RecordExpr n, Map m) {
-		new RecordExpr(n.exprs.collect { m[it] as IExpr })
-	}
+	IVisitable exit(RecordExpr n, Map m) { new RecordExpr(n.exprs.collect { m[it] as IExpr }) }
 
 	IVisitable exit(VariableExpr n, Map m) {
 		if (!inRuleHead || n != constructedVar) return n
 
 		def rawRecord = typeToRecord[currentType]
+		// rawRecord is null when the constructed type is optimized (replaced by string)
+		if (!rawRecord) return constructedRecord.exprs[0]
+
 		def record = (0..<rawRecord.size()).collect { NIL as IExpr }
 		record[rawRecord.findIndexOf { it.name == constructedRecordType }] = constructedRecord
 		new RecordExpr(record)
 	}
+
+	Type map(Type t) { (t.name in optimizedTypes) ? TYPE_STR : (typeToCommonType[t.name] ?: t) }
 }

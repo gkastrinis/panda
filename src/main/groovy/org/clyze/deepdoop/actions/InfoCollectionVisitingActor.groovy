@@ -27,7 +27,7 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 	Map<Rule, Set<VariableExpr>> constructedVars = [:]
 	Set<String> allConstructors = [] as Set
 	Map<String, String> constructorBaseType = [:]
-	Map<String, Set<String>> constructorsPerType = [:].withDefault { [] as Set }
+	Map<String, Set<Declaration>> constructorsPerType = [:].withDefault { [] as Set }
 	Map<Rule, List<ConstructionElement>> constructionsOrderedPerRule = [:]
 
 	// Type information
@@ -114,15 +114,15 @@ class InfoCollectionVisitingActor extends PostOrderVisitor<IVisitable> implement
 		declaredRelations[n] = [n.relation] as Set
 		usedRelations[n] = n.types as Set
 
-		def predName = n.relation.name
+		def relName = n.relation.name
 		if (TYPE in n.annotations) {
-			allTypes << predName
-			if (n.types) directSuperType[predName] = n.types.first().name
+			allTypes << relName
+			if (n.types) directSuperType[relName] = n.types.first().name
 		}
 		if (CONSTRUCTOR in n.annotations) {
 			def type = n.types.last().name
-			constructorBaseType[predName] = type
-			constructorsPerType[type] << predName
+			constructorBaseType[relName] = type
+			constructorsPerType[type] << n
 		}
 		null
 	}

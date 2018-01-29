@@ -52,9 +52,6 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		if (TYPE in n.annotations && __INTERNAL in n.annotations)
 			emit ".type ${map(mini(name))} = [${params.join(", ")}]"
 
-		if (CONSTRUCTOR in n.annotations)
-			emit ".type ${map(mini(name))} = [${params.dropRight(1).join(", ")}]"
-
 		if (!(__INTERNAL in n.annotations))
 			emit ".decl ${mini(name)}(${params.join(", ")})"
 
