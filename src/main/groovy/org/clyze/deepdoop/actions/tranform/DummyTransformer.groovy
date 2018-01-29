@@ -15,6 +15,9 @@ import org.clyze.deepdoop.datalog.expr.*
 
 class DummyTransformer extends PostOrderVisitor<IVisitable> implements TDummyActor<IVisitable> {
 
+	Set<Declaration> extraDecls = [] as Set
+	Set<Rule> extraRules = [] as Set
+
 	DummyTransformer() { actor = this }
 
 	IVisitable exit(Program n, Map m) {
@@ -23,8 +26,8 @@ class DummyTransformer extends PostOrderVisitor<IVisitable> implements TDummyAct
 	}
 
 	IVisitable exit(Component n, Map m) {
-		def ds = n.declarations.collect { m[it] as Declaration } as Set
-		def rs = n.rules.collect { m[it] as Rule } as Set
+		def ds = (n.declarations.collect { m[it] as Declaration } + extraDecls) as Set
+		def rs = (n.rules.collect { m[it] as Rule } + extraRules) as Set
 		new Component(n.name, n.superComp, n.parameters, n.superParameters, ds, rs)
 	}
 

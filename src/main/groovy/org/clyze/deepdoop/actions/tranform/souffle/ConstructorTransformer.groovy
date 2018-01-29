@@ -42,9 +42,6 @@ class ConstructorTransformer extends DummyTransformer {
 	InfoCollectionVisitingActor infoActor
 	TypeInferenceVisitingActor typeActor
 
-	Set<Declaration> extraDecls = [] as Set
-	Set<Rule> extraRules = [] as Set
-
 	// Recurring constant
 	IExpr NIL = new ConstantExpr("nil")
 
@@ -90,12 +87,6 @@ class ConstructorTransformer extends DummyTransformer {
 				extraDecls << new Declaration(rootType, record, [TYPE, __INTERNAL] as Set)
 			}
 		}
-	}
-
-	IVisitable exit(Component n, Map m) {
-		def ds = (n.declarations.collect { m[it] as Declaration } + extraDecls) as Set
-		def rs = (n.rules.collect { m[it] as Rule } + extraRules) as Set
-		new Component(n.name, n.superComp, [], [], ds, rs)
 	}
 
 	IVisitable exit(Declaration n, Map m) {

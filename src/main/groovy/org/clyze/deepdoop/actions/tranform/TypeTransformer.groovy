@@ -25,8 +25,6 @@ class TypeTransformer extends DummyTransformer {
 
 	TypeHierarchyVisitingActor typeHierarchyVA
 	Component currComp
-	Set<Declaration> extraDecls
-	Set<Rule> extraRules
 
 	TypeTransformer(TypeHierarchyVisitingActor typeHierarchyVA) {
 		actor = this
@@ -46,12 +44,6 @@ class TypeTransformer extends DummyTransformer {
 					[TYPE_STR, t],
 					[new Annotation("constructor")] as Set)
 		}
-	}
-
-	IVisitable exit(Component n, Map m) {
-		def ds = (n.declarations.collect { m[it] as Declaration } + extraDecls) as Set
-		def rs = (n.rules.collect { m[it] as Rule } + extraRules) as Set
-		new Component(n.name, n.superComp, n.parameters, n.superParameters, ds, rs)
 	}
 
 	IVisitable exit(Declaration n, Map m) {
