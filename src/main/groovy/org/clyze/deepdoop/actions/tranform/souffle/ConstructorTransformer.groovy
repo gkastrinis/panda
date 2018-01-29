@@ -67,7 +67,7 @@ class ConstructorTransformer extends DummyTransformer {
 		// Re: (2)
 		// Find all types that are roots in the type hierarchy
 		infoActor.allTypes.findAll { !infoActor.directSuperType[it] }.each { root ->
-			def rootTypeName = "ROOT_${root}"
+			def rootTypeName = "R_${root}"
 			def types = [root] + infoActor.subTypes[root]
 			def record = types
 					.collect { infoActor.constructorsPerType[it] }

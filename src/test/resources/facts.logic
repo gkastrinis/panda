@@ -8,7 +8,7 @@
 		TRANSIENT('transient')
 
 	/// Java Type Hierarchy
-	@type {
+	@type @input {
 		Type
 		PrimitiveType : Type with
 			BOOLEAN('boolean'),

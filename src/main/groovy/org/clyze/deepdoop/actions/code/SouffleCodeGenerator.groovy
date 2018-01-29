@@ -58,8 +58,11 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		if (!(__INTERNAL in n.annotations))
 			emit ".decl ${mini(name)}(${params.join(", ")})"
 
-		if (INPUT in n.annotations)
-			emit ".input ${mini(name)}"
+		if (INPUT in n.annotations) {
+			def args = n.annotations.find { it == INPUT }.args
+			def extra = """(filename="${args["filename"] ?: "${name}.facts"}", delimeter="${args["delimeter"] ?: "\\t"}")"""
+			emit ".input ${mini(name)} $extra"
+		}
 		if (OUTPUT in n.annotations)
 			emit ".output ${mini(name)}"
 		null

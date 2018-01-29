@@ -17,10 +17,10 @@ class Annotation {
 	String kind
 	Map<String, ConstantExpr> args
 
-	Annotation(String name, Map<String, ConstantExpr> values = [:]) {
+	Annotation(String name, Map<String, ConstantExpr> args = [:]) {
 		name = name.toUpperCase()
 		this.kind = VALIDATORS.containsKey(name) ? name : null
-		this.args = values
+		this.args = args
 //		this.args.values().each {
 //			if (it.type == STRING)
 //				it.value = (it.value as String)[1..-2]
@@ -59,7 +59,9 @@ class Annotation {
 	static Map<String, Closure> VALIDATORS = [
 			"CONSTRUCTOR": NO_ARGS_VALIDATOR,
 			"FUNCTIONAL" : NO_ARGS_VALIDATOR,
-			"INPUT"      : NO_ARGS_VALIDATOR,
+			"INPUT"      : { Annotation a ->
+				OPTIONAL_VALIDATOR.call(a, ["filename": STRING, "delimeter": STRING])
+			},
 			"OUTPUT"     : NO_ARGS_VALIDATOR,
 			"PLAN"       : { Annotation a ->
 				MANDATORY_VALIDATOR.call(a, ["plan": STRING])

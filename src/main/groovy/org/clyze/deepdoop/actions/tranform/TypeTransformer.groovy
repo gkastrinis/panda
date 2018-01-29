@@ -13,6 +13,7 @@ import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.BinaryExpr
+import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.GroupExpr
 
 import static org.clyze.deepdoop.datalog.Annotation.*
@@ -66,11 +67,11 @@ class TypeTransformer extends DummyTransformer {
 			}
 			if (INPUT in n.annotations) {
 				def relName = "__SYS_INPUT_${n.relation.name}"
+				def rel = new Relation(relName, varN(1))
 				def con = new Constructor("${rootT.name}:byStr", varN(2))
-				extraDecls << new Declaration(new Relation(relName), [new Type("string")], [INPUT] as Set)
-				extraRules << new Rule(
-						new LogicalElement(new ConstructionElement(con, n.relation as Type)),
-						new LogicalElement(new Relation(relName, [var1(0)])))
+				def a = new Annotation("INPUT", ["filename": new ConstantExpr("${n.relation.name}.facts"), "delimeter": new ConstantExpr("\\t")])
+				extraDecls << new Declaration(rel, [new Type("string")], [a] as Set)
+				extraRules << new Rule(new LogicalElement(new ConstructionElement(con, n.relation as Type)), new LogicalElement(rel))
 				n.annotations.remove(INPUT)
 			}
 		}
