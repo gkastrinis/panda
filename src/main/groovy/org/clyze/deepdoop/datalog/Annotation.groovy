@@ -74,12 +74,12 @@ class Annotation {
 			"__INTERNAL" : NO_ARGS_VALIDATOR,
 	]
 
-	public static final CONSTRUCTOR = new Annotation("CONSTRUCTOR")
-	public static final FUNCTIONAL = new Annotation("FUNCTIONAL")
-	public static final INPUT = new Annotation("INPUT")
-	public static final OUTPUT = new Annotation("OUTPUT")
-	public static final PLAN = new Annotation("PLAN")
-	public static final TYPE = new Annotation("TYPE")
-	public static final TYPEVALUES = new Annotation("TYPEVALUES")
-	public static final __INTERNAL = new Annotation("__INTERNAL")
+	static final CONSTRUCTOR = new Annotation("CONSTRUCTOR")
+	static final FUNCTIONAL = new Annotation("FUNCTIONAL")
+	static final INPUT = new Annotation("INPUT")
+	static final OUTPUT = new Annotation("OUTPUT")
+	static final PLAN = new Annotation("PLAN")
+	static final TYPE = new Annotation("TYPE")
+	static final TYPEVALUES = new Annotation("TYPEVALUES")
+	static final __INTERNAL = new Annotation("__INTERNAL")
 }

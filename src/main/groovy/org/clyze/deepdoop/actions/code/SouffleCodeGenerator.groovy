@@ -60,8 +60,9 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 
 		if (INPUT in n.annotations) {
 			def args = n.annotations.find { it == INPUT }.args
-			def extra = """(filename="${args["filename"] ?: "${name}.facts"}", delimeter="${args["delimeter"] ?: "\\t"}")"""
-			emit ".input ${mini(name)} $extra"
+			def filename = args["filename"] ?: "${name}.facts"
+			def delimeter = args["delimeter"] ?: "\\t"
+			emit """.input ${mini(name)}(filename="$filename", delimeter="$delimeter")"""
 		}
 		if (OUTPUT in n.annotations)
 			emit ".output ${mini(name)}"
@@ -96,9 +97,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 
 	String exit(Constructor n, Map m) { exit(n as Relation, m) }
 
-	String exit(Relation n, Map m) {
-		"${mini(n.name)}(${n.exprs.collect { m[it] }.join(", ")})"
-	}
+	String exit(Relation n, Map m) { "${mini(n.name)}(${n.exprs.collect { m[it] }.join(", ")})" }
 
 	String exit(Type n, Map m) { exit(n as Relation, m) }
 
@@ -113,9 +112,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	void enter(RecordExpr n) {}
 
 	// Must override since the default implementation throws an exception
-	String exit(RecordExpr n, Map m) {
-		"[${n.exprs.collect { m[it] }.join(", ")}]"
-	}
+	String exit(RecordExpr n, Map m) { "[${n.exprs.collect { m[it] }.join(", ")}]" }
 
 	static def mini(def name) { name.replace ":", "_" }
 

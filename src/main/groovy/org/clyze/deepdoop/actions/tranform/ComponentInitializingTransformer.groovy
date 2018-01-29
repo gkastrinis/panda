@@ -76,7 +76,7 @@ class ComponentInitializingTransformer extends DummyTransformer {
 		def newName = rename(origName)
 		if (origName.contains("@") && !currComp) {
 			def (simpleName, parameter) = origName.split("@")
-			if (!origP.inits.any { it.id == parameter})
+			if (!origP.inits.any { it.id == parameter })
 				ErrorManager.error(loc, ErrorId.COMP_UNKNOWN, parameter as String)
 			return new Relation("$parameter:$simpleName", n.exprs)
 		} else if (origName.contains("@")) {

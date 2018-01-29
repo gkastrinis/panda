@@ -17,6 +17,7 @@ import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.GroupExpr
 
 import static org.clyze.deepdoop.datalog.Annotation.*
+import static org.clyze.deepdoop.datalog.element.relation.Type.TYPE_STR
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.genN as varN
 
@@ -42,7 +43,7 @@ class TypeTransformer extends DummyTransformer {
 		typeHierarchyVA.superTypesOrdered[n].findAll { !it.value }.each { t, superTs ->
 			extraDecls << new Declaration(
 					new Constructor("${t.name}:byStr", []),
-					[new Type("string"), t],
+					[TYPE_STR, t],
 					[new Annotation("constructor")] as Set)
 		}
 	}
@@ -69,8 +70,10 @@ class TypeTransformer extends DummyTransformer {
 				def relName = "__SYS_INPUT_${n.relation.name}"
 				def rel = new Relation(relName, varN(1))
 				def con = new Constructor("${rootT.name}:byStr", varN(2))
-				def a = new Annotation("INPUT", ["filename": new ConstantExpr("${n.relation.name}.facts"), "delimeter": new ConstantExpr("\\t")])
-				extraDecls << new Declaration(rel, [new Type("string")], [a] as Set)
+				def a = new Annotation("INPUT", [
+						"filename" : new ConstantExpr("${n.relation.name}.facts"),
+						"delimeter": new ConstantExpr("\\t")])
+				extraDecls << new Declaration(rel, [TYPE_STR], [a] as Set)
 				extraRules << new Rule(new LogicalElement(new ConstructionElement(con, n.relation as Type)), new LogicalElement(rel))
 				n.annotations.remove(INPUT)
 			}

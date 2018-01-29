@@ -11,4 +11,7 @@ class Type extends Relation {
 	boolean isPrimitive() { name in ["int", "float", "boolean", "string"] }
 
 	String toString() { "T##$name" }
+
+	static final TYPE_STR = new Type("string")
+	static final TYPE_INT = new Type("int")
 }

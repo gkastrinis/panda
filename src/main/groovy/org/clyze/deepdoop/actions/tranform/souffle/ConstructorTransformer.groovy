@@ -21,6 +21,7 @@ import org.clyze.deepdoop.datalog.expr.RecordExpr
 import org.clyze.deepdoop.datalog.expr.VariableExpr
 
 import static org.clyze.deepdoop.datalog.Annotation.*
+import static org.clyze.deepdoop.datalog.element.relation.Type.TYPE_STR
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
 
 // (1) For each constructor, a new type is generated that
