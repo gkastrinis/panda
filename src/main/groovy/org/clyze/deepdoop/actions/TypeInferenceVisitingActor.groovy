@@ -19,7 +19,6 @@ import org.clyze.deepdoop.system.ErrorManager
 
 import static org.clyze.deepdoop.datalog.Annotation.TYPE
 import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.*
-import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.genN as varN
 
 class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements TDummyActor<IVisitable> {
@@ -69,7 +68,7 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 			Declaration d = fullDecls[rel]
 			if (d) return d
 
-			def types = typeNames.withIndex().collect { String t, int i -> new Type(t, var1(i)) }
+			def types = typeNames.collect { new Type(it) }
 			def vars = varN(types.size())
 			d = partialDecls[rel]
 			if (d) {
