@@ -69,7 +69,11 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	String exit(Rule n, Map m) {
 		emit "${m[n.head]} :- ${m[n.body] ?: "1 = 1."}"
 
-		if (PLAN in n.annotations) emit ".plan ${n.annotations.find { it == PLAN }.args["plan"]}"
+		if (PLAN in n.annotations) {
+			def args = n.annotations.find { it == PLAN }.args
+			// Remove quotes from start/end
+			emit ".plan ${(args["plan"].value as String)[1..-2]}"
+		}
 		null
 	}
 

@@ -21,10 +21,6 @@ class Annotation {
 		name = name.toUpperCase()
 		this.kind = VALIDATORS.containsKey(name) ? name : null
 		this.args = args
-//		this.args.values().each {
-//			if (it.type == STRING)
-//				it.value = (it.value as String)[1..-2]
-//		}
 	}
 
 	String toString() { "@$kind${ args ? "$args " : "" }" }

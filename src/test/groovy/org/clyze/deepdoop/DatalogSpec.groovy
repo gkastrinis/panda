@@ -64,7 +64,7 @@ class DatalogSpec extends Specification {
 		"fail16.logic" | ErrorId.ANNOTATION_NON_EMPTY
 		"fail17.logic" | ErrorId.ANNOTATION_MISSING_ARG
 		"fail18.logic" | ErrorId.ANNOTATION_INVALID_ARG
-		"fail19.logic" | ErrorId.ANNOTATION_INVALID
+		//"fail19.logic" | ErrorId.ANNOTATION_INVALID
 		"fail20.logic" | ErrorId.REL_EXT_INVALID
 		"fail21.logic" | ErrorId.DECL_MALFORMED
 		"fail22.logic" | ErrorId.ANNOTATION_MISTYPED_ARG
