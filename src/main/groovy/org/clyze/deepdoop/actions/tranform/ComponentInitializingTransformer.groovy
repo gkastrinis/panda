@@ -7,7 +7,6 @@ import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.ComparisonElement
-import org.clyze.deepdoop.datalog.element.LogicalElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.element.relation.Type
@@ -29,8 +28,6 @@ class ComponentInitializingTransformer extends DummyTransformer {
 	String currInitName
 	// Current component being initialized
 	Component currComp
-	// Relations originating from another component
-	Map<String, Rule> frameRules = [:]
 
 	ComponentInitializingTransformer() { actor = this }
 
@@ -60,8 +57,6 @@ class ComponentInitializingTransformer extends DummyTransformer {
 	IVisitable exit(Component n, Map m) {
 		n.declarations.each { initP.globalComp.declarations << (m[it] as Declaration) }
 		n.rules.each { initP.globalComp.rules << (m[it] as Rule) }
-		frameRules.each { name, rule -> initP.globalComp.rules << rule }
-		frameRules = [:]
 		null
 	}
 
@@ -74,38 +69,31 @@ class ComponentInitializingTransformer extends DummyTransformer {
 
 		def origName = n.name
 		def newName = rename(origName)
-		if (origName.contains("@") && !currComp) {
+		if (!origName.contains("@"))
+			return new Relation(newName, n.exprs)
+
+		// Global space
+		if (!currComp) {
 			def (simpleName, parameter) = origName.split("@")
 			if (!origP.inits.any { it.id == parameter })
 				ErrorManager.error(loc, ErrorId.COMP_UNKNOWN, parameter as String)
 			return new Relation("$parameter:$simpleName", n.exprs)
-		} else if (origName.contains("@")) {
-			newName = newName.replace("@", "__")
-			def newRelation = new Relation(newName, n.exprs)
-
-			if (!frameRules[origName]) {
-				def (simpleName, parameter) = origName.split("@")
-				def paramIndex = currComp.parameters.findIndexOf { it == parameter }
-				if (paramIndex == -1)
-					ErrorManager.error(loc, ErrorId.REL_EXT_UNKNOWN, parameter as String)
-
-				def initParameter = origP.inits.find { it.id == currInitName }.parameters[paramIndex]
-				def externalName = initParameter == "_" ? simpleName : "$initParameter:$simpleName"
-				def externalTemplateComp = initParameter == "_" ?
-						origP.globalComp :
-						origP.comps[origP.inits.find { it.id == initParameter }.compName]
-				if (!infoActor.declaredRelations[externalTemplateComp].any { it.name == simpleName })
-					ErrorManager.error(loc, ErrorId.REL_NO_DECL_REC, simpleName as String)
-
-				frameRules[origName] = new Rule(
-						new LogicalElement(newRelation),
-						new LogicalElement(new Relation(externalName, n.exprs)))
-			}
-			return newRelation
 		} else {
-			//if (!infoActor.declaredRelations[currComp].any { it.name == origName })
-			//	ErrorManager.warn(loc, ErrorId.REL_UNKNOWN, origName as String)
-			return new Relation(newName, n.exprs)
+			def (simpleName, parameter) = origName.split("@")
+			def paramIndex = currComp.parameters.findIndexOf { it == parameter }
+			if (paramIndex == -1)
+				ErrorManager.error(loc, ErrorId.REL_EXT_UNKNOWN, parameter as String)
+
+			def initParameter = origP.inits.find { it.id == currInitName }.parameters[paramIndex]
+			def externalName = initParameter == "_" ? simpleName : "$initParameter:$simpleName"
+
+			def externalTemplateComp = initParameter == "_" ?
+					origP.globalComp :
+					origP.comps[origP.inits.find { it.id == initParameter }.compName]
+			if (!infoActor.declaredRelations[externalTemplateComp].any { it.name == simpleName })
+				ErrorManager.error(loc, ErrorId.REL_NO_DECL_REC, simpleName as String)
+
+			return new Relation(externalName, n.exprs)
 		}
 	}
 
