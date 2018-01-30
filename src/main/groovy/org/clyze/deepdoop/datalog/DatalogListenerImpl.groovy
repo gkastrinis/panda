@@ -222,20 +222,19 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	void exitConstant(ConstantContext ctx) {
 		if (ctx.INTEGER()) {
 			def str = ctx.INTEGER().text
-			Long constant
-			if (str.startsWith("0x") || str.startsWith("0X")) {
-				str = str.substring(2)
-				constant = Long.parseLong(str, 16)
-			} else if (str.startsWith("0") && str.length() > 1) {
-				str = str.substring(1)
-				constant = Long.parseLong(str, 8)
-			} else if (str.startsWith("2^")) {
-				str = str.substring(2)
-				constant = 1L << Integer.parseInt(str)
-			} else {
-				constant = Long.parseLong(str, 10)
+			def sign = 1L
+			if (str.startsWith("-")) {
+				sign = -1L
+				str = str[1..-1]
 			}
-			values[ctx] = new ConstantExpr(constant)
+			if (str.startsWith("0x") || str.startsWith("0X"))
+				values[ctx] = new ConstantExpr(sign * Long.parseLong(str[2..-1], 16))
+			else if (str.startsWith("0") && str.length() > 1)
+				values[ctx] = new ConstantExpr(sign * Long.parseLong(str[1..-1], 8))
+			else if (str.startsWith("2^"))
+				values[ctx] = new ConstantExpr(sign * (1L << Integer.parseInt(str[2..-1])))
+			else
+				values[ctx] = new ConstantExpr(sign * Long.parseLong(str, 10))
 		} else if (ctx.REAL()) values[ctx] = new ConstantExpr(Double.parseDouble(ctx.REAL().text))
 		else if (ctx.BOOLEAN()) values[ctx] = new ConstantExpr(Boolean.parseBoolean(ctx.BOOLEAN().text))
 		else if (ctx.STRING()) values[ctx] = new ConstantExpr(ctx.STRING().text)
@@ -287,7 +286,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		// Name of the original file (emitted by C-Preprocessor)
 		def sourceFile = ctx.STRING().text
 		// Remove quotes from file values
-		sourceFile = sourceFile.substring(1, sourceFile.length() - 1)
+		sourceFile = sourceFile[1..-2]
 
 		// Ignore first line of output. It reports the values of the C-Preprocessed file
 		if (markerActualLine == 1) return

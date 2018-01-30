@@ -125,6 +125,10 @@ parameterList
 // Lexer
 
 INTEGER
+	: [\-]?POSITIVE ;
+
+fragment
+POSITIVE
 	: [0-9]+
 	| '0'[0-7]+
 	| '0'[xX][0-9a-fA-F]+

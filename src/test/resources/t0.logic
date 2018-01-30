@@ -6,6 +6,9 @@ f:oo:bar2(2, "bar")
 p(1)
 p(07)
 p(0xFf)
+p(-42)
+p(-042)
+p(-0x42)
 
 r2(x) : int
 r1(t) <- r2(x), t = x + 10
