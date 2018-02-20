@@ -22,7 +22,6 @@ import org.clyze.deepdoop.datalog.expr.RecordExpr
 import org.clyze.deepdoop.datalog.expr.VariableExpr
 
 import static org.clyze.deepdoop.datalog.Annotation.TYPE
-import static org.clyze.deepdoop.datalog.Annotation.__INTERNAL
 import static org.clyze.deepdoop.datalog.element.relation.Type.TYPE_STRING
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
 
@@ -81,11 +80,11 @@ class ConstructorTransformer extends DummyTransformer {
 				optimizedConstructors << constructors[0]
 			} else {
 				constructors.each {
-					extraDecls << new TypeDeclaration(new Type(it.relation.name), new RecordType(it.types.dropRight(1)), [TYPE, __INTERNAL] as Set)
+					extraDecls << new TypeDeclaration(new Type(it.relation.name), new RecordType(it.types.dropRight(1)), [TYPE] as Set)
 				}
 				def record = constructors.collect { new Type(it.relation.name) }
 				types.each { typeToRecord[it] = record }
-				extraDecls << new TypeDeclaration(rootType, new RecordType(record), [TYPE, __INTERNAL] as Set)
+				extraDecls << new TypeDeclaration(rootType, new RecordType(record), [TYPE] as Set)
 			}
 		}
 	}

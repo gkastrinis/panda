@@ -63,10 +63,8 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	}
 
 	String exit(TypeDeclaration n, Map m) {
-		if (__INTERNAL in n.annotations) {
-			def params = (n.supertype as RecordType).innerTypes.withIndex().collect { t, int i -> "${var1(i)}:${map(mini(t.name))}" }
-			emit ".type ${map(mini(n.type.name))} = [${params.join(", ")}]"
-		}
+		def params = (n.supertype as RecordType).innerTypes.withIndex().collect { t, int i -> "${var1(i)}:${map(mini(t.name))}" }
+		emit ".type ${map(mini(n.type.name))} = [${params.join(", ")}]"
 	}
 
 	String exit(Rule n, Map m) {

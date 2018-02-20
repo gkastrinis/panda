@@ -67,7 +67,6 @@ class Annotation {
 				OPTIONAL_VALIDATOR.call(a, ["capacity": INTEGER])
 			},
 			"TYPEVALUES" : {},
-			"__INTERNAL" : NO_ARGS_VALIDATOR,
 	]
 
 	static final CONSTRUCTOR = new Annotation("CONSTRUCTOR")
@@ -77,5 +76,4 @@ class Annotation {
 	static final PLAN = new Annotation("PLAN")
 	static final TYPE = new Annotation("TYPE")
 	static final TYPEVALUES = new Annotation("TYPEVALUES")
-	static final __INTERNAL = new Annotation("__INTERNAL")
 }
