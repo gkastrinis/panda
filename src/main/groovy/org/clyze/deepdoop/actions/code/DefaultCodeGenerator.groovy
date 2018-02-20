@@ -1,9 +1,6 @@
 package org.clyze.deepdoop.actions.code
 
-import org.clyze.deepdoop.actions.InfoCollectionVisitingActor
-import org.clyze.deepdoop.actions.PostOrderVisitor
-import org.clyze.deepdoop.actions.TDummyActor
-import org.clyze.deepdoop.actions.TypeInferenceVisitingActor
+import org.clyze.deepdoop.actions.*
 import org.clyze.deepdoop.datalog.element.ComparisonElement
 import org.clyze.deepdoop.datalog.element.GroupElement
 import org.clyze.deepdoop.datalog.element.LogicalElement
@@ -24,8 +21,11 @@ class DefaultCodeGenerator extends PostOrderVisitor<String> implements TDummyAct
 	File outDir
 	File currentFile
 
-	InfoCollectionVisitingActor infoActor = new InfoCollectionVisitingActor()
-	TypeInferenceVisitingActor typeInferenceActor = new TypeInferenceVisitingActor(infoActor)
+	TypeInfoVisitingActor typeInfoActor = new TypeInfoVisitingActor()
+	RelationInfoVisitingActor relInfoActor = new RelationInfoVisitingActor()
+	TypeInferenceVisitingActor typeInferenceActor = new TypeInferenceVisitingActor(typeInfoActor, relInfoActor)
+	ConstructionInfoVisitingActor constructionInfoActor = new ConstructionInfoVisitingActor()
+
 	List<Result> results = []
 
 	DefaultCodeGenerator(File outDir) {
@@ -41,7 +41,9 @@ class DefaultCodeGenerator extends PostOrderVisitor<String> implements TDummyAct
 
 	//String exit(Component n, Map m) { null }
 
-	//String exit(Declaration n, Map m) { null }
+	//String exit(RelDeclaration n, Map m) { null }
+
+	//String exit(TypeDeclaration n, Map m) { null }
 
 	//String exit(Rule n, Map m) { null }
 

@@ -1,13 +1,19 @@
 package org.clyze.deepdoop.datalog.element.relation
 
-class Type extends Relation {
+import groovy.transform.Canonical
+import org.clyze.deepdoop.datalog.element.IElement
 
-	Type(String name) { super(name, []) }
+@Canonical
+class Type implements IElement {
+
+	String name
 
 	boolean isPrimitive() { name in ["int", "float", "boolean", "string"] }
 
 	String toString() { "T##$name" }
 
-	static final TYPE_STR = new Type("string")
 	static final TYPE_INT = new Type("int")
+	static final TYPE_FLOAT = new Type("float")
+	static final TYPE_BOOLEAN = new Type("boolean")
+	static final TYPE_STRING = new Type("string")
 }

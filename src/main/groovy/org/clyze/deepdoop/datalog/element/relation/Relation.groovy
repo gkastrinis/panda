@@ -11,5 +11,5 @@ class Relation implements IElement {
 	List<IExpr> exprs = []
 	int getArity() { exprs.size() }
 
-	String toString() { "REL##$name$exprs" }
+	String toString() { "R##$name$exprs" }
 }

@@ -1,10 +1,11 @@
 package org.clyze.deepdoop.actions.tranform
 
 import org.clyze.deepdoop.actions.IVisitable
-import org.clyze.deepdoop.actions.TypeHierarchyVisitingActor
+import org.clyze.deepdoop.actions.TypeInfoVisitingActor
 import org.clyze.deepdoop.datalog.Annotation
-import org.clyze.deepdoop.datalog.clause.Declaration
+import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
+import org.clyze.deepdoop.datalog.clause.TypeDeclaration
 import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.ComparisonElement
 import org.clyze.deepdoop.datalog.element.ConstructionElement
@@ -17,18 +18,18 @@ import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.GroupExpr
 
 import static org.clyze.deepdoop.datalog.Annotation.*
-import static org.clyze.deepdoop.datalog.element.relation.Type.TYPE_STR
+import static org.clyze.deepdoop.datalog.element.relation.Type.TYPE_STRING
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.genN as varN
 
 class TypeTransformer extends DummyTransformer {
 
-	TypeHierarchyVisitingActor typeHierarchyVA
+	TypeInfoVisitingActor typeInfoActor
 	Component currComp
 
-	TypeTransformer(TypeHierarchyVisitingActor typeHierarchyVA) {
+	TypeTransformer(TypeInfoVisitingActor typeInfoActor) {
 		actor = this
-		this.typeHierarchyVA = typeHierarchyVA
+		this.typeInfoActor = typeInfoActor
 	}
 
 	void enter(Component n) {
@@ -36,44 +37,38 @@ class TypeTransformer extends DummyTransformer {
 		extraDecls = [] as Set
 		extraRules = [] as Set
 
-		typeHierarchyVA.typeToRootType.values()
-		// For all root types
-		typeHierarchyVA.superTypesOrdered[n].findAll { !it.value }.each { t, superTs ->
-			extraDecls << new Declaration(
-					new Constructor("${t.name}:byStr", []),
-					[TYPE_STR, t],
-					[new Annotation("constructor")] as Set)
+		(typeInfoActor.typeToRootType[n].values() as Set).each {
+			extraDecls << new RelDeclaration(new Constructor("${it.name}:byStr", []), [TYPE_STRING, it], [CONSTRUCTOR] as Set)
 		}
 	}
 
-	IVisitable exit(Declaration n, Map m) {
-		if (TYPE in n.annotations) {
-			def t = n.relation as Type
-			def rootT = typeHierarchyVA.typeToRootType[currComp][t]
-			if (TYPEVALUES in n.annotations) {
-				n.annotations.find { it == TYPEVALUES }.args.each { key, value ->
-					def rel = new Relation("${t.name}:$key", [var1()])
-					def con = new Constructor("${rootT.name}:byStr", [value, var1()])
-					extraDecls << new Declaration(rel, [t])
-					extraRules << new Rule(new LogicalElement([new ConstructionElement(con, t), rel]), null)
-				}
+	IVisitable exit(TypeDeclaration n, Map m) {
+		def rootT = typeInfoActor.typeToRootType[currComp][n.type]
+		if (TYPEVALUES in n.annotations) {
+			n.annotations.find { it == TYPEVALUES }.args.each { key, value ->
+				def rel = new Relation("${n.type.name}:$key", [var1()])
+				def con = new Constructor("${rootT.name}:byStr", [value, var1()])
+				extraDecls << new RelDeclaration(rel, [n.type])
+				extraRules << new Rule(new LogicalElement([new ConstructionElement(con, n.type), rel]), null)
 			}
-			if (INPUT in n.annotations) {
-				def relName = "__SYS_INPUT_${n.relation.name}"
-				def rel = new Relation(relName, varN(1))
-				def con = new Constructor("${rootT.name}:byStr", varN(2))
-				def a = new Annotation("INPUT", [
-						"filename" : new ConstantExpr("${n.relation.name}.facts"),
-						"delimeter": new ConstantExpr("\\t")])
-				extraDecls << new Declaration(rel, [TYPE_STR], [a] as Set)
-				extraRules << new Rule(new LogicalElement(new ConstructionElement(con, n.relation as Type)), new LogicalElement(rel))
-				n.annotations.remove(INPUT)
-			}
+		}
+		if (INPUT in n.annotations) {
+			def relName = "__SYS_INPUT_${n.type.name}"
+			def rel = new Relation(relName, varN(1))
+			def con = new Constructor("${rootT.name}:byStr", varN(2))
+			def a = new Annotation("INPUT", [
+					"filename" : new ConstantExpr("${n.type.name}.facts"),
+					"delimeter": new ConstantExpr("\\t")])
+			extraDecls << new RelDeclaration(rel, [TYPE_STRING], [a] as Set)
+			extraRules << new Rule(new LogicalElement(new ConstructionElement(con, n.type)), new LogicalElement(rel))
+			n.annotations.remove(INPUT)
 		}
 		return n
 	}
 
 	// Overrides to avoid unneeded allocations
+
+	IVisitable exit(RelDeclaration n, Map m) { n }
 
 	IVisitable exit(LogicalElement n, Map m) { n }
 

@@ -1,7 +1,8 @@
 package org.clyze.deepdoop.actions.tranform
 
+import org.clyze.deepdoop.actions.ConstructionInfoVisitingActor
 import org.clyze.deepdoop.actions.IVisitable
-import org.clyze.deepdoop.actions.InfoCollectionVisitingActor
+import org.clyze.deepdoop.actions.RelationInfoVisitingActor
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Declaration
 import org.clyze.deepdoop.datalog.clause.Rule
@@ -18,16 +19,17 @@ import org.clyze.deepdoop.system.SourceManager
 
 class ComponentInitializingTransformer extends DummyTransformer {
 
+	private RelationInfoVisitingActor relInfoActor
 	// Info collection actor for original program
-	InfoCollectionVisitingActor infoActor
+	private ConstructionInfoVisitingActor constructionInfoActor
 	// Original program before initialization
-	Program origP
+	private Program origP
 	// Program after initialization (only a global component)
-	Program initP
+	private Program initP
 	// Current name used for initialization
-	String currInitName
+	private String currInitName
 	// Current component being initialized
-	Component currComp
+	private Component currComp
 
 	ComponentInitializingTransformer() { actor = this }
 
@@ -38,8 +40,10 @@ class ComponentInitializingTransformer extends DummyTransformer {
 		origP = n
 		initP = new Program(new Component())
 
-		infoActor = new InfoCollectionVisitingActor()
-		infoActor.visit origP
+		relInfoActor = new RelationInfoVisitingActor()
+		relInfoActor.visit origP
+		constructionInfoActor = new ConstructionInfoVisitingActor()
+		constructionInfoActor.visit origP
 
 		visit origP.globalComp
 		origP.inits.each {
@@ -68,18 +72,16 @@ class ComponentInitializingTransformer extends DummyTransformer {
 			ErrorManager.error(loc, ErrorId.REL_EXT_INVALID)
 
 		def origName = n.name
-		def newName = rename(origName)
 		if (!origName.contains("@"))
-			return new Relation(newName, n.exprs)
+			return new Relation(rename(origName), n.exprs)
 
+		def (simpleName, parameter) = origName.split("@")
 		// Global space
 		if (!currComp) {
-			def (simpleName, parameter) = origName.split("@")
 			if (!origP.inits.any { it.id == parameter })
 				ErrorManager.error(loc, ErrorId.COMP_UNKNOWN, parameter as String)
 			return new Relation("$parameter:$simpleName", n.exprs)
 		} else {
-			def (simpleName, parameter) = origName.split("@")
 			def paramIndex = currComp.parameters.findIndexOf { it == parameter }
 			if (paramIndex == -1)
 				ErrorManager.error(loc, ErrorId.REL_EXT_UNKNOWN, parameter as String)
@@ -90,7 +92,7 @@ class ComponentInitializingTransformer extends DummyTransformer {
 			def externalTemplateComp = initParameter == "_" ?
 					origP.globalComp :
 					origP.comps[origP.inits.find { it.id == initParameter }.compName]
-			if (!infoActor.declaredRelations[externalTemplateComp].any { it.name == simpleName })
+			if (!relInfoActor.declaredRelations[externalTemplateComp].any { it.name == simpleName })
 				ErrorManager.error(loc, ErrorId.REL_NO_DECL_REC, simpleName as String)
 
 			return new Relation(externalName, n.exprs)

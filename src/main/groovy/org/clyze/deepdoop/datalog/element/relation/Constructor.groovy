@@ -10,5 +10,5 @@ class Constructor extends Relation {
 
 	def getValueExpr() { exprs.last() }
 
-	String toString() { "CON##$name$exprs" }
+	String toString() { "C##$name$exprs" }
 }

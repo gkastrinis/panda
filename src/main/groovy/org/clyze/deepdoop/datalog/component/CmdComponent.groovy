@@ -1,7 +1,7 @@
 package org.clyze.deepdoop.datalog.component
 
 import groovy.transform.Canonical
-import org.clyze.deepdoop.datalog.clause.Declaration
+import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.element.relation.Relation
 
 @Canonical
@@ -11,7 +11,7 @@ class CmdComponent extends Component {
 	Set<Relation> exports
 	Set<Relation> imports
 
-	CmdComponent(String name, Set<Declaration> declarations, String eval, Set<Relation> imports, Set<Relation> exports) {
+	CmdComponent(String name, Set<RelDeclaration> declarations, String eval, Set<Relation> imports, Set<Relation> exports) {
 		super(name, null, declarations, [])
 		this.eval = eval
 		this.imports = imports

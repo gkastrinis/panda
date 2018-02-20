@@ -1,19 +1,19 @@
 package org.clyze.deepdoop.actions.code
 
 import groovy.transform.InheritConstructors
-import org.clyze.deepdoop.actions.TypeHierarchyVisitingActor
-import org.clyze.deepdoop.actions.ValidationVisitingActor
+import org.clyze.deepdoop.actions.TypeInfoVisitingActor
 import org.clyze.deepdoop.actions.tranform.ComponentInitializingTransformer
 import org.clyze.deepdoop.actions.tranform.SyntaxFlatteningTransformer
 import org.clyze.deepdoop.actions.tranform.TypeTransformer
-import org.clyze.deepdoop.actions.tranform.souffle.AssignTransformer
 import org.clyze.deepdoop.actions.tranform.souffle.ConstructorTransformer
 import org.clyze.deepdoop.datalog.Program
-import org.clyze.deepdoop.datalog.clause.Declaration
+import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
+import org.clyze.deepdoop.datalog.clause.TypeDeclaration
 import org.clyze.deepdoop.datalog.element.AggregationElement
 import org.clyze.deepdoop.datalog.element.ConstructionElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
+import org.clyze.deepdoop.datalog.element.relation.RecordType
 import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.RecordExpr
@@ -29,41 +29,44 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		currentFile = createUniqueFile("out_", ".dl")
 		results << new Result(Result.Kind.LOGIC, currentFile)
 
-		def tmpTypeHierarchyVA = new TypeHierarchyVisitingActor()
+		def tmpTypeInfoActor = new TypeInfoVisitingActor()
 
 		// Transform program before visiting nodes
 		def n = p.accept(new SyntaxFlatteningTransformer())
-				.accept(tmpTypeHierarchyVA)
-				.accept(new TypeTransformer(tmpTypeHierarchyVA))
+				.accept(tmpTypeInfoActor)
+				.accept(new TypeTransformer(tmpTypeInfoActor))
 				.accept(new ComponentInitializingTransformer())
-				.accept(infoActor)
-				.accept(new ValidationVisitingActor(infoActor))
+				.accept(typeInfoActor)
+				.accept(relInfoActor)
+				.accept(constructionInfoActor)
+				//n=n.accept(new ValidationVisitingActor(constructionInfoActor))
 				.accept(typeInferenceActor)
-				.accept(new ConstructorTransformer(infoActor, typeInferenceActor))
-				.accept(new AssignTransformer(infoActor))
+				.accept(new ConstructorTransformer(typeInfoActor, typeInferenceActor, constructionInfoActor))
+				//.accept(new AssignTransformer(constructionInfoActor))
 
-		return super.visit(n)
+		super.visit(n)
 	}
 
-	String exit(Declaration n, Map m) {
-		def name = n.relation.name
+	String exit(RelDeclaration n, Map m) {
 		def params = n.types.withIndex().collect { t, int i -> "${var1(i)}:${map(mini(t.name))}" }
-
-		if (TYPE in n.annotations && __INTERNAL in n.annotations)
-			emit ".type ${map(mini(name))} = [${params.join(", ")}]"
-
-		if (!(__INTERNAL in n.annotations))
-			emit ".decl ${mini(name)}(${params.join(", ")})"
+		emit ".decl ${mini(n.relation.name)}(${params.join(", ")})"
 
 		if (INPUT in n.annotations) {
 			def args = n.annotations.find { it == INPUT }.args
-			def filename = args["filename"] ?: "${name}.facts"
+			def filename = args["filename"] ?: "${n.relation.name}.facts"
 			def delimeter = args["delimeter"] ?: "\\t"
-			emit """.input ${mini(name)}(filename="$filename", delimeter="$delimeter")"""
+			emit """.input ${mini(n.relation.name)}(filename="$filename", delimeter="$delimeter")"""
 		}
 		if (OUTPUT in n.annotations)
-			emit ".output ${mini(name)}"
+			emit ".output ${mini(n.relation.name)}"
 		null
+	}
+
+	String exit(TypeDeclaration n, Map m) {
+		if (__INTERNAL in n.annotations) {
+			def params = (n.supertype as RecordType).innerTypes.withIndex().collect { t, int i -> "${var1(i)}:${map(mini(t.name))}" }
+			emit ".type ${map(mini(n.type.name))} = [${params.join(", ")}]"
+		}
 	}
 
 	String exit(Rule n, Map m) {
@@ -85,19 +88,15 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		else null
 	}
 
-	void enter(ConstructionElement n) {
-		n.type.exprs = [n.constructor.valueExpr]
-	}
-
 	String exit(ConstructionElement n, Map m) {
-		"${m[n.constructor]}, ${m[n.type]}"
+		"${m[n.constructor]}, ${m[n.type]}(${n.constructor.valueExpr})"
 	}
 
 	String exit(Constructor n, Map m) { exit(n as Relation, m) }
 
 	String exit(Relation n, Map m) { "${mini(n.name)}(${n.exprs.collect { m[it] }.join(", ")})" }
 
-	String exit(Type n, Map m) { exit(n as Relation, m) }
+	String exit(Type n, Map m) { "${mini(n.name)}" }
 
 	// Must override since the default implementation throws an exception
 	String visit(RecordExpr n) {

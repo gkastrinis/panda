@@ -1,7 +1,7 @@
 package org.clyze.deepdoop.actions
 
 import org.clyze.deepdoop.datalog.Program
-import org.clyze.deepdoop.datalog.clause.Declaration
+import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.element.ConstructionElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
@@ -17,19 +17,19 @@ import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.REAL
 
 class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements TDummyActor<IVisitable> {
 
-	InfoCollectionVisitingActor infoActor
+	ConstructionInfoVisitingActor infoActor
 
 	Set<String> declaredRelations = [] as Set
 	Map<String, Integer> arities = [:]
 
-	ValidationVisitingActor(InfoCollectionVisitingActor infoActor) {
+	ValidationVisitingActor(ConstructionInfoVisitingActor infoActor) {
 		actor = this
 		this.infoActor = infoActor
 	}
 
 	IVisitable exit(Program n, Map m) { n }
 
-	IVisitable exit(Declaration n, Map m) {
+	IVisitable exit(RelDeclaration n, Map m) {
 		if (n.relation.name in declaredRelations)
 			ErrorManager.error(recall(n), ErrorId.DECL_MULTIPLE, n.relation.name)
 		declaredRelations << n.relation.name

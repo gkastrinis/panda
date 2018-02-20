@@ -5,7 +5,7 @@ import org.clyze.deepdoop.actions.ValidationVisitingActor
 import org.clyze.deepdoop.actions.tranform.ComponentInitializingTransformer
 import org.clyze.deepdoop.actions.tranform.SyntaxFlatteningTransformer
 import org.clyze.deepdoop.datalog.Program
-import org.clyze.deepdoop.datalog.clause.Declaration
+import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.element.AggregationElement
 import org.clyze.deepdoop.datalog.element.ConstructionElement
@@ -29,18 +29,18 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 		// Transform program before visiting nodes
 		def n = p.accept(new SyntaxFlatteningTransformer())
 				.accept(new ComponentInitializingTransformer())
-				.accept(infoActor)
-				.accept(new ValidationVisitingActor(infoActor))
+				.accept(constructionInfoActor)
+				.accept(new ValidationVisitingActor(constructionInfoActor))
 				.accept(typeInferenceActor)
 
 		(n as Program).globalComp.declarations
 				.findAll { FUNCTIONAL in it.annotations }
 				.collect { it.relation.name } as Set
 
-		return super.visit(n as Program)
+		super.visit(n as Program)
 	}
 
-	String exit(Declaration n, Map m) {
+	String exit(RelDeclaration n, Map m) {
 		def name = n.relation.name
 		if (TYPE in n.annotations) {
 			emit "lang:entity(`$name)."
@@ -142,7 +142,7 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 			results << new Result(Result.Kind.IMPORT, latestFile)
 
 			c.declarations.each {
-				def relation = infoActor.getDeclaringAtoms(it).args().first() as Relation
+				def relation = constructionInfoActor.getDeclaringAtoms(it).args().first() as Relation
 				emitFilePredicate(relation, it, latestFile)
 			}
 		}
@@ -182,8 +182,8 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 
 	boolean allHandledFor(IVisitable n) {
 		Set<String> atoms = []
-		infoActor.declaredRelations[n].each { atoms << it.name }
-		infoActor.usedRelations[n].each { atoms << it.name }
+		constructionInfoActor.declaredRelations[n].each { atoms << it.name }
+		constructionInfoActor.usedRelations[n].each { atoms << it.name }
 		atoms.retainAll(globalAtoms)
 
 		return atoms.every { handledAtoms.contains(it) }

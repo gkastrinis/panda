@@ -2,7 +2,9 @@ package org.clyze.deepdoop.actions
 
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Declaration
+import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
+import org.clyze.deepdoop.datalog.clause.TypeDeclaration
 import org.clyze.deepdoop.datalog.component.CmdComponent
 import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.*
@@ -19,6 +21,10 @@ interface IVisitor<T> {
 	T visit(Component n)
 
 	T visit(Declaration n)
+
+	T visit(RelDeclaration n)
+
+	T visit(TypeDeclaration n)
 
 	T visit(Rule n)
 

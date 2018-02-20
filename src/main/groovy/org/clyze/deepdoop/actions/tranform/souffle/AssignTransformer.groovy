@@ -1,7 +1,7 @@
 package org.clyze.deepdoop.actions.tranform.souffle
 
+import org.clyze.deepdoop.actions.ConstructionInfoVisitingActor
 import org.clyze.deepdoop.actions.IVisitable
-import org.clyze.deepdoop.actions.InfoCollectionVisitingActor
 import org.clyze.deepdoop.actions.tranform.DummyTransformer
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Rule
@@ -14,7 +14,7 @@ import org.clyze.deepdoop.system.ErrorManager
 
 class AssignTransformer extends DummyTransformer {
 
-	InfoCollectionVisitingActor infoActor
+	ConstructionInfoVisitingActor infoActor
 
 	// Variables that are assigned some expression, in the body of a rule
 	Map<VariableExpr, IExpr> assignments = [:]
@@ -29,7 +29,7 @@ class AssignTransformer extends DummyTransformer {
 
 	Set<VariableExpr> boundVars
 
-	AssignTransformer(InfoCollectionVisitingActor infoActor) { this.infoActor = infoActor }
+	AssignTransformer(ConstructionInfoVisitingActor infoActor) { this.infoActor = infoActor }
 
 	IVisitable visit(Program n) {
 		def n1 = super.visit(n) as Program

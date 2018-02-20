@@ -5,7 +5,9 @@ import org.clyze.deepdoop.actions.PostOrderVisitor
 import org.clyze.deepdoop.actions.TDummyActor
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Declaration
+import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
+import org.clyze.deepdoop.datalog.clause.TypeDeclaration
 import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.*
 import org.clyze.deepdoop.datalog.element.relation.Constructor
@@ -28,11 +30,16 @@ class DummyTransformer extends PostOrderVisitor<IVisitable> implements TDummyAct
 	IVisitable exit(Component n, Map m) {
 		def ds = (n.declarations.collect { m[it] as Declaration } + extraDecls) as Set
 		def rs = (n.rules.collect { m[it] as Rule } + extraRules) as Set
-		new Component(n.name, n.superComp, n.parameters, n.superParameters, ds, rs)
+		// grep() returns all elements which satisfy Groovy truth
+		new Component(n.name, n.superComp, n.parameters, n.superParameters, ds.grep(), rs.grep())
 	}
 
-	IVisitable exit(Declaration n, Map m) {
-		new Declaration(m[n.relation] as Relation, n.types.collect { m[it] as Type }, n.annotations)
+	IVisitable exit(RelDeclaration n, Map m) {
+		new RelDeclaration(m[n.relation] as Relation, n.types.collect { m[it] as Type }, n.annotations)
+	}
+
+	IVisitable exit(TypeDeclaration n, Map m) {
+		new TypeDeclaration(m[n.type] as Type, m[n.supertype] as Type , n.annotations)
 	}
 
 	IVisitable exit(Rule n, Map m) {
@@ -71,9 +78,7 @@ class DummyTransformer extends PostOrderVisitor<IVisitable> implements TDummyAct
 		new Relation(n.name, n.exprs.collect { m[it] as IExpr })
 	}
 
-	IVisitable exit(Type n, Map m) {
-		n.exprs ? new Type(n.name, m[n.exprs.first()] as IExpr) : n
-	}
+	IVisitable exit(Type n, Map m) { n }
 
 	IVisitable exit(BinaryExpr n, Map m) {
 		new BinaryExpr(m[n.left] as IExpr, n.op, m[n.right] as IExpr)

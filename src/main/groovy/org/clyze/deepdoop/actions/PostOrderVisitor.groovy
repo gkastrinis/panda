@@ -2,7 +2,9 @@ package org.clyze.deepdoop.actions
 
 import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.Declaration
+import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
+import org.clyze.deepdoop.datalog.clause.TypeDeclaration
 import org.clyze.deepdoop.datalog.component.CmdComponent
 import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.*
@@ -43,10 +45,19 @@ class PostOrderVisitor<T> implements IVisitor<T> {
 		actor.exit(n, m)
 	}
 
-	T visit(Declaration n) {
+	T visit(Declaration n) { null }
+
+	T visit(RelDeclaration n) {
 		actor.enter(n)
 		m[n.relation] = visit n.relation
 		n.types.each { m[it] = visit it }
+		actor.exit(n, m)
+	}
+
+	T visit(TypeDeclaration n) {
+		actor.enter(n)
+		m[n.type] = visit n.type
+		if (n.supertype) m[n.supertype] = visit n.supertype
 		actor.exit(n, m)
 	}
 
@@ -116,7 +127,7 @@ class PostOrderVisitor<T> implements IVisitor<T> {
 
 	T visit(Type n) {
 		actor.enter(n)
-		n.exprs.each { m[it] = visit it }
+		//n.exprs.each { m[it] = visit it }
 		actor.exit(n, m)
 	}
 

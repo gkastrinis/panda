@@ -3,8 +3,9 @@ package org.clyze.deepdoop.datalog
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.ErrorNode
 import org.antlr.v4.runtime.tree.TerminalNode
-import org.clyze.deepdoop.datalog.clause.Declaration
+import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
+import org.clyze.deepdoop.datalog.clause.TypeDeclaration
 import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.component.Initialization
 import org.clyze.deepdoop.datalog.element.*
@@ -45,7 +46,8 @@ class DatalogListenerImpl extends DatalogBaseListener {
 
 	void exitProgram(ProgramContext ctx) {
 		pendingAnnotations[currComp.name].each {
-			currComp.declarations << new Declaration(new Relation(it.key), [], it.value)
+			// TODO fix type of declaration
+			currComp.declarations << new RelDeclaration(new Relation(it.key), [], it.value)
 		}
 	}
 
@@ -71,7 +73,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		}
 
 		pendingAnnotations[currComp.name].each { String relName, Set annotations ->
-			currComp.declarations << new Declaration(new Relation(relName), [], annotations)
+			currComp.declarations << new RelDeclaration(new Relation(relName), [], annotations)
 		}
 		pendingAnnotations.remove(currComp.name)
 
@@ -124,11 +126,11 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		if (ctx.IDENTIFIER(0)) {
 			if (TYPE in annotations) {
 				def type = new Type(ctx.IDENTIFIER(0).text)
-				def supertype = ctx.IDENTIFIER(1) ? [new Type(ctx.IDENTIFIER(1).text)] : []
+				def supertype = ctx.IDENTIFIER(1) ? new Type(ctx.IDENTIFIER(1).text) : null
 				// Initial values are of the form `key(value)`. E.g., PUBLIC('public')
 				// Keys are used to generate singleton relations. E.g., Modifier:PUBLIC(x)
 				if (ctx.initValueList()) annotations << new Annotation("TYPEVALUES", values[ctx.initValueList()] as Map)
-				def d = new Declaration(type, supertype, annotations)
+				def d = new TypeDeclaration(type, supertype, annotations)
 				currComp.declarations << d
 				rec(d, ctx)
 			} else {
@@ -140,7 +142,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 			def types = values[ctx.identifierList()].collect { new Type(it as String) }
 			if (rel.exprs.size() != types.size())
 				ErrorManager.error(loc, ErrorId.DECL_MALFORMED)
-			def d = new Declaration(rel, types, annotations)
+			def d = new RelDeclaration(rel, types, annotations)
 			currComp.declarations << d
 			rec(d, ctx)
 		}

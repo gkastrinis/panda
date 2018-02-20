@@ -2,8 +2,9 @@ package org.clyze.deepdoop.actions.tranform
 
 import org.clyze.deepdoop.actions.IVisitable
 import org.clyze.deepdoop.datalog.Program
-import org.clyze.deepdoop.datalog.clause.Declaration
+import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
+import org.clyze.deepdoop.datalog.clause.TypeDeclaration
 import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.ComparisonElement
 import org.clyze.deepdoop.datalog.element.ConstructionElement
@@ -80,7 +81,9 @@ class SyntaxFlatteningTransformer extends DummyTransformer {
 
 	// Overrides to avoid unneeded allocations
 
-	IVisitable exit(Declaration n, Map m) { n }
+	IVisitable exit(RelDeclaration n, Map m) { n }
+
+	IVisitable exit(TypeDeclaration n, Map m) { n }
 
 	IVisitable exit(ComparisonElement n, Map m) { n }
 
