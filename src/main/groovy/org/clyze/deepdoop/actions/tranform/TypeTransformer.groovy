@@ -24,8 +24,8 @@ import static org.clyze.deepdoop.datalog.expr.VariableExpr.genN as varN
 
 class TypeTransformer extends DummyTransformer {
 
-	TypeInfoVisitingActor typeInfoActor
-	Component currComp
+	private TypeInfoVisitingActor typeInfoActor
+	private Component currComp
 
 	TypeTransformer(TypeInfoVisitingActor typeInfoActor) {
 		actor = this

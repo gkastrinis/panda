@@ -10,9 +10,9 @@ import org.clyze.deepdoop.datalog.expr.RecordExpr
 
 class CleanupTransformer extends DummyTransformer {
 
-	boolean changed = false
+	private boolean changed = false
 	// Dummy expression used to replace assignment expressions
-	ComparisonElement dummyComparison
+	private ComparisonElement dummyComparison
 
 	CleanupTransformer(ComparisonElement dummyComparison) { this.dummyComparison = dummyComparison }
 

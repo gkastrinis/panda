@@ -41,29 +41,29 @@ import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
 @Canonical
 class ConstructorTransformer extends DummyTransformer {
 
-	TypeInfoVisitingActor typeInfoActor
-	TypeInferenceVisitingActor typeInferenceActor
-	ConstructionInfoVisitingActor constructionInfoActor
+	private TypeInfoVisitingActor typeInfoActor
+	private TypeInferenceVisitingActor typeInferenceActor
+	private ConstructionInfoVisitingActor constructionInfoActor
 
 	// Recurring constant
-	IExpr NIL = new ConstantExpr("nil")
+	private IExpr NIL = new ConstantExpr("nil")
 
 	// Re: 2
-	Map<Type, List<Type>> typeToRecord = [:]
-	Map<Type, Type> typeToCommonType = [:]
+	private Map<Type, List<Type>> typeToRecord = [:]
+	private Map<Type, Type> typeToCommonType = [:]
 
 	// Optimize for the case of a single constructor
-	Set<Type> optimizedTypes = [] as Set
-	Set<RelDeclaration> optimizedConstructors = [] as Set
+	private Set<Type> optimizedTypes = [] as Set
+	private Set<RelDeclaration> optimizedConstructors = [] as Set
 
 	// The variable currently being constructed
-	VariableExpr tmpConVar
+	private VariableExpr tmpConVar
 	// The internal record representing the constructed value
-	RecordExpr tmpConRecord
+	private RecordExpr tmpConRecord
 	// The internal record type, e.g. ConType01
-	Type tmpConRecordType
+	private Type tmpConRecordType
 	// Type for current relation parameter (in rule head)
-	Type tmpCurrType
+	private Type tmpCurrType
 
 	void enter(Program n) {
 		// Re: (2)

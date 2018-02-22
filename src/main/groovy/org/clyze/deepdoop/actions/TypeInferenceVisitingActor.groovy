@@ -30,18 +30,16 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 	Map<String, List<Type>> inferredTypes = [:].withDefault { [] }
 
 	// Relation name x Type Set for each index
-	Map<String, List<Set<Type>>> tmpRelationTypes = [:].withDefault { [] }
+	private  Map<String, List<Set<Type>>> tmpRelationTypes = [:].withDefault { [] }
 	// Expression x Type Set (for current clause)
-	Map<IVisitable, Set<Type>> tmpExprTypes
+	private Map<IVisitable, Set<Type>> tmpExprTypes
 	// Relation Name x Parameter Expression x Index (for current clause)
-	Map<String, Map<IExpr, Integer>> tmpExprIndices
+	private Map<String, Map<IExpr, Integer>> tmpExprIndices
 
-	Map<String, RelDeclaration> relToDecl = [:]
-
+	private Map<String, RelDeclaration> relToDecl = [:]
 	// Implementing fix-point computation
-	Set<Rule> deltaRules
-
-	Component currComp
+	private Set<Rule> deltaRules
+	private Component currComp
 
 	TypeInferenceVisitingActor(TypeInfoVisitingActor typeInfoActor, RelationInfoVisitingActor relInfoActor) {
 		actor = this

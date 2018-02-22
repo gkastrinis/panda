@@ -14,20 +14,17 @@ import org.clyze.deepdoop.system.ErrorManager
 
 class AssignTransformer extends DummyTransformer {
 
-	ConstructionInfoVisitingActor infoActor
-
+	private ConstructionInfoVisitingActor infoActor
 	// Variables that are assigned some expression, in the body of a rule
-	Map<VariableExpr, IExpr> assignments = [:]
+	private Map<VariableExpr, IExpr> assignments = [:]
 	// Variables already replaced by an assignment
-	Set<VariableExpr> replacedVars = [] as Set
+	private Set<VariableExpr> replacedVars = [] as Set
 	// Dummy expression to replace assignment expressions
-	ComparisonElement dummyComparison = new ComparisonElement(new ConstantExpr(1), BinaryOp.EQ, new ConstantExpr(1))
+	private ComparisonElement dummyComparison = new ComparisonElement(new ConstantExpr(1), BinaryOp.EQ, new ConstantExpr(1))
 	// For transitive closure computation
-	boolean changed
-
-	int complexLogic
-
-	Set<VariableExpr> boundVars
+	private boolean changed
+	private int complexLogic
+	private Set<VariableExpr> boundVars
 
 	AssignTransformer(ConstructionInfoVisitingActor infoActor) { this.infoActor = infoActor }
 
