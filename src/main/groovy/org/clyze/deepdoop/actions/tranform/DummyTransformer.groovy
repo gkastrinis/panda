@@ -17,9 +17,9 @@ import org.clyze.deepdoop.datalog.expr.*
 
 class DummyTransformer extends DefaultVisitor<IVisitable> implements TDummyActor<IVisitable> {
 
-	Set<RelDeclaration> extraRelDecls = [] as Set
-	Set<TypeDeclaration> extraTypeDecls = [] as Set
-	Set<Rule> extraRules = [] as Set
+	protected Set<RelDeclaration> extraRelDecls = [] as Set
+	protected Set<TypeDeclaration> extraTypeDecls = [] as Set
+	protected Set<Rule> extraRules = [] as Set
 
 	DummyTransformer() { actor = this }
 

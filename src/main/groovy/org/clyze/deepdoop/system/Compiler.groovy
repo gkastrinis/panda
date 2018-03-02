@@ -1,7 +1,6 @@
 package org.clyze.deepdoop.system
 
 import org.antlr.v4.runtime.ANTLRFileStream
-import org.antlr.v4.runtime.ANTLRInputStream
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTreeWalker
 import org.apache.commons.logging.LogFactory
@@ -26,25 +25,21 @@ class Compiler {
 		compile(filename, new SouffleCodeGenerator(outDir))
 	}
 
-	static List<Result> compile(String filename, def codeGenActor) {
+	private static List<Result> compile(String filename, def codeGenActor) {
 		def log = LogFactory.getLog(Compiler.class)
 		log.info("[DD] COMPILE: $filename with ${codeGenActor.class.name}")
 
 		try {
-			return compile0(new ANTLRFileStream(filename), filename, codeGenActor)
+			def parser = new DatalogParser(new CommonTokenStream(new DatalogLexer(new ANTLRFileStream(filename))))
+			def listener = new DatalogListenerImpl(filename)
+			ParseTreeWalker.DEFAULT.walk(listener, parser.program())
+
+			codeGenActor.visit(listener.program)
+			return codeGenActor.results
 		} catch (e) {
 			log.error(e.message, e)
 		}
 		return null
-	}
-
-	static List<Result> compile0(ANTLRInputStream inputStream, String filename, def codeGenActor) {
-		def parser = new DatalogParser(new CommonTokenStream(new DatalogLexer(inputStream)))
-		def listener = new DatalogListenerImpl(filename)
-		ParseTreeWalker.DEFAULT.walk(listener, parser.program())
-
-		codeGenActor.visit(listener.program)
-		return codeGenActor.results
 	}
 
 	private static void initLogging(String logLevel, String logDir, boolean console) {

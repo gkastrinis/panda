@@ -19,13 +19,13 @@ import static org.clyze.deepdoop.datalog.element.LogicalElement.LogicType.AND
 
 class DefaultCodeGenerator extends DefaultVisitor<String> implements TDummyActor<String> {
 
-	File outDir
-	File currentFile
+	protected File outDir
+	protected File currentFile
 
-	TypeInfoVisitingActor typeInfoActor = new TypeInfoVisitingActor()
-	RelationInfoVisitingActor relInfoActor = new RelationInfoVisitingActor()
-	ConstructionInfoVisitingActor constructionInfoActor = new ConstructionInfoVisitingActor()
-	TypeInferenceTransformer typeInferenceTransformer = new TypeInferenceTransformer(typeInfoActor, relInfoActor)
+	protected TypeInfoVisitingActor typeInfoActor = new TypeInfoVisitingActor()
+	protected RelationInfoVisitingActor relInfoActor = new RelationInfoVisitingActor()
+	protected ConstructionInfoVisitingActor constructionInfoActor = new ConstructionInfoVisitingActor()
+	protected TypeInferenceTransformer typeInferenceTransformer = new TypeInferenceTransformer(typeInfoActor, relInfoActor)
 
 	List<Result> results = []
 
