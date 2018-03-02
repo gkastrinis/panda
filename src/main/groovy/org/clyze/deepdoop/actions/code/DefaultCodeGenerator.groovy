@@ -1,6 +1,7 @@
 package org.clyze.deepdoop.actions.code
 
 import org.clyze.deepdoop.actions.*
+import org.clyze.deepdoop.actions.tranform.TypeInferenceTransformer
 import org.clyze.deepdoop.datalog.element.ComparisonElement
 import org.clyze.deepdoop.datalog.element.GroupElement
 import org.clyze.deepdoop.datalog.element.LogicalElement
@@ -23,8 +24,8 @@ class DefaultCodeGenerator extends PostOrderVisitor<String> implements TDummyAct
 
 	TypeInfoVisitingActor typeInfoActor = new TypeInfoVisitingActor()
 	RelationInfoVisitingActor relInfoActor = new RelationInfoVisitingActor()
-	TypeInferenceVisitingActor typeInferenceActor = new TypeInferenceVisitingActor(typeInfoActor, relInfoActor)
 	ConstructionInfoVisitingActor constructionInfoActor = new ConstructionInfoVisitingActor()
+	TypeInferenceTransformer typeInferenceActor = new TypeInferenceTransformer(typeInfoActor, relInfoActor)
 
 	List<Result> results = []
 
@@ -35,11 +36,11 @@ class DefaultCodeGenerator extends PostOrderVisitor<String> implements TDummyAct
 
 	DefaultCodeGenerator(String outDir) { this(new File(outDir)) }
 
-	//String exit(Program n, Map m) { null }
+	//String exit(BlockLvl2 n, Map m) { null }
 
-	//String exit(CmdComponent n, Map m) { null }
+	//String exit(BlockLvl1 n, Map m) { null }
 
-	//String exit(Component n, Map m) { null }
+	//String exit(BlockLvl0 n, Map m) { null }
 
 	//String exit(RelDeclaration n, Map m) { null }
 

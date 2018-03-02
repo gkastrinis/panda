@@ -73,7 +73,7 @@ class DatalogSpec extends Specification {
 		"fail25.logic" | ErrorId.TYPE_INCOMP_EXPR
 		"fail26.logic" | ErrorId.COMP_DUPLICATE_PARAMS
 		"fail27.logic" | ErrorId.COMP_SUPER_PARAM_MISMATCH
-		"fail28.logic" | ErrorId.COMP_INIT_ARITY
+		"fail28.logic" | ErrorId.COMP_INST_ARITY
 		"fail29.logic" | ErrorId.REL_EXT_INVALID
 		"fail30.logic" | ErrorId.COMP_UNKNOWN
 //		"fail100.logic" | ErrorId.DEP_CYCLE

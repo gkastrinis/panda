@@ -1,14 +1,14 @@
 package org.clyze.deepdoop.actions.tranform
 
-import org.clyze.deepdoop.actions.IVisitable
 import org.clyze.deepdoop.actions.PostOrderVisitor
 import org.clyze.deepdoop.actions.TDummyActor
-import org.clyze.deepdoop.datalog.Program
-import org.clyze.deepdoop.datalog.clause.Declaration
+import org.clyze.deepdoop.datalog.IVisitable
+import org.clyze.deepdoop.datalog.block.BlockLvl0
+import org.clyze.deepdoop.datalog.block.BlockLvl1
+import org.clyze.deepdoop.datalog.block.BlockLvl2
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.clause.TypeDeclaration
-import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.*
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
@@ -17,21 +17,26 @@ import org.clyze.deepdoop.datalog.expr.*
 
 class DummyTransformer extends PostOrderVisitor<IVisitable> implements TDummyActor<IVisitable> {
 
-	Set<Declaration> extraDecls = [] as Set
+	Set<RelDeclaration> extraRelDecls = [] as Set
+	Set<TypeDeclaration> extraTypeDecls = [] as Set
 	Set<Rule> extraRules = [] as Set
 
 	DummyTransformer() { actor = this }
 
-	IVisitable exit(Program n, Map m) {
-		def newComps = n.comps.collectEntries { [(it.key): m[it.value]] } as Map
-		new Program(m[n.globalComp] as Component, newComps, n.inits)
+	IVisitable exit(BlockLvl2 n, Map m) {
+		new BlockLvl2(m[n.datalog] as BlockLvl0, n.components.collect { m[it] as BlockLvl1 } as Set, n.instantiations)
 	}
 
-	IVisitable exit(Component n, Map m) {
-		def ds = (n.declarations.collect { m[it] as Declaration } + extraDecls) as Set
-		def rs = (n.rules.collect { m[it] as Rule } + extraRules) as Set
-		// grep() returns all elements which satisfy Groovy truth
-		new Component(n.name, n.superComp, n.parameters, n.superParameters, ds.grep(), rs.grep())
+	IVisitable exit(BlockLvl1 n, Map m) {
+		new BlockLvl1(n.name, n.superComponent, n.parameters, n.superParameters, m[n.datalog] as BlockLvl0)
+	}
+
+	IVisitable exit(BlockLvl0 n, Map m) {
+		// grep() returns all elements which satisfy Groovy truth (i.e. not null)
+		def relDs = (n.relDeclarations.collect { m[it] as RelDeclaration } + extraRelDecls).grep() as Set
+		def typeDs = (n.typeDeclarations.collect { m[it] as TypeDeclaration } + extraTypeDecls).grep() as Set
+		def rs = (n.rules.collect { m[it] as Rule } + extraRules).grep() as Set
+		new BlockLvl0(relDs, typeDs, rs)
 	}
 
 	IVisitable exit(RelDeclaration n, Map m) {

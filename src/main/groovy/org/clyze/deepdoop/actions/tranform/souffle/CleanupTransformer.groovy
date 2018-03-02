@@ -1,7 +1,7 @@
 package org.clyze.deepdoop.actions.tranform.souffle
 
-import org.clyze.deepdoop.actions.IVisitable
 import org.clyze.deepdoop.actions.tranform.DummyTransformer
+import org.clyze.deepdoop.datalog.IVisitable
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.element.ComparisonElement
 import org.clyze.deepdoop.datalog.element.LogicalElement

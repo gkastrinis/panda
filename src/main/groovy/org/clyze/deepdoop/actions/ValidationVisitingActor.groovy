@@ -1,6 +1,6 @@
 package org.clyze.deepdoop.actions
 
-import org.clyze.deepdoop.datalog.Program
+import org.clyze.deepdoop.datalog.IVisitable
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.element.ConstructionElement
@@ -15,6 +15,7 @@ import static org.clyze.deepdoop.datalog.Annotation.*
 import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.BOOLEAN
 import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.REAL
 
+@Deprecated
 class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements TDummyActor<IVisitable> {
 
 	ConstructionInfoVisitingActor infoActor
@@ -27,7 +28,7 @@ class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements TD
 		this.infoActor = infoActor
 	}
 
-	IVisitable exit(Program n, Map m) { n }
+	//IVisitable exit(ProgramLvl1 n, Map m) { n }
 
 	IVisitable exit(RelDeclaration n, Map m) {
 		if (n.relation.name in declaredRelations)

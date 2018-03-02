@@ -1,18 +1,20 @@
 package org.clyze.deepdoop.actions
 
-import org.clyze.deepdoop.datalog.Program
-import org.clyze.deepdoop.datalog.clause.Declaration
+import groovy.transform.Canonical
+import org.clyze.deepdoop.datalog.IVisitable
+import org.clyze.deepdoop.datalog.block.BlockLvl0
+import org.clyze.deepdoop.datalog.block.BlockLvl1
+import org.clyze.deepdoop.datalog.block.BlockLvl2
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.clause.TypeDeclaration
-import org.clyze.deepdoop.datalog.component.CmdComponent
-import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.*
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.*
 
+@Canonical
 class PostOrderVisitor<T> implements IVisitor<T> {
 
 	protected IActor<T> actor
@@ -20,32 +22,24 @@ class PostOrderVisitor<T> implements IVisitor<T> {
 	protected inRuleHead = false
 	protected inRuleBody = false
 
-	PostOrderVisitor(IActor<T> actor = null) { this.actor = actor }
-
-	T visit(Program n) {
+	T visit(BlockLvl2 n) {
 		actor.enter(n)
-		m[n.globalComp] = visit n.globalComp
-		n.comps.values().each { m[it] = visit it }
+		m[n.datalog] = visit n.datalog
+		n.components.each { m[it] = visit it }
 		actor.exit(n, m)
 	}
 
-	T visit(CmdComponent n) {
+	T visit(BlockLvl1 n) {
 		actor.enter(n)
-		n.exports.each { m[it] = visit it }
-		n.imports.each { m[it] = visit it }
-		n.declarations.each { m[it] = visit it }
-		n.rules.each { m[it] = visit it }
+		m[n.datalog] = visit n.datalog
 		actor.exit(n, m)
 	}
 
-	T visit(Component n) {
+	T visit(BlockLvl0 n) {
 		actor.enter(n)
-		n.declarations.each { m[it] = visit it }
-		n.rules.each { m[it] = visit it }
+		(n.relDeclarations + n.typeDeclarations + n.rules).each { m[it] = visit it }
 		actor.exit(n, m)
 	}
-
-	T visit(Declaration n) { null }
 
 	T visit(RelDeclaration n) {
 		actor.enter(n)

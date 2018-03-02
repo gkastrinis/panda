@@ -1,27 +1,26 @@
-package org.clyze.deepdoop.actions
+package org.clyze.deepdoop.actions.tranform
 
-import org.clyze.deepdoop.datalog.Program
+import org.clyze.deepdoop.actions.RelationInfoVisitingActor
+import org.clyze.deepdoop.actions.TypeInfoVisitingActor
+import org.clyze.deepdoop.datalog.IVisitable
+import org.clyze.deepdoop.datalog.block.BlockLvl0
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
-import org.clyze.deepdoop.datalog.component.Component
+import org.clyze.deepdoop.datalog.clause.TypeDeclaration
 import org.clyze.deepdoop.datalog.element.AggregationElement
 import org.clyze.deepdoop.datalog.element.ComparisonElement
 import org.clyze.deepdoop.datalog.element.ConstructionElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.element.relation.Type
-import org.clyze.deepdoop.datalog.expr.BinaryExpr
-import org.clyze.deepdoop.datalog.expr.BinaryOp
-import org.clyze.deepdoop.datalog.expr.ConstantExpr
-import org.clyze.deepdoop.datalog.expr.IExpr
+import org.clyze.deepdoop.datalog.expr.*
 import org.clyze.deepdoop.system.ErrorId
 import org.clyze.deepdoop.system.ErrorManager
 
-import static org.clyze.deepdoop.datalog.element.relation.Type.*
 import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.*
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.genN as varN
 
-class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements TDummyActor<IVisitable> {
+class TypeInferenceTransformer extends DummyTransformer {
 
 	TypeInfoVisitingActor typeInfoActor
 	RelationInfoVisitingActor relInfoActor
@@ -39,21 +38,17 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 	private Map<String, RelDeclaration> relToDecl = [:]
 	// Implementing fix-point computation
 	private Set<Rule> deltaRules
-	private Component currComp
+	private BlockLvl0 currDatalog
 
-	TypeInferenceVisitingActor(TypeInfoVisitingActor typeInfoActor, RelationInfoVisitingActor relInfoActor) {
+	TypeInferenceTransformer(TypeInfoVisitingActor typeInfoActor, RelationInfoVisitingActor relInfoActor) {
 		actor = this
 		this.typeInfoActor = typeInfoActor
 		this.relInfoActor = relInfoActor
 	}
 
-	IVisitable exit(Program n, Map m) {
-		new Program(m[n.globalComp] as Component, [:], [] as Set)
-	}
-
-	IVisitable visit(Component n) {
-		currComp = n
-		n.declarations.each { visit it }
+	IVisitable visit(BlockLvl0 n) {
+		currDatalog = n
+		n.relDeclarations.each { visit it }
 
 		Set<Rule> oldDeltaRules = n.rules
 		while (!oldDeltaRules.isEmpty()) {
@@ -66,7 +61,7 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 		coalesce()
 
 		// Fill partial declarations and add implicit ones
-		def ds = n.typeDeclarations + inferredTypes.collect { rel, types ->
+		def relDs = inferredTypes.collect { rel, types ->
 			RelDeclaration d = relToDecl[rel]
 			if (d?.types) return d
 
@@ -80,7 +75,7 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 			return new RelDeclaration(new Relation(rel, vars), types)
 		} as Set
 
-		new Component(n.name, n.superComp, [], [], ds, n.rules)
+		new BlockLvl0(relDs, n.typeDeclarations, n.rules)
 	}
 
 	IVisitable visit(RelDeclaration n) {
@@ -89,7 +84,7 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 			inferredTypes[n.relation.name] = n.types
 			tmpRelationTypes[n.relation.name] = n.types.collect { [it] as Set }
 		}
-		null
+		return n
 	}
 
 	IVisitable visit(Rule n) {
@@ -112,7 +107,7 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 					// There is an explicit declaration and the possible types
 					// for some expressions are more generic that the declared ones
 					if (declaredTypes) {
-						def superTs = typeInfoActor.superTypesOrdered[currComp][declaredTypes[i]]
+						def superTs = typeInfoActor.superTypesOrdered[currDatalog][declaredTypes[i]]
 						if (currTypeSet.find { it in superTs })
 							ErrorManager.error(ErrorId.TYPE_FIXED, declaredTypes[i], i, relName)
 					}
@@ -126,22 +121,22 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 					deltaRules << n
 			}
 		}
-		null
+		return n
 	}
 
 	IVisitable exit(AggregationElement n, Map m) {
-		tmpExprTypes[n.var] << TYPE_INT
-		null
+		tmpExprTypes[n.var] << Type.TYPE_INT
+		return n
 	}
 
 	IVisitable exit(ComparisonElement n, Map m) {
 		tmpExprTypes[n] = tmpExprTypes[n.expr]
-		null
+		return n
 	}
 
 	IVisitable exit(ConstructionElement n, Map m) {
 		tmpExprTypes[n.constructor.valueExpr] << n.type
-		null
+		return n
 	}
 
 	IVisitable exit(Constructor n, Map m) {
@@ -154,7 +149,7 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 			int i = n.keyExprs.size()
 			if (types && types[i]) tmpExprTypes[n.valueExpr] += types[i]
 		}
-		null
+		return n
 	}
 
 	IVisitable exit(Relation n, Map m) {
@@ -163,24 +158,24 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 			tmpExprIndices[n.name][expr] = i
 			if (types && types[i]) tmpExprTypes[expr] += types[i]
 		}
-		null
+		return n
 	}
 
 	IVisitable exit(BinaryExpr n, Map m) {
 		def union = tmpExprTypes[n.left] + tmpExprTypes[n.right]
 		// Numeric operations
 		if (n.op != BinaryOp.EQ && n.op != BinaryOp.NEQ)
-			union.findAll { it != TYPE_INT && it != TYPE_FLOAT }.each { ErrorManager.error(ErrorId.TYPE_INCOMP_EXPR) }
+			union.findAll { it != Type.TYPE_INT && it != Type.TYPE_FLOAT }.each { ErrorManager.error(ErrorId.TYPE_INCOMP_EXPR) }
 		tmpExprTypes[n] = tmpExprTypes[n.left] = tmpExprTypes[n.right] = union
-		null
+		return n
 	}
 
 	IVisitable exit(ConstantExpr n, Map m) {
-		if (n.type == INTEGER) tmpExprTypes[n] << TYPE_INT
-		else if (n.type == REAL) tmpExprTypes[n] << TYPE_FLOAT
-		else if (n.type == BOOLEAN) tmpExprTypes[n] << TYPE_BOOLEAN
-		else if (n.type == STRING) tmpExprTypes[n] << TYPE_STRING
-		null
+		if (n.type == INTEGER) tmpExprTypes[n] << Type.TYPE_INT
+		else if (n.type == REAL) tmpExprTypes[n] << Type.TYPE_FLOAT
+		else if (n.type == BOOLEAN) tmpExprTypes[n] << Type.TYPE_BOOLEAN
+		else if (n.type == STRING) tmpExprTypes[n] << Type.TYPE_STRING
+		return n
 	}
 
 	private void coalesce() {
@@ -194,7 +189,7 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 
 					// Phase 1: Include types that don't have a better representative already in the set
 					typeSet.each { t ->
-						def superTs = typeInfoActor.superTypesOrdered[currComp][t]
+						def superTs = typeInfoActor.superTypesOrdered[currDatalog][t]
 						if (!superTs.any { it in typeSet }) workingSet << t
 					}
 
@@ -207,8 +202,8 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 							def t2 = workingSet.first()
 							workingSet.removeAt(0)
 
-							def superTypesOfT1 = typeInfoActor.superTypesOrdered[currComp][t1]
-							def superTypesOfT2 = typeInfoActor.superTypesOrdered[currComp][t2]
+							def superTypesOfT1 = typeInfoActor.superTypesOrdered[currDatalog][t1]
+							def superTypesOfT2 = typeInfoActor.superTypesOrdered[currDatalog][t2]
 							// Move upwards in the hierarchy until a common type is found
 							def superT = t1 = superTypesOfT1.find { it in superTypesOfT2 }
 							if (!superT)
@@ -223,4 +218,12 @@ class TypeInferenceVisitingActor extends PostOrderVisitor<IVisitable> implements
 			}
 		}
 	}
+
+	// Overrides to avoid unneeded allocations
+
+	IVisitable exit(TypeDeclaration n, Map m) { n }
+
+	IVisitable exit(Type n, Map m) { n }
+
+	IVisitable exit(GroupExpr n, Map m) { n }
 }

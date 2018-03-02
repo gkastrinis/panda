@@ -3,11 +3,13 @@ package org.clyze.deepdoop.datalog
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.ErrorNode
 import org.antlr.v4.runtime.tree.TerminalNode
+import org.clyze.deepdoop.datalog.block.BlockLvl0
+import org.clyze.deepdoop.datalog.block.BlockLvl1
+import org.clyze.deepdoop.datalog.block.BlockLvl2
+import org.clyze.deepdoop.datalog.block.Instantiation
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.clause.TypeDeclaration
-import org.clyze.deepdoop.datalog.component.Component
-import org.clyze.deepdoop.datalog.component.Initialization
 import org.clyze.deepdoop.datalog.element.*
 import org.clyze.deepdoop.datalog.element.LogicalElement.LogicType
 import org.clyze.deepdoop.datalog.element.relation.Constructor
@@ -24,64 +26,65 @@ import static org.clyze.deepdoop.datalog.DatalogParser.*
 
 class DatalogListenerImpl extends DatalogBaseListener {
 
-	def inDecl = false
-	def values = [:]
-	Component currComp
+	BlockLvl2 program
+	private BlockLvl0 currDatalog
+	// Relation Name x Annotations
+	private Map<String, Set<Annotation>> globalPendingAnnotations
+	private Map<String, Set<Annotation>> currPendingAnnotations
 	// Extra annotations from an annotation block
-	Set<Annotation> extraAnnotations = [] as Set
-	// Component Name x Relation Name x Annotations
-	Map<String, Map<String, Set<Annotation>>> pendingAnnotations
-
-	Program program
+	private Set<Annotation> extraAnnotations = [] as Set
+	private def inDecl = false
+	private def values = [:]
 
 	DatalogListenerImpl(String filename) {
 		SourceManager.instance.outputFile = new File(filename).absolutePath
-		pendingAnnotations = [:].withDefault { [:].withDefault { [] as Set } }
 	}
 
 	void enterProgram(ProgramContext ctx) {
-		program = new Program()
-		currComp = program.globalComp
+		program = new BlockLvl2()
+		currDatalog = program.datalog
+		currPendingAnnotations = globalPendingAnnotations = [:].withDefault { [] as Set }
 	}
 
 	void exitProgram(ProgramContext ctx) {
-		pendingAnnotations[currComp.name].each {
-			// TODO fix type of declaration
-			currComp.declarations << new RelDeclaration(new Relation(it.key), [], it.value)
+		currPendingAnnotations.each {
+			currDatalog.relDeclarations << new RelDeclaration(new Relation(it.key), [], it.value)
 		}
 	}
 
 	void enterComponent(ComponentContext ctx) {
-		currComp = new Component(ctx.IDENTIFIER().text, ctx.superComponent()?.IDENTIFIER()?.text)
+		currDatalog = new BlockLvl0()
+		currPendingAnnotations = [:].withDefault { [] as Set }
 	}
 
 	void exitComponent(ComponentContext ctx) {
-		def params = values[ctx.parameterList()] as List ?: []
-		if (params.size() != params.toSet().size())
-			ErrorManager.error(ErrorId.COMP_DUPLICATE_PARAMS, params, currComp.name)
-		currComp.parameters = params
+		def name = ctx.IDENTIFIER().text
+		def superName = ctx.superComponent()?.IDENTIFIER()?.text
+		if (program.components.any { it.name == name })
+			ErrorManager.error(ErrorId.COMP_ID_IN_USE, name)
 
-		def superParams = ctx.superComponent()?.parameterList() ? values[ctx.superComponent().parameterList()] as List : []
-		if (superParams.any { !(it in params) })
-			ErrorManager.error(ErrorId.COMP_SUPER_PARAM_MISMATCH, superParams, currComp.superComp)
-		currComp.superParameters = superParams
+		def parameters = values[ctx.parameterList()] as List ?: []
+		if (parameters.size() != parameters.toSet().size())
+			ErrorManager.error(ErrorId.COMP_DUPLICATE_PARAMS, parameters, name)
+
+		def superParameters = ctx.superComponent()?.parameterList() ? values[ctx.superComponent().parameterList()] as List : []
+		if (superParameters.any { !(it in parameters) })
+			ErrorManager.error(ErrorId.COMP_SUPER_PARAM_MISMATCH, superParameters, superName)
+
+		def component = new BlockLvl1(name, superName, parameters, superParameters, currDatalog)
+		program.components << component
 
 		values[ctx.identifierList()].each { String id ->
-			if (program.inits.any { it.id == id })
+			if (program.instantiations.any { it.id == id })
 				ErrorManager.error(ErrorId.ID_IN_USE, id)
-			program.inits << new Initialization(currComp.name, [], id)
+			program.instantiations << new Instantiation(name, id, [])
 		}
 
-		pendingAnnotations[currComp.name].each { String relName, Set annotations ->
-			currComp.declarations << new RelDeclaration(new Relation(relName), [], annotations)
+		currPendingAnnotations.each {
+			currDatalog.relDeclarations << new RelDeclaration(new Relation(it.key), [], it.value)
 		}
-		pendingAnnotations.remove(currComp.name)
-
-		if (program.comps[currComp.name])
-			ErrorManager.error(ErrorId.COMP_ID_IN_USE, currComp.name)
-
-		program.comps[currComp.name] = currComp
-		currComp = program.globalComp
+		currPendingAnnotations = globalPendingAnnotations
+		currDatalog = program.datalog
 	}
 
 //	void enterCmd(CmdContext ctx) {
@@ -96,13 +99,21 @@ class DatalogListenerImpl extends DatalogBaseListener {
 //		currComp = program.globalComp
 //	}
 
-	void exitInitialize(InitializeContext ctx) {
+	void exitInstantiate(InstantiateContext ctx) {
 		def parameters = values[ctx.parameterList()] as List ?: []
 		values[ctx.identifierList()].each { String id ->
-			if (program.inits.any { it.id == id })
+			if (program.instantiations.any { it.id == id })
 				ErrorManager.error(ErrorId.ID_IN_USE, id)
-			program.inits << new Initialization(ctx.IDENTIFIER().text, parameters, id)
+			program.instantiations << new Instantiation(ctx.IDENTIFIER().text, id, parameters)
 		}
+	}
+
+	void enterAnnotationBlock(AnnotationBlockContext ctx) {
+		extraAnnotations = gatherAnnotations(ctx.annotationList())
+	}
+
+	void exitAnnotationBlock(AnnotationBlockContext ctx) {
+		extraAnnotations = [] as Set
 	}
 
 	void enterDeclaration(DeclarationContext ctx) {
@@ -119,57 +130,52 @@ class DatalogListenerImpl extends DatalogBaseListener {
 //		}
 		annotations += extraAnnotations
 
-		// Either (1) a type or (2) an incomplete declaration
-		// Incomplete declarations are of the form: `@output Foo`
-		// i.e. they bind annotations with relation names without
-		// actually providing the structure of that relation.
-		if (ctx.IDENTIFIER(0)) {
-			if (TYPE in annotations) {
-				def type = new Type(ctx.IDENTIFIER(0).text)
-				def supertype = ctx.IDENTIFIER(1) ? new Type(ctx.IDENTIFIER(1).text) : null
-				// Initial values are of the form `key(value)`. E.g., PUBLIC('public')
-				// Keys are used to generate singleton relations. E.g., Modifier:PUBLIC(x)
-				if (ctx.initValueList()) annotations << new Annotation("TYPEVALUES", values[ctx.initValueList()] as Map)
-				def d = new TypeDeclaration(type, supertype, annotations)
-				currComp.declarations << d
-				rec(d, ctx)
-			} else {
-				def relName = ctx.IDENTIFIER(0).text
-				pendingAnnotations[currComp.name][relName] += annotations
-			}
-		} else {
+		// Type declaration
+		if (ctx.IDENTIFIER(0) && TYPE in annotations) {
+			def type = new Type(ctx.IDENTIFIER(0).text)
+			def supertype = ctx.IDENTIFIER(1) ? new Type(ctx.IDENTIFIER(1).text) : null
+			// Initial values are of the form `key(value)`. E.g., PUBLIC('public')
+			// Keys are used to generate singleton relations. E.g., Modifier:PUBLIC(x)
+			if (ctx.initValueList())
+				annotations << new Annotation("TYPEVALUES", values[ctx.initValueList()] as Map)
+			def d = new TypeDeclaration(type, supertype, annotations)
+			currDatalog.typeDeclarations << d
+			rec(d, ctx)
+		}
+		// Incomplete declaration of the form: `@output Foo`
+		// i.e. binds annotations with a relation name without
+		// providing any details
+		else if (ctx.IDENTIFIER(0)) {
+			currPendingAnnotations[ctx.IDENTIFIER(0).text] += annotations
+		}
+		// Full declaration of a relation
+		else {
 			def rel = ctx.relation() ? values[ctx.relation()] as Relation : values[ctx.constructor()] as Constructor
 			def types = values[ctx.identifierList()].collect { new Type(it as String) }
 			if (rel.exprs.size() != types.size())
 				ErrorManager.error(loc, ErrorId.DECL_MALFORMED)
 			def d = new RelDeclaration(rel, types, annotations)
-			currComp.declarations << d
+			currDatalog.relDeclarations << d
 			rec(d, ctx)
 		}
 	}
 
-	void enterAnnotationBlock(AnnotationBlockContext ctx) {
-		extraAnnotations = gatherAnnotations(ctx.annotationList())
-	}
-
-	void exitAnnotationBlock(AnnotationBlockContext ctx) {
-		extraAnnotations = [] as Set
-	}
-
 	void exitRule_(Rule_Context ctx) {
 		Rule r
-		def annotations = gatherAnnotations(ctx.annotationList())
 		if (ctx.headList()) {
+			def annotations = gatherAnnotations(ctx.annotationList())
 			def head = new LogicalElement(values[ctx.headList()] as List)
-			def body = ctx.bodyList() ? values[ctx.bodyList()] as LogicalElement : null
+			def body = values[ctx.bodyList()] as LogicalElement
+			//def body = ctx.bodyList() ? values[ctx.bodyList()] as LogicalElement : null
 			r = new Rule(head, body, annotations)
-			currComp.rules << r
-		} else {
+		}
+		// Aggregation
+		else {
 			def head = new LogicalElement(values[ctx.relation()] as Relation)
 			def body = new LogicalElement(values[ctx.aggregation()] as AggregationElement)
 			r = new Rule(head, body)
-			currComp.rules << r
 		}
+		currDatalog.rules << r
 		rec(r, ctx)
 	}
 

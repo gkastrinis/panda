@@ -1,20 +1,21 @@
 package org.clyze.deepdoop.actions
 
-import org.clyze.deepdoop.datalog.Program
-import org.clyze.deepdoop.datalog.component.Component
+import org.clyze.deepdoop.datalog.IVisitable
+import org.clyze.deepdoop.datalog.block.BlockLvl0
+import org.clyze.deepdoop.datalog.block.BlockLvl2
 import org.clyze.deepdoop.datalog.element.relation.Type
 
 class TypeInfoVisitingActor extends PostOrderVisitor<IVisitable> implements TDummyActor<IVisitable> {
 
-	Map<Component, Map<Type, List<Type>>> superTypesOrdered = [:].withDefault { [:] }
-	Map<Component, Map<Type, Set<Type>>> subTypes = [:].withDefault { [:].withDefault { [] as Set } }
-	Map<Component, Map<Type, Type>> typeToRootType = [:].withDefault{ [:] }
+	Map<BlockLvl0, Map<Type, List<Type>>> superTypesOrdered = [:].withDefault { [:] }
+	Map<BlockLvl0, Map<Type, Set<Type>>> subTypes = [:].withDefault { [:].withDefault { [] as Set } }
+	Map<BlockLvl0, Map<Type, Type>> typeToRootType = [:].withDefault{ [:] }
 
 	TypeInfoVisitingActor() { actor = this }
 
-	IVisitable exit(Program n, Map m) { n }
+	IVisitable exit(BlockLvl2 n, Map m) { n }
 
-	IVisitable exit(Component n, Map m) {
+	IVisitable exit(BlockLvl0 n, Map m) {
 		n.typeDeclarations.each { d ->
 			superTypesOrdered[n][d.type] = []
 			def currDecl = d

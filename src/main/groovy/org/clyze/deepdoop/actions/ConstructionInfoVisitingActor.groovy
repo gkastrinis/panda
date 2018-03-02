@@ -1,6 +1,7 @@
 package org.clyze.deepdoop.actions
 
-import org.clyze.deepdoop.datalog.Program
+import org.clyze.deepdoop.datalog.IVisitable
+import org.clyze.deepdoop.datalog.block.BlockLvl2
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.element.ConstructionElement
@@ -29,7 +30,7 @@ class ConstructionInfoVisitingActor extends PostOrderVisitor<IVisitable> impleme
 
 	ConstructionInfoVisitingActor() { actor = this }
 
-	IVisitable exit(Program n, Map m) { n }
+	IVisitable exit(BlockLvl2 n, Map m) { n }
 
 	IVisitable exit(RelDeclaration n, Map m) {
 		if (CONSTRUCTOR in n.annotations) {

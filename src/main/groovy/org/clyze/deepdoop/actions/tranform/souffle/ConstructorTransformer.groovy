@@ -2,11 +2,11 @@ package org.clyze.deepdoop.actions.tranform.souffle
 
 import groovy.transform.Canonical
 import org.clyze.deepdoop.actions.ConstructionInfoVisitingActor
-import org.clyze.deepdoop.actions.IVisitable
-import org.clyze.deepdoop.actions.TypeInferenceVisitingActor
 import org.clyze.deepdoop.actions.TypeInfoVisitingActor
 import org.clyze.deepdoop.actions.tranform.DummyTransformer
-import org.clyze.deepdoop.datalog.Program
+import org.clyze.deepdoop.actions.tranform.TypeInferenceTransformer
+import org.clyze.deepdoop.datalog.IVisitable
+import org.clyze.deepdoop.datalog.block.BlockLvl2
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.clause.TypeDeclaration
@@ -41,9 +41,9 @@ import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
 @Canonical
 class ConstructorTransformer extends DummyTransformer {
 
-	private TypeInfoVisitingActor typeInfoActor
-	private TypeInferenceVisitingActor typeInferenceActor
-	private ConstructionInfoVisitingActor constructionInfoActor
+	TypeInfoVisitingActor typeInfoActor
+	TypeInferenceTransformer typeInferenceActor
+	ConstructionInfoVisitingActor constructionInfoActor
 
 	// Recurring constant
 	private IExpr NIL = new ConstantExpr("nil")
@@ -65,12 +65,12 @@ class ConstructorTransformer extends DummyTransformer {
 	// Type for current relation parameter (in rule head)
 	private Type tmpCurrType
 
-	void enter(Program n) {
+	void enter(BlockLvl2 n) {
 		// Re: (2)
 		// Find all types that are roots in the type hierarchy
-		(typeInfoActor.typeToRootType[n.globalComp].values() as Set).each { root ->
-			def rootType = new Type("R_${root.name}")
-			def types = [root] + typeInfoActor.subTypes[n.globalComp][root]
+		(typeInfoActor.typeToRootType[n.datalog].values() as Set).each { root ->
+			def rootType = new Type("_${root.name}")
+			def types = [root] + typeInfoActor.subTypes[n.datalog][root]
 			types.each { typeToCommonType[it] = rootType }
 			def constructors = types.collect { constructionInfoActor.constructorsPerType[it] }.flatten() as Set<RelDeclaration>
 
@@ -80,11 +80,11 @@ class ConstructorTransformer extends DummyTransformer {
 				optimizedConstructors << constructors[0]
 			} else {
 				constructors.each {
-					extraDecls << new TypeDeclaration(new Type(it.relation.name), new RecordType(it.types.dropRight(1)), [TYPE] as Set)
+					extraTypeDecls << new TypeDeclaration(new Type(it.relation.name), new RecordType(it.types.dropRight(1)), [TYPE] as Set)
 				}
 				def record = constructors.collect { new Type(it.relation.name) }
 				types.each { typeToRecord[it] = record }
-				extraDecls << new TypeDeclaration(rootType, new RecordType(record), [TYPE] as Set)
+				extraTypeDecls << new TypeDeclaration(rootType, new RecordType(record), [TYPE] as Set)
 			}
 		}
 	}
@@ -96,7 +96,7 @@ class ConstructorTransformer extends DummyTransformer {
 
 	IVisitable exit(TypeDeclaration n, Map m) {
 		// Re: 3
-		extraDecls << new RelDeclaration(new Relation(n.type.name), [map(n.type)], n.annotations)
+		extraRelDecls << new RelDeclaration(new Relation(n.type.name), [map(n.type)], n.annotations)
 
 		// Re: 4
 		if (n.supertype)
@@ -126,6 +126,10 @@ class ConstructorTransformer extends DummyTransformer {
 
 		m[n.head] = head
 		inRuleHead = false
+
+		inRuleBody = true
+		if (n.body) m[n.body] = visit n.body
+		inRuleBody = false
 
 		actor.exit(n, m)
 	}

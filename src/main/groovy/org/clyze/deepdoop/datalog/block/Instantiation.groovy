@@ -1,13 +1,13 @@
-package org.clyze.deepdoop.datalog.component
+package org.clyze.deepdoop.datalog.block
 
 import groovy.transform.Canonical
 import groovy.transform.ToString
 
 @Canonical
 @ToString(includePackage = false)
-class Initialization {
+class Instantiation {
 
-	String compName
-	List<String> parameters
+	String component
 	String id
+	List<String> parameters = []
 }

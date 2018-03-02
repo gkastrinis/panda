@@ -1,11 +1,12 @@
 package org.clyze.deepdoop.actions
 
-import org.clyze.deepdoop.datalog.Program
+import org.clyze.deepdoop.datalog.IVisitable
+import org.clyze.deepdoop.datalog.block.BlockLvl0
+import org.clyze.deepdoop.datalog.block.BlockLvl1
+import org.clyze.deepdoop.datalog.block.BlockLvl2
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.clause.TypeDeclaration
-import org.clyze.deepdoop.datalog.component.CmdComponent
-import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.*
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
@@ -13,17 +14,17 @@ import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.*
 
 trait TDummyActor<T> implements IActor<T> {
-	void enter(Program n) {}
+	void enter(BlockLvl2 n) {}
 
-	T exit(Program n, Map<IVisitable, T> m) { null }
+	T exit(BlockLvl2 n, Map<IVisitable, T> m) { null }
 
-	void enter(CmdComponent n) {}
+	void enter(BlockLvl1 n) {}
 
-	T exit(CmdComponent n, Map<IVisitable, T> m) { null }
+	T exit(BlockLvl1 n, Map<IVisitable, T> m) { null }
 
-	void enter(Component n) {}
+	void enter(BlockLvl0 n) {}
 
-	T exit(Component n, Map<IVisitable, T> m) { null }
+	T exit(BlockLvl0 n, Map<IVisitable, T> m) { null }
 
 	void enter(RelDeclaration n) {}
 

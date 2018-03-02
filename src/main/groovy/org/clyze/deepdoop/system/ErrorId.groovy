@@ -8,7 +8,7 @@ enum ErrorId {
 	COMP_UNKNOWN,
 	COMP_DUPLICATE_PARAMS,
 	COMP_SUPER_PARAM_MISMATCH,
-	COMP_INIT_ARITY,
+	COMP_INST_ARITY,
 	ANNOTATION_INVALID,
 	ANNOTATION_INVALID_ARG,
 	ANNOTATION_MISSING_ARG,
@@ -51,12 +51,12 @@ enum ErrorId {
 	static Map<ErrorId, String> msgMap
 	static {
 		msgMap = new EnumMap<>(ErrorId.class)
-		msgMap[ID_IN_USE] = "Initialization name `{0}` already in use"
+		msgMap[ID_IN_USE] = "Instantiation name `{0}` already in use"
 		msgMap[COMP_ID_IN_USE] = "Component name `{0}` already in use"
 		msgMap[COMP_UNKNOWN] = "Unknown component `{0}`"
 		msgMap[COMP_DUPLICATE_PARAMS] = "Duplicate parameters ({0}) in component `{1}`"
 		msgMap[COMP_SUPER_PARAM_MISMATCH] = "Non-matching parameters ({0}) for super component of `{1}`"
-		msgMap[COMP_INIT_ARITY] = "Wrong arity for initialization parameters ({0}) of component `{1}` as `{2}`"
+		msgMap[COMP_INST_ARITY] = "Wrong arity for instantiation parameters ({0}) of component `{1}` as `{2}`"
 		msgMap[ANNOTATION_INVALID] = "Invalid annotation `{0}` for `{1}`"
 		msgMap[ANNOTATION_INVALID_ARG] = "Invalid argument `{0}` for annotation `{1}`"
 		msgMap[ANNOTATION_MISSING_ARG] = "Missing mandatory argument `{0}` for annotation `{1}`"

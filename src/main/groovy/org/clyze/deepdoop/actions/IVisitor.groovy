@@ -1,12 +1,11 @@
 package org.clyze.deepdoop.actions
 
-import org.clyze.deepdoop.datalog.Program
-import org.clyze.deepdoop.datalog.clause.Declaration
+import org.clyze.deepdoop.datalog.block.BlockLvl0
+import org.clyze.deepdoop.datalog.block.BlockLvl1
+import org.clyze.deepdoop.datalog.block.BlockLvl2
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.clause.TypeDeclaration
-import org.clyze.deepdoop.datalog.component.CmdComponent
-import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.*
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
@@ -14,13 +13,11 @@ import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.*
 
 interface IVisitor<T> {
-	T visit(Program n)
+	T visit(BlockLvl2 n)
 
-	T visit(CmdComponent n)
+	T visit(BlockLvl1 n)
 
-	T visit(Component n)
-
-	T visit(Declaration n)
+	T visit(BlockLvl0 n)
 
 	T visit(RelDeclaration n)
 

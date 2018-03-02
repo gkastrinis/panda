@@ -2,11 +2,11 @@ package org.clyze.deepdoop.actions.code
 
 import groovy.transform.InheritConstructors
 import org.clyze.deepdoop.actions.TypeInfoVisitingActor
-import org.clyze.deepdoop.actions.tranform.ComponentInitializingTransformer
+import org.clyze.deepdoop.actions.tranform.ComponentInstantiationTransformer
 import org.clyze.deepdoop.actions.tranform.SyntaxFlatteningTransformer
 import org.clyze.deepdoop.actions.tranform.TypeTransformer
 import org.clyze.deepdoop.actions.tranform.souffle.ConstructorTransformer
-import org.clyze.deepdoop.datalog.Program
+import org.clyze.deepdoop.datalog.block.BlockLvl2
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.clause.TypeDeclaration
@@ -25,7 +25,7 @@ import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
 @InheritConstructors
 class SouffleCodeGenerator extends DefaultCodeGenerator {
 
-	String visit(Program p) {
+	String visit(BlockLvl2 p) {
 		currentFile = createUniqueFile("out_", ".dl")
 		results << new Result(Result.Kind.LOGIC, currentFile)
 
@@ -35,14 +35,14 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		def n = p.accept(new SyntaxFlatteningTransformer())
 				.accept(tmpTypeInfoActor)
 				.accept(new TypeTransformer(tmpTypeInfoActor))
-				.accept(new ComponentInitializingTransformer())
+				.accept(new ComponentInstantiationTransformer())
 				.accept(typeInfoActor)
 				.accept(relInfoActor)
 				.accept(constructionInfoActor)
-				//n=n.accept(new ValidationVisitingActor(constructionInfoActor))
+//				//n=n.accept(new ValidationVisitingActor(constructionInfoActor))
 				.accept(typeInferenceActor)
 				.accept(new ConstructorTransformer(typeInfoActor, typeInferenceActor, constructionInfoActor))
-				//.accept(new AssignTransformer(constructionInfoActor))
+//				//.accept(new AssignTransformer(constructionInfoActor))
 
 		super.visit(n)
 	}
@@ -65,6 +65,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	String exit(TypeDeclaration n, Map m) {
 		def params = (n.supertype as RecordType).innerTypes.withIndex().collect { t, int i -> "${var1(i)}:${map(mini(t.name))}" }
 		emit ".type ${map(mini(n.type.name))} = [${params.join(", ")}]"
+		null
 	}
 
 	String exit(Rule n, Map m) {

@@ -1,9 +1,10 @@
 package org.clyze.deepdoop.actions
 
-import org.clyze.deepdoop.datalog.Program
+import org.clyze.deepdoop.datalog.IVisitable
+import org.clyze.deepdoop.datalog.block.BlockLvl0
+import org.clyze.deepdoop.datalog.block.BlockLvl2
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
-import org.clyze.deepdoop.datalog.component.Component
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.expr.VariableExpr
@@ -23,17 +24,17 @@ class RelationInfoVisitingActor extends PostOrderVisitor<IVisitable> implements 
 
 	RelationInfoVisitingActor() { actor = this }
 
-	IVisitable exit(Program n, Map m) {
-		declaredRelations[n] = declaredRelations[n.globalComp] +
-				(n.comps.values().collect { declaredRelations[it] }.flatten() as Set<Relation>)
-		usedRelations[n] = usedRelations[n.globalComp] +
-				(n.comps.collect { usedRelations[it.value] }.flatten() as Set<Relation>)
+	IVisitable exit(BlockLvl2 n, Map m) {
+//		declaredRelations[n] = declaredRelations[n.globalComp] +
+//				(n.comps.values().collect { declaredRelations[it] }.flatten() as Set<Relation>)
+//		usedRelations[n] = usedRelations[n.globalComp] +
+//				(n.comps.collect { usedRelations[it.value] }.flatten() as Set<Relation>)
 		return n
 	}
 
-	IVisitable exit(Component n, Map m) {
-		declaredRelations[n] = (n.declarations + n.rules).collect { declaredRelations[it] }.flatten() as Set<Relation>
-		usedRelations[n] = (n.declarations + n.rules).collect { usedRelations[it] }.flatten() as Set<Relation>
+	IVisitable exit(BlockLvl0 n, Map m) {
+		declaredRelations[n] = (n.relDeclarations + n.rules).collect { declaredRelations[it] }.flatten() as Set<Relation>
+		usedRelations[n] = (n.relDeclarations + n.rules).collect { usedRelations[it] }.flatten() as Set<Relation>
 		null
 	}
 

@@ -1,9 +1,8 @@
 package org.clyze.deepdoop.actions.tranform.souffle
 
 import org.clyze.deepdoop.actions.ConstructionInfoVisitingActor
-import org.clyze.deepdoop.actions.IVisitable
 import org.clyze.deepdoop.actions.tranform.DummyTransformer
-import org.clyze.deepdoop.datalog.Program
+import org.clyze.deepdoop.datalog.IVisitable
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.element.ComparisonElement
 import org.clyze.deepdoop.datalog.element.IElement
@@ -12,6 +11,7 @@ import org.clyze.deepdoop.datalog.expr.*
 import org.clyze.deepdoop.system.ErrorId
 import org.clyze.deepdoop.system.ErrorManager
 
+@Deprecated
 class AssignTransformer extends DummyTransformer {
 
 	private ConstructionInfoVisitingActor infoActor
@@ -28,10 +28,10 @@ class AssignTransformer extends DummyTransformer {
 
 	AssignTransformer(ConstructionInfoVisitingActor infoActor) { this.infoActor = infoActor }
 
-	IVisitable visit(Program n) {
-		def n1 = super.visit(n) as Program
-		new CleanupTransformer(dummyComparison).visit(n1)
-	}
+//	IVisitable visit(ProgramLvl1 n) {
+//		def n1 = super.visit(n) as ProgramLvl1
+//		new CleanupTransformer(dummyComparison).visit(n1)
+//	}
 
 	IVisitable visit(Rule n) {
 		if (!n.body) return super.visit(n)

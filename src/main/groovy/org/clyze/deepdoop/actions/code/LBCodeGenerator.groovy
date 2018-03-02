@@ -1,10 +1,6 @@
 package org.clyze.deepdoop.actions.code
 
 import groovy.transform.InheritConstructors
-import org.clyze.deepdoop.actions.ValidationVisitingActor
-import org.clyze.deepdoop.actions.tranform.ComponentInitializingTransformer
-import org.clyze.deepdoop.actions.tranform.SyntaxFlatteningTransformer
-import org.clyze.deepdoop.datalog.Program
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.element.AggregationElement
@@ -12,33 +8,34 @@ import org.clyze.deepdoop.datalog.element.ConstructionElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.element.relation.Type
-import org.clyze.deepdoop.system.Result
 
-import static org.clyze.deepdoop.datalog.Annotation.*
+import static org.clyze.deepdoop.datalog.Annotation.CONSTRUCTOR
+import static org.clyze.deepdoop.datalog.Annotation.TYPE
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
 
+@Deprecated
 @InheritConstructors
 class LBCodeGenerator extends DefaultCodeGenerator {
 
 	Set<String> functionalRelations
 
-	String visit(Program p) {
-		currentFile = createUniqueFile("out_", ".logic")
-		results << new Result(Result.Kind.LOGIC, currentFile)
-
-		// Transform program before visiting nodes
-		def n = p.accept(new SyntaxFlatteningTransformer())
-				.accept(new ComponentInitializingTransformer())
-				.accept(constructionInfoActor)
-				.accept(new ValidationVisitingActor(constructionInfoActor))
-				.accept(typeInferenceActor)
-
-		(n as Program).globalComp.declarations
-				.findAll { FUNCTIONAL in it.annotations }
-				.collect { it.relation.name } as Set
-
-		super.visit(n as Program)
-	}
+//	String visit(ProgramLvl1 p) {
+//		currentFile = createUniqueFile("out_", ".logic")
+//		results << new Result(Result.Kind.LOGIC, currentFile)
+//
+//		// Transform program before visiting nodes
+//		def n = p.accept(new SyntaxFlatteningTransformer())
+//				.accept(new ComponentInstantiationTransformer())
+//				.accept(constructionInfoActor)
+//				.accept(new ValidationVisitingActor(constructionInfoActor))
+//				.accept(typeInferenceActor)
+//
+//		(n as ProgramLvl1).globalComp.declarations
+//				.findAll { FUNCTIONAL in it.annotations }
+//				.collect { it.relation.name } as Set
+//
+//		super.visit(n as ProgramLvl1)
+//	}
 
 	String exit(RelDeclaration n, Map m) {
 		def name = n.relation.name
