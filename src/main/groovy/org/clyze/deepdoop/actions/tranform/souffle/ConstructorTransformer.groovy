@@ -80,11 +80,11 @@ class ConstructorTransformer extends DummyTransformer {
 				optimizedConstructors << constructors[0]
 			} else {
 				constructors.each {
-					extraTypeDecls << new TypeDeclaration(new Type(it.relation.name), new RecordType(it.types.dropRight(1)), [TYPE] as Set)
+					extraTypeDecls << new TypeDeclaration(new Type(it.relation.name), new RecordType(it.types.dropRight(1)), [] as Set)
 				}
 				def record = constructors.collect { new Type(it.relation.name) }
 				types.each { typeToRecord[it] = record }
-				extraTypeDecls << new TypeDeclaration(rootType, new RecordType(record), [TYPE] as Set)
+				extraTypeDecls << new TypeDeclaration(rootType, new RecordType(record), [] as Set)
 			}
 		}
 	}
