@@ -5,7 +5,7 @@ import org.clyze.deepdoop.datalog.block.BlockLvl0
 import org.clyze.deepdoop.datalog.block.BlockLvl2
 import org.clyze.deepdoop.datalog.element.relation.Type
 
-class TypeInfoVisitingActor extends PostOrderVisitor<IVisitable> implements TDummyActor<IVisitable> {
+class TypeInfoVisitingActor extends DefaultVisitor<IVisitable> implements TDummyActor<IVisitable> {
 
 	Map<BlockLvl0, Map<Type, List<Type>>> superTypesOrdered = [:].withDefault { [:] }
 	Map<BlockLvl0, Map<Type, Set<Type>>> subTypes = [:].withDefault { [:].withDefault { [] as Set } }

@@ -16,7 +16,7 @@ import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.BOOLEAN
 import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.REAL
 
 @Deprecated
-class ValidationVisitingActor extends PostOrderVisitor<IVisitable> implements TDummyActor<IVisitable> {
+class ValidationVisitingActor extends DefaultVisitor<IVisitable> implements TDummyActor<IVisitable> {
 
 	ConstructionInfoVisitingActor infoActor
 

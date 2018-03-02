@@ -21,7 +21,6 @@ import org.clyze.deepdoop.datalog.expr.IExpr
 import org.clyze.deepdoop.datalog.expr.RecordExpr
 import org.clyze.deepdoop.datalog.expr.VariableExpr
 
-import static org.clyze.deepdoop.datalog.Annotation.TYPE
 import static org.clyze.deepdoop.datalog.element.relation.Type.TYPE_STRING
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
 

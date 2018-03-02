@@ -28,7 +28,7 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 //				.accept(new ComponentInstantiationTransformer())
 //				.accept(constructionInfoActor)
 //				.accept(new ValidationVisitingActor(constructionInfoActor))
-//				.accept(typeInferenceActor)
+//				.accept(typeInferenceTransformer)
 //
 //		(n as ProgramLvl1).globalComp.declarations
 //				.findAll { FUNCTIONAL in it.annotations }

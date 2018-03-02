@@ -1,10 +1,9 @@
 package org.clyze.deepdoop.actions.code
 
 import groovy.transform.InheritConstructors
-import org.clyze.deepdoop.actions.TypeInfoVisitingActor
+import org.clyze.deepdoop.actions.tranform.AddonsTransformer
 import org.clyze.deepdoop.actions.tranform.ComponentInstantiationTransformer
 import org.clyze.deepdoop.actions.tranform.SyntaxFlatteningTransformer
-import org.clyze.deepdoop.actions.tranform.TypeTransformer
 import org.clyze.deepdoop.actions.tranform.souffle.ConstructorTransformer
 import org.clyze.deepdoop.datalog.block.BlockLvl2
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
@@ -29,19 +28,16 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		currentFile = createUniqueFile("out_", ".dl")
 		results << new Result(Result.Kind.LOGIC, currentFile)
 
-		def tmpTypeInfoActor = new TypeInfoVisitingActor()
-
 		// Transform program before visiting nodes
 		def n = p.accept(new SyntaxFlatteningTransformer())
-				.accept(tmpTypeInfoActor)
-				.accept(new TypeTransformer(tmpTypeInfoActor))
 				.accept(new ComponentInstantiationTransformer())
 				.accept(typeInfoActor)
 				.accept(relInfoActor)
 				.accept(constructionInfoActor)
+				.accept(new AddonsTransformer(typeInfoActor))
+				.accept(typeInferenceTransformer)
 //				//n=n.accept(new ValidationVisitingActor(constructionInfoActor))
-				.accept(typeInferenceActor)
-				.accept(new ConstructorTransformer(typeInfoActor, typeInferenceActor, constructionInfoActor))
+				.accept(new ConstructorTransformer(typeInfoActor, typeInferenceTransformer, constructionInfoActor))
 //				//.accept(new AssignTransformer(constructionInfoActor))
 
 		super.visit(n)

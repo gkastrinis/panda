@@ -22,12 +22,12 @@ import static org.clyze.deepdoop.datalog.element.relation.Type.TYPE_STRING
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.genN as varN
 
-class TypeTransformer extends DummyTransformer {
+class AddonsTransformer extends DummyTransformer {
 
 	private TypeInfoVisitingActor typeInfoActor
 	private BlockLvl0 currDatalog
 
-	TypeTransformer(TypeInfoVisitingActor typeInfoActor) {
+	AddonsTransformer(TypeInfoVisitingActor typeInfoActor) {
 		actor = this
 		this.typeInfoActor = typeInfoActor
 	}
@@ -63,7 +63,6 @@ class TypeTransformer extends DummyTransformer {
 					"delimeter": new ConstantExpr("\\t")])
 			extraRelDecls << new RelDeclaration(rel, [TYPE_STRING], [a] as Set)
 			extraRules << new Rule(new LogicalElement(new ConstructionElement(con, n.type)), new LogicalElement(rel))
-			n.annotations.remove(INPUT)
 		}
 		return n
 	}

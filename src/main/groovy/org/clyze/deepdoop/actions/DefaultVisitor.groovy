@@ -1,6 +1,5 @@
 package org.clyze.deepdoop.actions
 
-import groovy.transform.Canonical
 import org.clyze.deepdoop.datalog.IVisitable
 import org.clyze.deepdoop.datalog.block.BlockLvl0
 import org.clyze.deepdoop.datalog.block.BlockLvl1
@@ -14,8 +13,7 @@ import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.*
 
-@Canonical
-class PostOrderVisitor<T> implements IVisitor<T> {
+class DefaultVisitor<T> {
 
 	protected IActor<T> actor
 	protected Map<IVisitable, T> m = [:]

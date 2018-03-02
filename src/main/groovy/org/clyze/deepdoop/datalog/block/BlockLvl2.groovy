@@ -2,7 +2,7 @@ package org.clyze.deepdoop.datalog.block
 
 import groovy.transform.Canonical
 import groovy.transform.ToString
-import org.clyze.deepdoop.actions.IVisitor
+import org.clyze.deepdoop.actions.DefaultVisitor
 import org.clyze.deepdoop.datalog.IVisitable
 
 @Canonical
@@ -13,5 +13,5 @@ class BlockLvl2 implements IVisitable {
 	Set<BlockLvl1> components = [] as Set
 	Set<Instantiation> instantiations = [] as Set
 
-	BlockLvl2 accept(IVisitor<IVisitable> v) { v.visit this }
+	BlockLvl2 accept(DefaultVisitor<IVisitable> v) { v.visit this }
 }

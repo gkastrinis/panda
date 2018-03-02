@@ -9,7 +9,7 @@ import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.expr.VariableExpr
 
-class RelationInfoVisitingActor extends PostOrderVisitor<IVisitable> implements TDummyActor<IVisitable> {
+class RelationInfoVisitingActor extends DefaultVisitor<IVisitable> implements TDummyActor<IVisitable> {
 
 	Map<IVisitable, Set<Relation>> declaredRelations = [:].withDefault { [] as Set }
 	Map<IVisitable, Set<Relation>> usedRelations = [:].withDefault { [] as Set }
@@ -24,13 +24,7 @@ class RelationInfoVisitingActor extends PostOrderVisitor<IVisitable> implements 
 
 	RelationInfoVisitingActor() { actor = this }
 
-	IVisitable exit(BlockLvl2 n, Map m) {
-//		declaredRelations[n] = declaredRelations[n.globalComp] +
-//				(n.comps.values().collect { declaredRelations[it] }.flatten() as Set<Relation>)
-//		usedRelations[n] = usedRelations[n.globalComp] +
-//				(n.comps.collect { usedRelations[it.value] }.flatten() as Set<Relation>)
-		return n
-	}
+	IVisitable exit(BlockLvl2 n, Map m) { n }
 
 	IVisitable exit(BlockLvl0 n, Map m) {
 		declaredRelations[n] = (n.relDeclarations + n.rules).collect { declaredRelations[it] }.flatten() as Set<Relation>

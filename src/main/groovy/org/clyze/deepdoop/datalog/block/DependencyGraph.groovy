@@ -14,7 +14,7 @@ class DependencyGraph {
 //		layers = []
 //
 //		def acActor = new ConstructionInfoVisitingActor()
-//		def acVisitor = new PostOrderVisitor<IVisitable>(acActor)
+//		def acVisitor = new DefaultVisitor<IVisitable>(acActor)
 //		p.accept(acVisitor)
 //
 //		Set<String> globalAtoms = acActor.getDeclaredRelations(p.globalComp).keySet()

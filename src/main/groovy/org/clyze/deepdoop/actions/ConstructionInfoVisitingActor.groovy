@@ -13,7 +13,7 @@ import org.clyze.deepdoop.system.SourceManager
 
 import static org.clyze.deepdoop.datalog.Annotation.CONSTRUCTOR
 
-class ConstructionInfoVisitingActor extends PostOrderVisitor<IVisitable> implements TDummyActor<IVisitable> {
+class ConstructionInfoVisitingActor extends DefaultVisitor<IVisitable> implements TDummyActor<IVisitable> {
 
 	Map<String, Type> constructorBaseType = [:]
 	Map<Type, Set<RelDeclaration>> constructorsPerType = [:].withDefault { [] as Set }

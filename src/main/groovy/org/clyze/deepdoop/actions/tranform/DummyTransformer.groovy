@@ -1,6 +1,6 @@
 package org.clyze.deepdoop.actions.tranform
 
-import org.clyze.deepdoop.actions.PostOrderVisitor
+import org.clyze.deepdoop.actions.DefaultVisitor
 import org.clyze.deepdoop.actions.TDummyActor
 import org.clyze.deepdoop.datalog.IVisitable
 import org.clyze.deepdoop.datalog.block.BlockLvl0
@@ -15,7 +15,7 @@ import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.*
 
-class DummyTransformer extends PostOrderVisitor<IVisitable> implements TDummyActor<IVisitable> {
+class DummyTransformer extends DefaultVisitor<IVisitable> implements TDummyActor<IVisitable> {
 
 	Set<RelDeclaration> extraRelDecls = [] as Set
 	Set<TypeDeclaration> extraTypeDecls = [] as Set

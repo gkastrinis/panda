@@ -17,7 +17,7 @@ import java.nio.file.Paths
 
 import static org.clyze.deepdoop.datalog.element.LogicalElement.LogicType.AND
 
-class DefaultCodeGenerator extends PostOrderVisitor<String> implements TDummyActor<String> {
+class DefaultCodeGenerator extends DefaultVisitor<String> implements TDummyActor<String> {
 
 	File outDir
 	File currentFile
@@ -25,7 +25,7 @@ class DefaultCodeGenerator extends PostOrderVisitor<String> implements TDummyAct
 	TypeInfoVisitingActor typeInfoActor = new TypeInfoVisitingActor()
 	RelationInfoVisitingActor relInfoActor = new RelationInfoVisitingActor()
 	ConstructionInfoVisitingActor constructionInfoActor = new ConstructionInfoVisitingActor()
-	TypeInferenceTransformer typeInferenceActor = new TypeInferenceTransformer(typeInfoActor, relInfoActor)
+	TypeInferenceTransformer typeInferenceTransformer = new TypeInferenceTransformer(typeInfoActor, relInfoActor)
 
 	List<Result> results = []
 
