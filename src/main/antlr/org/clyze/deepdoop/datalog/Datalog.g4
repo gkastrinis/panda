@@ -5,7 +5,7 @@ package org.clyze.deepdoop.datalog;
 }
 
 program
-	: (component | cmd | instantiate | datalog)* ;
+	: (component | cmd | instantiation | datalog)* ;
 
 component
 	: 'component' IDENTIFIER parameterList? (':' superComponent)? '{' datalog* '}' ('as' identifierList)? ;
@@ -16,7 +16,7 @@ superComponent
 cmd
 	: 'cmd' IDENTIFIER '{' datalog* '}' ('as' identifierList)? ;
 
-instantiate
+instantiation
 	: IDENTIFIER parameterList? 'as' identifierList ;
 
 datalog

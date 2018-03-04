@@ -99,7 +99,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 //		currComp = program.globalComp
 //	}
 
-	void exitInstantiate(InstantiateContext ctx) {
+	void exitInstantiation(InstantiationContext ctx) {
 		def parameters = values[ctx.parameterList()] as List ?: []
 		values[ctx.identifierList()].each { String id ->
 			if (program.instantiations.any { it.id == id })
