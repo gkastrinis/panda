@@ -20,17 +20,18 @@ class DatalogSpec extends Specification {
 		notThrown(DeepDoopException)
 
 		where:
-		file       | _
-		"t0.logic" | _
-		"t1.logic" | _
-		"t2.logic" | _
-		"t3.logic" | _
-		"t4.logic" | _
-		"t5.logic" | _
-		"t6.logic" | _
-		"t7.logic" | _
-		"t8.logic" | _
-		"t9.logic" | _
+		file        | _
+		"t0.logic"  | _
+		"t1.logic"  | _
+		"t2.logic"  | _
+		"t3.logic"  | _
+		"t4.logic"  | _
+		"t5.logic"  | _
+		"t6.logic"  | _
+		"t7.logic"  | _
+		"t8.logic"  | _
+		"t9.logic"  | _
+		"t10.logic" | _
 		//"t100.logic" | _
 	}
 
@@ -118,11 +119,19 @@ class DatalogSpec extends Specification {
 	def test(String file) {
 		DeepDoopException e1 = null, e2 = null
 
-		try { lbTest(file) }
-		catch (DeepDoopException e) { e1 = e }
+		try {
+			lbTest(file)
+		}
+		catch (DeepDoopException e) {
+			e1 = e
+		}
 
-		try { souffleTest(file) }
-		catch (DeepDoopException e) { e2 = e }
+		try {
+			souffleTest(file)
+		}
+		catch (DeepDoopException e) {
+			e2 = e
+		}
 
 		assert e1?.errorId == e2?.errorId
 		if (e1) throw e1

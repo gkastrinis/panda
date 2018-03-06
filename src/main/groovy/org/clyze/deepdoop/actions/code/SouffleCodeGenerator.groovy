@@ -33,10 +33,10 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 				.accept(new ComponentInstantiationTransformer())
 				.accept(typeInfoActor)
 				.accept(relInfoActor)
-				.accept(constructionInfoActor)
 				.accept(new AddonsTransformer(typeInfoActor))
+				.accept(constructionInfoActor)
 				.accept(typeInferenceTransformer)
-//				//n=n.accept(new ValidationVisitingActor(constructionInfoActor))
+//				//.accept(new ValidationVisitingActor(constructionInfoActor))
 				.accept(new ConstructorTransformer(typeInfoActor, typeInferenceTransformer, constructionInfoActor))
 //				//.accept(new AssignTransformer(constructionInfoActor))
 

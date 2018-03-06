@@ -1,0 +1,14 @@
+@type Animal
+@type Cat : Animal with A("A")
+@constructor byNum[x] = y : int, Cat
+@type @input PersianCat : Cat
+
+Animal:byStr["foo"] = x new PersianCat
+byNum[42] = x new PersianCat
+
+@Input {
+	P1(x) : string
+	P2(x) : int
+	P3(x,y) : string, int
+	P4(x,y) : Cat, Animal
+}

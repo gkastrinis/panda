@@ -4,6 +4,7 @@ import org.clyze.deepdoop.actions.RelationInfoVisitingActor
 import org.clyze.deepdoop.actions.TypeInfoVisitingActor
 import org.clyze.deepdoop.datalog.IVisitable
 import org.clyze.deepdoop.datalog.block.BlockLvl0
+import org.clyze.deepdoop.datalog.block.BlockLvl1
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.clause.TypeDeclaration
@@ -38,7 +39,7 @@ class TypeInferenceTransformer extends DummyTransformer {
 	private Map<String, RelDeclaration> relToDecl = [:]
 	// Implementing fix-point computation
 	private Set<Rule> deltaRules
-	private BlockLvl0 currDatalog
+	private BlockLvl1 currBlock
 
 	TypeInferenceTransformer(TypeInfoVisitingActor typeInfoActor, RelationInfoVisitingActor relInfoActor) {
 		actor = this
@@ -46,8 +47,14 @@ class TypeInferenceTransformer extends DummyTransformer {
 		this.relInfoActor = relInfoActor
 	}
 
+	void enter(BlockLvl1 n) { currBlock = n }
+
+	IVisitable exit(BlockLvl1 n, Map m) {
+		currBlock = null
+		super.exit(n, m)
+	}
+
 	IVisitable visit(BlockLvl0 n) {
-		currDatalog = n
 		n.relDeclarations.each { visit it }
 
 		Set<Rule> oldDeltaRules = n.rules
@@ -107,7 +114,7 @@ class TypeInferenceTransformer extends DummyTransformer {
 					// There is an explicit declaration and the possible types
 					// for some expressions are more generic that the declared ones
 					if (declaredTypes) {
-						def superTs = typeInfoActor.superTypesOrdered[currDatalog][declaredTypes[i]]
+						def superTs = typeInfoActor.superTypesOrdered[currBlock][declaredTypes[i]]
 						if (currTypeSet.find { it in superTs })
 							ErrorManager.error(ErrorId.TYPE_FIXED, declaredTypes[i], i, relName)
 					}
@@ -189,7 +196,7 @@ class TypeInferenceTransformer extends DummyTransformer {
 
 					// Phase 1: Include types that don't have a better representative already in the set
 					typeSet.each { t ->
-						def superTs = typeInfoActor.superTypesOrdered[currDatalog][t]
+						def superTs = typeInfoActor.superTypesOrdered[currBlock][t]
 						if (!superTs.any { it in typeSet }) workingSet << t
 					}
 
@@ -202,8 +209,8 @@ class TypeInferenceTransformer extends DummyTransformer {
 							def t2 = workingSet.first()
 							workingSet.removeAt(0)
 
-							def superTypesOfT1 = typeInfoActor.superTypesOrdered[currDatalog][t1]
-							def superTypesOfT2 = typeInfoActor.superTypesOrdered[currDatalog][t2]
+							def superTypesOfT1 = typeInfoActor.superTypesOrdered[currBlock][t1]
+							def superTypesOfT2 = typeInfoActor.superTypesOrdered[currBlock][t2]
 							// Move upwards in the hierarchy until a common type is found
 							def superT = t1 = superTypesOfT1.find { it in superTypesOfT2 }
 							if (!superT)
