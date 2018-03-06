@@ -14,7 +14,14 @@ import org.clyze.deepdoop.datalog.DatalogParser
 class Compiler {
 
 	static {
-		initLogging("INFO", "./build/logs", true)
+		def logDir = "./build/logs"
+		def dir = new File(logDir)
+		if (!dir) dir.mkdir()
+
+		def root = Logger.rootLogger
+		root.setLevel(Level.toLevel("INFO", Level.WARN))
+		root.addAppender(new DailyRollingFileAppender(new PatternLayout("%d [%t] %-5p %c - %m%n"), "$logDir/deepdoop.log", "'.'yyyy-MM-dd"))
+		root.addAppender(new ConsoleAppender(new PatternLayout("%m%n")))
 	}
 
 	static List<Result> compileToLB3(String filename, File outDir) {
@@ -40,17 +47,5 @@ class Compiler {
 			log.error(e.message, e)
 		}
 		return null
-	}
-
-	private static void initLogging(String logLevel, String logDir, boolean console) {
-		def dir = new File(logDir)
-		if (!dir) dir.mkdir()
-
-		def root = Logger.rootLogger
-		root.setLevel(Level.toLevel(logLevel, Level.WARN))
-		root.addAppender(new DailyRollingFileAppender(new PatternLayout("%d [%t] %-5p %c - %m%n"), "$logDir/deepdoop.log", "'.'yyyy-MM-dd"))
-
-		if (console)
-			root.addAppender(new ConsoleAppender(new PatternLayout("%m%n")))
 	}
 }
