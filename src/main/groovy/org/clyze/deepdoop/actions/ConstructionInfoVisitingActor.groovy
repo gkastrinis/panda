@@ -13,6 +13,7 @@ import org.clyze.deepdoop.system.SourceManager
 
 import static org.clyze.deepdoop.datalog.Annotation.CONSTRUCTOR
 import static org.clyze.deepdoop.system.Error.error as error
+import static org.clyze.deepdoop.system.SourceManager.recallStatic as recall
 
 class ConstructionInfoVisitingActor extends DefaultVisitor<IVisitable> implements TDummyActor<IVisitable> {
 
@@ -57,11 +58,10 @@ class ConstructionInfoVisitingActor extends DefaultVisitor<IVisitable> implement
 	}
 
 	void enter(ConstructionElement n) {
-		def loc = SourceManager.instance.recall(n)
 		def conVar = n.constructor.valueExpr as VariableExpr
 		tmpConVars << conVar
 		tmpConVarCounter[conVar]++
-		if (tmpConVarCounter[conVar] > 1) error(loc, Error.VAR_MULTIPLE_CONSTR, conVar)
+		if (tmpConVarCounter[conVar] > 1) error(recall(n), Error.VAR_MULTIPLE_CONSTR, conVar)
 
 		// Max index of a constructor that constructs a variable used by `n`
 		def maxBefore = n.constructor.keyExprs
@@ -73,7 +73,7 @@ class ConstructionInfoVisitingActor extends DefaultVisitor<IVisitable> implement
 		// `maxBefore` should be strictly before `minAfter`
 		maxBefore = (maxBefore != -1 ? maxBefore : -2)
 		minAfter = (minAfter != null ? minAfter : -1)
-		if (maxBefore >= minAfter) error(loc, Error.CONSTR_RULE_CYCLE, n.constructor.name)
+		if (maxBefore >= minAfter) error(recall(n), Error.CONSTR_RULE_CYCLE, n.constructor.name)
 
 		tmpConstructionsOrdered.add(maxBefore >= 0 ? maxBefore : 0, n)
 	}

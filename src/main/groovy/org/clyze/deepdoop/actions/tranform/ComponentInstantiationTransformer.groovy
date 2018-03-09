@@ -15,9 +15,9 @@ import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.BinaryExpr
 import org.clyze.deepdoop.datalog.expr.GroupExpr
 import org.clyze.deepdoop.system.Error
-import org.clyze.deepdoop.system.SourceManager
 
 import static org.clyze.deepdoop.system.Error.error as error
+import static org.clyze.deepdoop.system.SourceManager.recallStatic as recall
 
 class ComponentInstantiationTransformer extends DummyTransformer {
 
@@ -69,8 +69,7 @@ class ComponentInstantiationTransformer extends DummyTransformer {
 	IVisitable exit(Constructor n, Map m) { new Constructor(rename(n.name), n.exprs) }
 
 	IVisitable exit(Relation n, Map m) {
-		def loc = SourceManager.instance.recall(n)
-		if (n.name.contains("@") && (inDecl || inRuleHead)) error(loc, Error.REL_EXT_INVALID)
+		if (n.name.contains("@") && (inDecl || inRuleHead)) error(recall(n), Error.REL_EXT_INVALID)
 
 		def origName = n.name
 		if (!origName.contains("@"))
@@ -80,12 +79,12 @@ class ComponentInstantiationTransformer extends DummyTransformer {
 		// Global space
 		if (!currComp) {
 			if (!origP.instantiations.any { it.id == parameter })
-				error(loc, Error.COMP_UNKNOWN, parameter as String)
+				error(recall(n), Error.COMP_UNKNOWN, parameter as String)
 			return new Relation("$parameter:$simpleName", n.exprs)
 		} else {
 			def paramIndex = currComp.parameters.findIndexOf { it == parameter }
 			if (paramIndex == -1)
-				error(loc, Error.REL_EXT_UNKNOWN, parameter as String)
+				error(recall(n), Error.REL_EXT_UNKNOWN, parameter as String)
 
 			def instParameter = origP.instantiations.find { it.id == currInstanceName }.parameters[paramIndex]
 			def externalName = instParameter == "_" ? simpleName : "$instParameter:$simpleName"
@@ -98,7 +97,7 @@ class ComponentInstantiationTransformer extends DummyTransformer {
 				externalTemplateDatalog = origP.components.find { it.name == name }.datalog
 			}
 			if (!relInfoActor.declaredRelations[externalTemplateDatalog].any { it.name == simpleName })
-				error(loc, Error.REL_EXT_NO_DECL, simpleName as String)
+				error(recall(n), Error.REL_EXT_NO_DECL, simpleName as String)
 
 			return new Relation(externalName, n.exprs)
 		}

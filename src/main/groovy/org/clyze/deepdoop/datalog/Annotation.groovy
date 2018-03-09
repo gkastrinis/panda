@@ -9,6 +9,7 @@ import org.clyze.deepdoop.system.SourceManager
 import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.INTEGER
 import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.STRING
 import static org.clyze.deepdoop.system.Error.error as error
+import static org.clyze.deepdoop.system.SourceManager.recallStatic as recall
 
 @EqualsAndHashCode(includes = "kind")
 @ToString(includePackage = false)
@@ -32,22 +33,20 @@ class Annotation {
 	}
 
 	static def MANDATORY_VALIDATOR = { Annotation a, Map<String, ConstantExpr.Type> mandatory ->
-		def loc = SourceManager.instance.recall(a)
 		mandatory.findAll { argName, type -> !a.args[argName] }.each {
-			error(loc, Error.ANNOTATION_MISSING_ARG, it, a.kind)
+			error(recall(a), Error.ANNOTATION_MISSING_ARG, it, a.kind)
 		}
 		mandatory.findAll { argName, type -> a.args[argName].type != type }.each { argName, type ->
-			error(loc, Error.ANNOTATION_MISTYPED_ARG, a.args[argName].type, type, argName, a.kind)
+			error(recall(a), Error.ANNOTATION_MISTYPED_ARG, a.args[argName].type, type, argName, a.kind)
 		}
 	}
 
 	static def OPTIONAL_VALIDATOR = { Annotation a, Map<String, ConstantExpr.Type> optional ->
-		def loc = SourceManager.instance.recall(a)
 		a.args.findAll { argName, value -> !optional[argName] }.each {
-			error(loc, Error.ANNOTATION_INVALID_ARG, it.key, a.kind)
+			error(recall(a), Error.ANNOTATION_INVALID_ARG, it.key, a.kind)
 		}
 		a.args.findAll { argName, value -> optional[argName] != value.type }.each { argName, type ->
-			error(loc, Error.ANNOTATION_MISTYPED_ARG, a.args[argName].type, type, argName, a.kind)
+			error(recall(a), Error.ANNOTATION_MISTYPED_ARG, a.args[argName].type, type, argName, a.kind)
 		}
 	}
 
