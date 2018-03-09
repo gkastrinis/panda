@@ -87,27 +87,27 @@ class DatalogSpec extends Specification {
 //		"fail108.logic" | Error.MULTIPLE_ENT_DECLS
 	}
 
-	@Unroll
-	def "DeepDoop Souffle-failing tests"() {
-		when:
-		souffleTest(file)
+//	@Unroll
+//	def "DeepDoop Souffle-failing tests"() {
+//		when:
+//		souffleTest(file)
+//
+//		then:
+//		def e = thrown(DeepDoopException)
+//		e.error == expectedErrorId
+//
+//		where:
+//		file            | expectedErrorId
+//		"fail-S0.logic" | Error.VAR_ASGN_CYCLE
+//		"fail-S1.logic" | Error.VAR_ASGN_COMPLEX
+//	}
 
-		then:
-		def e = thrown(DeepDoopException)
-		e.error == expectedErrorId
-
-		where:
-		file            | expectedErrorId
-		"fail-S0.logic" | Error.VAR_ASGN_CYCLE
-		"fail-S1.logic" | Error.VAR_ASGN_COMPLEX
-	}
-
-	def lbTest(String file) {
-		def resourcePath = "/$file"
-		def inputStream = new ANTLRInputStream(this.class.getResourceAsStream(resourcePath))
-		def resource = this.class.getResource(resourcePath).file
-		Compiler.compile0(inputStream, resource, new LBCodeGenerator("build"))
-	}
+//	def lbTest(String file) {
+//		def resourcePath = "/$file"
+//		def inputStream = new ANTLRInputStream(this.class.getResourceAsStream(resourcePath))
+//		def resource = this.class.getResource(resourcePath).file
+//		Compiler.compile0(inputStream, resource, new LBCodeGenerator("build"))
+//	}
 
 	def souffleTest(String file) {
 		def resourcePath = "/$file"
@@ -119,12 +119,12 @@ class DatalogSpec extends Specification {
 	def test(String file) {
 		DeepDoopException e1 = null, e2 = null
 
-		try {
-			lbTest(file)
-		}
-		catch (DeepDoopException e) {
-			e1 = e
-		}
+//		try {
+//			lbTest(file)
+//		}
+//		catch (DeepDoopException e) {
+//			e1 = e
+//		}
 
 		try {
 			souffleTest(file)
@@ -133,7 +133,7 @@ class DatalogSpec extends Specification {
 			e2 = e
 		}
 
-		assert e1?.error == e2?.error
-		if (e1) throw e1
+//		assert e1?.error == e2?.error
+		if (e2) throw e2
 	}
 }
