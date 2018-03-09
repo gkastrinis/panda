@@ -1,0 +1,2 @@
+P(x, y) : int, int
+Foo(x,  y) <- P(x, x)

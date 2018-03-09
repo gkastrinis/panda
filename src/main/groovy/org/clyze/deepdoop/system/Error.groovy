@@ -17,6 +17,7 @@ enum Error {
 	COMP_DUPLICATE_PARAMS,
 	COMP_SUPER_PARAM_MISMATCH,
 	COMP_INST_ARITY,
+	COMP_UNKNOWN_PARAM,
 	INST_ID_IN_USE,
 
 	DECL_MALFORMED,
@@ -25,7 +26,6 @@ enum Error {
 	FUNC_NON_CONSTR,
 	REL_ARITY,
 	REL_EXT_INVALID,
-	REL_EXT_UNKNOWN,
 	REL_EXT_NO_DECL,
 	CONSTR_RULE_CYCLE,
 	CONSTR_UNKNOWN,
@@ -69,6 +69,7 @@ enum Error {
 		msgMap[COMP_DUPLICATE_PARAMS] = "Duplicate parameters ({0}) in component `{1}`"
 		msgMap[COMP_SUPER_PARAM_MISMATCH] = "Super component parameters ({0}) not matching parameters ({1}) of component `{2}`"
 		msgMap[COMP_INST_ARITY] = "Wrong arity for instantiation parameters ({0}) of component `{1}` as `{2}`"
+		msgMap[COMP_UNKNOWN_PARAM] = "Unknown `@` parameter `{0}` used in component"
 		msgMap[INST_ID_IN_USE] = "Instantiation name `{0}` already in use"
 
 		msgMap[DECL_MALFORMED] = "Number of variables and types in declaration not matching"
@@ -77,7 +78,6 @@ enum Error {
 		msgMap[FUNC_NON_CONSTR] = "Functional syntax available only for constructors (`{0}`)"
 		msgMap[REL_ARITY] = "Inconsistent arity for relation `{0}`"
 		msgMap[REL_EXT_INVALID] = "Relation with a `@` parameter only allowed in a rule body, inside a component"
-		msgMap[REL_EXT_UNKNOWN] = "Relation used with an unknown `@` parameter `{0}`"
 		msgMap[REL_EXT_NO_DECL] = "Unknown relation `{0}` used with a `@` parameter"
 		msgMap[CONSTR_RULE_CYCLE] = "Constructor `{0}` appears in a cycle in rule head"
 		msgMap[CONSTR_UNKNOWN] = "Unknown constructor `{0}`"

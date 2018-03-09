@@ -4,3 +4,4 @@ component Foo <X>{
 	Q(x) <- P@X(x)
 	W@X(x) : int
 }
+Foo<_> as F1

@@ -84,7 +84,7 @@ class ComponentInstantiationTransformer extends DummyTransformer {
 		} else {
 			def paramIndex = currComp.parameters.findIndexOf { it == parameter }
 			if (paramIndex == -1)
-				error(recall(n), Error.REL_EXT_UNKNOWN, parameter as String)
+				error(recall(n), Error.COMP_UNKNOWN_PARAM, parameter as String)
 
 			def instParameter = origP.instantiations.find { it.id == currInstanceName }.parameters[paramIndex]
 			def externalName = instParameter == "_" ? simpleName : "$instParameter:$simpleName"

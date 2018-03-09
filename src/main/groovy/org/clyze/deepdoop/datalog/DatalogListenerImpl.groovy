@@ -57,13 +57,15 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		currPendingAnnotations = [:].withDefault { [] as Set }
 	}
 
+	Set<String> getComponentIDs() { program.components.collect { it.name } + program.instantiations.collect { it.id } }
+
 	void exitComponent(ComponentContext ctx) {
 		def name = ctx.IDENTIFIER().text
 		def superName = ctx.superComponent()?.IDENTIFIER()?.text
 		def parameters = values[ctx.parameterList()] as List ?: []
 		def superParameters = ctx.superComponent()?.parameterList() ? values[ctx.superComponent().parameterList()] as List : []
 
-		if (program.components.any { it.name == name })
+		if (componentIDs.any { it == name })
 			error(Error.COMP_ID_IN_USE, name)
 
 		if (parameters.size() != parameters.toSet().size())
@@ -75,7 +77,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		program.components << new BlockLvl1(name, superName, parameters, superParameters, currDatalog)
 
 		values[ctx.identifierList()].each { String id ->
-			if (program.instantiations.any { it.id == id }) error(Error.INST_ID_IN_USE, id)
+			if (componentIDs.any { it == id }) error(Error.INST_ID_IN_USE, id)
 			program.instantiations << new Instantiation(name, id, [])
 		}
 
@@ -101,7 +103,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	void exitInstantiation(InstantiationContext ctx) {
 		def parameters = values[ctx.parameterList()] as List ?: []
 		values[ctx.identifierList()].each { String id ->
-			if (program.instantiations.any { it.id == id }) error(Error.INST_ID_IN_USE, id)
+			if (componentIDs.any { it == id }) error(Error.INST_ID_IN_USE, id)
 			program.instantiations << new Instantiation(ctx.IDENTIFIER().text, id, parameters)
 		}
 	}

@@ -1,7 +1,6 @@
 package org.clyze.deepdoop
 
 import org.antlr.v4.runtime.ANTLRInputStream
-import org.clyze.deepdoop.actions.code.LBCodeGenerator
 import org.clyze.deepdoop.actions.code.SouffleCodeGenerator
 import org.clyze.deepdoop.system.Compiler
 import org.clyze.deepdoop.system.DeepDoopException
@@ -46,11 +45,11 @@ class DatalogSpec extends Specification {
 
 		where:
 		file           | expectedErrorId
-		//"fail0.logic"  | Error.DEP_GLOBAL
+		"fail0.logic"  | Error.COMP_UNKNOWN_PARAM
 		"fail1.logic"  | Error.INST_ID_IN_USE
-		///"fail2.logic"  | Error.COMP_UNKNOWN
+		"fail2.logic"  | Error.COMP_ID_IN_USE
 		"fail3.logic"  | Error.COMP_UNKNOWN
-		///"fail4.logic"  | Error.REL_UNKNOWN
+		"fail4.logic"  | Error.INST_ID_IN_USE
 		"fail5.logic"  | Error.REL_EXT_NO_DECL
 		"fail6.logic"  | Error.CONSTR_TYPE_INCOMP
 		"fail7.logic"  | Error.FUNC_NON_CONSTR
@@ -65,7 +64,7 @@ class DatalogSpec extends Specification {
 		"fail16.logic" | Error.ANNOTATION_NON_EMPTY
 		"fail17.logic" | Error.ANNOTATION_MISSING_ARG
 		"fail18.logic" | Error.ANNOTATION_INVALID_ARG
-		//"fail19.logic" | Error.ANNOTATION_INVALID
+		"fail19.logic" | Error.ANNOTATION_INVALID
 		"fail20.logic" | Error.REL_EXT_INVALID
 		"fail21.logic" | Error.DECL_MALFORMED
 		"fail22.logic" | Error.ANNOTATION_MISTYPED_ARG
@@ -77,13 +76,14 @@ class DatalogSpec extends Specification {
 		"fail28.logic" | Error.COMP_INST_ARITY
 		"fail29.logic" | Error.REL_EXT_INVALID
 		"fail30.logic" | Error.COMP_UNKNOWN
+		"fail31.logic" | Error.VAR_UNKNOWN
+		"fail32.logic" | Error.TYPE_INFERENCE_FAIL
 //		"fail100.logic" | Error.DEP_CYCLE
 //		"fail101.logic" | Error.CMD_RULE
 //		"fail103.logic" | Error.CMD_DIRECTIVE
 //		"fail104.logic" | Error.CMD_NO_DECL
 //		"fail105.logic" | Error.CMD_NO_IMPORT
 //		"fail106.logic" | Error.CMD_EVAL
-//		"fail107.logic" | Error.VAR_UNKNOWN
 //		"fail108.logic" | Error.MULTIPLE_ENT_DECLS
 	}
 

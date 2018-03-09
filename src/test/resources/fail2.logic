@@ -1,6 +1,7 @@
 component Foo {
 	P(x) : string
 }
-as S1
 
-S2 { * } -> .
+component Foo {
+	R(x) : int
+}
