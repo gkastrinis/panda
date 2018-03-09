@@ -28,8 +28,6 @@ class RelationInfoVisitingActor extends DefaultVisitor<IVisitable> implements TD
 
 	IVisitable exit(BlockLvl2 n, Map m) { n }
 
-	IVisitable visit(BlockLvl1 n) { throw new UnsupportedOperationException() }
-
 	IVisitable exit(BlockLvl0 n, Map m) {
 		declaredRelations[n] = (n.relDeclarations + n.rules).collect { declaredRelations[it] }.flatten() as Set<Relation>
 		usedRelations[n] = (n.relDeclarations + n.rules).collect { usedRelations[it] }.flatten() as Set<Relation>

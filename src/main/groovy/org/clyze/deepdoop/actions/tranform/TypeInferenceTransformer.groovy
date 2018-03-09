@@ -55,7 +55,7 @@ class TypeInferenceTransformer extends DummyTransformer {
 		while (!oldDeltaRules.isEmpty()) {
 			deltaRules = [] as Set
 			oldDeltaRules.each { visit it }
-			if (oldDeltaRules == deltaRules) error(Error.TYPE_INFERENCE_FAIL)
+			if (oldDeltaRules == deltaRules) error(Error.TYPE_INFERENCE_FAIL, null)
 			oldDeltaRules = deltaRules
 		}
 		coalesce()
@@ -165,7 +165,7 @@ class TypeInferenceTransformer extends DummyTransformer {
 		def union = tmpExprTypes[n.left] + tmpExprTypes[n.right]
 		// Numeric operations
 		if (n.op != BinaryOp.EQ && n.op != BinaryOp.NEQ)
-			union.findAll { it != Type.TYPE_INT && it != Type.TYPE_FLOAT }.each { error(Error.TYPE_INCOMP_EXPR) }
+			union.findAll { it != Type.TYPE_INT && it != Type.TYPE_FLOAT }.each { error(Error.TYPE_INCOMP_EXPR, null) }
 		tmpExprTypes[n] = tmpExprTypes[n.left] = tmpExprTypes[n.right] = union
 		return n
 	}
