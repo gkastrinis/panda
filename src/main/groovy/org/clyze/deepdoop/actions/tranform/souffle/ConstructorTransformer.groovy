@@ -67,9 +67,9 @@ class ConstructorTransformer extends DummyTransformer {
 	void enter(BlockLvl2 n) {
 		// Re: (2)
 		// Find all types that are roots in the type hierarchy
-		(typeInfoActor.typeToRootType[null].values() as Set).each { root ->
+		(typeInfoActor.typeToRootType.values() as Set).each { root ->
 			def rootType = new Type("_${root.name}")
-			def types = [root] + typeInfoActor.subTypes[null][root]
+			def types = [root] + typeInfoActor.subTypes[root]
 			types.each { typeToCommonType[it] = rootType }
 			def constructors = types.collect { constructionInfoActor.constructorsPerType[it] }.flatten() as Set<RelDeclaration>
 

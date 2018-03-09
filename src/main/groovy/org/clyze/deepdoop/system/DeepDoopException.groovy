@@ -2,11 +2,11 @@ package org.clyze.deepdoop.system
 
 class DeepDoopException extends RuntimeException {
 
-	ErrorId errorId
+	Error error
 
-	DeepDoopException(String msg, ErrorId errorId) {
+	DeepDoopException(String msg, Error error) {
 		super(msg)
-		this.errorId = errorId
+		this.error = error
 	}
 
 	synchronized Throwable fillInStackTrace() { null }

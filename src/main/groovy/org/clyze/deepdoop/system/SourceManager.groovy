@@ -33,6 +33,8 @@ class SourceManager {
 
 	SourceLocation recall(Object o) { locations[o] }
 
+	static SourceLocation recallStatic(Object o) { SourceManager.instance.recall(o) }
+
 	SourceLocation locate(int outputLine) {
 		SourceLine[] lines
 		if (markers.empty()) {

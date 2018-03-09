@@ -1,6 +1,7 @@
 package org.clyze.deepdoop.actions.code
 
 import groovy.transform.InheritConstructors
+import org.clyze.deepdoop.actions.ValidationVisitingActor
 import org.clyze.deepdoop.actions.tranform.AddonsTransformer
 import org.clyze.deepdoop.actions.tranform.ComponentInstantiationTransformer
 import org.clyze.deepdoop.actions.tranform.SyntaxFlatteningTransformer
@@ -32,13 +33,13 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		def n = p.accept(new SyntaxFlatteningTransformer())
 				.accept(new ComponentInstantiationTransformer())
 				.accept(typeInfoActor)
-				.accept(relInfoActor)
 				.accept(new AddonsTransformer(typeInfoActor))
+				.accept(relInfoActor)
 				.accept(constructionInfoActor)
+				.accept(new ValidationVisitingActor(typeInfoActor, relInfoActor, constructionInfoActor))
 				.accept(typeInferenceTransformer)
-//				//.accept(new ValidationVisitingActor(constructionInfoActor))
 				.accept(new ConstructorTransformer(typeInfoActor, typeInferenceTransformer, constructionInfoActor))
-//				//.accept(new AssignTransformer(constructionInfoActor))
+				//.accept(new AssignTransformer(constructionInfoActor))
 
 		super.visit(n)
 	}

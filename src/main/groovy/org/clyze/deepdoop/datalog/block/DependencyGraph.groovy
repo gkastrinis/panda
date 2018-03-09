@@ -71,7 +71,7 @@ class DependencyGraph {
 //				}
 //			}
 //			if (newZeroInNodes.isEmpty() && successorsExist)
-//				ErrorManager.error(ErrorId.DEP_CYCLE)
+//				ErrorManager.error(Error.DEP_CYCLE)
 //			zeroInNodes = newZeroInNodes
 //			curLayer++
 //		}

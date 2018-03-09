@@ -5,7 +5,7 @@ import org.clyze.deepdoop.actions.code.LBCodeGenerator
 import org.clyze.deepdoop.actions.code.SouffleCodeGenerator
 import org.clyze.deepdoop.system.Compiler
 import org.clyze.deepdoop.system.DeepDoopException
-import org.clyze.deepdoop.system.ErrorId
+import org.clyze.deepdoop.system.Error
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -42,49 +42,49 @@ class DatalogSpec extends Specification {
 
 		then:
 		def e = thrown(DeepDoopException)
-		e.errorId == expectedErrorId
+		e.error == expectedErrorId
 
 		where:
 		file           | expectedErrorId
-		//"fail0.logic"  | ErrorId.DEP_GLOBAL
-		"fail1.logic"  | ErrorId.ID_IN_USE
-		///"fail2.logic"  | ErrorId.COMP_UNKNOWN
-		"fail3.logic"  | ErrorId.COMP_UNKNOWN
-		///"fail4.logic"  | ErrorId.REL_UNKNOWN
-		"fail5.logic"  | ErrorId.REL_NO_DECL_REC
-		"fail6.logic"  | ErrorId.CONSTR_INCOMP
-		"fail7.logic"  | ErrorId.FUNC_NON_CONSTR
-		"fail8.logic"  | ErrorId.TYPE_UNKNOWN
-		"fail9.logic"  | ErrorId.CONSTR_UNKNOWN
-		"fail10.logic" | ErrorId.CONSTR_NON_FUNC
-		"fail11.logic" | ErrorId.TYPE_INCOMP
-		"fail12.logic" | ErrorId.REL_ARITY
-		"fail13.logic" | ErrorId.TYPE_FIXED
-		"fail14.logic" | ErrorId.TYPE_RULE
-		"fail15.logic" | ErrorId.DECL_MULTIPLE
-		"fail16.logic" | ErrorId.ANNOTATION_NON_EMPTY
-		"fail17.logic" | ErrorId.ANNOTATION_MISSING_ARG
-		"fail18.logic" | ErrorId.ANNOTATION_INVALID_ARG
-		//"fail19.logic" | ErrorId.ANNOTATION_INVALID
-		"fail20.logic" | ErrorId.REL_EXT_INVALID
-		"fail21.logic" | ErrorId.DECL_MALFORMED
-		"fail22.logic" | ErrorId.ANNOTATION_MISTYPED_ARG
-		"fail23.logic" | ErrorId.CONSTR_RULE_CYCLE
-		"fail24.logic" | ErrorId.VAR_MULTIPLE_CONSTR
-		"fail25.logic" | ErrorId.TYPE_INCOMP_EXPR
-		"fail26.logic" | ErrorId.COMP_DUPLICATE_PARAMS
-		"fail27.logic" | ErrorId.COMP_SUPER_PARAM_MISMATCH
-		"fail28.logic" | ErrorId.COMP_INST_ARITY
-		"fail29.logic" | ErrorId.REL_EXT_INVALID
-		"fail30.logic" | ErrorId.COMP_UNKNOWN
-//		"fail100.logic" | ErrorId.DEP_CYCLE
-//		"fail101.logic" | ErrorId.CMD_RULE
-//		"fail103.logic" | ErrorId.CMD_DIRECTIVE
-//		"fail104.logic" | ErrorId.CMD_NO_DECL
-//		"fail105.logic" | ErrorId.CMD_NO_IMPORT
-//		"fail106.logic" | ErrorId.CMD_EVAL
-//		"fail107.logic" | ErrorId.VAR_UNKNOWN
-//		"fail108.logic" | ErrorId.MULTIPLE_ENT_DECLS
+		//"fail0.logic"  | Error.DEP_GLOBAL
+		"fail1.logic"  | Error.INST_ID_IN_USE
+		///"fail2.logic"  | Error.COMP_UNKNOWN
+		"fail3.logic"  | Error.COMP_UNKNOWN
+		///"fail4.logic"  | Error.REL_UNKNOWN
+		"fail5.logic"  | Error.REL_EXT_NO_DECL
+		"fail6.logic"  | Error.CONSTR_TYPE_INCOMP
+		"fail7.logic"  | Error.FUNC_NON_CONSTR
+		"fail8.logic"  | Error.TYPE_UNKNOWN
+		"fail9.logic"  | Error.CONSTR_UNKNOWN
+		"fail10.logic" | Error.CONSTR_NON_FUNC
+		"fail11.logic" | Error.TYPE_INCOMP
+		"fail12.logic" | Error.REL_ARITY
+		"fail13.logic" | Error.TYPE_INFERENCE_FIXED
+		"fail14.logic" | Error.TYPE_RULE
+		"fail15.logic" | Error.DECL_MULTIPLE
+		"fail16.logic" | Error.ANNOTATION_NON_EMPTY
+		"fail17.logic" | Error.ANNOTATION_MISSING_ARG
+		"fail18.logic" | Error.ANNOTATION_INVALID_ARG
+		//"fail19.logic" | Error.ANNOTATION_INVALID
+		"fail20.logic" | Error.REL_EXT_INVALID
+		"fail21.logic" | Error.DECL_MALFORMED
+		"fail22.logic" | Error.ANNOTATION_MISTYPED_ARG
+		"fail23.logic" | Error.CONSTR_RULE_CYCLE
+		"fail24.logic" | Error.VAR_MULTIPLE_CONSTR
+		"fail25.logic" | Error.TYPE_INCOMP_EXPR
+		"fail26.logic" | Error.COMP_DUPLICATE_PARAMS
+		"fail27.logic" | Error.COMP_SUPER_PARAM_MISMATCH
+		"fail28.logic" | Error.COMP_INST_ARITY
+		"fail29.logic" | Error.REL_EXT_INVALID
+		"fail30.logic" | Error.COMP_UNKNOWN
+//		"fail100.logic" | Error.DEP_CYCLE
+//		"fail101.logic" | Error.CMD_RULE
+//		"fail103.logic" | Error.CMD_DIRECTIVE
+//		"fail104.logic" | Error.CMD_NO_DECL
+//		"fail105.logic" | Error.CMD_NO_IMPORT
+//		"fail106.logic" | Error.CMD_EVAL
+//		"fail107.logic" | Error.VAR_UNKNOWN
+//		"fail108.logic" | Error.MULTIPLE_ENT_DECLS
 	}
 
 	@Unroll
@@ -94,12 +94,12 @@ class DatalogSpec extends Specification {
 
 		then:
 		def e = thrown(DeepDoopException)
-		e.errorId == expectedErrorId
+		e.error == expectedErrorId
 
 		where:
 		file            | expectedErrorId
-		"fail-S0.logic" | ErrorId.VAR_ASGN_CYCLE
-		"fail-S1.logic" | ErrorId.VAR_ASGN_COMPLEX
+		"fail-S0.logic" | Error.VAR_ASGN_CYCLE
+		"fail-S1.logic" | Error.VAR_ASGN_COMPLEX
 	}
 
 	def lbTest(String file) {
@@ -133,7 +133,7 @@ class DatalogSpec extends Specification {
 			e2 = e
 		}
 
-		assert e1?.errorId == e2?.errorId
+		assert e1?.error == e2?.error
 		if (e1) throw e1
 	}
 }

@@ -1,120 +1,112 @@
 package org.clyze.deepdoop.actions
 
+import org.clyze.deepdoop.datalog.Annotation
 import org.clyze.deepdoop.datalog.IVisitable
+import org.clyze.deepdoop.datalog.block.BlockLvl1
+import org.clyze.deepdoop.datalog.block.BlockLvl2
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
+import org.clyze.deepdoop.datalog.clause.TypeDeclaration
 import org.clyze.deepdoop.datalog.element.ConstructionElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
-import org.clyze.deepdoop.datalog.expr.ConstantExpr
-import org.clyze.deepdoop.system.ErrorId
-import org.clyze.deepdoop.system.ErrorManager
-import org.clyze.deepdoop.system.SourceManager
+import org.clyze.deepdoop.system.Error
 
 import static org.clyze.deepdoop.datalog.Annotation.*
-import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.BOOLEAN
-import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.REAL
+import static org.clyze.deepdoop.system.Error.error as error
+import static org.clyze.deepdoop.system.Error.warn as warn
+import static org.clyze.deepdoop.system.SourceManager.recallStatic as recall
 
-@Deprecated
 class ValidationVisitingActor extends DefaultVisitor<IVisitable> implements TDummyActor<IVisitable> {
 
-	ConstructionInfoVisitingActor infoActor
+	TypeInfoVisitingActor typeInfoActor
+	RelationInfoVisitingActor relInfoActor
+	ConstructionInfoVisitingActor conInfoActor
 
-	Set<String> declaredRelations = [] as Set
+	Set<String> tmpDeclaredRelations = [] as Set
+	Set<String> tmpDeclaredTypes = [] as Set
 	Map<String, Integer> arities = [:]
 
-	ValidationVisitingActor(ConstructionInfoVisitingActor infoActor) {
+	ValidationVisitingActor(TypeInfoVisitingActor typeInfoActor, RelationInfoVisitingActor relInfoActor, ConstructionInfoVisitingActor conInfoActor) {
 		actor = this
-		this.infoActor = infoActor
+		this.typeInfoActor = typeInfoActor
+		this.relInfoActor = relInfoActor
+		this.conInfoActor = conInfoActor
 	}
 
-	//IVisitable exit(ProgramLvl1 n, Map m) { n }
+	IVisitable exit(BlockLvl2 n, Map m) { n }
 
-	IVisitable exit(RelDeclaration n, Map m) {
-		if (n.relation.name in declaredRelations)
-			ErrorManager.error(recall(n), ErrorId.DECL_MULTIPLE, n.relation.name)
-		declaredRelations << n.relation.name
+	IVisitable visit(BlockLvl1 n) { throw new UnsupportedOperationException() }
 
-		if (TYPE in n.annotations) {
-			def a = n.annotations.find { !(it in [INPUT, OUTPUT, TYPE, TYPEVALUES]) }
-			if (a) ErrorManager.error(recall(a), ErrorId.ANNOTATION_INVALID, a, "type")
-		} else {
-			def a = n.annotations.find { !(it in [CONSTRUCTOR, FUNCTIONAL, INPUT, OUTPUT]) }
-			if (a) ErrorManager.error(recall(a), ErrorId.ANNOTATION_INVALID, a, "declaration")
+	void enter(RelDeclaration n) {
+		if (n.relation.name in tmpDeclaredRelations) error(recall(n), Error.DECL_MULTIPLE, n.relation.name)
+		tmpDeclaredRelations << n.relation.name
 
-			if (CONSTRUCTOR in n.annotations && !(n.relation instanceof Constructor))
-				ErrorManager.error(recall(n), ErrorId.CONSTR_NON_FUNC, n.relation.name)
-			if (n.relation instanceof Constructor && !(CONSTRUCTOR in n.annotations))
-				ErrorManager.error(recall(n), ErrorId.FUNC_NON_CONSTR, n.relation.name)
+		checkAnnotations(n.annotations, [CONSTRUCTOR, FUNCTIONAL, INPUT, OUTPUT], "Declarations")
+		checkArity(n.relation.name, n.types.size(), n)
 
-			arities[n.relation.name] = n.types.size()
-		}
-		n.annotations?.each { it.validate() }
+		if (CONSTRUCTOR in n.annotations && !(n.relation instanceof Constructor))
+			error(recall(n), Error.CONSTR_NON_FUNC, n.relation.name)
+		if (n.relation instanceof Constructor && !(CONSTRUCTOR in n.annotations))
+			error(recall(n), Error.FUNC_NON_CONSTR, n.relation.name)
 
 		n.types.findAll { !it.isPrimitive() }
-				.findAll { !(it.name in infoActor.allTypes) }
-				.each { ErrorManager.error(recall(it), ErrorId.TYPE_UNKNOWN, it.name) }
-		null
+				.findAll { !(it in typeInfoActor.allTypes) }
+				.each { error(recall(it), Error.TYPE_UNKNOWN, it.name) }
 	}
 
-	IVisitable exit(Rule n, Map m) {
-		n.annotations?.each {
-			if (it != PLAN)
-				ErrorManager.error(recall(it), ErrorId.ANNOTATION_INVALID, it, "rule")
+	void enter(TypeDeclaration n) {
+		if (n.type.name in tmpDeclaredTypes) error(recall(n), Error.DECL_MULTIPLE, n.type.name)
+		tmpDeclaredTypes << n.type.name
 
-			it.validate()
-		}
+		checkAnnotations(n.annotations, [INPUT, OUTPUT, TYPE, TYPEVALUES], "Type")
+	}
 
-		def loc = recall(n)
+	void enter(Rule n) {
+		checkAnnotations(n.annotations, [PLAN], "Rule")
 
-		def conVars = infoActor.constructedVars[n]
-		def varsInHead = infoActor.vars[n.head]
-		def varsInBody = infoActor.vars[n.body]
+		def varsInHead = relInfoActor.vars[n.head]
+		def varsInBody = relInfoActor.vars[n.body]
+		def conVars = conInfoActor.constructedVars[n]
 		varsInHead.findAll { !(it in varsInBody) && !(it in conVars) }
-				.each { ErrorManager.error(loc, ErrorId.VAR_UNKNOWN, it.name) }
+				.each { error(recall(n), Error.VAR_UNKNOWN, it.name) }
 
 		varsInBody.findAll { it.name != "_" }
 				.findAll { !(it in varsInHead) }
-				.findAll { Collections.frequency(varsInBody, it) == 1 }
-				.each { ErrorManager.warn(loc, ErrorId.VAR_UNUSED, it.name) }
+				.findAll { varsInBody.count(it) == 1 }
+				.each { warn(recall(n), Error.VAR_UNUSED, it.name) }
 
-		n.head.elements.findAll { it instanceof Relation }
+		n.head.elements
+				.findAll { it instanceof Relation }
 				.collect { it as Relation }
-				.findAll { it.name in infoActor.allTypes }
-				.each { ErrorManager.error(loc, ErrorId.TYPE_RULE, it.name) }
-		null
+				.findAll { rel -> typeInfoActor.allTypes.find { it.name == rel.name } }
+				.each { error(recall(n), Error.TYPE_RULE, it.name) }
 	}
 
-	IVisitable exit(ConstructionElement n, Map m) {
-		if (!(n.type.name in infoActor.allTypes))
-			ErrorManager.error(recall(n), ErrorId.TYPE_UNKNOWN, n.type.name)
+	void enter(ConstructionElement n) {
+		if (!(n.type in typeInfoActor.allTypes)) error(recall(n), Error.TYPE_UNKNOWN, n.type.name)
 
-		def baseType = infoActor.constructorBaseType[n.constructor.name]
+		def baseType = conInfoActor.constructorBaseType[n.constructor.name]
 		if (!baseType)
-			ErrorManager.error(recall(n), ErrorId.CONSTR_UNKNOWN, n.constructor.name)
-		if (n.type.name != baseType && !(baseType in infoActor.superTypesOrdered[n.type.name]))
-			ErrorManager.error(recall(n), ErrorId.CONSTR_INCOMP, n.constructor.name, n.type.name)
-		null
+			error(recall(n), Error.CONSTR_UNKNOWN, n.constructor.name)
+		if (n.type != baseType && !(baseType in typeInfoActor.superTypesOrdered[n.type]))
+			error(recall(n), Error.CONSTR_TYPE_INCOMP, n.constructor.name, n.type.name)
 	}
 
-	IVisitable exit(Constructor n, Map m) {
-		if (arities[n.name] && arities[n.name] != n.arity)
-			ErrorManager.error(recall(n), ErrorId.REL_ARITY, n.name)
-		null
+	void enter(Constructor n) { if (!inDecl) checkArity(n.name, n.arity, n) }
+
+	void enter(Relation n) { if (!inDecl) checkArity(n.name, n.arity, n) }
+
+	def checkArity(String name, int arity, IVisitable n) {
+		def prevArity = arities[name]
+		if (prevArity && prevArity != arity) error(recall(n), Error.REL_ARITY, name)
+		if (!prevArity) arities[name] = arity
 	}
 
-	IVisitable exit(Relation n, Map m) {
-		if (arities[n.name] && arities[n.name] != n.arity)
-			ErrorManager.error(recall(n), ErrorId.REL_ARITY, n.name)
-		if (!arities[n.name]) arities[n.name] = n.arity
-		null
+	static def checkAnnotations(Set<Annotation> annotations, List<Annotation> allowedAnnotations, String kind) {
+		annotations
+				.findAll { !(it in allowedAnnotations)}
+				.each { error(recall(it), Error.ANNOTATION_INVALID, it, kind) }
+		annotations.each { it.validate() }
 	}
-
-	IVisitable exit(ConstantExpr n, Map m) {
-		if (n.type == REAL || n.type == BOOLEAN)
-			ErrorManager.error(ErrorId.TYPE_UNSUPP, n.type as String)
-		null
-	}
-
-	static def recall(Object o) { SourceManager.instance.recall(o) }
 }

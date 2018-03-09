@@ -26,26 +26,20 @@ import static org.clyze.deepdoop.datalog.expr.VariableExpr.genN as varN
 class AddonsTransformer extends DummyTransformer {
 
 	private TypeInfoVisitingActor typeInfoActor
-	private BlockLvl1 currBlock
 
 	AddonsTransformer(TypeInfoVisitingActor typeInfoActor) {
 		actor = this
 		this.typeInfoActor = typeInfoActor
 	}
 
-	void enter(BlockLvl1 n) { currBlock = n }
-
-	IVisitable exit(BlockLvl1 n, Map m) {
-		currBlock = null
-		super.exit(n, m)
-	}
+	IVisitable visit(BlockLvl1 n) { throw new UnsupportedOperationException() }
 
 	void enter(BlockLvl0 n) {
 		extraRelDecls = [] as Set
 		extraTypeDecls = [] as Set
 		extraRules = [] as Set
 
-		(typeInfoActor.typeToRootType[currBlock].values() as Set).each {
+		(typeInfoActor.typeToRootType.values() as Set).each {
 			extraRelDecls << new RelDeclaration(new Constructor("${it.name}:byStr", []), [TYPE_STRING, it], [CONSTRUCTOR] as Set)
 		}
 	}
@@ -53,28 +47,24 @@ class AddonsTransformer extends DummyTransformer {
 	IVisitable exit(RelDeclaration n, Map m) {
 		if (INPUT in n.annotations) {
 			genInput(n.relation.name, n.types, false)
-			n.annotations.remove INPUT
+			return null
 		}
-
 		return n
 	}
 
 	IVisitable exit(TypeDeclaration n, Map m) {
 		if (TYPEVALUES in n.annotations) {
-			def rootT = typeInfoActor.typeToRootType[currBlock][n.type]
+			def rootT = typeInfoActor.typeToRootType[n.type]
 			n.annotations.find { it == TYPEVALUES }.args.each { key, value ->
 				def rel = new Relation("${n.type.name}:$key", [var1()])
 				def con = new Constructor("${rootT.name}:byStr", [value, var1()])
 				extraRelDecls << new RelDeclaration(rel, [n.type])
 				extraRules << new Rule(new LogicalElement([new ConstructionElement(con, n.type), rel]), null)
 			}
-			n.annotations.remove TYPEVALUES
 		}
 
-		if (INPUT in n.annotations) {
+		if (INPUT in n.annotations)
 			genInput(n.type.name, [n.type], true)
-			n.annotations.remove INPUT
-		}
 
 		return n
 	}
@@ -86,7 +76,7 @@ class AddonsTransformer extends DummyTransformer {
 		def inputTypes = []
 
 		types.withIndex().each { Type t, int i ->
-			def rootT = typeInfoActor.typeToRootType[currBlock][t]
+			def rootT = typeInfoActor.typeToRootType[t]
 			if (rootT) {
 				elements << new ConstructionElement(new Constructor("${rootT.name}:byStr", [var1(i), var1(N + i)]), t)
 				vars << var1(N + i)

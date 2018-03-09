@@ -2,6 +2,7 @@ package org.clyze.deepdoop.actions
 
 import org.clyze.deepdoop.datalog.IVisitable
 import org.clyze.deepdoop.datalog.block.BlockLvl0
+import org.clyze.deepdoop.datalog.block.BlockLvl1
 import org.clyze.deepdoop.datalog.block.BlockLvl2
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
@@ -15,16 +16,19 @@ class RelationInfoVisitingActor extends DefaultVisitor<IVisitable> implements TD
 	Map<IVisitable, Set<Relation>> usedRelations = [:].withDefault { [] as Set }
 	Map<String, Set<Rule>> relUsedInRules = [:].withDefault { [] as Set }
 
-	Map<IVisitable, Set<VariableExpr>> vars = [:]
+	// List instead of set so we can count occurrences (for validation)
+	Map<IVisitable, List<VariableExpr>> vars = [:]
 	Map<Rule, Set<VariableExpr>> boundVars = [:]
 
 	private Set<Relation> tmpRelations = [] as Set
-	private Set<VariableExpr> tmpVars = [] as Set
+	private List<VariableExpr> tmpVars = []
 	private Set<VariableExpr> tmpBoundVars = [] as Set
 
 	RelationInfoVisitingActor() { actor = this }
 
 	IVisitable exit(BlockLvl2 n, Map m) { n }
+
+	IVisitable visit(BlockLvl1 n) { throw new UnsupportedOperationException() }
 
 	IVisitable exit(BlockLvl0 n, Map m) {
 		declaredRelations[n] = (n.relDeclarations + n.rules).collect { declaredRelations[it] }.flatten() as Set<Relation>
@@ -38,7 +42,7 @@ class RelationInfoVisitingActor extends DefaultVisitor<IVisitable> implements TD
 		actor.enter(n)
 
 		tmpRelations = [] as Set
-		tmpVars = [] as Set
+		tmpVars = []
 		visit n.head
 		// Relations used in the head (excluding constructors) are implicitly declared by the rule
 		declaredRelations[n] = tmpRelations.findAll { it instanceof Relation } as Set
@@ -47,7 +51,7 @@ class RelationInfoVisitingActor extends DefaultVisitor<IVisitable> implements TD
 
 		if (n.body) {
 			tmpRelations = [] as Set
-			tmpVars = [] as Set
+			tmpVars = []
 			tmpBoundVars = [] as Set
 			visit n.body
 			usedRelations[n] += tmpRelations

@@ -15,11 +15,11 @@ import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.*
-import org.clyze.deepdoop.system.ErrorId
-import org.clyze.deepdoop.system.ErrorManager
+import org.clyze.deepdoop.system.Error
 
 import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.*
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.genN as varN
+import static org.clyze.deepdoop.system.Error.error as error
 
 class TypeInferenceTransformer extends DummyTransformer {
 
@@ -39,7 +39,6 @@ class TypeInferenceTransformer extends DummyTransformer {
 	private Map<String, RelDeclaration> relToDecl = [:]
 	// Implementing fix-point computation
 	private Set<Rule> deltaRules
-	private BlockLvl1 currBlock
 
 	TypeInferenceTransformer(TypeInfoVisitingActor typeInfoActor, RelationInfoVisitingActor relInfoActor) {
 		actor = this
@@ -47,12 +46,7 @@ class TypeInferenceTransformer extends DummyTransformer {
 		this.relInfoActor = relInfoActor
 	}
 
-	void enter(BlockLvl1 n) { currBlock = n }
-
-	IVisitable exit(BlockLvl1 n, Map m) {
-		currBlock = null
-		super.exit(n, m)
-	}
+	IVisitable visit(BlockLvl1 n) { throw new UnsupportedOperationException() }
 
 	IVisitable visit(BlockLvl0 n) {
 		n.relDeclarations.each { visit it }
@@ -61,8 +55,7 @@ class TypeInferenceTransformer extends DummyTransformer {
 		while (!oldDeltaRules.isEmpty()) {
 			deltaRules = [] as Set
 			oldDeltaRules.each { visit it }
-			if (oldDeltaRules == deltaRules)
-				ErrorManager.error(ErrorId.TYPE_INFERENCE_FAIL)
+			if (oldDeltaRules == deltaRules) error(Error.TYPE_INFERENCE_FAIL)
 			oldDeltaRules = deltaRules
 		}
 		coalesce()
@@ -114,9 +107,9 @@ class TypeInferenceTransformer extends DummyTransformer {
 					// There is an explicit declaration and the possible types
 					// for some expressions are more generic that the declared ones
 					if (declaredTypes) {
-						def superTs = typeInfoActor.superTypesOrdered[currBlock][declaredTypes[i]]
+						def superTs = typeInfoActor.superTypesOrdered[declaredTypes[i]]
 						if (currTypeSet.find { it in superTs })
-							ErrorManager.error(ErrorId.TYPE_FIXED, declaredTypes[i], i, relName)
+							error(Error.TYPE_INFERENCE_FIXED, declaredTypes[i], i, relName)
 					}
 					def prevTypeSet = tmpRelationTypes[relName][i] ?: [] as Set
 					def newTypeSet = (prevTypeSet + currTypeSet) as Set
@@ -172,12 +165,14 @@ class TypeInferenceTransformer extends DummyTransformer {
 		def union = tmpExprTypes[n.left] + tmpExprTypes[n.right]
 		// Numeric operations
 		if (n.op != BinaryOp.EQ && n.op != BinaryOp.NEQ)
-			union.findAll { it != Type.TYPE_INT && it != Type.TYPE_FLOAT }.each { ErrorManager.error(ErrorId.TYPE_INCOMP_EXPR) }
+			union.findAll { it != Type.TYPE_INT && it != Type.TYPE_FLOAT }.each { error(Error.TYPE_INCOMP_EXPR) }
 		tmpExprTypes[n] = tmpExprTypes[n.left] = tmpExprTypes[n.right] = union
 		return n
 	}
 
 	IVisitable exit(ConstantExpr n, Map m) {
+		if (n.type == REAL || n.type == BOOLEAN) error(Error.TYPE_UNSUPP, n.type as String)
+
 		if (n.type == INTEGER) tmpExprTypes[n] << Type.TYPE_INT
 		else if (n.type == REAL) tmpExprTypes[n] << Type.TYPE_FLOAT
 		else if (n.type == BOOLEAN) tmpExprTypes[n] << Type.TYPE_BOOLEAN
@@ -196,7 +191,7 @@ class TypeInferenceTransformer extends DummyTransformer {
 
 					// Phase 1: Include types that don't have a better representative already in the set
 					typeSet.each { t ->
-						def superTs = typeInfoActor.superTypesOrdered[currBlock][t]
+						def superTs = typeInfoActor.superTypesOrdered[t]
 						if (!superTs.any { it in typeSet }) workingSet << t
 					}
 
@@ -209,12 +204,11 @@ class TypeInferenceTransformer extends DummyTransformer {
 							def t2 = workingSet.first()
 							workingSet.removeAt(0)
 
-							def superTypesOfT1 = typeInfoActor.superTypesOrdered[currBlock][t1]
-							def superTypesOfT2 = typeInfoActor.superTypesOrdered[currBlock][t2]
+							def superTypesOfT1 = typeInfoActor.superTypesOrdered[t1]
+							def superTypesOfT2 = typeInfoActor.superTypesOrdered[t2]
 							// Move upwards in the hierarchy until a common type is found
 							def superT = t1 = superTypesOfT1.find { it in superTypesOfT2 }
-							if (!superT)
-								ErrorManager.error(ErrorId.TYPE_INCOMP, relation, i)
+							if (!superT) error(Error.TYPE_INCOMP, relation, i)
 						}
 						coalescedType = t1
 					} else

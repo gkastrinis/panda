@@ -16,13 +16,14 @@ import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.*
-import org.clyze.deepdoop.system.ErrorId
-import org.clyze.deepdoop.system.ErrorManager
+import org.clyze.deepdoop.system.Error
 import org.clyze.deepdoop.system.SourceLocation
 import org.clyze.deepdoop.system.SourceManager
 
 import static org.clyze.deepdoop.datalog.Annotation.TYPE
 import static org.clyze.deepdoop.datalog.DatalogParser.*
+import static org.clyze.deepdoop.system.Error.error as error
+import static org.clyze.deepdoop.system.Error.warn as warn
 
 class DatalogListenerImpl extends DatalogBaseListener {
 
@@ -33,7 +34,6 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	private Map<String, Set<Annotation>> currPendingAnnotations
 	// Extra annotations from an annotation block
 	private Set<Annotation> extraAnnotations = [] as Set
-	private def inDecl = false
 	private def values = [:]
 
 	DatalogListenerImpl(String filename) {
@@ -60,23 +60,22 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	void exitComponent(ComponentContext ctx) {
 		def name = ctx.IDENTIFIER().text
 		def superName = ctx.superComponent()?.IDENTIFIER()?.text
-		if (program.components.any { it.name == name })
-			ErrorManager.error(ErrorId.COMP_ID_IN_USE, name)
-
 		def parameters = values[ctx.parameterList()] as List ?: []
-		if (parameters.size() != parameters.toSet().size())
-			ErrorManager.error(ErrorId.COMP_DUPLICATE_PARAMS, parameters, name)
-
 		def superParameters = ctx.superComponent()?.parameterList() ? values[ctx.superComponent().parameterList()] as List : []
-		if (superParameters.any { !(it in parameters) })
-			ErrorManager.error(ErrorId.COMP_SUPER_PARAM_MISMATCH, superParameters, superName)
 
-		def component = new BlockLvl1(name, superName, parameters, superParameters, currDatalog)
-		program.components << component
+		if (program.components.any { it.name == name })
+			error(Error.COMP_ID_IN_USE, name)
+
+		if (parameters.size() != parameters.toSet().size())
+			error(Error.COMP_DUPLICATE_PARAMS, parameters, name)
+
+		if (superParameters.any { !(it in parameters) })
+			error(Error.COMP_SUPER_PARAM_MISMATCH, superParameters, parameters, superName)
+
+		program.components << new BlockLvl1(name, superName, parameters, superParameters, currDatalog)
 
 		values[ctx.identifierList()].each { String id ->
-			if (program.instantiations.any { it.id == id })
-				ErrorManager.error(ErrorId.ID_IN_USE, id)
+			if (program.instantiations.any { it.id == id }) error(Error.INST_ID_IN_USE, id)
 			program.instantiations << new Instantiation(name, id, [])
 		}
 
@@ -102,8 +101,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	void exitInstantiation(InstantiationContext ctx) {
 		def parameters = values[ctx.parameterList()] as List ?: []
 		values[ctx.identifierList()].each { String id ->
-			if (program.instantiations.any { it.id == id })
-				ErrorManager.error(ErrorId.ID_IN_USE, id)
+			if (program.instantiations.any { it.id == id }) error(Error.INST_ID_IN_USE, id)
 			program.instantiations << new Instantiation(ctx.IDENTIFIER().text, id, parameters)
 		}
 	}
@@ -116,18 +114,10 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		extraAnnotations = [] as Set
 	}
 
-	void enterDeclaration(DeclarationContext ctx) {
-		inDecl = true
-	}
-
 	void exitDeclaration(DeclarationContext ctx) {
-		inDecl = false
-
 		def loc = rec(null, ctx)
 		def annotations = gatherAnnotations(ctx.annotationList())
-//		annotations.keySet().each {
-//			if (it in extraAnnotations) ErrorManager.warn(loc, ErrorId.ANNOTATION_MULTIPLE, it)
-//		}
+		annotations.findAll { it in extraAnnotations }.each { warn(loc, Error.ANNOTATION_MULTIPLE, it) }
 		annotations += extraAnnotations
 
 		// Type declaration
@@ -152,8 +142,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		else {
 			def rel = ctx.relation() ? values[ctx.relation()] as Relation : values[ctx.constructor()] as Constructor
 			def types = values[ctx.identifierList()].collect { new Type(it as String) }
-			if (rel.exprs.size() != types.size())
-				ErrorManager.error(loc, ErrorId.DECL_MALFORMED)
+			if (rel.exprs.size() != types.size()) error(loc, Error.DECL_MALFORMED)
 			def d = new RelDeclaration(rel, types, annotations)
 			currDatalog.relDeclarations << d
 			rec(d, ctx)
@@ -166,7 +155,6 @@ class DatalogListenerImpl extends DatalogBaseListener {
 			def annotations = gatherAnnotations(ctx.annotationList())
 			def head = new LogicalElement(values[ctx.headList()] as List)
 			def body = values[ctx.bodyList()] as LogicalElement
-			//def body = ctx.bodyList() ? values[ctx.bodyList()] as LogicalElement : null
 			r = new Rule(head, body, annotations)
 		}
 		// Aggregation
@@ -181,8 +169,6 @@ class DatalogListenerImpl extends DatalogBaseListener {
 
 	void exitRelation(RelationContext ctx) {
 		def name = ctx.IDENTIFIER(0).text
-		if (inDecl && ctx.IDENTIFIER(1))
-			ErrorManager.error(ErrorId.REL_EXT_INVALID)
 		def at = ctx.IDENTIFIER(1) ? "@${ctx.IDENTIFIER(1).text}" : ""
 		def exprs = ctx.exprList() ? values[ctx.exprList()] as List : []
 		values[ctx] = new Relation("$name$at" as String, exprs)
@@ -320,8 +306,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		def valueMap = gatherValues(ctx.annotation().valueList())
 		def annotation = new Annotation(ctx.annotation().IDENTIFIER().text, valueMap)
 		def set = gatherAnnotations(ctx.annotationList())
-		//def loc = rec(annotation, ctx)
-		//if (annotation.kind in set) ErrorManager.warn(loc, ErrorId.ANNOTATION_MULTIPLE, annotation.kind)
+		if (annotation in set) warn(rec(annotation, ctx), Error.ANNOTATION_MULTIPLE, annotation.kind)
 		return set << annotation
 	}
 

@@ -1,6 +1,5 @@
 package org.clyze.deepdoop.actions.tranform
 
-import org.clyze.deepdoop.actions.ConstructionInfoVisitingActor
 import org.clyze.deepdoop.actions.RelationInfoVisitingActor
 import org.clyze.deepdoop.datalog.IVisitable
 import org.clyze.deepdoop.datalog.block.BlockLvl0
@@ -15,15 +14,15 @@ import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.BinaryExpr
 import org.clyze.deepdoop.datalog.expr.GroupExpr
-import org.clyze.deepdoop.system.ErrorId
-import org.clyze.deepdoop.system.ErrorManager
+import org.clyze.deepdoop.system.Error
 import org.clyze.deepdoop.system.SourceManager
+
+import static org.clyze.deepdoop.system.Error.error as error
 
 class ComponentInstantiationTransformer extends DummyTransformer {
 
-	private RelationInfoVisitingActor relInfoActor
 	// Info collection actor for original program
-	private ConstructionInfoVisitingActor constructionInfoActor
+	private RelationInfoVisitingActor relInfoActor
 	// Original program before instantiation
 	private BlockLvl2 origP
 	// Program after instantiation (only a global component)
@@ -44,17 +43,15 @@ class ComponentInstantiationTransformer extends DummyTransformer {
 
 		relInfoActor = new RelationInfoVisitingActor()
 		relInfoActor.visit origP
-		constructionInfoActor = new ConstructionInfoVisitingActor()
-		constructionInfoActor.visit origP
 
 		visit origP.datalog
 		origP.instantiations.each { inst ->
 			currInstanceName = inst.id
 			currComp = n.components.find { it.name == inst.component }
 			if (!currComp)
-				ErrorManager.error(ErrorId.COMP_UNKNOWN, inst.component)
+				error(Error.COMP_UNKNOWN, inst.component)
 			if (currComp.parameters.size() != inst.parameters.size())
-				ErrorManager.error(ErrorId.COMP_INST_ARITY, inst.parameters, inst.component, inst.id)
+				error(Error.COMP_INST_ARITY, inst.parameters, inst.component, inst.id)
 			visit currComp.datalog
 		}
 		instantiatedP
@@ -73,8 +70,7 @@ class ComponentInstantiationTransformer extends DummyTransformer {
 
 	IVisitable exit(Relation n, Map m) {
 		def loc = SourceManager.instance.recall(n)
-		if (inRuleHead && n.name.contains("@"))
-			ErrorManager.error(loc, ErrorId.REL_EXT_INVALID)
+		if (n.name.contains("@") && (inDecl || inRuleHead)) error(loc, Error.REL_EXT_INVALID)
 
 		def origName = n.name
 		if (!origName.contains("@"))
@@ -84,12 +80,12 @@ class ComponentInstantiationTransformer extends DummyTransformer {
 		// Global space
 		if (!currComp) {
 			if (!origP.instantiations.any { it.id == parameter })
-				ErrorManager.error(loc, ErrorId.COMP_UNKNOWN, parameter as String)
+				error(loc, Error.COMP_UNKNOWN, parameter as String)
 			return new Relation("$parameter:$simpleName", n.exprs)
 		} else {
 			def paramIndex = currComp.parameters.findIndexOf { it == parameter }
 			if (paramIndex == -1)
-				ErrorManager.error(loc, ErrorId.REL_EXT_UNKNOWN, parameter as String)
+				error(loc, Error.REL_EXT_UNKNOWN, parameter as String)
 
 			def instParameter = origP.instantiations.find { it.id == currInstanceName }.parameters[paramIndex]
 			def externalName = instParameter == "_" ? simpleName : "$instParameter:$simpleName"
@@ -102,7 +98,7 @@ class ComponentInstantiationTransformer extends DummyTransformer {
 				externalTemplateDatalog = origP.components.find { it.name == name }.datalog
 			}
 			if (!relInfoActor.declaredRelations[externalTemplateDatalog].any { it.name == simpleName })
-				ErrorManager.error(loc, ErrorId.REL_NO_DECL_REC, simpleName as String)
+				error(loc, Error.REL_EXT_NO_DECL, simpleName as String)
 
 			return new Relation(externalName, n.exprs)
 		}

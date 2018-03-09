@@ -8,8 +8,7 @@ import org.clyze.deepdoop.datalog.element.ComparisonElement
 import org.clyze.deepdoop.datalog.element.IElement
 import org.clyze.deepdoop.datalog.element.LogicalElement
 import org.clyze.deepdoop.datalog.expr.*
-import org.clyze.deepdoop.system.ErrorId
-import org.clyze.deepdoop.system.ErrorManager
+import org.clyze.deepdoop.system.Error
 
 @Deprecated
 class AssignTransformer extends DummyTransformer {
@@ -63,7 +62,7 @@ class AssignTransformer extends DummyTransformer {
 			def var = n.expr.left as VariableExpr
 			if (!(var in boundVars)) {
 				if (complexLogic > 1)
-					ErrorManager.error(ErrorId.VAR_ASGN_COMPLEX, var)
+					ErrorManager.error(Error.VAR_ASGN_COMPLEX, var)
 				changed = true
 				assignments[var] = n.expr.right
 				return dummyComparison
@@ -100,7 +99,7 @@ class AssignTransformer extends DummyTransformer {
 
 	IVisitable exit(VariableExpr n, Map m) {
 		if (n in replacedVars)
-			ErrorManager.error(ErrorId.VAR_ASGN_CYCLE, n.name)
+			ErrorManager.error(Error.VAR_ASGN_CYCLE, n.name)
 		if (assignments && assignments[n]) {
 			changed = true
 			return assignments[n]

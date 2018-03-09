@@ -1,17 +1,18 @@
 package org.clyze.deepdoop.actions
 
 import org.clyze.deepdoop.datalog.IVisitable
+import org.clyze.deepdoop.datalog.block.BlockLvl1
 import org.clyze.deepdoop.datalog.block.BlockLvl2
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.element.ConstructionElement
 import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.VariableExpr
-import org.clyze.deepdoop.system.ErrorId
-import org.clyze.deepdoop.system.ErrorManager
+import org.clyze.deepdoop.system.Error
 import org.clyze.deepdoop.system.SourceManager
 
 import static org.clyze.deepdoop.datalog.Annotation.CONSTRUCTOR
+import static org.clyze.deepdoop.system.Error.error as error
 
 class ConstructionInfoVisitingActor extends DefaultVisitor<IVisitable> implements TDummyActor<IVisitable> {
 
@@ -32,13 +33,14 @@ class ConstructionInfoVisitingActor extends DefaultVisitor<IVisitable> implement
 
 	IVisitable exit(BlockLvl2 n, Map m) { n }
 
-	IVisitable exit(RelDeclaration n, Map m) {
+	IVisitable visit(BlockLvl1 n) { throw new UnsupportedOperationException() }
+
+	void enter(RelDeclaration n) {
 		if (CONSTRUCTOR in n.annotations) {
 			def type = n.types.last()
 			constructorBaseType[n.relation.name] = type
 			constructorsPerType[type] << n
 		}
-		null
 	}
 
 	IVisitable visit(Rule n) {
@@ -59,8 +61,7 @@ class ConstructionInfoVisitingActor extends DefaultVisitor<IVisitable> implement
 		def conVar = n.constructor.valueExpr as VariableExpr
 		tmpConVars << conVar
 		tmpConVarCounter[conVar]++
-		if (tmpConVarCounter[conVar] > 1)
-			ErrorManager.error(loc, ErrorId.VAR_MULTIPLE_CONSTR, conVar)
+		if (tmpConVarCounter[conVar] > 1) error(loc, Error.VAR_MULTIPLE_CONSTR, conVar)
 
 		// Max index of a constructor that constructs a variable used by `n`
 		def maxBefore = n.constructor.keyExprs
@@ -72,8 +73,7 @@ class ConstructionInfoVisitingActor extends DefaultVisitor<IVisitable> implement
 		// `maxBefore` should be strictly before `minAfter`
 		maxBefore = (maxBefore != -1 ? maxBefore : -2)
 		minAfter = (minAfter != null ? minAfter : -1)
-		if (maxBefore >= minAfter)
-			ErrorManager.error(loc, ErrorId.CONSTR_RULE_CYCLE, n.constructor.name)
+		if (maxBefore >= minAfter) error(loc, Error.CONSTR_RULE_CYCLE, n.constructor.name)
 
 		tmpConstructionsOrdered.add(maxBefore >= 0 ? maxBefore : 0, n)
 	}

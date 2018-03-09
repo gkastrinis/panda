@@ -17,6 +17,7 @@ class DefaultVisitor<T> {
 
 	protected IActor<T> actor
 	protected Map<IVisitable, T> m = [:]
+	protected inDecl = false
 	protected inRuleHead = false
 	protected inRuleBody = false
 
@@ -41,15 +42,19 @@ class DefaultVisitor<T> {
 
 	T visit(RelDeclaration n) {
 		actor.enter(n)
+		inDecl = true
 		m[n.relation] = visit n.relation
 		n.types.each { m[it] = visit it }
+		inDecl = false
 		actor.exit(n, m)
 	}
 
 	T visit(TypeDeclaration n) {
 		actor.enter(n)
+		inDecl = true
 		m[n.type] = visit n.type
 		if (n.supertype) m[n.supertype] = visit n.supertype
+		inDecl = false
 		actor.exit(n, m)
 	}
 

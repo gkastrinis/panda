@@ -12,3 +12,5 @@ byNum[42] = x new PersianCat
 	P3(x,y) : string, int
 	P4(x,y) : Cat, Animal
 }
+
+bar(x, y) <- P1(x), P3(z,y)

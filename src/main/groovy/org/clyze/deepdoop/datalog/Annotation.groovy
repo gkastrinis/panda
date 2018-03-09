@@ -3,12 +3,12 @@ package org.clyze.deepdoop.datalog
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
-import org.clyze.deepdoop.system.ErrorId
-import org.clyze.deepdoop.system.ErrorManager
+import org.clyze.deepdoop.system.Error
 import org.clyze.deepdoop.system.SourceManager
 
 import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.INTEGER
 import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.STRING
+import static org.clyze.deepdoop.system.Error.error as error
 
 @EqualsAndHashCode(includes = "kind")
 @ToString(includePackage = false)
@@ -28,27 +28,26 @@ class Annotation {
 	void validate() { VALIDATORS[kind]?.call(this) }
 
 	static def NO_ARGS_VALIDATOR = { Annotation a ->
-		def loc = SourceManager.instance.recall(a)
-		if (!a.args.isEmpty()) ErrorManager.error(loc, ErrorId.ANNOTATION_NON_EMPTY, a.kind)
+		if (!a.args.isEmpty()) error(SourceManager.instance.recall(a), Error.ANNOTATION_NON_EMPTY, a.kind)
 	}
 
 	static def MANDATORY_VALIDATOR = { Annotation a, Map<String, ConstantExpr.Type> mandatory ->
 		def loc = SourceManager.instance.recall(a)
 		mandatory.findAll { argName, type -> !a.args[argName] }.each {
-			ErrorManager.error(loc, ErrorId.ANNOTATION_MISSING_ARG, it, a.kind)
+			error(loc, Error.ANNOTATION_MISSING_ARG, it, a.kind)
 		}
 		mandatory.findAll { argName, type -> a.args[argName].type != type }.each { argName, type ->
-			ErrorManager.error(loc, ErrorId.ANNOTATION_MISTYPED_ARG, a.args[argName].type, type, argName, a.kind)
+			error(loc, Error.ANNOTATION_MISTYPED_ARG, a.args[argName].type, type, argName, a.kind)
 		}
 	}
 
 	static def OPTIONAL_VALIDATOR = { Annotation a, Map<String, ConstantExpr.Type> optional ->
 		def loc = SourceManager.instance.recall(a)
 		a.args.findAll { argName, value -> !optional[argName] }.each {
-			ErrorManager.error(loc, ErrorId.ANNOTATION_INVALID_ARG, it.key, a.kind)
+			error(loc, Error.ANNOTATION_INVALID_ARG, it.key, a.kind)
 		}
 		a.args.findAll { argName, value -> optional[argName] != value.type }.each { argName, type ->
-			ErrorManager.error(loc, ErrorId.ANNOTATION_MISTYPED_ARG, a.args[argName].type, type, argName, a.kind)
+			error(loc, Error.ANNOTATION_MISTYPED_ARG, a.args[argName].type, type, argName, a.kind)
 		}
 	}
 
