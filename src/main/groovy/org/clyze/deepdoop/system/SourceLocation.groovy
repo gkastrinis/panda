@@ -4,8 +4,8 @@ package org.clyze.deepdoop.system
 // The first element is the "oldest" include, etc.
 class SourceLocation {
 
-	String[] files = []
-	int[] lineNums = []
+	List<String> files = []
+	List<Integer> lineNums = []
 
 	void add(String file, int lineNum) {
 		files << file
