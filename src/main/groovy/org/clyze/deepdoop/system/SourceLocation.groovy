@@ -1,19 +1,16 @@
 package org.clyze.deepdoop.system
 
-import groovy.transform.Canonical
-
-// A "stack" of source lines (due to #include)
-// The first element of the array is at the top of the stack, etc.
-@Canonical
+// A sequence of source lines (due to #include)
+// The first element is the "oldest" include, etc.
 class SourceLocation {
 
-	@Canonical
-	static class SourceLine {
-		String file
-		int num
+	String[] files = []
+	int[] lineNums = []
+
+	void add(String file, int lineNum) {
+		files << file
+		lineNums << lineNum
 	}
 
-	SourceLine[] lines
-
-	String toString() { lines.collect { "\tat ${it.file} : ${it.num}" }.join("\n") }
+	String toString() { [files, lineNums].transpose().collect { f, l -> "\tat $f : $l" }.join("\n") }
 }

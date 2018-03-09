@@ -9,7 +9,6 @@ import org.clyze.deepdoop.datalog.element.ConstructionElement
 import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.VariableExpr
 import org.clyze.deepdoop.system.Error
-import org.clyze.deepdoop.system.SourceManager
 
 import static org.clyze.deepdoop.datalog.Annotation.CONSTRUCTOR
 import static org.clyze.deepdoop.system.Error.error as error

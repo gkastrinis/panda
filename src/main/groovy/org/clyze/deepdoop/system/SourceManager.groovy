@@ -1,7 +1,6 @@
 package org.clyze.deepdoop.system
 
 import groovy.transform.Canonical
-import org.clyze.deepdoop.system.SourceLocation.SourceLine
 
 @Singleton
 class SourceManager {
@@ -36,20 +35,21 @@ class SourceManager {
 	static SourceLocation recallStatic(Object o) { SourceManager.instance.recall(o) }
 
 	SourceLocation locate(int outputLine) {
-		SourceLine[] lines
+		def loc = new SourceLocation()
 		if (markers.empty()) {
-			lines = [new SourceLine(outputFile, outputLine)]
+			loc.add(outputFile, outputLine)
 		} else {
-			lines = new SourceLine[markers.size()]
+			def tmp = (0..<markers.size()).collect { null }
 			def actualLine = outputLine
 			// Iterate in reverse order, because the top of the stack is at the "end"
 			for (int i = markers.size() - 1; i >= 0; --i) {
 				def lm = markers.get(i)
 				def sourceLine = (lm.line + actualLine - (lm.actualLine + 1))
-				lines[i] = new SourceLine(lm.file, sourceLine)
+				tmp[i] = [lm.file, sourceLine]
 				actualLine = lm.actualLine
 			}
+			tmp.each { String f, int l -> loc.add(f, l) }
 		}
-		return new SourceLocation(lines)
+		return loc
 	}
 }
