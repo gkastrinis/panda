@@ -4,6 +4,7 @@ import groovy.transform.Canonical
 import groovy.transform.ToString
 import org.clyze.deepdoop.datalog.expr.BinaryExpr
 import org.clyze.deepdoop.datalog.expr.BinaryOp
+import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.IExpr
 
 @Canonical
@@ -19,4 +20,6 @@ class ComparisonElement implements IElement {
 	ComparisonElement(BinaryExpr expr) {
 		this.expr = expr
 	}
+
+	static final ComparisonElement TRIVIALLY_TRUE = new ComparisonElement(new ConstantExpr(1), BinaryOp.EQ, new ConstantExpr(1))
 }

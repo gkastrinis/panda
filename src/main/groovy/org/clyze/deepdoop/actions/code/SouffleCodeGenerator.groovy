@@ -5,6 +5,7 @@ import org.clyze.deepdoop.actions.ValidationVisitingActor
 import org.clyze.deepdoop.actions.tranform.AddonsTransformer
 import org.clyze.deepdoop.actions.tranform.ComponentInstantiationTransformer
 import org.clyze.deepdoop.actions.tranform.SyntaxFlatteningTransformer
+import org.clyze.deepdoop.actions.tranform.souffle.AssignTransformer
 import org.clyze.deepdoop.actions.tranform.souffle.ConstructorTransformer
 import org.clyze.deepdoop.datalog.block.BlockLvl2
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
@@ -39,7 +40,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 				.accept(new ValidationVisitingActor(typeInfoActor, relInfoActor, constructionInfoActor))
 				.accept(typeInferenceTransformer)
 				.accept(new ConstructorTransformer(typeInfoActor, typeInferenceTransformer, constructionInfoActor))
-				//.accept(new AssignTransformer(constructionInfoActor))
+				.accept(new AssignTransformer(relInfoActor))
 
 		super.visit(n)
 	}
@@ -95,17 +96,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	String exit(Type n, Map m) { "${mini(n.name)}" }
 
 	// Must override since the default implementation throws an exception
-	String visit(RecordExpr n) {
-		actor.enter(n)
-		n.exprs.each { m[it] = visit it }
-		actor.exit(n, m)
-	}
-
-	// Must override since the default implementation throws an exception
-	void enter(RecordExpr n) {}
-
-	// Must override since the default implementation throws an exception
-	String exit(RecordExpr n, Map m) { "[${n.exprs.collect { m[it] }.join(", ")}]" }
+	String visit(RecordExpr n) { "[${n.exprs.collect { visit it }.join(", ")}]" }
 
 	static def mini(def name) { name.replace ":", "_" }
 

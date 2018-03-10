@@ -33,6 +33,7 @@ enum Error {
 	VAR_MULTIPLE_CONSTR,
 	VAR_UNKNOWN,
 	VAR_UNUSED,
+	VAR_ASGN_CYCLE,
 
 	TYPE_INFERENCE_FAIL,
 	TYPE_INFERENCE_FIXED,
@@ -43,7 +44,6 @@ enum Error {
 	TYPE_RULE,
 
 
-//	VAR_ASGN_CYCLE,
 //	VAR_ASGN_COMPLEX,
 //	MULTIPLE_ENT_DECLS,
 //	DEP_CYCLE,
@@ -85,6 +85,7 @@ enum Error {
 		msgMap[VAR_MULTIPLE_CONSTR] = "Var `{0}` constructed by multiple constructors in rule head"
 		msgMap[VAR_UNKNOWN] = "Unknown var `{0}`"
 		msgMap[VAR_UNUSED] = "Unused var `{0}`"
+		msgMap[VAR_ASGN_CYCLE] = "Assignment on var `{0}` is part of an assignment cycle"
 
 		msgMap[TYPE_INFERENCE_FAIL] = "Type inference was inconclusive: cannot reach fixpoint"
 		msgMap[TYPE_INFERENCE_FIXED] = "Type inference in conflict with declared type `{0}` (at index {1}) for relation `{2}`"
@@ -95,7 +96,6 @@ enum Error {
 		msgMap[TYPE_RULE] = "Type `{0}` used as a normal relation in rule head"
 
 
-//		msgMap[VAR_ASGN_CYCLE] = "Assignment of var `{0}` is part of a cycle"
 //		msgMap[VAR_ASGN_COMPLEX] = "Assignment of var `{0}` is part of a complicated logical structure"
 //		msgMap[MULTIPLE_ENT_DECLS] = "Multiple declarations for Type `{0}` in previous components"
 //		msgMap[DEP_CYCLE] = "Cycle detected in the dependency graph of components"

@@ -1,57 +1,64 @@
 package org.clyze.deepdoop.actions.tranform.souffle
 
-import org.clyze.deepdoop.actions.ConstructionInfoVisitingActor
+import groovy.transform.Canonical
+import org.clyze.deepdoop.actions.RelationInfoVisitingActor
 import org.clyze.deepdoop.actions.tranform.DummyTransformer
 import org.clyze.deepdoop.datalog.IVisitable
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.element.ComparisonElement
-import org.clyze.deepdoop.datalog.element.IElement
 import org.clyze.deepdoop.datalog.element.LogicalElement
-import org.clyze.deepdoop.datalog.expr.*
+import org.clyze.deepdoop.datalog.expr.BinaryOp
+import org.clyze.deepdoop.datalog.expr.IExpr
+import org.clyze.deepdoop.datalog.expr.RecordExpr
+import org.clyze.deepdoop.datalog.expr.VariableExpr
 import org.clyze.deepdoop.system.Error
 
-@Deprecated
+import static org.clyze.deepdoop.datalog.element.ComparisonElement.TRIVIALLY_TRUE
+import static org.clyze.deepdoop.system.Error.error as error
+
+@Canonical
 class AssignTransformer extends DummyTransformer {
 
-	private ConstructionInfoVisitingActor infoActor
-	// Variables that are assigned some expression, in the body of a rule
+	RelationInfoVisitingActor relInfoActor
+
+	// Variables that are assigned some expression in a rule body
 	private Map<VariableExpr, IExpr> assignments = [:]
 	// Variables already replaced by an assignment
 	private Set<VariableExpr> replacedVars = [] as Set
-	// Dummy expression to replace assignment expressions
-	private ComparisonElement dummyComparison = new ComparisonElement(new ConstantExpr(1), BinaryOp.EQ, new ConstantExpr(1))
-	// For transitive closure computation
-	private boolean changed
-	private int complexLogic
+	// Variables bound by relations in a rule body
 	private Set<VariableExpr> boundVars
-
-	AssignTransformer(ConstructionInfoVisitingActor infoActor) { this.infoActor = infoActor }
-
-//	IVisitable visit(ProgramLvl1 n) {
-//		def n1 = super.visit(n) as ProgramLvl1
-//		new CleanupTransformer(dummyComparison).visit(n1)
-//	}
+	// For transitive closure
+	private boolean changes
+	// TODO must handle
+//	private int complexLogic
 
 	IVisitable visit(Rule n) {
 		if (!n.body) return super.visit(n)
+
 		actor.enter(n)
-		assignments.clear()
-		replacedVars.clear()
-		boundVars = infoActor.boundVars[n]
-		complexLogic = 0
-		changed = true
+		assignments = [:]
+		replacedVars = [] as Set
+		boundVars = relInfoActor.boundVars[n]
+		//complexLogic = 0
 		def head = n.head
 		def body = n.body
-		while (changed) {
-			changed = false
-			body = visit(body) as IElement
-			// Update expressions to assign as well
+		// Simulating a do-while in groovy
+		changes = true
+		while (changes) {
+			changes = false
+			body = visit(body) as LogicalElement
+			// Update expressions for assignment as well
 			assignments.each { it.value = visit(it.value) as IExpr }
-			head = visit(head) as IElement
+			head = visit(head) as LogicalElement
 			replacedVars += assignments.keySet()
-			assignments.clear()
+			assignments = [:]
 		}
-		replacedVars.clear()
+		// Clean-up
+		if (body.elements.find { it == TRIVIALLY_TRUE }) {
+			def newElements = body.elements.findAll { it != TRIVIALLY_TRUE }
+			body = newElements ? new LogicalElement(body.type, newElements) : null
+		}
+		replacedVars = [] as Set
 		m[n.head] = head
 		m[n.body] = body
 		actor.exit(n, m)
@@ -61,26 +68,26 @@ class AssignTransformer extends DummyTransformer {
 		if (n.expr.op == BinaryOp.EQ && n.expr.left instanceof VariableExpr) {
 			def var = n.expr.left as VariableExpr
 			if (!(var in boundVars)) {
-				if (complexLogic > 1)
-					ErrorManager.error(Error.VAR_ASGN_COMPLEX, var)
-				changed = true
+//				if (complexLogic > 1)
+//					ErrorManager.error(Error.VAR_ASGN_COMPLEX, var)
+				changes = true
 				assignments[var] = n.expr.right
-				return dummyComparison
+				return TRIVIALLY_TRUE
 			}
 		}
 		super.exit(n, m)
 	}
 
-	void enter(LogicalElement n) {
-		if (n.type == LogicalElement.LogicType.OR) complexLogic += 2
-		else complexLogic++
-	}
+//	void enter(LogicalElement n) {
+//		if (n.type == LogicalElement.LogicType.OR) complexLogic += 2
+//		else complexLogic++
+//	}
 
-	IVisitable exit(LogicalElement n, Map m) {
-		if (n.type == LogicalElement.LogicType.OR) complexLogic -= 2
-		else complexLogic--
-		super.exit(n, m)
-	}
+//	IVisitable exit(LogicalElement n, Map m) {
+//		if (n.type == LogicalElement.LogicType.OR) complexLogic -= 2
+//		else complexLogic--
+//		super.exit(n, m)
+//	}
 
 	// Must override since the default implementation throws an exception
 	IVisitable visit(RecordExpr n) {
@@ -93,17 +100,12 @@ class AssignTransformer extends DummyTransformer {
 	void enter(RecordExpr n) {}
 
 	// Must override since the default implementation throws an exception
-	IVisitable exit(RecordExpr n, Map m) {
-		new RecordExpr(n.exprs.collect { m[it] as IExpr })
-	}
+	IVisitable exit(RecordExpr n, Map m) { new RecordExpr(n.exprs.collect { m[it] as IExpr }) }
 
 	IVisitable exit(VariableExpr n, Map m) {
-		if (n in replacedVars)
-			ErrorManager.error(Error.VAR_ASGN_CYCLE, n.name)
-		if (assignments && assignments[n]) {
-			changed = true
-			return assignments[n]
-		}
-		return n
+		if (n in replacedVars) error(Error.VAR_ASGN_CYCLE, n.name)
+		assignments[n] ? mark(assignments[n]) : n
 	}
+
+	def mark(IVisitable n) { changes = true ; n }
 }

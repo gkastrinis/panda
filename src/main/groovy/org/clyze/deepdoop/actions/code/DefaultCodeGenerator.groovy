@@ -15,6 +15,7 @@ import org.clyze.deepdoop.system.Result
 import java.nio.file.Files
 import java.nio.file.Paths
 
+import static org.clyze.deepdoop.datalog.element.ComparisonElement.TRIVIALLY_TRUE
 import static org.clyze.deepdoop.datalog.element.LogicalElement.LogicType.AND
 
 class DefaultCodeGenerator extends DefaultVisitor<String> implements TDummyActor<String> {
@@ -50,7 +51,7 @@ class DefaultCodeGenerator extends DefaultVisitor<String> implements TDummyActor
 
 	//String exit(AggregationElement n, Map m) { null }
 
-	String exit(ComparisonElement n, Map m) { m[n.expr] }
+	String exit(ComparisonElement n, Map m) { n == TRIVIALLY_TRUE ? "true" : m[n.expr] }
 
 	//String exit(ConstructorElement n, Map m) { null }
 

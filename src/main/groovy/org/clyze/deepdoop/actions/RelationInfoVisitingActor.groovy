@@ -2,7 +2,6 @@ package org.clyze.deepdoop.actions
 
 import org.clyze.deepdoop.datalog.IVisitable
 import org.clyze.deepdoop.datalog.block.BlockLvl0
-import org.clyze.deepdoop.datalog.block.BlockLvl1
 import org.clyze.deepdoop.datalog.block.BlockLvl2
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
