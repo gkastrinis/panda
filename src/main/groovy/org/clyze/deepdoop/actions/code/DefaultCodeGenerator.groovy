@@ -57,8 +57,14 @@ class DefaultCodeGenerator extends DefaultVisitor<String> implements TDummyActor
 
 	String exit(GroupElement n, Map m) { "(${m[n.element]})" }
 
+	List<LogicalElement.LogicType> logicTypes = []
+
+	void enter(LogicalElement n) { logicTypes << n.type }
+
 	String exit(LogicalElement n, Map m) {
-		n.elements.findAll { m[it] }.collect { m[it] }.join(n.type == AND ? ", " : "; ")
+		logicTypes = logicTypes.dropRight(1)
+		def str = n.elements.findAll { m[it] }.collect { m[it] }.join(n.type == AND ? ", " : "; ")
+		(logicTypes && logicTypes.last() != n.type) ? "($str)" : str
 	}
 
 	String exit(NegationElement n, Map m) { "!${m[n.element]}" }
