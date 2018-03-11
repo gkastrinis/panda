@@ -10,6 +10,7 @@ import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.clause.TypeDeclaration
 import org.clyze.deepdoop.datalog.element.ComparisonElement
 import org.clyze.deepdoop.datalog.element.ConstructionElement
+import org.clyze.deepdoop.datalog.element.IElement
 import org.clyze.deepdoop.datalog.element.LogicalElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
@@ -91,7 +92,7 @@ class AddonsTransformer extends DummyTransformer {
 		if (elements) {
 			if (!isType) elements << new Relation(name, vars)
 			inputRel = new Relation("__SYS_IN_$name", varN(N))
-			extraRules << new Rule(new LogicalElement(elements), new LogicalElement(inputRel))
+			extraRules << new Rule(elements.size() > 1 ? LogicalElement(elements) : elements.first() as IElement, inputRel)
 		} else {
 			inputRel = new Relation(name, varN(N))
 		}

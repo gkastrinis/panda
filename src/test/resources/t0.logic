@@ -36,3 +36,7 @@ test9(x) <- baz(x), x > 10f
 test9(x) <- baz(x), x > 0.6F
 test9(x) <- baz(x), x > 10e2
 */
+
+Bar(x) : int
+Foo(1) <- (Bar(2))
+Foo(x) <- Bar(x), (x = 1 ; x = 2 ; (x < 10 ; x > 3))

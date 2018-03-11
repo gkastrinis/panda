@@ -155,16 +155,13 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		Rule r
 		if (ctx.headList()) {
 			def annotations = gatherAnnotations(ctx.annotationList())
-			def head = new LogicalElement(values[ctx.headList()] as List)
-			def body = values[ctx.bodyList()] as LogicalElement
-			r = new Rule(head, body, annotations)
+			def headList = values[ctx.headList()] as List
+			def head = headList.size() > 1 ? new LogicalElement(headList) : headList.first() as IElement
+			r = new Rule(head, values[ctx.bodyList()] as IElement, annotations)
 		}
 		// Aggregation
-		else {
-			def head = new LogicalElement(values[ctx.relation()] as Relation)
-			def body = new LogicalElement(values[ctx.aggregation()] as AggregationElement)
-			r = new Rule(head, body)
-		}
+		else
+			r = new Rule(values[ctx.relation()] as Relation, values[ctx.aggregation()] as AggregationElement)
 		currDatalog.rules << r
 		rec(r, ctx)
 	}
@@ -193,21 +190,21 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		values[ctx] = new AggregationElement(
 				new VariableExpr(ctx.IDENTIFIER().text),
 				values[ctx.relation()] as Relation,
-				values[ctx.bodyList()] as LogicalElement)
+				values[ctx.bodyList()] as IElement)
 		rec(values[ctx], ctx)
 	}
 
 	void exitBodyList(BodyListContext ctx) {
 		if (ctx.relation())
-			values[ctx] = new LogicalElement(values[ctx.relation()] as Relation)
+			values[ctx] = values[ctx.relation()]
 		else if (ctx.constructor())
-			values[ctx] = new LogicalElement(values[ctx.constructor()] as Relation)
+			values[ctx] = values[ctx.constructor()]
 		else if (ctx.comparison())
-			values[ctx] = new LogicalElement(values[ctx.comparison()] as ComparisonElement)
+			values[ctx] = values[ctx.comparison()]
 		else if (hasToken(ctx, "!"))
-			values[ctx] = new LogicalElement(new NegationElement(values[ctx.bodyList(0)] as IElement))
+			values[ctx] = new NegationElement(values[ctx.bodyList(0)] as IElement)
 		else if (hasToken(ctx, "("))
-			values[ctx] = new LogicalElement(new GroupElement(values[ctx.bodyList(0)] as IElement))
+			values[ctx] = new GroupElement(values[ctx.bodyList(0)] as IElement)
 		else {
 			def list = (0..1).collect { values[ctx.bodyList(it)] as IElement }
 			def type = hasToken(ctx, ",") ? LogicType.AND : LogicType.OR

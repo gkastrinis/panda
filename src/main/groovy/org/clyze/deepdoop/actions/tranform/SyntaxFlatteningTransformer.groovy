@@ -7,10 +7,7 @@ import org.clyze.deepdoop.datalog.block.BlockLvl2
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.clause.TypeDeclaration
-import org.clyze.deepdoop.datalog.element.ComparisonElement
-import org.clyze.deepdoop.datalog.element.ConstructionElement
-import org.clyze.deepdoop.datalog.element.IElement
-import org.clyze.deepdoop.datalog.element.LogicalElement
+import org.clyze.deepdoop.datalog.element.*
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.element.relation.Type
@@ -55,15 +52,7 @@ class SyntaxFlatteningTransformer extends DummyTransformer {
 		new BlockLvl2(m[n.datalog] as BlockLvl0, newComponents, n.instantiations)
 	}
 
-	IVisitable exit(Relation n, Map m) {
-		if (actualParameters && n.name.contains("@")) {
-			def (name, parameter) = n.name.split("@")
-			def index = formalParameters.findIndexOf { it == parameter }
-			def newParameter = actualParameters[parameterIndexes[index]]
-			return new Relation("$name@$newParameter", n.exprs)
-		} else
-			return n
-	}
+	IVisitable exit(GroupElement n, Map m) { m[n.element] }
 
 	// Flatten LogicalElement "trees"
 	IVisitable exit(LogicalElement n, Map m) {
@@ -76,6 +65,16 @@ class SyntaxFlatteningTransformer extends DummyTransformer {
 				newElements << flatE
 		}
 		new LogicalElement(n.type, newElements)
+	}
+
+	IVisitable exit(Relation n, Map m) {
+		if (actualParameters && n.name.contains("@")) {
+			def (name, parameter) = n.name.split("@")
+			def index = formalParameters.findIndexOf { it == parameter }
+			def newParameter = actualParameters[parameterIndexes[index]]
+			return new Relation("$name@$newParameter", n.exprs)
+		} else
+			return n
 	}
 
 	// Overrides to avoid unneeded allocations

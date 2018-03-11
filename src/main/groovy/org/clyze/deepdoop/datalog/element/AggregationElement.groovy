@@ -11,5 +11,5 @@ class AggregationElement implements IElement {
 
 	VariableExpr var
 	Relation relation
-	LogicalElement body
+	IElement body
 }

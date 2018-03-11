@@ -11,7 +11,6 @@ import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.clause.TypeDeclaration
 import org.clyze.deepdoop.datalog.element.ConstructionElement
-import org.clyze.deepdoop.datalog.element.LogicalElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.RecordType
 import org.clyze.deepdoop.datalog.element.relation.Relation
@@ -99,9 +98,7 @@ class ConstructorTransformer extends DummyTransformer {
 
 		// Re: 4
 		if (n.supertype)
-			extraRules << new Rule(
-					new LogicalElement(new Relation(n.supertype.name, [var1()])),
-					new LogicalElement(new Relation(n.type.name, [var1()])))
+			extraRules << new Rule(new Relation(n.supertype.name, [var1()]), new Relation(n.type.name, [var1()]))
 		null
 	}
 

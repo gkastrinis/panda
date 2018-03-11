@@ -48,11 +48,11 @@ class DummyTransformer extends DefaultVisitor<IVisitable> implements TDummyActor
 	}
 
 	IVisitable exit(Rule n, Map m) {
-		new Rule(m[n.head] as LogicalElement, m[n.body] as LogicalElement, n.annotations)
+		new Rule(m[n.head] as IElement, m[n.body] as IElement, n.annotations)
 	}
 
 	IVisitable exit(AggregationElement n, Map m) {
-		new AggregationElement(m[n.var] as VariableExpr, m[n.relation] as Relation, m[n.body] as LogicalElement)
+		new AggregationElement(m[n.var] as VariableExpr, m[n.relation] as Relation, m[n.body] as IElement)
 	}
 
 	IVisitable exit(ComparisonElement n, Map m) {

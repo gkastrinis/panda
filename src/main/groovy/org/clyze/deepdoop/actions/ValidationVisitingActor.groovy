@@ -76,7 +76,7 @@ class ValidationVisitingActor extends DefaultVisitor<IVisitable> implements TDum
 				.findAll { varsInBody.count(it) == 1 }
 				.each { warn(recall(n), Error.VAR_UNUSED, it.name) }
 
-		n.head.elements
+		n.head.asElements()
 				.findAll { it instanceof Relation }
 				.collect { it as Relation }
 				.findAll { rel -> typeInfoActor.allTypes.find { it.name == rel.name } }

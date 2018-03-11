@@ -8,6 +8,7 @@ import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.clause.TypeDeclaration
 import org.clyze.deepdoop.datalog.element.ComparisonElement
+import org.clyze.deepdoop.datalog.element.IElement
 import org.clyze.deepdoop.datalog.element.LogicalElement
 import org.clyze.deepdoop.datalog.element.NegationElement
 import org.clyze.deepdoop.datalog.element.relation.Type
@@ -50,18 +51,21 @@ class AssignTransformer extends DummyTransformer {
 		changes = true
 		while (changes) {
 			changes = false
-			body = visit(body) as LogicalElement
+			body = visit(body) as IElement
 			// Update expressions for assignment as well
 			assignments.each { it.value = visit(it.value) as IExpr }
-			head = visit(head) as LogicalElement
+			head = visit(head) as IElement
 			replacedVars += assignments.keySet()
 			assignments = [:]
 		}
 
 		// Clean-up
-		if (body.elements.find { it == TRIVIALLY_TRUE }) {
-			def newElements = body.elements.findAll { it != TRIVIALLY_TRUE }
-			body = newElements ? new LogicalElement(body.type, newElements) : null
+		def elements = body.asElements()
+		if (elements.find { it == TRIVIALLY_TRUE }) {
+			def newElements = elements.findAll { it != TRIVIALLY_TRUE }
+			if (newElements.size() > 1) body = new LogicalElement((body as LogicalElement).type, newElements)
+			else if (newElements.size() == 1) body = newElements.first() as IElement
+			else body = null
 		}
 
 		replacedVars = [] as Set
