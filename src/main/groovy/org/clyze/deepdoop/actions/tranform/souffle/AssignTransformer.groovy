@@ -4,9 +4,13 @@ import groovy.transform.Canonical
 import org.clyze.deepdoop.actions.RelationInfoVisitingActor
 import org.clyze.deepdoop.actions.tranform.DummyTransformer
 import org.clyze.deepdoop.datalog.IVisitable
+import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
+import org.clyze.deepdoop.datalog.clause.TypeDeclaration
 import org.clyze.deepdoop.datalog.element.ComparisonElement
 import org.clyze.deepdoop.datalog.element.LogicalElement
+import org.clyze.deepdoop.datalog.element.NegationElement
+import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.BinaryOp
 import org.clyze.deepdoop.datalog.expr.IExpr
 import org.clyze.deepdoop.datalog.expr.RecordExpr
@@ -27,10 +31,10 @@ class AssignTransformer extends DummyTransformer {
 	private Set<VariableExpr> replacedVars = [] as Set
 	// Variables bound by relations in a rule body
 	private Set<VariableExpr> boundVars
+	// Count levels of "complex" logic in rule bodies
+	private int complexLogic
 	// For transitive closure
 	private boolean changes
-	// TODO must handle
-//	private int complexLogic
 
 	IVisitable visit(Rule n) {
 		if (!n.body) return super.visit(n)
@@ -39,7 +43,7 @@ class AssignTransformer extends DummyTransformer {
 		assignments = [:]
 		replacedVars = [] as Set
 		boundVars = relInfoActor.boundVars[n]
-		//complexLogic = 0
+		complexLogic = 0
 		def head = n.head
 		def body = n.body
 		// Simulating a do-while in groovy
@@ -53,11 +57,13 @@ class AssignTransformer extends DummyTransformer {
 			replacedVars += assignments.keySet()
 			assignments = [:]
 		}
+
 		// Clean-up
 		if (body.elements.find { it == TRIVIALLY_TRUE }) {
 			def newElements = body.elements.findAll { it != TRIVIALLY_TRUE }
 			body = newElements ? new LogicalElement(body.type, newElements) : null
 		}
+
 		replacedVars = [] as Set
 		m[n.head] = head
 		m[n.body] = body
@@ -68,8 +74,7 @@ class AssignTransformer extends DummyTransformer {
 		if (n.expr.op == BinaryOp.EQ && n.expr.left instanceof VariableExpr) {
 			def var = n.expr.left as VariableExpr
 			if (!(var in boundVars)) {
-//				if (complexLogic > 1)
-//					ErrorManager.error(Error.VAR_ASGN_COMPLEX, var)
+				if (complexLogic > 1) error(Error.VAR_ASGN_COMPLEX, var)
 				changes = true
 				assignments[var] = n.expr.right
 				return TRIVIALLY_TRUE
@@ -78,16 +83,21 @@ class AssignTransformer extends DummyTransformer {
 		super.exit(n, m)
 	}
 
-//	void enter(LogicalElement n) {
-//		if (n.type == LogicalElement.LogicType.OR) complexLogic += 2
-//		else complexLogic++
-//	}
+	IVisitable visit(LogicalElement n) {
+		actor.enter(n)
+		complexLogic += (n.type == LogicalElement.LogicType.OR) ? 2 : 1
+		n.elements.each { m[it] = visit it }
+		complexLogic -= (n.type == LogicalElement.LogicType.OR) ? 2 : 1
+		actor.exit(n, m)
+	}
 
-//	IVisitable exit(LogicalElement n, Map m) {
-//		if (n.type == LogicalElement.LogicType.OR) complexLogic -= 2
-//		else complexLogic--
-//		super.exit(n, m)
-//	}
+	IVisitable visit(NegationElement n) {
+		actor.enter(n)
+		complexLogic++
+		m[n.element] = visit n.element
+		complexLogic--
+		actor.exit(n, m)
+	}
 
 	// Must override since the default implementation throws an exception
 	IVisitable visit(RecordExpr n) {
@@ -104,8 +114,18 @@ class AssignTransformer extends DummyTransformer {
 
 	IVisitable exit(VariableExpr n, Map m) {
 		if (n in replacedVars) error(Error.VAR_ASGN_CYCLE, n.name)
-		assignments[n] ? mark(assignments[n]) : n
+		if (assignments[n]) {
+			changes = true
+			return assignments[n]
+		}
+		return n
 	}
 
-	def mark(IVisitable n) { changes = true ; n }
+	// Overrides to avoid unneeded allocations
+
+	IVisitable exit(RelDeclaration n, Map m) { n }
+
+	IVisitable exit(TypeDeclaration n, Map m) { n }
+
+	IVisitable exit(Type n, Map m) { n }
 }

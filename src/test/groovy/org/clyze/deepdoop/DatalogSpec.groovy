@@ -87,20 +87,20 @@ class DatalogSpec extends Specification {
 //		"fail108.logic" | Error.MULTIPLE_ENT_DECLS
 	}
 
-//	@Unroll
-//	def "DeepDoop Souffle-failing tests"() {
-//		when:
-//		souffleTest(file)
-//
-//		then:
-//		def e = thrown(DeepDoopException)
-//		e.error == expectedErrorId
-//
-//		where:
-//		file            | expectedErrorId
-//		"fail-S0.logic" | Error.VAR_ASGN_CYCLE
-//		"fail-S1.logic" | Error.VAR_ASGN_COMPLEX
-//	}
+	@Unroll
+	def "Souffle failing tests"() {
+		when:
+		souffleTest(file)
+
+		then:
+		def e = thrown(DeepDoopException)
+		e.error == expectedErrorId
+
+		where:
+		file            | expectedErrorId
+		"fail-S0.logic" | Error.VAR_ASGN_CYCLE
+		"fail-S1.logic" | Error.VAR_ASGN_COMPLEX
+	}
 
 //	def lbTest(String file) {
 //		def resourcePath = "/$file"
