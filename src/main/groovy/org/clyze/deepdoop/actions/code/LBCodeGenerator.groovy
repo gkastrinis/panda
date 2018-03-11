@@ -1,60 +1,74 @@
 package org.clyze.deepdoop.actions.code
 
 import groovy.transform.InheritConstructors
+import org.clyze.deepdoop.actions.ValidationVisitingActor
+import org.clyze.deepdoop.actions.tranform.AddonsTransformer
+import org.clyze.deepdoop.actions.tranform.ComponentInstantiationTransformer
+import org.clyze.deepdoop.actions.tranform.SyntaxFlatteningTransformer
+import org.clyze.deepdoop.datalog.block.BlockLvl2
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
+import org.clyze.deepdoop.datalog.clause.TypeDeclaration
 import org.clyze.deepdoop.datalog.element.AggregationElement
 import org.clyze.deepdoop.datalog.element.ConstructionElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.element.relation.Type
+import org.clyze.deepdoop.system.Result
 
-import static org.clyze.deepdoop.datalog.Annotation.CONSTRUCTOR
-import static org.clyze.deepdoop.datalog.Annotation.TYPE
+import static org.clyze.deepdoop.datalog.Annotation.*
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
+import static org.clyze.deepdoop.datalog.expr.VariableExpr.genN as varN
 
-@Deprecated
 @InheritConstructors
 class LBCodeGenerator extends DefaultCodeGenerator {
 
 	Set<String> functionalRelations
 
-//	String visit(ProgramLvl1 p) {
-//		currentFile = createUniqueFile("out_", ".logic")
-//		results << new Result(Result.Kind.LOGIC, currentFile)
-//
-//		// Transform program before visiting nodes
-//		def n = p.accept(new SyntaxFlatteningTransformer())
-//				.accept(new ComponentInstantiationTransformer())
-//				.accept(constructionInfoActor)
-//				.accept(new ValidationVisitingActor(constructionInfoActor))
-//				.accept(typeInferenceTransformer)
-//
-//		(n as ProgramLvl1).globalComp.declarations
-//				.findAll { FUNCTIONAL in it.annotations }
-//				.collect { it.relation.name } as Set
-//
-//		super.visit(n as ProgramLvl1)
-//	}
+	String visit(BlockLvl2 p) {
+		currentFile = createUniqueFile("out_", ".logic")
+		results << new Result(Result.Kind.LOGIC, currentFile)
+
+		// Transform program before visiting nodes
+		def n = p.accept(new SyntaxFlatteningTransformer())
+				.accept(new ComponentInstantiationTransformer())
+				.accept(typeInfoActor)
+				.accept(new AddonsTransformer(typeInfoActor))
+				.accept(relInfoActor)
+				.accept(constructionInfoActor)
+				.accept(new ValidationVisitingActor(typeInfoActor, relInfoActor, constructionInfoActor))
+				.accept(typeInferenceTransformer)
+
+		functionalRelations = n.datalog.relDeclarations
+				.findAll { FUNCTIONAL in it.annotations }
+				.collect { it.relation.name } as Set
+
+		super.visit(n)
+	}
+
+	void enter(RelDeclaration n) { if (!n.relation.exprs) n.relation.exprs = varN(n.types.size()) }
 
 	String exit(RelDeclaration n, Map m) {
 		def name = n.relation.name
-		if (TYPE in n.annotations) {
-			emit "lang:entity(`$name)."
-			emit """lang:physical:storageModel[`$name] = "ScalableSparse"."""
-			def cap = n.annotations.find { it == TYPE }.args["capacity"]
-			if (cap) emit "lang:physical:capacity[`$name] = $cap."
-		} else {
-			def types = n.types.withIndex().collect { Type t, int i -> "${map(t.name)}(${var1(i)})" }.join(", ")
-			emit "${m[n.relation]} -> $types."
-		}
-		if (CONSTRUCTOR in n.annotations)
-			emit "lang:constructor(`$name)."
+		def types = n.types.withIndex().collect { t, int i -> "${t.name == "int" ? "int[64]" : t.name}(${var1(i)})"}
+		emit "${emitRel(n.relation)} -> ${types.join(", ")}."
+
+		if (CONSTRUCTOR in n.annotations) emit "lang:constructor(`$name)."
+		null
+	}
+
+	String exit(TypeDeclaration n, Map m) {
+		def name = n.type.name
+		emit "lang:entity(`$name)."
+		emit """lang:physical:storageModel[`$name] = "ScalableSparse"."""
+		def cap = n.annotations.find { it == TYPE }.args["capacity"]
+		if (cap) emit "lang:physical:capacity[`$name] = $cap."
+		if (n.supertype) emit "$name(${var1()}) -> ${n.supertype.name}(${var1()})."
 		null
 	}
 
 	String exit(Rule n, Map m) {
-		emit(n.body ? "${m[n.head]} <- ${m[n.body]}." : "${m[n.head]}.")
+		emit "${m[n.head]}${n.body ? " <- ${m[n.body]}" : ""}."
 		null
 	}
 
@@ -67,24 +81,20 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 		else null
 	}
 
-	String exit(ConstructionElement n, Map m) {
-		"${m[n.constructor]}, ${m[n.type]}"
-	}
+	String exit(ConstructionElement n, Map m) { "${m[n.constructor]}, ${m[n.type]}(${n.constructor.valueExpr})" }
 
-	String exit(Constructor n, Map m) { exit0(n, m) }
+	String exit(Constructor n, Map m) { emitRel(n) }
 
-	String exit(Relation n, Map m) { exit0(n, m) }
+	String exit(Relation n, Map m) { emitRel(n) }
 
-	String exit0(Relation n, Map m) {
-		if (n.name in functionalRelations) {
-			def keyExprs = n.exprs.dropRight(1)
-			def valueExpr = n.exprs.last()
-			"${n.name}[${keyExprs.collect { m[it] }.join(", ")}] = ${m[valueExpr]}"
-		} else
+	String exit(Type n, Map m) { n.name }
+
+	def emitRel(Relation n) {
+		if (n instanceof Constructor || n.name in functionalRelations)
+			"${n.name}[${n.exprs.dropRight(1).collect { m[it] }.join(", ")}] = ${m[n.exprs.last()]}"
+		else
 			"${n.name}(${n.exprs.collect { m[it] }.join(", ")})"
 	}
-
-	String exit(Type n, Map m) { exit0(n, m) }
 
 	/*void emit(Program n, Map m, Set<DependencyGraph.Node> nodes) {
 		latestFile = createUniqueFile("out_", ".logic")
@@ -185,6 +195,4 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 
 		return atoms.every { handledAtoms.contains(it) }
 	}*/
-
-	static def map(def name) { name == "int" ? "int[64]" : name }
 }
