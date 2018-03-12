@@ -41,7 +41,7 @@ class AddonsTransformer extends DummyTransformer {
 		extraRules = [] as Set
 
 		(typeInfoActor.typeToRootType.values() as Set).each {
-			extraRelDecls << new RelDeclaration(new Constructor("${it.name}:byStr", []), [TYPE_STRING, it], [CONSTRUCTOR] as Set)
+			extraRelDecls << new RelDeclaration(new Constructor(autoCon(it), []), [TYPE_STRING, it], [CONSTRUCTOR] as Set)
 		}
 	}
 
@@ -58,7 +58,7 @@ class AddonsTransformer extends DummyTransformer {
 			def rootT = typeInfoActor.typeToRootType[n.type]
 			n.annotations.find { it == TYPEVALUES }.args.each { key, value ->
 				def rel = new Relation("${n.type.name}:$key", [var1()])
-				def con = new Constructor("${rootT.name}:byStr", [value, var1()])
+				def con = new Constructor(autoCon(rootT), [value, var1()])
 				extraRelDecls << new RelDeclaration(rel, [n.type])
 				extraRules << new Rule(new LogicalElement([new ConstructionElement(con, n.type), rel]), null)
 			}
@@ -79,7 +79,7 @@ class AddonsTransformer extends DummyTransformer {
 		types.withIndex().each { Type t, int i ->
 			def rootT = typeInfoActor.typeToRootType[t]
 			if (rootT) {
-				elements << new ConstructionElement(new Constructor("${rootT.name}:byStr", [var1(i), var1(N + i)]), t)
+				elements << new ConstructionElement(new Constructor(autoCon(rootT), [var1(i), var1(N + i)]), t)
 				vars << var1(N + i)
 				inputTypes << TYPE_STRING
 			} else {
@@ -101,6 +101,8 @@ class AddonsTransformer extends DummyTransformer {
 				"delimeter": new ConstantExpr("\\t")])
 		extraRelDecls << new RelDeclaration(inputRel, inputTypes, [an] as Set)
 	}
+
+	def autoCon(Type t) { "__SYS_CON_${t.name}:byStr" }
 
 	// Overrides to avoid unneeded allocations
 
