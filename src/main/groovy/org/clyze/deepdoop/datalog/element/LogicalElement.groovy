@@ -23,8 +23,4 @@ class LogicalElement implements IElement {
 		this.type = LogicType.AND
 		this.elements = [element]
 	}
-
-	static {
-		IElement.metaClass.asElements { (delegate instanceof LogicalElement) ? delegate.elements : [delegate] }
-	}
 }

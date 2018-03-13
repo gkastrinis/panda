@@ -156,4 +156,9 @@ class DefaultVisitor<T> {
 		actor.enter(n)
 		actor.exit(n, m)
 	}
+
+	// Added here to make sure that it will always apply
+	static {
+		IElement.metaClass.asElements { (delegate instanceof LogicalElement) ? delegate.elements : [delegate] }
+	}
 }
