@@ -23,7 +23,7 @@ datalog
 	: annotationBlock | declaration | rule_ | lineMarker ;
 
 annotationBlock
-	: annotationList '{' declaration+ '}' ;
+	: annotationList '{' datalog* '}' ;
 
 declaration
 	: annotationList? IDENTIFIER (':' IDENTIFIER)? ('with' initValueList)?

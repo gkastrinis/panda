@@ -32,8 +32,8 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	// Relation Name x Annotations
 	private Map<String, Set<Annotation>> globalPendingAnnotations
 	private Map<String, Set<Annotation>> currPendingAnnotations
-	// Extra annotations from an annotation block
-	private Set<Annotation> extraAnnotations = [] as Set
+	// Extra annotations from annotation blocks
+	private Stack<Set<Annotation>> extraAnnotationsStack = []
 	private def values = [:]
 
 	DatalogListenerImpl(String filename) {
@@ -108,17 +108,14 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		}
 	}
 
-	void enterAnnotationBlock(AnnotationBlockContext ctx) {
-		extraAnnotations = gatherAnnotations(ctx.annotationList())
-	}
+	void enterAnnotationBlock(AnnotationBlockContext ctx) { extraAnnotationsStack.push(gatherAnnotations(ctx.annotationList())) }
 
-	void exitAnnotationBlock(AnnotationBlockContext ctx) {
-		extraAnnotations = [] as Set
-	}
+	void exitAnnotationBlock(AnnotationBlockContext ctx) { extraAnnotationsStack.pop() }
 
 	void exitDeclaration(DeclarationContext ctx) {
 		def loc = rec(null, ctx)
 		def annotations = gatherAnnotations(ctx.annotationList())
+		def extraAnnotations = extraAnnotationsStack.flatten()
 		annotations.findAll { it in extraAnnotations }.each { warn(loc, Error.ANNOTATION_MULTIPLE, it) }
 		annotations += extraAnnotations
 
