@@ -96,7 +96,7 @@ class TypeInferenceTransformer extends DummyTransformer {
 		if (n.body) m[n.body] = visit n.body
 		inRuleBody = false
 
-		n.head.asElements().each {
+		asElements(n.head).each {
 			def relName = (it instanceof ConstructionElement ? it.constructor.name : (it as Relation).name)
 			// null for relations without explicit declarations
 			def declaredTypes = inferredTypes[relName]

@@ -60,7 +60,7 @@ class AssignTransformer extends DummyTransformer {
 		}
 
 		// Clean-up
-		def elements = body.asElements()
+		def elements = asElements(body)
 		if (elements.find { it == TRIVIALLY_TRUE }) {
 			def newElements = elements.findAll { it != TRIVIALLY_TRUE }
 			if (newElements.size() > 1) body = new LogicalElement((body as LogicalElement).type, newElements)
