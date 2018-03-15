@@ -26,7 +26,7 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 	Set<String> functionalRelations
 
 	String visit(BlockLvl2 p) {
-		currentFile = createUniqueFile("out_", ".logic")
+		createUniqueFile("out_", ".logic")
 		results << new Result(Result.Kind.LOGIC, currentFile)
 
 		// Transform program before visiting nodes

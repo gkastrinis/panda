@@ -20,8 +20,9 @@ import static org.clyze.deepdoop.datalog.element.LogicalElement.LogicType.AND
 
 class DefaultCodeGenerator extends DefaultVisitor<String> implements TDummyActor<String> {
 
-	protected File outDir
-	protected File currentFile
+	private File outDir
+	private File currentFile
+	private FileWriter fw
 
 	protected TypeInfoVisitingActor typeInfoActor = new TypeInfoVisitingActor()
 	protected RelationInfoVisitingActor relInfoActor = new RelationInfoVisitingActor()
@@ -34,8 +35,6 @@ class DefaultCodeGenerator extends DefaultVisitor<String> implements TDummyActor
 		actor = this
 		this.outDir = outDir
 	}
-
-	DefaultCodeGenerator(String outDir) { this(new File(outDir)) }
 
 	//String exit(BlockLvl2 n, Map m) { null }
 
@@ -83,11 +82,12 @@ class DefaultCodeGenerator extends DefaultVisitor<String> implements TDummyActor
 
 	String exit(VariableExpr n, Map m) { n.name }
 
-	protected def createUniqueFile(String prefix, String suffix) {
-		Files.createTempFile(Paths.get(outDir.name), prefix, suffix).toFile()
+	protected void createUniqueFile(String prefix, String suffix) {
+		currentFile = Files.createTempFile(Paths.get(outDir.name), prefix, suffix).toFile()
+		fw = new FileWriter(currentFile)
 	}
 
-	protected void emit(String data) { write currentFile, data }
+	protected File getCurrentFile() { currentFile }
 
-	protected static void write(File file, String data) { file << data << "\n" }
+	protected void emit(String data) { fw.write "$data\n" }
 }

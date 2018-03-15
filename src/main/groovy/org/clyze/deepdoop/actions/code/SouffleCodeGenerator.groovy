@@ -27,7 +27,7 @@ import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
 class SouffleCodeGenerator extends DefaultCodeGenerator {
 
 	String visit(BlockLvl2 p) {
-		currentFile = createUniqueFile("out_", ".dl")
+		createUniqueFile("out_", ".dl")
 		results << new Result(Result.Kind.LOGIC, currentFile)
 
 		// Transform program before visiting nodes
