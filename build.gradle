@@ -20,30 +20,26 @@ repositories {
 }
 
 dependencies {
-	compile "org.codehaus.groovy:groovy-all:2.4.7",   // Groovy
-	        "commons-logging:commons-logging:1.1",    // Logging wrapper
-	        "log4j:log4j:1.2.14",                     // Logging implementation
-	        "commons-io:commons-io:2.4",              // File Utils
-	        "org.apache.ivy:ivy:2.3.0",               // Apache Ivy (for downloading jars from maven repos)
+	compile "org.codehaus.groovy:groovy-all:2.4.7",
+	        "commons-logging:commons-logging:1.1",
+	        "log4j:log4j:1.2.14",
 	        "org.antlr:antlr4-runtime:4.5.1-1"
 	antlr   "org.antlr:antlr4:4.5.1-1"
 	testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
 }
 
 applicationDistribution.from(projectDir) {
-	include 'LICENSE.txt', 'README.md'
+	include "LICENSE.txt", "README.md", "deepdoop-logo.png"
 }
 
 run {
 	enableAssertions = true
-	if (project.hasProperty("args")) {
-		args project.property("args").split()
-	}
+	if (project.hasProperty("args")) args project.property("args").split()
 }
 
 test {
 	testLogging {
-		exceptionFormat = 'full'
+		exceptionFormat = "full"
 	}
 }
 
