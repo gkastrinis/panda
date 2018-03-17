@@ -97,12 +97,12 @@ class AddonsTransformer extends DummyTransformer {
 			inputRel = new Relation(name, varN(N))
 		}
 		def an = new Annotation("INPUT", [
-				"filename" : new ConstantExpr("${inputRel.name}.facts"),
+				"filename" : new ConstantExpr("${name}.facts"),
 				"delimeter": new ConstantExpr("\\t")])
 		extraRelDecls << new RelDeclaration(inputRel, inputTypes, [an] as Set)
 	}
 
-	def autoCon(Type t) { "__SYS_CON_${t.name}:byStr" }
+	def autoCon(Type t) { "${t.name}:byStr" }
 
 	// Overrides to avoid unneeded allocations
 

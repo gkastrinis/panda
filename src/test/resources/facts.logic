@@ -1,57 +1,293 @@
 //component Facts {
-	@type Modifier with
-		ABSTRACT('abstract'),
-		FINAL('final'),
-		PUBLIC('public'),
-		PRIVATE('private'),
-		STATIC('static'),
-		TRANSIENT('transient')
+	//-----------------------------
+	// [Java Types]
+	//-----------------------------
+	@type {
+		Modifier with
+			Abstract('abstract'),
+			Final('final'),
+			Public('public'),
+			Private('private'),
+			Static('static'),
+			Transient('transient')
 
-	/// Java Type Hierarchy
-	@type @input {
 		Type
 		PrimitiveType : Type with
-			BOOLEAN('boolean'),
-			BYTE('byte'),
-			CHAR('char'),
-			SHORT('short'),
-			INT('int'),
-			LONG('long'),
-			FLOAT('float'),
-			DOUBLE('double'),
-			VOID('void')
+			Boolean('boolean'),
+			Byte('byte'),
+			Char('char'),
+			Short('short'),
+			Int('int'),
+			Long('long'),
+			Float('float'),
+			Double('double'),
+			Void('void')
 		ReferenceType : Type
-		NullType : ReferenceType with NULL('null')
-		ArrayType : ReferenceType
-		ClassType : ReferenceType with OBJECT('java.lang.Object')
-		InterfaceType : ReferenceType
+		NullType : ReferenceType with
+			Null('null')
+		@input ArrayType : ReferenceType
+		@input ClassType : ReferenceType with
+			Class('java.lang.Class'),
+			Object('java.lang.Object'),
+			String('java.lang.String')
+		@input InterfaceType : ReferenceType
 	}
 
-	// Inheritance and Subtyping
-	DirectSuperClass(class, superclass) : ClassType, ClassType
-	DirectSuperInterface(class, interface) : ReferenceType, InterfaceType
+	@input {
+		Class:Modifier(class, mod) : Modifier, ReferenceType
 
-	// Important class subsets
-	ApplicationClass(class) : ReferenceType
+		DirectSuperClass(class, superclass) : ClassType, ClassType
+		DirectSuperInterface(class, interface) : ReferenceType, InterfaceType
+
+		ApplicationClass(class) : ReferenceType
+		MainClass(class) : ClassType
+
+		ArrayComponentType(arrayType, componentType) : ArrayType, Type
+	}
 	ConcreteClass(class) : ReferenceType
-	MainClass(class) : ClassType
-
-	ClassModifier(mod, class) : Modifier, ReferenceType
 
 
-	/// Method
-	@type Method
+	//-----------------------------
+	// [Method]
+	//-----------------------------
+	@type {
+		Method
+		// Return type and argument types of a method
+		MethodDescriptor
+	}
+
+	Method:Name(method, name) : Method, string
+	Method:Descriptor(method, desc) : Method, MethodDescriptor
+	Method:DeclaringType(method, declaringType) : Method, ReferenceType
+	Method:ReturnType(method, returnType) : Method, Type
+	@input Method:Modifier(method, mod) : Method, Modifier
+
+	ApplicationMethod(method) : Method
+	FormalParam(method, index, var) : Method, int, Var
+	@input Method:ThisVar(method, var) : Method, Var
+	// Method `method` declares to throw exception of `exceptionType`
+	// This predicate corresponds to Java's throws clause, or the
+	// Exceptions clause in Java bytecode.
+	@input Method:DeclaresException(method, exceptionType) : Method, ReferenceType
 
 
-	/// Field
+	//-----------------------------
+	// [Field]
+	//-----------------------------
 	@type Field
 
+	Field:SimpleName(field, name) : Field, string
+	Field:DeclaringType(field, declaringType) : Field, ReferenceType
+	Field:Type(field, type) : Field, Type
+	@input Field:Modifier(field, mod) : Field, Modifier // mod, field
 
-	/// Var
+
+	//-----------------------------
+	// [Var]
+	//-----------------------------
 	@type Var
 
+	Var:Type(var, type) : Var, Type
+	Var:DeclaringMethod(var, method) : Var, Method
+	ApplicationVar(var) : Var
 
-	/// Bytecode Instructions
 
-//}
-//as F
+	//-----------------------------
+	// [Heap Allocation]
+	//-----------------------------
+	@type {
+		HeapAllocation
+		NormalHeap : HeapAllocation
+		StringConstant : HeapAllocation
+		ClassHeap : HeapAllocation
+	}
+
+	Allocation:Type(heap, type) : HeapAllocation, Type
+	ClassHeap:InstanceType(classHeap, instanceType) : ClassHeap, Type
+
+
+	//-----------------------------
+	// [Bytecode Instructions]
+	//-----------------------------
+	@type {
+		Instruction
+
+		FieldInstruction : Instruction
+		LoadInstanceField : FieldInstruction
+		StoreInstanceField : FieldInstruction
+		LoadStaticField : FieldInstruction
+		StoreStaticField : FieldInstruction
+
+		ArrayInstruction : Instruction
+		LoadArrayIndex : ArrayInstruction
+		StoreArrayIndex : ArrayInstruction
+
+		AssignInstruction : Instruction
+		AssignLocal : AssignInstruction
+		AssignCast : AssignInstruction
+		AssignAllocation : AssignInstruction
+
+		ReturnInstruction : Instruction
+		@input(filename="ReturnVoid0.facts") ReturnVoid : ReturnInstruction
+		ReturnNonVoid : ReturnInstruction
+
+		MethodInvocation : Instruction
+		VirtualMethodInvocation : MethodInvocation
+		StaticMethodInvocation : MethodInvocation
+		SpecialMethodInvocation : MethodInvocation
+	}
+
+	Instruction:Index(insn, index) : Instruction, int
+	Instruction:Method(insn, inMethod) : Instruction, Method
+	Instruction:Line(insn, line) : Instruction, int
+
+	// The associated field of this instruction
+	FieldInstruction:Field(insn, field) : FieldInstruction, Field
+	//------------------------------------------------
+	// A LoadInstanceField instruction has the form:
+	// x = y.f
+	// Its three components are:
+	//   1. Base (y)
+	//   2. Field (f)
+	//   3. To (x)
+	//------------------------------------------------
+	LoadInstanceField:Base(insn, var) : LoadInstanceField, Var
+	LoadInstanceField:To(insn, var) : LoadInstanceField, Var
+	//------------------------------------------------
+	// A StoreInstanceField instruction has the form:
+	// x.f = y
+	// Its three components are:
+	//   1. Base (x)
+	//   2. Field (f)
+	//   3. From (y)
+	//------------------------------------------------
+	StoreInstanceField:From(insn, var) : StoreInstanceField, Var
+	StoreInstanceField:Base(insn, var) : StoreInstanceField, Var
+	//------------------------------------------------
+	// A LoadStaticField instruction has the form:
+	// x = Y.f
+	// Its two components are:
+	//   1. Field (y.f)
+	//   2. To (x)
+	//------------------------------------------------
+	LoadStaticField:To(insn, var) : LoadStaticField, Var
+	//------------------------------------------------
+	// A StoreStaticField instruction has the form:
+	// X.f = y
+	// Its two components are:
+	//   1. Field (x.f)
+	//   2. From (y)
+	//------------------------------------------------
+	StoreStaticField:From(insn, var) : StoreStaticField, Var
+
+	@input ArrayInstruction:IndexVar(insn, indexVar) : ArrayInstruction, Var
+	LoadArrayIndex:Base(insn, var) : LoadArrayIndex, Var
+	LoadArrayIndex:To(insn, var) : LoadArrayIndex, Var
+	StoreArrayIndex:From(insn, var) : StoreArrayIndex, Var
+	StoreArrayIndex:Base(insn, var) : StoreArrayIndex, Var
+
+	// The target of all assignment instructions
+	AssignInstruction:To(insn, to) : AssignInstruction, Var
+	AssignLocal:From(insn, from) : AssignLocal, Var
+	AssignCast:From(insn, from) : AssignCast, Var
+	AssignCast:Type(insn, type) : AssignCast, Type
+	AssignAllocation:Heap(insn, heap) : AssignAllocation, HeapAllocation
+
+	ReturnNonVoid:Var(return, var) : ReturnNonVoid, Var
+
+	// The signature of the method being called
+	MethodInvocation:Method(invo, method) : MethodInvocation, Method
+	MethodInvocation:Base(invo, base) : MethodInvocation, Var
+	AssignReturnValue(invo, to) : MethodInvocation, Var
+	// The actual parameters of the invocation (excluding receiver object)
+	@input ActualParam(invo, index, var) : MethodInvocation, int, Var
+
+
+
+	//-----------------------------
+	// [Raw Input Transformations]
+	//-----------------------------
+
+	@input Method0(method, name, desc, declType, retType, jvmDesc) : Method, string, MethodDescriptor, ReferenceType, Type, string
+	Method:Name(method, name),
+	Method:Descriptor(method, desc),
+	Method:DeclaringType(method, declType),
+	Method:ReturnType(method, retType) <- Method0(method, name, desc, declType, retType, _)
+
+	ApplicationMethod(m) <- Method:DeclaringType(m, t), ApplicationClass(t)
+
+	@input Field0(field, declType, name, type) : Field, ReferenceType, string, Type
+	Field:Name(field, name),
+	Field:DeclaringType(field, declType),
+	Field:Type(field, type) <- Field0(field, declType, name, type)
+
+	@input Var0(var, declType, method) : Var, Type, Method
+	Var:Type(var, declType),
+	Var:DeclaringMethod(var, method) <- Var0(var, declType, method)
+
+	ApplicationVar(v) <- Var:DeclaringMethod(v, m), ApplicationMethod(m)
+
+	@input NormalHeap0(heap, type) : NormalHeap, Type
+	Allocation:Type(heap, type) <- NormalHeap0(heap, type)
+
+	@input ClassHeap0(heap, instanceType) : ClassHeap, Type
+	Allocation:Type(heap, javaClass),
+	ClassHeap:InstanceType(heap, instanceType) <- ClassHeap0(heap, instanceType), ClassType:Class(javaClass)
+
+	@input Instruction0(insn, index, method) : Instruction, int, Method
+	Instruction:Index(insn, index), Instruction:Method(insn, method) <- Instruction0(insn, index, method)
+
+	@input LoadInstanceField0(insn, to, base, field) : LoadInstanceField, Var, Var, Field
+	FieldInstruction:Field(insn, field),
+	LoadInstanceField:Base(insn, base),
+	LoadInstanceField:To(insn, to) <- LoadInstanceField0(insn, to, base, field)
+
+	@input StoreInstanceField0(insn, from, base, field) : StoreInstanceField, Var, Var, Field
+	FieldInstruction:Field(insn, field),
+	StoreInstanceField:From(insn, from),
+	StoreInstanceField:Base(insn, base) <- StoreInstanceField0(insn, from, base, field)
+
+	@input LoadStaticField0(insn, to, field) : LoadStaticField, Var, Field
+	FieldInstruction:Field(insn, field),
+	LoadStaticField:To(insn, to) <- LoadStaticField0(insn, to, field)
+
+	@input StoreStaticField0(insn, from, field) : StoreStaticField, Var, Field
+	FieldInstruction:Field(insn, field),
+	StoreStaticField:From(insn, from) <- StoreStaticField0(insn, from, field)
+
+	@input LoadArrayIndex0(insn, to, base) : LoadArrayIndex, Var, Var
+	LoadArrayIndex:Base(insn, base),
+	LoadArrayIndex:To(insn, to) <- LoadArrayIndex0(insn, to, base)
+
+	@input StoreArrayIndex0(insn, from, base) : LoadArrayIndex, Var, Var
+	StoreArrayIndex:Base(insn, base),
+	StoreArrayIndex:From(insn, from) <- StoreArrayIndex0(insn, from, base)
+
+	@input AssignLocal0(insn, from, to) : AssignLocal, Var, Var
+	AssignInstruction:To(insn, to),
+	AssignLocal:From(insn, from) <- AssignLocal0(insn, from, to)
+
+	@input AssignCast0(insn, from, to, type) : AssignCast, Var, Var, Type
+	AssignInstruction:To(insn, to),
+	AssignCast:From(insn, from),
+	AssignCast:Type(insn, type) <- AssignCast0(insn, from, to, type)
+
+	@input AssignHeapAllocation0(insn, heap, to) : AssignAllocation, HeapAllocation, Var
+	AssignInstruction:To(insn, to),
+	AssignAllocation:Heap(insn, heap) <- AssignHeapAllocation0(insn, heap, to)
+
+	@input Return0(insn, var) : ReturnNonVoid, Var
+	ReturnNonVoid:Var(insn, var) <- Return0(insn, var)
+
+	@input VirtualMethodInvocation0(invo, invoMethod, base) : VirtualMethodInvocation, Method, Var
+	MethodInvocation:Method(invo, invoMethod),
+	MethodInvocation:Base(invo, base) <- VirtualMethodInvocation0(invo, invoMethod, base)
+
+	@input StaticMethodInvocation0(invo, invoMethod) : StaticMethodInvocation, Method
+	MethodInvocation:Method(invo, invoMethod) <- StaticMethodInvocation0(invo, invoMethod) // typo w/o "0" -> no error??
+
+	@input SpecialMethodInvocation0(invo, invoMethod, base) : SpecialMethodInvocation, Method, Var
+	MethodInvocation:Method(invo, invoMethod),
+	MethodInvocation:Base(invo, base) <- SpecialMethodInvocation0(invo, invoMethod, base)
+
+//} as facts
