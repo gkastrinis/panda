@@ -12,11 +12,9 @@ import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.clause.TypeDeclaration
 import org.clyze.deepdoop.datalog.element.AggregationElement
-import org.clyze.deepdoop.datalog.element.ConstructionElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.RecordType
 import org.clyze.deepdoop.datalog.element.relation.Relation
-import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.RecordExpr
 import org.clyze.deepdoop.system.Result
 
@@ -45,35 +43,33 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		super.visit(n)
 	}
 
-	String exit(RelDeclaration n, Map m) {
-		def params = n.types.withIndex().collect { t, int i -> "${var1(i)}:${map(mini(t.name))}" }
-		emit ".decl ${mini(n.relation.name)}(${params.join(", ")})"
+	String visit(RelDeclaration n) {
+		def relName = rename(n.relation.name)
+		def params = n.types.withIndex().collect { t, int i -> "${var1(i)}:${rename(t.name)}" }
+		emit ".decl $relName(${params.join(", ")})"
 
 		if (INPUT in n.annotations) {
 			def args = n.annotations.find { it == INPUT }.args
 			def filename = args["filename"] ?: "${n.relation.name}.facts"
 			def delimeter = args["delimeter"] ?: "\\t"
-			emit """.input ${mini(n.relation.name)}(filename="$filename", delimeter="$delimeter")"""
+			emit """.input $relName(filename="$filename", delimeter="$delimeter")"""
 		}
 		if (OUTPUT in n.annotations)
-			emit ".output ${mini(n.relation.name)}"
+			emit ".output $relName"
 		null
 	}
 
-	String exit(TypeDeclaration n, Map m) {
-		def params = (n.supertype as RecordType).innerTypes.withIndex().collect { t, int i -> "${var1(i)}:${map(mini(t.name))}" }
-		emit ".type ${map(mini(n.type.name))} = [${params.join(", ")}]"
+	String visit(TypeDeclaration n) {
+		def params = (n.supertype as RecordType).innerTypes.withIndex().collect { t, int i -> "${var1(i)}:${rename(t.name)}" }
+		emit ".type ${rename(n.type.name)} = [${params.join(", ")}]"
 		null
 	}
 
 	String exit(Rule n, Map m) {
 		emit "${m[n.head]} :- ${m[n.body] ?: "true"}."
 
-		if (PLAN in n.annotations) {
-			def args = n.annotations.find { it == PLAN }.args
-			// Remove quotes from start/end
-			emit ".plan ${(args["plan"].value as String)[1..-2]}"
-		}
+		if (PLAN in n.annotations)
+			emit ".plan ${n.annotations.find { it == PLAN }.args["plan"].value}"
 		null
 	}
 
@@ -85,24 +81,16 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		else null
 	}
 
-	String exit(ConstructionElement n, Map m) {
-		"${m[n.constructor]}, ${m[n.type]}(${n.constructor.valueExpr})"
-	}
-
 	String exit(Constructor n, Map m) { exit(n as Relation, m) }
 
-	String exit(Relation n, Map m) { "${mini(n.name)}(${n.exprs.collect { m[it] }.join(", ")})" }
-
-	String exit(Type n, Map m) { "${mini(n.name)}" }
+	String exit(Relation n, Map m) { "${rename(n.name)}(${n.exprs.collect { m[it] }.join(", ")})" }
 
 	// Must override since the default implementation throws an exception
 	String visit(RecordExpr n) { "[${n.exprs.collect { visit it }.join(", ")}]" }
 
-	static def mini(def name) { name.replace ":", "_" }
-
-	static def map(def name) {
+	static def rename(def name) {
 		if (name == "string") return "symbol"
 		else if (name == "int") return "number"
-		else return "__SYS_TYPE_$name"
+		else return "__SYS_TYPE_${name.replace ":", "_"}"
 	}
 }

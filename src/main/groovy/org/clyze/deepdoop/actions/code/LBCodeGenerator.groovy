@@ -10,10 +10,8 @@ import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.clause.TypeDeclaration
 import org.clyze.deepdoop.datalog.element.AggregationElement
-import org.clyze.deepdoop.datalog.element.ConstructionElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
-import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.system.Result
 
 import static org.clyze.deepdoop.datalog.Annotation.*
@@ -46,18 +44,17 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 		super.visit(n)
 	}
 
-	void enter(RelDeclaration n) { if (!n.relation.exprs) n.relation.exprs = varN(n.types.size()) }
-
-	String exit(RelDeclaration n, Map m) {
+	String visit(RelDeclaration n) {
 		def name = n.relation.name
 		def types = n.types.withIndex().collect { t, int i -> "${t.name == "int" ? "int[64]" : t.name}(${var1(i)})"}
-		emit "${emitRel(n.relation)} -> ${types.join(", ")}."
+		n.relation.exprs = varN(n.types.size())
+		emit "${handleRelation(n.relation)} -> ${types.join(", ")}."
 
 		if (CONSTRUCTOR in n.annotations) emit "lang:constructor(`$name)."
 		null
 	}
 
-	String exit(TypeDeclaration n, Map m) {
+	String visit(TypeDeclaration n) {
 		def name = n.type.name
 		emit "lang:entity(`$name)."
 		emit """lang:physical:storageModel[`$name] = "ScalableSparse"."""
@@ -81,15 +78,11 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 		else null
 	}
 
-	String exit(ConstructionElement n, Map m) { "${m[n.constructor]}, ${m[n.type]}(${n.constructor.valueExpr})" }
+	String exit(Constructor n, Map m) { handleRelation(n) }
 
-	String exit(Constructor n, Map m) { emitRel(n) }
+	String exit(Relation n, Map m) { handleRelation(n) }
 
-	String exit(Relation n, Map m) { emitRel(n) }
-
-	String exit(Type n, Map m) { n.name }
-
-	def emitRel(Relation n) {
+	def handleRelation(Relation n) {
 		if (n instanceof Constructor || n.name in functionalRelations)
 			"${n.name}[${n.exprs.dropRight(1).collect { m[it] }.join(", ")}] = ${m[n.exprs.last()]}"
 		else

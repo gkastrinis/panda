@@ -2,10 +2,9 @@ package org.clyze.deepdoop.actions.code
 
 import org.clyze.deepdoop.actions.*
 import org.clyze.deepdoop.actions.tranform.TypeInferenceTransformer
-import org.clyze.deepdoop.datalog.element.ComparisonElement
-import org.clyze.deepdoop.datalog.element.GroupElement
-import org.clyze.deepdoop.datalog.element.LogicalElement
-import org.clyze.deepdoop.datalog.element.NegationElement
+import org.clyze.deepdoop.datalog.block.BlockLvl2
+import org.clyze.deepdoop.datalog.element.*
+import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.BinaryExpr
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.GroupExpr
@@ -23,6 +22,7 @@ class DefaultCodeGenerator extends DefaultVisitor<String> implements TDummyActor
 	private File outDir
 	private File currentFile
 	private FileWriter fw
+	private List<LogicalElement.LogicType> logicTypes = []
 
 	protected TypeInfoVisitingActor typeInfoActor = new TypeInfoVisitingActor()
 	protected RelationInfoVisitingActor relInfoActor = new RelationInfoVisitingActor()
@@ -36,7 +36,7 @@ class DefaultCodeGenerator extends DefaultVisitor<String> implements TDummyActor
 		this.outDir = outDir
 	}
 
-	//String exit(BlockLvl2 n, Map m) { null }
+	String exit(BlockLvl2 n, Map m) { fw.close(); null }
 
 	//String exit(BlockLvl1 n, Map m) { null }
 
@@ -52,11 +52,9 @@ class DefaultCodeGenerator extends DefaultVisitor<String> implements TDummyActor
 
 	String exit(ComparisonElement n, Map m) { n == TRIVIALLY_TRUE ? "true" : m[n.expr] }
 
-	//String exit(ConstructorElement n, Map m) { null }
+	String exit(ConstructionElement n, Map m) { "${m[n.constructor]}, ${m[n.type]}(${m[n.constructor.valueExpr]})" }
 
 	String exit(GroupElement n, Map m) { "(${m[n.element]})" }
-
-	List<LogicalElement.LogicType> logicTypes = []
 
 	void enter(LogicalElement n) { logicTypes << n.type }
 
@@ -72,11 +70,11 @@ class DefaultCodeGenerator extends DefaultVisitor<String> implements TDummyActor
 
 	//String exit(Constructor n, Map m) { null }
 
-	//String exit(Type n, Map m) { null }
+	String exit(Type n, Map m) { null }
 
 	String exit(BinaryExpr n, Map m) { "${m[n.left]} ${n.op} ${m[n.right]}" }
 
-	String exit(ConstantExpr n, Map m) { n.value as String }
+	String exit(ConstantExpr n, Map m) { n.type == ConstantExpr.Type.STRING ? "\"${n.value}\"" : "${n.value}" }
 
 	String exit(GroupExpr n, Map m) { "(${m[n.expr]})" }
 
@@ -84,6 +82,7 @@ class DefaultCodeGenerator extends DefaultVisitor<String> implements TDummyActor
 
 	protected void createUniqueFile(String prefix, String suffix) {
 		currentFile = Files.createTempFile(Paths.get(outDir.name), prefix, suffix).toFile()
+		if (fw) fw.close()
 		fw = new FileWriter(currentFile)
 	}
 

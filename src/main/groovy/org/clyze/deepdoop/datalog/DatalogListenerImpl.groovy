@@ -227,7 +227,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 				values[ctx] = new ConstantExpr(sign * Long.parseLong(str, 10))
 		} else if (ctx.REAL()) values[ctx] = new ConstantExpr(Double.parseDouble(ctx.REAL().text))
 		else if (ctx.BOOLEAN()) values[ctx] = new ConstantExpr(Boolean.parseBoolean(ctx.BOOLEAN().text))
-		else if (ctx.STRING()) values[ctx] = new ConstantExpr(ctx.STRING().text)
+		else if (ctx.STRING()) values[ctx] = new ConstantExpr(ctx.STRING().text[1..-2])
 	}
 
 	void exitExpr(ExprContext ctx) {
