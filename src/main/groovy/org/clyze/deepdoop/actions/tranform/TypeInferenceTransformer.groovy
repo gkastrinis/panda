@@ -91,7 +91,9 @@ class TypeInferenceTransformer extends DummyTransformer {
 		tmpExprTypes = [:].withDefault { [] as Set }
 		tmpExprIndices = [:].withDefault { [:] }
 
+		inRuleHead = true
 		m[n.head] = visit n.head
+		inRuleHead = false
 		inRuleBody = true
 		if (n.body) m[n.body] = visit n.body
 		inRuleBody = false
@@ -156,7 +158,7 @@ class TypeInferenceTransformer extends DummyTransformer {
 		def types = tmpRelationTypes[n.name]
 		n.exprs.eachWithIndex { expr, i ->
 			tmpExprIndices[n.name][expr] = i
-			if (types && types[i]) tmpExprTypes[expr] += types[i]
+			if (inRuleBody && types && types[i]) tmpExprTypes[expr] += types[i]
 		}
 		return n
 	}

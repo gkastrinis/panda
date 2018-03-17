@@ -18,5 +18,5 @@ Bar<_> as S2
 Q(1)
 Q(2)
 
-W(x) <- W@S2(x)
+W(x) <- R@S2(x)
 W(x):int
