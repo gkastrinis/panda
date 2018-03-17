@@ -25,9 +25,7 @@ class Compiler {
 		root.addAppender(new ConsoleAppender(new PatternLayout("%m%n")))
 	}
 
-	static List<Result> compileToLB3(String filename, File outDir) {
-		compile(filename, new LBCodeGenerator(outDir))
-	}
+	static List<Result> compileToLB3(String filename, File outDir) { compile(filename, new LBCodeGenerator(outDir)) }
 
 	static List<Result> compileToSouffle(String filename, File outDir) {
 		compile(filename, new SouffleCodeGenerator(outDir))
@@ -41,8 +39,8 @@ class Compiler {
 			return compile0(new ANTLRFileStream(filename), filename, codeGenActor)
 		} catch (e) {
 			log.error(e.message, e)
+			return null
 		}
-		return null
 	}
 
 	static List<Result> compile0(ANTLRInputStream inputStream, String filename, def codeGenActor) {
@@ -51,6 +49,6 @@ class Compiler {
 		ParseTreeWalker.DEFAULT.walk(listener, parser.program())
 
 		codeGenActor.visit(listener.program)
-		return codeGenActor.results
+		codeGenActor.results
 	}
 }
