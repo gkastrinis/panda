@@ -15,6 +15,7 @@ import org.clyze.deepdoop.datalog.element.AggregationElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.RecordType
 import org.clyze.deepdoop.datalog.element.relation.Relation
+import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.RecordExpr
 import org.clyze.deepdoop.system.Result
 
@@ -44,8 +45,8 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	}
 
 	String visit(RelDeclaration n) {
-		def relName = rename(n.relation.name)
-		def params = n.types.withIndex().collect { t, int i -> "${var1(i)}:${rename(t.name)}" }
+		def relName = fix(n.relation.name)
+		def params = n.types.withIndex().collect { t, int i -> "${var1(i)}:${tr(fix(t.name))}" }
 		emit ".decl $relName(${params.join(", ")})"
 
 		if (INPUT in n.annotations) {
@@ -60,8 +61,8 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	}
 
 	String visit(TypeDeclaration n) {
-		def params = (n.supertype as RecordType).innerTypes.withIndex().collect { t, int i -> "${var1(i)}:${rename(t.name)}" }
-		emit ".type ${rename(n.type.name)} = [${params.join(", ")}]"
+		def params = (n.supertype as RecordType).innerTypes.withIndex().collect { t, int i -> "${var1(i)}:${tr(fix(t.name))}" }
+		emit ".type ${tr(fix(n.type.name))} = [${params.join(", ")}]"
 		null
 	}
 
@@ -83,14 +84,18 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 
 	String exit(Constructor n, Map m) { exit(n as Relation, m) }
 
-	String exit(Relation n, Map m) { "${rename(n.name)}(${n.exprs.collect { m[it] }.join(", ")})" }
+	String exit(Relation n, Map m) { "${fix(n.name)}(${n.exprs.collect { m[it] }.join(", ")})" }
+
+	String exit(Type n, Map m) { n.name }
 
 	// Must override since the default implementation throws an exception
 	String visit(RecordExpr n) { "[${n.exprs.collect { visit it }.join(", ")}]" }
 
-	static def rename(def name) {
+	static def fix(def s) { s.replace ":", "_" }
+
+	static def tr(def name) {
 		if (name == "string") return "symbol"
 		else if (name == "int") return "number"
-		else return "__SYS_TYPE_${name.replace ":", "_"}"
+		else return "__SYS_TYPE_$name"
 	}
 }
