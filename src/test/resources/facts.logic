@@ -34,7 +34,7 @@
 	}
 
 	@input {
-		Class:Modifier(class, mod) : Modifier, ReferenceType
+		Class:Modifier(class, mod) : ReferenceType, Modifier
 
 		DirectSuperClass(class, superclass) : ClassType, ClassType
 		DirectSuperInterface(class, interface) : ReferenceType, InterfaceType
@@ -44,7 +44,9 @@
 
 		ArrayComponentType(arrayType, componentType) : ArrayType, Type
 	}
-	ConcreteClass(class) : ReferenceType
+	// TODO improve syntax
+	_AbstractClass(c) <- Class:Modifier(c, mod), Modifier:Abstract(mod)
+	ConcreteClass(c) <- ClassType(c), !_AbstractClass(c)
 
 
 	//-----------------------------
@@ -61,9 +63,9 @@
 	Method:DeclaringType(method, declaringType) : Method, ReferenceType
 	Method:ReturnType(method, returnType) : Method, Type
 	@input Method:Modifier(method, mod) : Method, Modifier
+	ApplicationMethod(m) <- Method:DeclaringType(m, t), ApplicationClass(t)
 
-	ApplicationMethod(method) : Method
-	FormalParam(method, index, var) : Method, int, Var
+	@input FormalParam(method, index, var) : Method, int, Var
 	@input Method:ThisVar(method, var) : Method, Var
 	// Method `method` declares to throw exception of `exceptionType`
 	// This predicate corresponds to Java's throws clause, or the
@@ -76,7 +78,7 @@
 	//-----------------------------
 	@type Field
 
-	Field:SimpleName(field, name) : Field, string
+	Field:Name(field, name) : Field, string
 	Field:DeclaringType(field, declaringType) : Field, ReferenceType
 	Field:Type(field, type) : Field, Type
 	@input Field:Modifier(field, mod) : Field, Modifier // mod, field
@@ -89,7 +91,7 @@
 
 	Var:Type(var, type) : Var, Type
 	Var:DeclaringMethod(var, method) : Var, Method
-	ApplicationVar(var) : Var
+	ApplicationVar(v) <- Var:DeclaringMethod(v, m), ApplicationMethod(m)
 
 
 	//-----------------------------
@@ -98,7 +100,7 @@
 	@type {
 		HeapAllocation
 		NormalHeap : HeapAllocation
-		StringConstant : HeapAllocation
+		//StringConstant : HeapAllocation
 		ClassHeap : HeapAllocation
 	}
 
@@ -126,6 +128,7 @@
 		AssignLocal : AssignInstruction
 		AssignCast : AssignInstruction
 		AssignAllocation : AssignInstruction
+		AssignInstanceOf : AssignInstruction
 
 		ReturnInstruction : Instruction
 		@input(filename="ReturnVoid0.facts") ReturnVoid : ReturnInstruction
@@ -139,69 +142,43 @@
 
 	Instruction:Index(insn, index) : Instruction, int
 	Instruction:Method(insn, inMethod) : Instruction, Method
-	Instruction:Line(insn, line) : Instruction, int
 
 	// The associated field of this instruction
 	FieldInstruction:Field(insn, field) : FieldInstruction, Field
-	//------------------------------------------------
-	// A LoadInstanceField instruction has the form:
-	// x = y.f
-	// Its three components are:
-	//   1. Base (y)
-	//   2. Field (f)
-	//   3. To (x)
-	//------------------------------------------------
+	// x = y.f (to = base.field)
 	LoadInstanceField:Base(insn, var) : LoadInstanceField, Var
 	LoadInstanceField:To(insn, var) : LoadInstanceField, Var
-	//------------------------------------------------
-	// A StoreInstanceField instruction has the form:
-	// x.f = y
-	// Its three components are:
-	//   1. Base (x)
-	//   2. Field (f)
-	//   3. From (y)
-	//------------------------------------------------
+	// x.f = y (base.field = from)
 	StoreInstanceField:From(insn, var) : StoreInstanceField, Var
 	StoreInstanceField:Base(insn, var) : StoreInstanceField, Var
-	//------------------------------------------------
-	// A LoadStaticField instruction has the form:
-	// x = Y.f
-	// Its two components are:
-	//   1. Field (y.f)
-	//   2. To (x)
-	//------------------------------------------------
+	// x = Y.f (to = field)
 	LoadStaticField:To(insn, var) : LoadStaticField, Var
-	//------------------------------------------------
-	// A StoreStaticField instruction has the form:
-	// X.f = y
-	// Its two components are:
-	//   1. Field (x.f)
-	//   2. From (y)
-	//------------------------------------------------
+	// X.f = y (field = from)
 	StoreStaticField:From(insn, var) : StoreStaticField, Var
 
 	@input ArrayInstruction:IndexVar(insn, indexVar) : ArrayInstruction, Var
+	// x = y[...] (to = base[...])
 	LoadArrayIndex:Base(insn, var) : LoadArrayIndex, Var
 	LoadArrayIndex:To(insn, var) : LoadArrayIndex, Var
+	// x[...] = y (base[...] = from)
 	StoreArrayIndex:From(insn, var) : StoreArrayIndex, Var
 	StoreArrayIndex:Base(insn, var) : StoreArrayIndex, Var
 
 	// The target of all assignment instructions
 	AssignInstruction:To(insn, to) : AssignInstruction, Var
-	AssignLocal:From(insn, from) : AssignLocal, Var
-	AssignCast:From(insn, from) : AssignCast, Var
+	AssignInstruction:From(insn, from) : AssignInstruction, Var
 	AssignCast:Type(insn, type) : AssignCast, Type
 	AssignAllocation:Heap(insn, heap) : AssignAllocation, HeapAllocation
+	AssignInstanceOf:Type(insn, type) : AssignInstanceOf, Type
 
 	ReturnNonVoid:Var(return, var) : ReturnNonVoid, Var
 
 	// The signature of the method being called
 	MethodInvocation:Method(invo, method) : MethodInvocation, Method
 	MethodInvocation:Base(invo, base) : MethodInvocation, Var
-	AssignReturnValue(invo, to) : MethodInvocation, Var
+	@input AssignReturnValue(invo, to) : MethodInvocation, Var
 	// The actual parameters of the invocation (excluding receiver object)
 	@input ActualParam(invo, index, var) : MethodInvocation, int, Var
-
 
 
 	//-----------------------------
@@ -214,8 +191,6 @@
 	Method:DeclaringType(method, declType),
 	Method:ReturnType(method, retType) <- Method0(method, name, desc, declType, retType, _)
 
-	ApplicationMethod(m) <- Method:DeclaringType(m, t), ApplicationClass(t)
-
 	@input Field0(field, declType, name, type) : Field, ReferenceType, string, Type
 	Field:Name(field, name),
 	Field:DeclaringType(field, declType),
@@ -224,8 +199,6 @@
 	@input Var0(var, declType, method) : Var, Type, Method
 	Var:Type(var, declType),
 	Var:DeclaringMethod(var, method) <- Var0(var, declType, method)
-
-	ApplicationVar(v) <- Var:DeclaringMethod(v, m), ApplicationMethod(m)
 
 	@input NormalHeap0(heap, type) : NormalHeap, Type
 	Allocation:Type(heap, type) <- NormalHeap0(heap, type)
@@ -259,22 +232,27 @@
 	LoadArrayIndex:Base(insn, base),
 	LoadArrayIndex:To(insn, to) <- LoadArrayIndex0(insn, to, base)
 
-	@input StoreArrayIndex0(insn, from, base) : LoadArrayIndex, Var, Var
+	@input StoreArrayIndex0(insn, from, base) : StoreArrayIndex, Var, Var
 	StoreArrayIndex:Base(insn, base),
 	StoreArrayIndex:From(insn, from) <- StoreArrayIndex0(insn, from, base)
 
 	@input AssignLocal0(insn, from, to) : AssignLocal, Var, Var
 	AssignInstruction:To(insn, to),
-	AssignLocal:From(insn, from) <- AssignLocal0(insn, from, to)
+	AssignInstruction:From(insn, from) <- AssignLocal0(insn, from, to)
 
 	@input AssignCast0(insn, from, to, type) : AssignCast, Var, Var, Type
 	AssignInstruction:To(insn, to),
-	AssignCast:From(insn, from),
+	AssignInstruction:From(insn, from),
 	AssignCast:Type(insn, type) <- AssignCast0(insn, from, to, type)
 
 	@input AssignHeapAllocation0(insn, heap, to) : AssignAllocation, HeapAllocation, Var
 	AssignInstruction:To(insn, to),
 	AssignAllocation:Heap(insn, heap) <- AssignHeapAllocation0(insn, heap, to)
+
+	@input AssignInstanceOf0(insn, from, to, type) : AssignInstanceOf, Var, Var, Type
+	AssignInstruction:To(insn, to),
+	AssignInstruction:From(insn, from),
+	AssignInstanceOf:Type(insn, type) <- AssignInstanceOf0(insn, from, to, type)
 
 	@input Return0(insn, var) : ReturnNonVoid, Var
 	ReturnNonVoid:Var(insn, var) <- Return0(insn, var)

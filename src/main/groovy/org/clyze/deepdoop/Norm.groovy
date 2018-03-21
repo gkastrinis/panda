@@ -21,7 +21,7 @@ def work = {
 }
 
 ["LoadInstanceField", "StoreInstanceField", "LoadStaticField", "StoreStaticField",
- "LoadArrayIndex", "StoreArrayIndex", "AssignLocal", "AssignCast",
+ "LoadArrayIndex", "StoreArrayIndex", "AssignLocal", "AssignCast", "AssignInstanceOf",
  "Return", "ReturnVoid",
  "VirtualMethodInvocation", "StaticMethodInvocation", "SpecialMethodInvocation"].each { work it }
 dropLast = true
