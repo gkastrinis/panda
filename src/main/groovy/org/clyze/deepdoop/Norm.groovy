@@ -18,6 +18,7 @@ def work = {
 	def fw = new FileWriter(new File("build/${it}0.facts"))
 	res.each { fw.write(it) }
 	res = [] as Set
+	fw.close()
 }
 
 ["LoadInstanceField", "StoreInstanceField", "LoadStaticField", "StoreStaticField",
@@ -29,5 +30,20 @@ work "AssignHeapAllocation"
 
 fw = new FileWriter(new File("build/Instruction_Desc.facts"))
 instructionsDescs.each { fw.write(it) }
+fw.close()
 fw = new FileWriter(new File("build/Instruction0.facts"))
 instructions.each { fw.write(it) }
+fw.close()
+
+
+fw = new FileWriter(new File("build/FormalParam0.facts"))
+new File("build/FormalParam.facts").eachLine {
+	def (index, method, var) = it.split("\t")
+	fw.write("$method\t$index\t$var\n")
+}
+fw.close() fw = new FileWriter(new File("build/ActualParam0.facts"))
+new File("build/ActualParam.facts").eachLine {
+	def (index, invo, var) = it.split("\t")
+	fw.write("$invo\t$index\t$var\n")
+}
+fw.close()

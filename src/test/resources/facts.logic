@@ -65,7 +65,7 @@
 	@input Method:Modifier(method, mod) : Method, Modifier
 	ApplicationMethod(m) <- Method:DeclaringType(m, t), ApplicationClass(t)
 
-	@input FormalParam(method, index, var) : Method, int, Var
+	@input(filename="FormalParam0.facts") FormalParam(method, index, var) : Method, int, Var
 	@input Method:ThisVar(method, var) : Method, Var
 	// Method `method` declares to throw exception of `exceptionType`
 	// This predicate corresponds to Java's throws clause, or the
@@ -178,7 +178,7 @@
 	MethodInvocation:Base(invo, base) : MethodInvocation, Var
 	@input AssignReturnValue(invo, to) : MethodInvocation, Var
 	// The actual parameters of the invocation (excluding receiver object)
-	@input ActualParam(invo, index, var) : MethodInvocation, int, Var
+	@input(filename="ActualParam0.facts") ActualParam(invo, index, var) : MethodInvocation, int, Var
 
 
 	//-----------------------------

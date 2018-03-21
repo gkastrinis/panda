@@ -97,7 +97,7 @@ class AddonsTransformer extends DummyTransformer {
 			inputRel = new Relation(name, varN(N))
 		}
 		def an = new Annotation("INPUT", [
-				"filename" : new ConstantExpr("${name}.facts"),
+				"filename" : new ConstantExpr("${name.replace ":", "_"}.facts"),
 				"delimeter": new ConstantExpr("\\t")])
 		extraRelDecls << new RelDeclaration(inputRel, inputTypes, [an] as Set)
 	}
