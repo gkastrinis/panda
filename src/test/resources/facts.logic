@@ -262,7 +262,7 @@
 	MethodInvocation:Base(invo, base) <- VirtualMethodInvocation0(invo, invoMethod, base)
 
 	@input StaticMethodInvocation0(invo, invoMethod) : StaticMethodInvocation, Method
-	MethodInvocation:Method(invo, invoMethod) <- StaticMethodInvocation0(invo, invoMethod) // typo w/o "0" -> no error??
+	MethodInvocation:Method(invo, invoMethod) <- StaticMethodInvocation0(invo, invoMethod)
 
 	@input SpecialMethodInvocation0(invo, invoMethod, base) : SpecialMethodInvocation, Method, Var
 	MethodInvocation:Method(invo, invoMethod),

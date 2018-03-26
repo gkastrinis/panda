@@ -79,6 +79,8 @@ class DatalogSpec extends Specification {
 		"fail30.logic" | Error.COMP_UNKNOWN
 		"fail31.logic" | Error.VAR_UNKNOWN
 		"fail32.logic" | Error.TYPE_INFERENCE_FAIL
+		"fail33.logic" | Error.REL_ARITY
+		"fail34.logic" | Error.REL_NO_DECL
 //		"fail100.logic" | Error.DEP_CYCLE
 //		"fail101.logic" | Error.CMD_RULE
 //		"fail103.logic" | Error.CMD_DIRECTIVE

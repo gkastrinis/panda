@@ -55,7 +55,8 @@ class TypeInferenceTransformer extends DummyTransformer {
 		while (!oldDeltaRules.isEmpty()) {
 			deltaRules = [] as Set
 			oldDeltaRules.each { visit it }
-			if (oldDeltaRules == deltaRules) error(Error.TYPE_INFERENCE_FAIL, null)
+			if (oldDeltaRules == deltaRules)
+				error(Error.TYPE_INFERENCE_FAIL, null)
 			oldDeltaRules = deltaRules
 		}
 		coalesce()

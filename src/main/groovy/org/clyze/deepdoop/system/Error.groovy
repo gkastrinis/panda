@@ -27,6 +27,7 @@ enum Error {
 	REL_ARITY,
 	REL_EXT_INVALID,
 	REL_EXT_NO_DECL,
+	REL_NO_DECL,
 	CONSTR_RULE_CYCLE,
 	CONSTR_UNKNOWN,
 	CONSTR_TYPE_INCOMP,
@@ -79,6 +80,7 @@ enum Error {
 		msgMap[REL_ARITY] = "Inconsistent arity for relation `{0}`"
 		msgMap[REL_EXT_INVALID] = "Relation with a `@` parameter only allowed in a rule body, inside a component"
 		msgMap[REL_EXT_NO_DECL] = "Unknown relation `{0}` used with a `@` parameter"
+		msgMap[REL_NO_DECL] = "Unknown relation `{0}`"
 		msgMap[CONSTR_RULE_CYCLE] = "Constructor `{0}` appears in a cycle in rule head"
 		msgMap[CONSTR_UNKNOWN] = "Unknown constructor `{0}`"
 		msgMap[CONSTR_TYPE_INCOMP] = "Constructor `{0}` used with incompatible type `{1}`"

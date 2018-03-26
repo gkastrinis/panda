@@ -75,12 +75,6 @@ class ValidationVisitingActor extends DefaultVisitor<IVisitable> implements TDum
 				.findAll { !(it in varsInHead) }
 				.findAll { varsInBody.count(it) == 1 }
 				.each { warn(recall(n), Error.VAR_UNUSED, it.name) }
-
-		asElements(n.head)
-				.findAll { it instanceof Relation }
-				.collect { it as Relation }
-				.findAll { rel -> typeInfoActor.allTypes.find { it.name == rel.name } }
-				.each { error(recall(n), Error.TYPE_RULE, it.name) }
 	}
 
 	void enter(ConstructionElement n) {
@@ -93,11 +87,24 @@ class ValidationVisitingActor extends DefaultVisitor<IVisitable> implements TDum
 			error(recall(n), Error.CONSTR_TYPE_INCOMP, n.constructor.name, n.type.name)
 	}
 
-	void enter(Constructor n) { if (!inDecl) checkArity(n.name, n.arity, n) }
+	void enter(Constructor n) { if (!inDecl) checkRelation(n) }
 
-	void enter(Relation n) { if (!inDecl) checkArity(n.name, n.arity, n) }
+	void enter(Relation n) { if (!inDecl) checkRelation(n) }
+
+	def checkRelation(Relation n) {
+		if (inRuleHead && typeInfoActor.allTypes.find { it.name == n.name })
+			error(recall(n), Error.TYPE_RULE, n.name)
+
+		if (inRuleBody && !(n.name in relInfoActor.declaredRelations))
+			error(recall(n), Error.REL_NO_DECL, n.name)
+
+		checkArity(n.name, n.arity, n)
+	}
 
 	def checkArity(String name, int arity, IVisitable n) {
+		if (inRuleBody && typeInfoActor.allTypes.find { it.name == name } && arity != 1)
+			error(recall(n), Error.REL_ARITY, name)
+
 		def prevArity = arities[name]
 		if (prevArity && prevArity != arity) error(recall(n), Error.REL_ARITY, name)
 		if (!prevArity) arities[name] = arity
