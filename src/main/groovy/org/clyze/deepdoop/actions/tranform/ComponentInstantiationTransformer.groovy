@@ -96,7 +96,7 @@ class ComponentInstantiationTransformer extends DummyTransformer {
 				def name = origP.instantiations.find { it.id == instParameter }.component
 				externalTemplateDatalog = origP.components.find { it.name == name }.datalog
 			}
-			if (!relInfoActor.declaredRelations[externalTemplateDatalog].any { it.name == simpleName })
+			if (!relInfoActor.declaredRelationsPerBlock[externalTemplateDatalog].any { it == simpleName })
 				error(recall(n), Error.REL_EXT_NO_DECL, simpleName as String)
 
 			return new Relation(externalName, n.exprs)
