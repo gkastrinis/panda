@@ -41,7 +41,8 @@ new File("build/FormalParam.facts").eachLine {
 	def (index, method, var) = it.split("\t")
 	fw.write("$method\t$index\t$var\n")
 }
-fw.close() fw = new FileWriter(new File("build/ActualParam0.facts"))
+fw.close()
+fw = new FileWriter(new File("build/ActualParam0.facts"))
 new File("build/ActualParam.facts").eachLine {
 	def (index, invo, var) = it.split("\t")
 	fw.write("$invo\t$index\t$var\n")
