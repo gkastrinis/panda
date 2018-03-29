@@ -27,8 +27,12 @@ class DummyTransformer extends DefaultVisitor<IVisitable> implements TDummyActor
 		new BlockLvl2(m[n.datalog] as BlockLvl0, n.components.collect { m[it] as BlockLvl1 } as Set, n.instantiations)
 	}
 
-	IVisitable exit(BlockLvl1 n, Map m) {
-		new BlockLvl1(n.name, n.superComponent, n.parameters, n.superParameters, m[n.datalog] as BlockLvl0)
+	IVisitable exit(BlockLvl1 n, Map m) { throw new UnsupportedOperationException() }
+
+	void enter(BlockLvl0 n) {
+		extraRelDecls = [] as Set
+		extraTypeDecls = [] as Set
+		extraRules = [] as Set
 	}
 
 	IVisitable exit(BlockLvl0 n, Map m) {
@@ -44,7 +48,7 @@ class DummyTransformer extends DefaultVisitor<IVisitable> implements TDummyActor
 	}
 
 	IVisitable exit(TypeDeclaration n, Map m) {
-		new TypeDeclaration(m[n.type] as Type, m[n.supertype] as Type , n.annotations)
+		new TypeDeclaration(m[n.type] as Type, m[n.supertype] as Type, n.annotations)
 	}
 
 	IVisitable exit(Rule n, Map m) {

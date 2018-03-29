@@ -1,6 +1,8 @@
 package org.clyze.deepdoop.actions.code
 
-import org.clyze.deepdoop.actions.*
+import org.clyze.deepdoop.actions.DefaultVisitor
+import org.clyze.deepdoop.actions.SymbolTableVisitingActor
+import org.clyze.deepdoop.actions.TDummyActor
 import org.clyze.deepdoop.actions.tranform.TypeInferenceTransformer
 import org.clyze.deepdoop.datalog.block.BlockLvl2
 import org.clyze.deepdoop.datalog.element.*
@@ -24,10 +26,8 @@ class DefaultCodeGenerator extends DefaultVisitor<String> implements TDummyActor
 	private FileWriter fw
 	private List<LogicalElement.LogicType> logicTypes = []
 
-	protected TypeInfoVisitingActor typeInfoActor = new TypeInfoVisitingActor()
-	protected RelationInfoVisitingActor relInfoActor = new RelationInfoVisitingActor()
-	protected ConstructionInfoVisitingActor constructionInfoActor = new ConstructionInfoVisitingActor()
-	protected TypeInferenceTransformer typeInferenceTransformer = new TypeInferenceTransformer(typeInfoActor, relInfoActor)
+	protected SymbolTableVisitingActor symbolTable = new SymbolTableVisitingActor()
+	protected TypeInferenceTransformer typeInferenceTransformer = new TypeInferenceTransformer(symbolTable)
 
 	List<Result> results = []
 

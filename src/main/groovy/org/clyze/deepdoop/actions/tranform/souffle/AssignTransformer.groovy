@@ -1,7 +1,7 @@
 package org.clyze.deepdoop.actions.tranform.souffle
 
 import groovy.transform.Canonical
-import org.clyze.deepdoop.actions.RelationInfoVisitingActor
+import org.clyze.deepdoop.actions.SymbolTableVisitingActor
 import org.clyze.deepdoop.actions.tranform.DummyTransformer
 import org.clyze.deepdoop.datalog.IVisitable
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
@@ -19,12 +19,12 @@ import org.clyze.deepdoop.datalog.expr.VariableExpr
 import org.clyze.deepdoop.system.Error
 
 import static org.clyze.deepdoop.datalog.element.ComparisonElement.TRIVIALLY_TRUE
-import static org.clyze.deepdoop.system.Error.error as error
+import static org.clyze.deepdoop.system.Error.error
 
 @Canonical
 class AssignTransformer extends DummyTransformer {
 
-	RelationInfoVisitingActor relInfoActor
+	SymbolTableVisitingActor symbolTable
 
 	// Variables that are assigned some expression in a rule body
 	private Map<VariableExpr, IExpr> assignments = [:]
@@ -43,7 +43,7 @@ class AssignTransformer extends DummyTransformer {
 		actor.enter(n)
 		assignments = [:]
 		replacedVars = [] as Set
-		boundVars = relInfoActor.boundVars[n]
+		boundVars = symbolTable.boundVars[n]
 		complexLogic = 0
 		def head = n.head
 		def body = n.body

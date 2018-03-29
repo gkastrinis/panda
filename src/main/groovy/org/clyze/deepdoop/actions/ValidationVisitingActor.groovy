@@ -2,7 +2,6 @@ package org.clyze.deepdoop.actions
 
 import org.clyze.deepdoop.datalog.Annotation
 import org.clyze.deepdoop.datalog.IVisitable
-import org.clyze.deepdoop.datalog.block.BlockLvl1
 import org.clyze.deepdoop.datalog.block.BlockLvl2
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
@@ -13,30 +12,24 @@ import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.system.Error
 
 import static org.clyze.deepdoop.datalog.Annotation.*
-import static org.clyze.deepdoop.system.Error.error as error
-import static org.clyze.deepdoop.system.Error.warn as warn
+import static org.clyze.deepdoop.system.Error.error
+import static org.clyze.deepdoop.system.Error.warn
 import static org.clyze.deepdoop.system.SourceManager.recallStatic as recall
 
 class ValidationVisitingActor extends DefaultVisitor<IVisitable> implements TDummyActor<IVisitable> {
 
-	TypeInfoVisitingActor typeInfoActor
-	RelationInfoVisitingActor relInfoActor
-	ConstructionInfoVisitingActor conInfoActor
+	SymbolTableVisitingActor symbolTable
 
 	Set<String> tmpDeclaredRelations = [] as Set
 	Set<String> tmpDeclaredTypes = [] as Set
 	Map<String, Integer> arities = [:]
 
-	ValidationVisitingActor(TypeInfoVisitingActor typeInfoActor, RelationInfoVisitingActor relInfoActor, ConstructionInfoVisitingActor conInfoActor) {
+	ValidationVisitingActor(SymbolTableVisitingActor symbolTable) {
 		actor = this
-		this.typeInfoActor = typeInfoActor
-		this.relInfoActor = relInfoActor
-		this.conInfoActor = conInfoActor
+		this.symbolTable = symbolTable
 	}
 
 	IVisitable exit(BlockLvl2 n, Map m) { n }
-
-	IVisitable visit(BlockLvl1 n) { throw new UnsupportedOperationException() }
 
 	void enter(RelDeclaration n) {
 		if (n.relation.name in tmpDeclaredRelations) error(recall(n), Error.DECL_MULTIPLE, n.relation.name)
@@ -51,7 +44,7 @@ class ValidationVisitingActor extends DefaultVisitor<IVisitable> implements TDum
 			error(recall(n), Error.FUNC_NON_CONSTR, n.relation.name)
 
 		n.types.findAll { !it.isPrimitive() }
-				.findAll { !(it in typeInfoActor.allTypes) }
+				.findAll { !(it in symbolTable.allTypes) }
 				.each { error(recall(it), Error.TYPE_UNKNOWN, it.name) }
 	}
 
@@ -65,9 +58,9 @@ class ValidationVisitingActor extends DefaultVisitor<IVisitable> implements TDum
 	void enter(Rule n) {
 		checkAnnotations(n.annotations, [PLAN], "Rule")
 
-		def varsInHead = relInfoActor.vars[n.head]
-		def varsInBody = relInfoActor.vars[n.body]
-		def conVars = conInfoActor.constructedVars[n]
+		def varsInHead = symbolTable.vars[n.head]
+		def varsInBody = symbolTable.vars[n.body]
+		def conVars = symbolTable.constructedVars[n]
 		varsInHead.findAll { !(it in varsInBody) && !(it in conVars) }
 				.each { error(recall(n), Error.VAR_UNKNOWN, it.name) }
 
@@ -78,12 +71,12 @@ class ValidationVisitingActor extends DefaultVisitor<IVisitable> implements TDum
 	}
 
 	void enter(ConstructionElement n) {
-		if (!(n.type in typeInfoActor.allTypes)) error(recall(n), Error.TYPE_UNKNOWN, n.type.name)
+		if (!(n.type in symbolTable.allTypes)) error(recall(n), Error.TYPE_UNKNOWN, n.type.name)
 
-		def baseType = conInfoActor.constructorBaseType[n.constructor.name]
+		def baseType = symbolTable.constructorBaseType[n.constructor.name]
 		if (!baseType)
 			error(recall(n), Error.CONSTR_UNKNOWN, n.constructor.name)
-		if (n.type != baseType && !(baseType in typeInfoActor.superTypesOrdered[n.type]))
+		if (n.type != baseType && !(baseType in symbolTable.superTypesOrdered[n.type]))
 			error(recall(n), Error.CONSTR_TYPE_INCOMP, n.constructor.name, n.type.name)
 	}
 
@@ -92,17 +85,17 @@ class ValidationVisitingActor extends DefaultVisitor<IVisitable> implements TDum
 	void enter(Relation n) { if (!inDecl) checkRelation(n) }
 
 	def checkRelation(Relation n) {
-		if (inRuleHead && typeInfoActor.allTypes.find { it.name == n.name })
+		if (inRuleHead && symbolTable.allTypes.find { it.name == n.name })
 			error(recall(n), Error.TYPE_RULE, n.name)
 
-		if (inRuleBody && !(n.name in relInfoActor.declaredRelations))
+		if (inRuleBody && !(n.name in symbolTable.declaredRelations))
 			error(recall(n), Error.REL_NO_DECL, n.name)
 
 		checkArity(n.name, n.arity, n)
 	}
 
 	def checkArity(String name, int arity, IVisitable n) {
-		if (inRuleBody && typeInfoActor.allTypes.find { it.name == name } && arity != 1)
+		if (inRuleBody && symbolTable.allTypes.find { it.name == name } && arity != 1)
 			error(recall(n), Error.REL_ARITY, name)
 
 		def prevArity = arities[name]
@@ -112,7 +105,7 @@ class ValidationVisitingActor extends DefaultVisitor<IVisitable> implements TDum
 
 	static def checkAnnotations(Set<Annotation> annotations, List<Annotation> allowedAnnotations, String kind) {
 		annotations
-				.findAll { !(it in allowedAnnotations)}
+				.findAll { !(it in allowedAnnotations) }
 				.each { error(recall(it), Error.ANNOTATION_INVALID, it, kind) }
 		annotations.each { it.validate() }
 	}

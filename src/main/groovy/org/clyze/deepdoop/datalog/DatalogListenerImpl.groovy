@@ -22,8 +22,8 @@ import org.clyze.deepdoop.system.SourceManager
 
 import static org.clyze.deepdoop.datalog.Annotation.TYPE
 import static org.clyze.deepdoop.datalog.DatalogParser.*
-import static org.clyze.deepdoop.system.Error.error as error
-import static org.clyze.deepdoop.system.Error.warn as warn
+import static org.clyze.deepdoop.system.Error.error
+import static org.clyze.deepdoop.system.Error.warn
 
 class DatalogListenerImpl extends DatalogBaseListener {
 
@@ -108,7 +108,9 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		}
 	}
 
-	void enterAnnotationBlock(AnnotationBlockContext ctx) { extraAnnotationsStack.push(gatherAnnotations(ctx.annotationList())) }
+	void enterAnnotationBlock(AnnotationBlockContext ctx) {
+		extraAnnotationsStack.push(gatherAnnotations(ctx.annotationList()))
+	}
 
 	void exitAnnotationBlock(AnnotationBlockContext ctx) { extraAnnotationsStack.pop() }
 

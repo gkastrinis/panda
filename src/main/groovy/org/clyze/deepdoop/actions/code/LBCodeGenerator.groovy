@@ -2,9 +2,10 @@ package org.clyze.deepdoop.actions.code
 
 import groovy.transform.InheritConstructors
 import org.clyze.deepdoop.actions.ValidationVisitingActor
-import org.clyze.deepdoop.actions.tranform.AddonsTransformer
 import org.clyze.deepdoop.actions.tranform.ComponentInstantiationTransformer
+import org.clyze.deepdoop.actions.tranform.InputFactsTransformer
 import org.clyze.deepdoop.actions.tranform.SyntaxFlatteningTransformer
+import org.clyze.deepdoop.actions.tranform.TypesTransformer
 import org.clyze.deepdoop.datalog.block.BlockLvl2
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
@@ -30,11 +31,11 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 		// Transform program before visiting nodes
 		def n = p.accept(new SyntaxFlatteningTransformer())
 				.accept(new ComponentInstantiationTransformer())
-				.accept(typeInfoActor)
-				.accept(new AddonsTransformer(typeInfoActor))
-				.accept(relInfoActor)
-				.accept(constructionInfoActor)
-				.accept(new ValidationVisitingActor(typeInfoActor, relInfoActor, constructionInfoActor))
+				.accept(symbolTable)
+				.accept(new TypesTransformer(symbolTable))
+				.accept(new InputFactsTransformer(symbolTable))
+				.accept(symbolTable)
+				.accept(new ValidationVisitingActor(symbolTable))
 				.accept(typeInferenceTransformer)
 
 		functionalRelations = n.datalog.relDeclarations
@@ -46,7 +47,7 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 
 	String visit(RelDeclaration n) {
 		def name = n.relation.name
-		def types = n.types.withIndex().collect { t, int i -> "${t.name == "int" ? "int[64]" : t.name}(${var1(i)})"}
+		def types = n.types.withIndex().collect { t, int i -> "${t.name == "int" ? "int[64]" : t.name}(${var1(i)})" }
 		n.relation.exprs = varN(n.types.size())
 		emit "${handleRelation(n.relation)} -> ${types.join(", ")}."
 

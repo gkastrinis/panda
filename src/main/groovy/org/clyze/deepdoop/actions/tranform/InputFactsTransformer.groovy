@@ -1,10 +1,9 @@
 package org.clyze.deepdoop.actions.tranform
 
-import org.clyze.deepdoop.actions.TypeInfoVisitingActor
+import groovy.transform.Canonical
+import org.clyze.deepdoop.actions.SymbolTableVisitingActor
 import org.clyze.deepdoop.datalog.Annotation
 import org.clyze.deepdoop.datalog.IVisitable
-import org.clyze.deepdoop.datalog.block.BlockLvl0
-import org.clyze.deepdoop.datalog.block.BlockLvl1
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.clause.TypeDeclaration
@@ -19,31 +18,15 @@ import org.clyze.deepdoop.datalog.expr.BinaryExpr
 import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.datalog.expr.GroupExpr
 
-import static org.clyze.deepdoop.datalog.Annotation.*
+import static org.clyze.deepdoop.datalog.Annotation.INPUT
 import static org.clyze.deepdoop.datalog.element.relation.Type.TYPE_STRING
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.genN as varN
 
-class AddonsTransformer extends DummyTransformer {
+@Canonical
+class InputFactsTransformer extends DummyTransformer {
 
-	private TypeInfoVisitingActor typeInfoActor
-
-	AddonsTransformer(TypeInfoVisitingActor typeInfoActor) {
-		actor = this
-		this.typeInfoActor = typeInfoActor
-	}
-
-	IVisitable visit(BlockLvl1 n) { throw new UnsupportedOperationException() }
-
-	void enter(BlockLvl0 n) {
-		extraRelDecls = [] as Set
-		extraTypeDecls = [] as Set
-		extraRules = [] as Set
-
-		(typeInfoActor.typeToRootType.values() as Set).each {
-			extraRelDecls << new RelDeclaration(new Constructor(autoCon(it), []), [TYPE_STRING, it], [CONSTRUCTOR] as Set)
-		}
-	}
+	SymbolTableVisitingActor symbolTable
 
 	IVisitable exit(RelDeclaration n, Map m) {
 		if (INPUT in n.annotations) {
@@ -54,19 +37,8 @@ class AddonsTransformer extends DummyTransformer {
 	}
 
 	IVisitable exit(TypeDeclaration n, Map m) {
-		if (TYPEVALUES in n.annotations) {
-			def rootT = typeInfoActor.typeToRootType[n.type]
-			n.annotations.find { it == TYPEVALUES }.args.each { key, value ->
-				def rel = new Relation("${n.type.name}:$key", [var1()])
-				def con = new Constructor(autoCon(rootT), [value, var1()])
-				extraRelDecls << new RelDeclaration(rel, [n.type])
-				extraRules << new Rule(new LogicalElement([new ConstructionElement(con, n.type), rel]), null)
-			}
-		}
-
 		if (INPUT in n.annotations)
 			genInput(n.type.name, [n.type], true)
-
 		return n
 	}
 
@@ -77,9 +49,9 @@ class AddonsTransformer extends DummyTransformer {
 		def inputTypes = []
 
 		types.withIndex().each { Type t, int i ->
-			def rootT = typeInfoActor.typeToRootType[t]
+			def rootT = symbolTable.typeToRootType[t]
 			if (rootT) {
-				elements << new ConstructionElement(new Constructor(autoCon(rootT), [var1(i), var1(N + i)]), t)
+				elements << new ConstructionElement(new Constructor(mkCon(rootT), [var1(i), var1(N + i)]), t)
 				vars << var1(N + i)
 				inputTypes << TYPE_STRING
 			} else {
@@ -102,7 +74,7 @@ class AddonsTransformer extends DummyTransformer {
 		extraRelDecls << new RelDeclaration(inputRel, inputTypes, [an] as Set)
 	}
 
-	def autoCon(Type t) { "${t.name}:byStr" }
+	static def mkCon(Type t) { "${t.name}:byStr" }
 
 	// Overrides to avoid unneeded allocations
 

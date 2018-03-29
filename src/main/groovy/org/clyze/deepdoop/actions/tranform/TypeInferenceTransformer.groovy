@@ -1,10 +1,9 @@
 package org.clyze.deepdoop.actions.tranform
 
-import org.clyze.deepdoop.actions.RelationInfoVisitingActor
-import org.clyze.deepdoop.actions.TypeInfoVisitingActor
+import groovy.transform.Canonical
+import org.clyze.deepdoop.actions.SymbolTableVisitingActor
 import org.clyze.deepdoop.datalog.IVisitable
 import org.clyze.deepdoop.datalog.block.BlockLvl0
-import org.clyze.deepdoop.datalog.block.BlockLvl1
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.clause.TypeDeclaration
@@ -19,18 +18,18 @@ import org.clyze.deepdoop.system.Error
 
 import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.*
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.genN as varN
-import static org.clyze.deepdoop.system.Error.error as error
+import static org.clyze.deepdoop.system.Error.error
 
+@Canonical
 class TypeInferenceTransformer extends DummyTransformer {
 
-	TypeInfoVisitingActor typeInfoActor
-	RelationInfoVisitingActor relInfoActor
+	SymbolTableVisitingActor symbolTable
 
 	// Relation name x Type (final)
 	Map<String, List<Type>> inferredTypes = [:].withDefault { [] }
 
 	// Relation name x Type Set for each index
-	private  Map<String, List<Set<Type>>> tmpRelationTypes = [:].withDefault { [] }
+	private Map<String, List<Set<Type>>> tmpRelationTypes = [:].withDefault { [] }
 	// Expression x Type Set (for current clause)
 	private Map<IVisitable, Set<Type>> tmpExprTypes
 	// Relation Name x Parameter Expression x Index (for current clause)
@@ -39,14 +38,6 @@ class TypeInferenceTransformer extends DummyTransformer {
 	private Map<String, RelDeclaration> relToDecl = [:]
 	// Implementing fix-point computation
 	private Set<Rule> deltaRules
-
-	TypeInferenceTransformer(TypeInfoVisitingActor typeInfoActor, RelationInfoVisitingActor relInfoActor) {
-		actor = this
-		this.typeInfoActor = typeInfoActor
-		this.relInfoActor = relInfoActor
-	}
-
-	IVisitable visit(BlockLvl1 n) { throw new UnsupportedOperationException() }
 
 	IVisitable visit(BlockLvl0 n) {
 		n.relDeclarations.each { visit it }
@@ -110,7 +101,7 @@ class TypeInferenceTransformer extends DummyTransformer {
 					// There is an explicit declaration and the possible types
 					// for some expressions are more generic that the declared ones
 					if (declaredTypes) {
-						def superTs = typeInfoActor.superTypesOrdered[declaredTypes[i]]
+						def superTs = symbolTable.superTypesOrdered[declaredTypes[i]]
 						if (currTypeSet.find { it in superTs })
 							error(Error.TYPE_INFERENCE_FIXED, declaredTypes[i], i, relName)
 					}
@@ -118,7 +109,7 @@ class TypeInferenceTransformer extends DummyTransformer {
 					def newTypeSet = (prevTypeSet + currTypeSet) as Set
 					if (prevTypeSet != newTypeSet) {
 						tmpRelationTypes[relName][i] = newTypeSet
-						deltaRules += relInfoActor.relUsedInRules[relName]
+						deltaRules += symbolTable.relUsedInRules[relName]
 					}
 				} else
 					deltaRules << n
@@ -194,7 +185,7 @@ class TypeInferenceTransformer extends DummyTransformer {
 
 					// Phase 1: Include types that don't have a better representative already in the set
 					typeSet.each { t ->
-						def superTs = typeInfoActor.superTypesOrdered[t]
+						def superTs = symbolTable.superTypesOrdered[t]
 						if (!superTs.any { it in typeSet }) workingSet << t
 					}
 
@@ -207,8 +198,8 @@ class TypeInferenceTransformer extends DummyTransformer {
 							def t2 = workingSet.first()
 							workingSet.removeAt(0)
 
-							def superTypesOfT1 = typeInfoActor.superTypesOrdered[t1]
-							def superTypesOfT2 = typeInfoActor.superTypesOrdered[t2]
+							def superTypesOfT1 = symbolTable.superTypesOrdered[t1]
+							def superTypesOfT2 = symbolTable.superTypesOrdered[t2]
 							// Move upwards in the hierarchy until a common type is found
 							def superT = t1 = superTypesOfT1.find { it in superTypesOfT2 }
 							if (!superT) error(Error.TYPE_INCOMP, relation, i)

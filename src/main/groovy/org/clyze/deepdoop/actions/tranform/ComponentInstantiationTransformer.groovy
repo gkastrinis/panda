@@ -1,6 +1,6 @@
 package org.clyze.deepdoop.actions.tranform
 
-import org.clyze.deepdoop.actions.RelationInfoVisitingActor
+import org.clyze.deepdoop.actions.SymbolTableVisitingActor
 import org.clyze.deepdoop.datalog.IVisitable
 import org.clyze.deepdoop.datalog.block.BlockLvl0
 import org.clyze.deepdoop.datalog.block.BlockLvl1
@@ -16,13 +16,13 @@ import org.clyze.deepdoop.datalog.expr.BinaryExpr
 import org.clyze.deepdoop.datalog.expr.GroupExpr
 import org.clyze.deepdoop.system.Error
 
-import static org.clyze.deepdoop.system.Error.error as error
+import static org.clyze.deepdoop.system.Error.error
 import static org.clyze.deepdoop.system.SourceManager.recallStatic as recall
 
 class ComponentInstantiationTransformer extends DummyTransformer {
 
 	// Info collection actor for original program
-	private RelationInfoVisitingActor relInfoActor
+	private SymbolTableVisitingActor symbolTable = new SymbolTableVisitingActor()
 	// Original program before instantiation
 	private BlockLvl2 origP
 	// Program after instantiation (only a global component)
@@ -32,8 +32,6 @@ class ComponentInstantiationTransformer extends DummyTransformer {
 	// Current component being instantiated
 	private BlockLvl1 currComp
 
-	ComponentInstantiationTransformer() { actor = this }
-
 	// Instantiate components (add transformed contents in a single component)
 	// A component might be visited multiple times (depending on instantiations)
 	// Components with no instantiations are dropped
@@ -41,8 +39,7 @@ class ComponentInstantiationTransformer extends DummyTransformer {
 		origP = n
 		instantiatedP = new BlockLvl2()
 
-		relInfoActor = new RelationInfoVisitingActor()
-		relInfoActor.visit origP
+		symbolTable.visit origP
 
 		visit origP.datalog
 		origP.instantiations.each { inst ->
@@ -96,7 +93,7 @@ class ComponentInstantiationTransformer extends DummyTransformer {
 				def name = origP.instantiations.find { it.id == instParameter }.component
 				externalTemplateDatalog = origP.components.find { it.name == name }.datalog
 			}
-			if (!relInfoActor.declaredRelationsPerBlock[externalTemplateDatalog].any { it == simpleName })
+			if (!symbolTable.declaredRelationsPerBlock[externalTemplateDatalog].any { it == simpleName })
 				error(recall(n), Error.REL_EXT_NO_DECL, simpleName as String)
 
 			return new Relation(externalName, n.exprs)

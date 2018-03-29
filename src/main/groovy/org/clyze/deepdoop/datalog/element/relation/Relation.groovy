@@ -9,6 +9,7 @@ class Relation implements IElement {
 
 	String name
 	List<IExpr> exprs = []
+
 	int getArity() { exprs.size() }
 
 	String toString() { "R##$name$exprs" }

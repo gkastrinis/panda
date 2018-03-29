@@ -1,8 +1,7 @@
 package org.clyze.deepdoop.actions.tranform.souffle
 
 import groovy.transform.Canonical
-import org.clyze.deepdoop.actions.ConstructionInfoVisitingActor
-import org.clyze.deepdoop.actions.TypeInfoVisitingActor
+import org.clyze.deepdoop.actions.SymbolTableVisitingActor
 import org.clyze.deepdoop.actions.tranform.DummyTransformer
 import org.clyze.deepdoop.actions.tranform.TypeInferenceTransformer
 import org.clyze.deepdoop.datalog.IVisitable
@@ -39,9 +38,8 @@ import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
 @Canonical
 class ConstructorTransformer extends DummyTransformer {
 
-	TypeInfoVisitingActor typeInfoActor
+	SymbolTableVisitingActor symbolTable
 	TypeInferenceTransformer typeInferenceActor
-	ConstructionInfoVisitingActor constructionInfoActor
 
 	// Recurring constant
 	private IExpr NIL = new ConstantExpr("nil")
@@ -52,7 +50,6 @@ class ConstructorTransformer extends DummyTransformer {
 
 	// Optimize for the case of a single constructor
 	private Set<Type> optimizedTypes = [] as Set
-	private Set<RelDeclaration> optimizedConstructors = [] as Set
 
 	// The variable currently being constructed
 	private VariableExpr tmpConVar
@@ -65,17 +62,17 @@ class ConstructorTransformer extends DummyTransformer {
 
 	void enter(BlockLvl2 n) {
 		// Re: (2)
-		// Find all types that are roots in the type hierarchy
-		(typeInfoActor.typeToRootType.values() as Set).each { root ->
+		symbolTable.rootTypes.each { root ->
 			def rootType = new Type("_${root.name}")
-			def types = [root] + typeInfoActor.subTypes[root]
+			def types = [root] + symbolTable.subTypes[root]
 			types.each { typeToCommonType[it] = rootType }
-			def constructors = types.collect { constructionInfoActor.constructorsPerType[it] }.flatten() as Set<RelDeclaration>
+			def constructors = types.collect {
+				symbolTable.constructorsPerType[it]
+			}.flatten() as Set<RelDeclaration>
 
 			// Optimize in the case of a single constructor with a single string key
 			if (constructors.size() == 1 && constructors[0].types.size() == 2 && constructors[0].types[0] == TYPE_STRING) {
 				types.each { optimizedTypes << it }
-				optimizedConstructors << constructors[0]
 			} else {
 				constructors.each {
 					extraTypeDecls << new TypeDeclaration(new Type(it.relation.name), new RecordType(it.types.dropRight(1)), [] as Set)
@@ -107,7 +104,7 @@ class ConstructorTransformer extends DummyTransformer {
 
 		inRuleHead = true
 		def head = n.head
-		constructionInfoActor.constructionsOrderedPerRule[n].each {
+		symbolTable.constructionsOrderedPerRule[n].each {
 			// Map to the updated (from a previous iteration)
 			// version of the constructor, if any
 			def con = (m[it] ?: it) as ConstructionElement
@@ -118,7 +115,7 @@ class ConstructorTransformer extends DummyTransformer {
 		}
 		// Remove construction from global map `m`
 		// since they might reappear in a different rule
-		constructionInfoActor.constructionsOrderedPerRule[n].each { m.remove(it) }
+		symbolTable.constructionsOrderedPerRule[n].each { m.remove(it) }
 
 		m[n.head] = head
 		inRuleHead = false

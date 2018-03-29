@@ -20,8 +20,6 @@ class SyntaxFlatteningTransformer extends DummyTransformer {
 	private List<Integer> parameterIndexes = []
 	private List<String> formalParameters = []
 
-	SyntaxFlatteningTransformer() { actor = this }
-
 	// Merge a component with all its super components
 	IVisitable exit(BlockLvl2 n, Map m) {
 		def newComponents = n.components.collect {
@@ -37,7 +35,7 @@ class SyntaxFlatteningTransformer extends DummyTransformer {
 					parameterIndexes = currComp.superParameters.collect { superP ->
 						parameterIndexes[currComp.parameters.findIndexOf { it == superP }]
 					}
-					def superComp = n.components.find { it.name == currComp.superComponent}
+					def superComp = n.components.find { it.name == currComp.superComponent }
 					currComp = m[superComp] as BlockLvl1
 					formalParameters = currComp.parameters
 					visit currComp
@@ -50,6 +48,10 @@ class SyntaxFlatteningTransformer extends DummyTransformer {
 				return currComp
 		} as Set
 		new BlockLvl2(m[n.datalog] as BlockLvl0, newComponents, n.instantiations)
+	}
+
+	IVisitable exit(BlockLvl1 n, Map m) {
+		new BlockLvl1(n.name, n.superComponent, n.parameters, n.superParameters, m[n.datalog] as BlockLvl0)
 	}
 
 	IVisitable exit(GroupElement n, Map m) { m[n.element] }

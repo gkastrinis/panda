@@ -21,5 +21,6 @@ class ComparisonElement implements IElement {
 		this.expr = expr
 	}
 
-	static final ComparisonElement TRIVIALLY_TRUE = new ComparisonElement(new ConstantExpr(1), BinaryOp.EQ, new ConstantExpr(1))
+	static
+	final ComparisonElement TRIVIALLY_TRUE = new ComparisonElement(new ConstantExpr(1), BinaryOp.EQ, new ConstantExpr(1))
 }

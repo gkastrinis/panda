@@ -8,7 +8,7 @@ import org.clyze.deepdoop.system.SourceManager
 
 import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.INTEGER
 import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.STRING
-import static org.clyze.deepdoop.system.Error.error as error
+import static org.clyze.deepdoop.system.Error.error
 import static org.clyze.deepdoop.system.SourceManager.recallStatic as recall
 
 @EqualsAndHashCode(includes = "kind")
@@ -24,7 +24,7 @@ class Annotation {
 		this.args = args
 	}
 
-	String toString() { "@$kind${ args ? "$args " : "" }" }
+	String toString() { "@$kind${args ? "$args " : ""}" }
 
 	void validate() { VALIDATORS[kind]?.call(this) }
 
