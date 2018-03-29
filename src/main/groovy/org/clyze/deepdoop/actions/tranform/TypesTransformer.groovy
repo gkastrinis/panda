@@ -28,7 +28,7 @@ class TypesTransformer extends DummyTransformer {
 
 	void enter(BlockLvl0 n) {
 		symbolTable.rootTypes.each { root ->
-			extraRelDecls << new RelDeclaration(new Constructor(mkCon(root), []), [TYPE_STRING, root], [CONSTRUCTOR] as Set)
+			extraRelDecls << new RelDeclaration(new Constructor(root.defaultConName, []), [TYPE_STRING, root], [CONSTRUCTOR] as Set)
 		}
 	}
 
@@ -37,15 +37,13 @@ class TypesTransformer extends DummyTransformer {
 			def rootT = symbolTable.typeToRootType[n.type]
 			n.annotations.find { it == TYPEVALUES }.args.each { key, value ->
 				def rel = new Relation("${n.type.name}:$key", [var1()])
-				def con = new Constructor(mkCon(rootT), [value, var1()])
+				def con = new Constructor(rootT.defaultConName, [value, var1()])
 				extraRelDecls << new RelDeclaration(rel, [n.type])
 				extraRules << new Rule(new LogicalElement([new ConstructionElement(con, n.type), rel]), null)
 			}
 		}
 		return n
 	}
-
-	static def mkCon(Type t) { "${t.name}:byStr" }
 
 	// Overrides to avoid unneeded allocations
 

@@ -12,6 +12,8 @@ class Type implements IElement {
 
 	String toString() { "T##$name" }
 
+	String getDefaultConName() { "$name:byStr" }
+
 	static final TYPE_INT = new Type("int")
 	static final TYPE_FLOAT = new Type("float")
 	static final TYPE_BOOLEAN = new Type("boolean")

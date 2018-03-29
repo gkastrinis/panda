@@ -51,7 +51,7 @@ class InputFactsTransformer extends DummyTransformer {
 		types.withIndex().each { Type t, int i ->
 			def rootT = symbolTable.typeToRootType[t]
 			if (rootT) {
-				elements << new ConstructionElement(new Constructor(mkCon(rootT), [var1(i), var1(N + i)]), t)
+				elements << new ConstructionElement(new Constructor(rootT.defaultConName, [var1(i), var1(N + i)]), t)
 				vars << var1(N + i)
 				inputTypes << TYPE_STRING
 			} else {
@@ -73,8 +73,6 @@ class InputFactsTransformer extends DummyTransformer {
 				"delimeter": new ConstantExpr("\\t")])
 		extraRelDecls << new RelDeclaration(inputRel, inputTypes, [an] as Set)
 	}
-
-	static def mkCon(Type t) { "${t.name}:byStr" }
 
 	// Overrides to avoid unneeded allocations
 
