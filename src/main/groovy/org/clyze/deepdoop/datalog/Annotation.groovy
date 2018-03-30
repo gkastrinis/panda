@@ -44,8 +44,8 @@ class Annotation {
 		a.args.findAll { argName, value -> !optional[argName] }.each {
 			error(recall(a), Error.ANNOTATION_INVALID_ARG, it.key, a.kind)
 		}
-		a.args.findAll { argName, value -> optional[argName] != value.type }.each { argName, type ->
-			error(recall(a), Error.ANNOTATION_MISTYPED_ARG, a.args[argName].type, type, argName, a.kind)
+		a.args.findAll { argName, value -> optional[argName] != value.type }.each { argName, value ->
+			error(recall(a), Error.ANNOTATION_MISTYPED_ARG, a.args[argName].type, optional[argName], argName, a.kind)
 		}
 	}
 
