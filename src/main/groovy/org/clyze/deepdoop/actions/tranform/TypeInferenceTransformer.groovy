@@ -107,7 +107,7 @@ class TypeInferenceTransformer extends DummyTransformer {
 					// for some expressions are more generic that the declared ones
 					if (declaredTypes) {
 						def superTs = symbolTable.superTypesOrdered[declaredTypes[i]]
-						if (currTypeSet.find { it in superTs })
+						if (currTypeSet.any { it in superTs })
 							error(Error.TYPE_INFERENCE_FIXED, declaredTypes[i], i, relName)
 					}
 					def prevTypeSet = tmpRelationTypes[relName][i] ?: [] as Set
