@@ -42,17 +42,22 @@ class InputFactsTransformer extends DummyTransformer {
 		return n
 	}
 
-	def genInput(String name, List<Type> types, boolean isType) {
+	def genInput(String name, List<Type> types, boolean inTypeDecl) {
 		def N = types.size()
-		def elements = []
+		def headElements = []
 		def vars = []
 		def inputTypes = []
 
 		types.withIndex().each { Type t, int i ->
 			def rootT = symbolTable.typeToRootType[t]
 			if (rootT) {
-				elements << new ConstructionElement(new Constructor(rootT.defaultConName, [var1(i), var1(N + i)]), t)
-				vars << var1(N + i)
+				if (!(rootT in symbolTable.typesToOptimize)) {
+					headElements << new ConstructionElement(new Constructor(rootT.defaultConName, [var1(i), var1(N + i)]), t)
+					vars << var1(N + i)
+				} else {
+					headElements << new Relation(t.name, [var1(i)])
+					vars << var1(i)
+				}
 				inputTypes << TYPE_STRING
 			} else {
 				vars << var1(i)
@@ -61,16 +66,16 @@ class InputFactsTransformer extends DummyTransformer {
 		}
 
 		Relation inputRel
-		if (elements) {
-			if (!isType) elements << new Relation(name, vars)
+		if (headElements) {
+			if (!inTypeDecl) headElements << new Relation(name, vars)
 			inputRel = new Relation("__SYS_IN_$name", varN(N))
-			extraRules << new Rule(elements.size() > 1 ? new LogicalElement(elements) : elements.first() as IElement, inputRel)
+			extraRules << new Rule(headElements.size() > 1 ? new LogicalElement(headElements) : headElements.first() as IElement, inputRel)
 		} else {
 			inputRel = new Relation(name, varN(N))
 		}
 		def an = new Annotation("INPUT", [
-				"filename" : new ConstantExpr("${name.replace ":", "_"}.facts"),
-				"delimeter": new ConstantExpr("\\t")])
+				filename : new ConstantExpr("${name.replace ":", "_"}.facts"),
+				delimeter: new ConstantExpr("\\t")])
 		extraRelDecls << new RelDeclaration(inputRel, inputTypes, [an] as Set)
 	}
 

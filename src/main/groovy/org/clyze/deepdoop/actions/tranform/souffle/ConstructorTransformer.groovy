@@ -5,7 +5,7 @@ import org.clyze.deepdoop.actions.SymbolTableVisitingActor
 import org.clyze.deepdoop.actions.tranform.DummyTransformer
 import org.clyze.deepdoop.actions.tranform.TypeInferenceTransformer
 import org.clyze.deepdoop.datalog.IVisitable
-import org.clyze.deepdoop.datalog.block.BlockLvl2
+import org.clyze.deepdoop.datalog.block.BlockLvl0
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.clause.TypeDeclaration
@@ -48,9 +48,6 @@ class ConstructorTransformer extends DummyTransformer {
 	private Map<Type, List<Type>> typeToRecord = [:]
 	private Map<Type, Type> typeToCommonType = [:]
 
-	// Optimize for the case of a single constructor
-	private Set<Type> optimizedTypes = [] as Set
-
 	// The variable currently being constructed
 	private VariableExpr tmpConVar
 	// The internal record representing the constructed value
@@ -60,27 +57,22 @@ class ConstructorTransformer extends DummyTransformer {
 	// Type for current relation parameter (in rule head)
 	private Type tmpCurrType
 
-	void enter(BlockLvl2 n) {
+	void enter(BlockLvl0 n) {
+		super.enter(n)
 		// Re: (2)
 		symbolTable.rootTypes.each { root ->
-			def rootType = new Type("_${root.name}")
-			def types = [root] + symbolTable.subTypes[root]
-			types.each { typeToCommonType[it] = rootType }
-			def constructors = types.collect {
-				symbolTable.constructorsPerType[it]
-			}.flatten() as Set<RelDeclaration>
+			if (root in symbolTable.typesToOptimize) return
 
-			// Optimize in the case of a single constructor with a single string key
-			if (constructors.size() == 1 && constructors[0].types.size() == 2 && constructors[0].types[0] == TYPE_STRING) {
-				types.each { optimizedTypes << it }
-			} else {
-				constructors.each {
-					extraTypeDecls << new TypeDeclaration(new Type(it.relation.name), new RecordType(it.types.dropRight(1)), [] as Set)
-				}
-				def record = constructors.collect { new Type(it.relation.name) }
-				types.each { typeToRecord[it] = record }
-				extraTypeDecls << new TypeDeclaration(rootType, new RecordType(record), [] as Set)
+			def rootInternalType = new Type("_${root.name}")
+			def types = [root] + symbolTable.subTypes[root]
+			types.each { typeToCommonType[it] = rootInternalType }
+			def constructors = types.collect { symbolTable.constructorsPerType[it] }.flatten() as Set<RelDeclaration>
+			constructors.each {
+				extraTypeDecls << new TypeDeclaration(new Type(it.relation.name), new RecordType(it.types.dropRight(1)), [] as Set)
 			}
+			def record = constructors.collect { new Type(it.relation.name) }
+			types.each { typeToRecord[it] = record }
+			extraTypeDecls << new TypeDeclaration(rootInternalType, new RecordType(record), [] as Set)
 		}
 	}
 
@@ -164,5 +156,5 @@ class ConstructorTransformer extends DummyTransformer {
 		new RecordExpr(record)
 	}
 
-	Type map(Type t) { (t in optimizedTypes) ? TYPE_STRING : (typeToCommonType[t] ?: t) }
+	Type map(Type t) { (t in symbolTable.typesToOptimize) ? TYPE_STRING : (typeToCommonType[t] ?: t) }
 }

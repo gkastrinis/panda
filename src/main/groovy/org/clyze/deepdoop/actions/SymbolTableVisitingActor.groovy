@@ -5,6 +5,7 @@ import org.clyze.deepdoop.datalog.block.BlockLvl0
 import org.clyze.deepdoop.datalog.block.BlockLvl2
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
+import org.clyze.deepdoop.datalog.clause.TypeDeclaration
 import org.clyze.deepdoop.datalog.element.ConstructionElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
@@ -13,6 +14,7 @@ import org.clyze.deepdoop.datalog.expr.VariableExpr
 import org.clyze.deepdoop.system.Error
 
 import static org.clyze.deepdoop.datalog.Annotation.CONSTRUCTOR
+import static org.clyze.deepdoop.datalog.Annotation.TYPE
 import static org.clyze.deepdoop.system.Error.error
 import static org.clyze.deepdoop.system.SourceManager.recallStatic as recall
 
@@ -47,6 +49,10 @@ class SymbolTableVisitingActor extends DefaultVisitor<IVisitable> implements TDu
 	private List<VariableExpr> tmpConVars
 	private List<ConstructionElement> tmpConstructionsOrdered
 
+	// Types with no constructor in the hierarchy can be treated as symbols (strings)
+	Set<Type> typesToOptimize = [] as Set
+	private Set<Type> typesWithDefaultCon = [] as Set
+
 
 	SymbolTableVisitingActor() { actor = this }
 
@@ -67,11 +73,18 @@ class SymbolTableVisitingActor extends DefaultVisitor<IVisitable> implements TDu
 			}
 		}
 
+		// Implicitly, add relations supported in aggregation
 		declaredRelations = ["count", "min", "max", "sum"] as Set
 	}
 
 	IVisitable exit(BlockLvl0 n, Map m) {
 		declaredRelationsPerBlock[n] = declaredRelations
+
+		rootTypes.each { root ->
+			def types = [root] + subTypes[root]
+			def constructors = types.collect { constructorsPerType[it] }.flatten() as Set<RelDeclaration>
+			if (!constructors && !types.any { it in typesWithDefaultCon }) typesToOptimize += types
+		}
 		null
 	}
 
@@ -83,6 +96,10 @@ class SymbolTableVisitingActor extends DefaultVisitor<IVisitable> implements TDu
 			constructorBaseType[n.relation.name] = type
 			constructorsPerType[type] << n
 		}
+	}
+
+	void enter(TypeDeclaration n) {
+		if (n.annotations.find { it == TYPE }.args["defaultConstructor"]) typesWithDefaultCon << n.type
 	}
 
 	IVisitable visit(Rule n) {

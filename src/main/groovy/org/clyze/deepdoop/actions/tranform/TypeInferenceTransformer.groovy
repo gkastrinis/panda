@@ -53,7 +53,12 @@ class TypeInferenceTransformer extends DummyTransformer {
 		coalesce()
 
 		// Fill partial declarations and add implicit ones
-		def relDs = inferredTypes.collect { rel, types ->
+		// TODO make more clean
+		def relDs = inferredTypes.findAll { rel, types ->
+			!(symbolTable.typesToOptimize.find {
+				it.name == rel
+			})
+		}.collect { rel, types ->
 			RelDeclaration d = relToDecl[rel]
 			if (d?.types) return d
 

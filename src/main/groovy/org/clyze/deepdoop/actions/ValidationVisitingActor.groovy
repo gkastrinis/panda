@@ -85,7 +85,10 @@ class ValidationVisitingActor extends DefaultVisitor<IVisitable> implements TDum
 	void enter(Relation n) { if (!inDecl) checkRelation(n) }
 
 	def checkRelation(Relation n) {
-		if (inRuleHead && symbolTable.allTypes.find { it.name == n.name })
+		// Type is used in rule head (and not marked for optimization)
+		if (inRuleHead && symbolTable.allTypes.find { it.name == n.name } && !symbolTable.typesToOptimize.any {
+			it.name == n.name
+		})
 			error(recall(n), Error.TYPE_RULE, n.name)
 
 		if (inRuleBody && !(n.name in symbolTable.declaredRelations))

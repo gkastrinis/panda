@@ -27,12 +27,13 @@ class TypesTransformer extends DummyTransformer {
 	SymbolTableVisitingActor symbolTable
 
 	void enter(BlockLvl0 n) {
-		symbolTable.rootTypes.each { root ->
+		symbolTable.rootTypes.findAll { !(it in symbolTable.typesToOptimize) }.each { root ->
 			extraRelDecls << new RelDeclaration(new Constructor(root.defaultConName, []), [TYPE_STRING, root], [CONSTRUCTOR] as Set)
 		}
 	}
 
 	IVisitable exit(TypeDeclaration n, Map m) {
+		// TODO fix in combination with no default constructor
 		if (TYPEVALUES in n.annotations) {
 			def rootT = symbolTable.typeToRootType[n.type]
 			n.annotations.find { it == TYPEVALUES }.args.each { key, value ->

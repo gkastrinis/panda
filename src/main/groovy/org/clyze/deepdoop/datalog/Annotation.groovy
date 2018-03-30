@@ -6,8 +6,7 @@ import org.clyze.deepdoop.datalog.expr.ConstantExpr
 import org.clyze.deepdoop.system.Error
 import org.clyze.deepdoop.system.SourceManager
 
-import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.INTEGER
-import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.STRING
+import static org.clyze.deepdoop.datalog.expr.ConstantExpr.Type.*
 import static org.clyze.deepdoop.system.Error.error
 import static org.clyze.deepdoop.system.SourceManager.recallStatic as recall
 
@@ -54,15 +53,15 @@ class Annotation {
 			"CONSTRUCTOR": NO_ARGS_VALIDATOR,
 			"FUNCTIONAL" : NO_ARGS_VALIDATOR,
 			"INPUT"      : { Annotation a ->
-				OPTIONAL_VALIDATOR.call(a, ["filename": STRING, "delimeter": STRING])
+				OPTIONAL_VALIDATOR.call(a, [filename: STRING, delimeter: STRING])
 			},
 			"OUTPUT"     : NO_ARGS_VALIDATOR,
 			"PLAN"       : { Annotation a ->
-				MANDATORY_VALIDATOR.call(a, ["plan": STRING])
-				OPTIONAL_VALIDATOR.call(a, ["plan": STRING])
+				MANDATORY_VALIDATOR.call(a, [plan: STRING])
+				OPTIONAL_VALIDATOR.call(a, [plan: STRING])
 			},
 			"TYPE"       : { Annotation a ->
-				OPTIONAL_VALIDATOR.call(a, ["capacity": INTEGER])
+				OPTIONAL_VALIDATOR.call(a, [capacity: INTEGER, defaultConstructor: BOOLEAN])
 			},
 			"TYPEVALUES" : {},
 	]
