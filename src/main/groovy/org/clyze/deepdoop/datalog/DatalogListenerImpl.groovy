@@ -143,6 +143,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		else {
 			def rel = ctx.relation() ? values[ctx.relation()] as Relation : values[ctx.constructor()] as Constructor
 			def types = values[ctx.identifierList()].collect { new Type(it as String) }
+			if (rel.exprs.any { rel.exprs.count(it) > 1 }) error(loc, Error.DECL_SAME_VAR)
 			if (rel.exprs.size() != types.size()) error(loc, Error.DECL_MALFORMED)
 			def d = new RelDeclaration(rel, types, annotations)
 			currDatalog.relDeclarations << d

@@ -20,6 +20,7 @@ enum Error {
 	COMP_UNKNOWN_PARAM,
 	INST_ID_IN_USE,
 
+	DECL_SAME_VAR,
 	DECL_MALFORMED,
 	DECL_MULTIPLE,
 	CONSTR_NON_FUNC,
@@ -70,6 +71,7 @@ enum Error {
 			(COMP_UNKNOWN_PARAM)       : "Unknown `@` parameter `{0}` used in component",
 			(INST_ID_IN_USE)           : "Instantiation name `{0}` already in use",
 
+			(DECL_SAME_VAR)            : "Same variable used multiple times in declaration",
 			(DECL_MALFORMED)           : "Number of variables and types in declaration not matching",
 			(DECL_MULTIPLE)            : "Multiple declarations for relation or type `{0}`",
 			(CONSTR_NON_FUNC)          : "Constructor `{0}` must use functional syntax",
