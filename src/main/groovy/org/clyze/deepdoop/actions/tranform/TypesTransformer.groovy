@@ -33,14 +33,22 @@ class TypesTransformer extends DummyTransformer {
 	}
 
 	IVisitable exit(TypeDeclaration n, Map m) {
-		// TODO fix in combination with no default constructor
 		if (TYPEVALUES in n.annotations) {
 			def rootT = symbolTable.typeToRootType[n.type]
 			n.annotations.find { it == TYPEVALUES }.args.each { key, value ->
-				def rel = new Relation("${n.type.name}:$key", [var1()])
-				def con = new Constructor(rootT.defaultConName, [value, var1()])
-				extraRelDecls << new RelDeclaration(rel, [n.type])
-				extraRules << new Rule(new LogicalElement([new ConstructionElement(con, n.type), rel]), null)
+				def relName = "${n.type.name}:$key"
+
+				if (!(n.type in symbolTable.typesToOptimize)) {
+					def rel = new Relation(relName, [var1()])
+					extraRelDecls << new RelDeclaration(rel, [n.type])
+					def con = new ConstructionElement(new Constructor(rootT.defaultConName, [value, var1()]), n.type)
+					extraRules << new Rule(new LogicalElement([con, rel]), null)
+				} else {
+					def rel = new Relation(relName, [value])
+					extraRelDecls << new RelDeclaration(rel, [TYPE_STRING])
+					def typeRel = new Relation(n.type.name, [value])
+					extraRules << new Rule(new LogicalElement([typeRel, rel]), null)
+				}
 			}
 		}
 		return n
