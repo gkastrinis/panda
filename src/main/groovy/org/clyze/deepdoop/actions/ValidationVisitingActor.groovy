@@ -9,6 +9,7 @@ import org.clyze.deepdoop.datalog.clause.TypeDeclaration
 import org.clyze.deepdoop.datalog.element.ConstructionElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
+import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.system.Error
 
 import static org.clyze.deepdoop.datalog.Annotation.*
@@ -86,9 +87,8 @@ class ValidationVisitingActor extends DefaultVisitor<IVisitable> implements TDum
 
 	def checkRelation(Relation n) {
 		// Type is used in rule head (and not marked for optimization)
-		if (inRuleHead && symbolTable.allTypes.find { it.name == n.name } && !symbolTable.typesToOptimize.any {
-			it.name == n.name
-		})
+		def t = new Type(n.name)
+		if (inRuleHead && (t in symbolTable.allTypes) && !(t in symbolTable.typesToOptimize))
 			error(recall(n), Error.TYPE_RULE, n.name)
 
 		if (inRuleBody && !(n.name in symbolTable.declaredRelations))
