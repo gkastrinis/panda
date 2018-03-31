@@ -7,6 +7,10 @@ import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
 import org.clyze.deepdoop.datalog.clause.TypeDeclaration
 import org.clyze.deepdoop.datalog.element.ConstructionElement
+import org.clyze.deepdoop.datalog.element.IElement
+import org.clyze.deepdoop.datalog.element.LogicalElement
+import org.clyze.deepdoop.datalog.element.LogicalElement.LogicType
+import org.clyze.deepdoop.datalog.element.NegationElement
 import org.clyze.deepdoop.datalog.element.relation.Constructor
 import org.clyze.deepdoop.datalog.element.relation.Relation
 import org.clyze.deepdoop.datalog.element.relation.Type
@@ -52,6 +56,9 @@ class SymbolTableVisitingActor extends DefaultVisitor<IVisitable> implements TDu
 	// Types with no constructor in the hierarchy can be treated as symbols (strings)
 	Set<Type> typesToOptimize = [] as Set
 	private Set<Type> typesWithDefaultCon = [] as Set
+
+	Map<IElement, Set<VariableExpr>> elementToVars = [:]
+	private Set<VariableExpr> tmpVars = [] as Set
 
 
 	SymbolTableVisitingActor() { actor = this }
@@ -104,6 +111,7 @@ class SymbolTableVisitingActor extends DefaultVisitor<IVisitable> implements TDu
 
 	IVisitable visit(Rule n) {
 		currRule = n
+		elementToVars = [:]
 		actor.enter(n)
 
 		tmpConVars = []
@@ -116,6 +124,9 @@ class SymbolTableVisitingActor extends DefaultVisitor<IVisitable> implements TDu
 		inRuleBody = true
 		if (n.body) visit n.body
 		inRuleBody = false
+
+		boundVars[n] = elementToVars[n.body]
+		elementToVars = [:]
 
 		actor.exit(n, m)
 	}
@@ -140,23 +151,50 @@ class SymbolTableVisitingActor extends DefaultVisitor<IVisitable> implements TDu
 		tmpConstructionsOrdered.add(maxBefore >= 0 ? maxBefore : 0, n)
 	}
 
+	IVisitable exit(LogicalElement n, Map m) {
+		if (n.type == LogicType.OR) {
+			def intersection = elementToVars[n.elements.first()]
+			n.elements.drop(1).each {
+				def vs = elementToVars[it]
+				if (vs) intersection = intersection.intersect(vs)
+			}
+			if (intersection) elementToVars[n] = intersection
+		} else {
+			def union = [] as Set
+			n.elements.each { union += elementToVars[it] }
+			elementToVars[n] = union
+		}
+		null
+	}
+
+	IVisitable exit(NegationElement n, Map m) {
+		elementToVars.remove(n.element)
+		null
+	}
+
 	void enter(Constructor n) { if (inRuleBody) relUsedInRules[n.name] << currRule }
 
-	void enter(Relation n) {
+	IVisitable exit(Relation n, Map m) {
 		// Relations used in the head are implicitly declared by the rule
 		if (inRuleHead)
 			declaredRelations << n.name
 		else if (inRuleBody) {
-			def vs = n.exprs.findAll { it instanceof VariableExpr }.collect { it as VariableExpr }
-			if (vs) boundVars[currRule] += vs
 			relUsedInRules[n.name] << currRule
+
+			elementToVars[n] = tmpVars
+			tmpVars = [] as Set
 		}
+		null
 	}
 
 	void enter(Type n) { declaredRelations << n.name }
 
 	void enter(VariableExpr n) {
-		if (inRuleHead) vars[currRule.head] << n
-		else if (inRuleBody) vars[currRule.body] << n
+		if (inRuleHead)
+			vars[currRule.head] << n
+		else if (inRuleBody) {
+			vars[currRule.body] << n
+			tmpVars << n
+		}
 	}
 }
