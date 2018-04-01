@@ -1,7 +1,7 @@
 package org.clyze.deepdoop.actions.tranform
 
 import groovy.transform.Canonical
-import org.clyze.deepdoop.actions.SymbolTableVisitingActor
+import org.clyze.deepdoop.actions.RelationInfoVisitingActor
 import org.clyze.deepdoop.datalog.IVisitable
 import org.clyze.deepdoop.datalog.block.BlockLvl0
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
@@ -23,7 +23,7 @@ import static org.clyze.deepdoop.system.Error.error
 @Canonical
 class TypeInferenceTransformer extends DefaultTransformer {
 
-	SymbolTableVisitingActor symbolTable
+	RelationInfoVisitingActor relationInfo
 
 	// Relation name x Type (final)
 	Map<String, List<Type>> inferredTypes = [:].withDefault { [] }
@@ -54,7 +54,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 		coalesce()
 
 		// Fill partial declarations and add implicit ones
-		def relDs = inferredTypes.findAll { rel, types -> !(new Type(rel) in symbolTable.typesToOptimize) }.collect { rel, types ->
+		def relDs = inferredTypes.findAll { rel, types -> !(new Type(rel) in relationInfo.typesToOptimize) }.collect { rel, types ->
 			RelDeclaration d = relToDecl[rel]
 			if (d?.types) return d
 
@@ -104,7 +104,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 					// There is an explicit declaration and the possible types
 					// for some expressions are more generic that the declared ones
 					if (declaredTypes) {
-						def superTs = symbolTable.superTypesOrdered[declaredTypes[i]]
+						def superTs = relationInfo.superTypesOrdered[declaredTypes[i]]
 						if (currTypeSet.any { it in superTs })
 							error(Error.TYPE_INFERENCE_FIXED, declaredTypes[i], i, relName)
 					}
@@ -112,7 +112,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 					def newTypeSet = (prevTypeSet + currTypeSet) as Set
 					if (prevTypeSet != newTypeSet) {
 						tmpRelationTypes[relName][i] = newTypeSet
-						deltaRules += symbolTable.relUsedInRules[relName]
+						deltaRules += relationInfo.relUsedInRules[relName]
 					}
 				} else
 					deltaRules << n
@@ -192,7 +192,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 
 					// Phase 1: Include types that don't have a better representative already in the set
 					typeSet.each { t ->
-						def superTs = symbolTable.superTypesOrdered[t]
+						def superTs = relationInfo.superTypesOrdered[t]
 						if (!superTs.any { it in typeSet }) workingSet << t
 					}
 
@@ -205,8 +205,8 @@ class TypeInferenceTransformer extends DefaultTransformer {
 							def t2 = workingSet.first()
 							workingSet.removeAt(0)
 
-							def superTypesOfT1 = symbolTable.superTypesOrdered[t1]
-							def superTypesOfT2 = symbolTable.superTypesOrdered[t2]
+							def superTypesOfT1 = relationInfo.superTypesOrdered[t1]
+							def superTypesOfT2 = relationInfo.superTypesOrdered[t2]
 							// Move upwards in the hierarchy until a common type is found
 							def superT = t1 = superTypesOfT1.find { it in superTypesOfT2 }
 							if (!superT) error(Error.TYPE_INCOMP, relation, i)

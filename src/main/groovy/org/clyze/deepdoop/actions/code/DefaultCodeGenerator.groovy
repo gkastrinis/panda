@@ -1,7 +1,8 @@
 package org.clyze.deepdoop.actions.code
 
 import org.clyze.deepdoop.actions.DefaultVisitor
-import org.clyze.deepdoop.actions.SymbolTableVisitingActor
+import org.clyze.deepdoop.actions.RelationInfoVisitingActor
+import org.clyze.deepdoop.actions.VarInfoVisitingActor
 import org.clyze.deepdoop.actions.tranform.TypeInferenceTransformer
 import org.clyze.deepdoop.datalog.block.BlockLvl2
 import org.clyze.deepdoop.datalog.element.*
@@ -19,8 +20,9 @@ import static org.clyze.deepdoop.datalog.element.LogicalElement.LogicType.AND
 
 class DefaultCodeGenerator extends DefaultVisitor<String> {
 
-	SymbolTableVisitingActor symbolTable = new SymbolTableVisitingActor()
-	TypeInferenceTransformer typeInferenceTransformer = new TypeInferenceTransformer(symbolTable)
+	RelationInfoVisitingActor relationInfo = new RelationInfoVisitingActor()
+	VarInfoVisitingActor varInfo = new VarInfoVisitingActor()
+	TypeInferenceTransformer typeInferenceTransformer = new TypeInferenceTransformer(relationInfo)
 	List<Result> results = []
 
 	private File outDir

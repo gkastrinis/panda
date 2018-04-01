@@ -1,7 +1,7 @@
 package org.clyze.deepdoop.actions.tranform.souffle
 
 import groovy.transform.Canonical
-import org.clyze.deepdoop.actions.SymbolTableVisitingActor
+import org.clyze.deepdoop.actions.RelationInfoVisitingActor
 import org.clyze.deepdoop.actions.tranform.DefaultTransformer
 import org.clyze.deepdoop.actions.tranform.TypeInferenceTransformer
 import org.clyze.deepdoop.datalog.IVisitable
@@ -38,7 +38,7 @@ import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
 @Canonical
 class ConstructorTransformer extends DefaultTransformer {
 
-	SymbolTableVisitingActor symbolTable
+	RelationInfoVisitingActor relationInfo
 	TypeInferenceTransformer typeInferenceActor
 
 	// Recurring constant
@@ -60,14 +60,14 @@ class ConstructorTransformer extends DefaultTransformer {
 	void enter(BlockLvl0 n) {
 		super.enter n
 		// Re: (2)
-		symbolTable.rootTypes.each { root ->
-			if (root in symbolTable.typesToOptimize) return
+		relationInfo.rootTypes.each { root ->
+			if (root in relationInfo.typesToOptimize) return
 
 			def rootInternalType = new Type("_${root.name}")
-			def types = [root] + symbolTable.subTypes[root]
+			def types = [root] + relationInfo.subTypes[root]
 			types.each { typeToCommonType[it] = rootInternalType }
 			def constructors = types.collect {
-				symbolTable.constructorsPerType[it]
+				relationInfo.constructorsPerType[it]
 			}.flatten() as Set<RelDeclaration>
 			constructors.each {
 				extraTypeDecls << new TypeDeclaration(new Type(it.relation.name), new RecordType(it.types.dropRight(1)), [] as Set)
@@ -95,7 +95,7 @@ class ConstructorTransformer extends DefaultTransformer {
 	IVisitable visit(Rule n) {
 		inRuleHead = true
 		def head = n.head
-		symbolTable.constructionsOrderedPerRule[n].each {
+		relationInfo.constructionsOrderedPerRule[n].each {
 			// Map to the updated (from a previous iteration)
 			// version of the constructor, if any
 			def con = (m[it] ?: it) as ConstructionElement
@@ -106,7 +106,7 @@ class ConstructorTransformer extends DefaultTransformer {
 		}
 		// Remove construction from global map `m`
 		// since they might reappear in a different rule
-		symbolTable.constructionsOrderedPerRule[n].each { m.remove(it) }
+		relationInfo.constructionsOrderedPerRule[n].each { m.remove(it) }
 		m[n.head] = head
 		inRuleHead = false
 
@@ -146,5 +146,5 @@ class ConstructorTransformer extends DefaultTransformer {
 		new RecordExpr(record)
 	}
 
-	Type map(Type t) { (t in symbolTable.typesToOptimize) ? TYPE_STRING : (typeToCommonType[t] ?: t) }
+	Type map(Type t) { (t in relationInfo.typesToOptimize) ? TYPE_STRING : (typeToCommonType[t] ?: t) }
 }

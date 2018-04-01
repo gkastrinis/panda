@@ -31,11 +31,12 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 		// Transform program before visiting nodes
 		def n = p.accept(new SyntaxFlatteningTransformer())
 				.accept(new ComponentInstantiationTransformer())
-				.accept(symbolTable)
-				.accept(new TypesTransformer(symbolTable))
-				.accept(new InputFactsTransformer(symbolTable))
-				.accept(symbolTable)
-				.accept(new ValidationVisitingActor(symbolTable))
+				.accept(relationInfo)
+				.accept(new TypesTransformer(relationInfo))
+				.accept(new InputFactsTransformer(relationInfo))
+				.accept(relationInfo)
+				.accept(varInfo)
+				.accept(new ValidationVisitingActor(relationInfo, varInfo))
 				.accept(typeInferenceTransformer)
 
 		functionalRelations = n.datalog.relDeclarations

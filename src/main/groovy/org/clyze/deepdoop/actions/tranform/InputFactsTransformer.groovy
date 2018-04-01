@@ -1,7 +1,7 @@
 package org.clyze.deepdoop.actions.tranform
 
 import groovy.transform.Canonical
-import org.clyze.deepdoop.actions.SymbolTableVisitingActor
+import org.clyze.deepdoop.actions.RelationInfoVisitingActor
 import org.clyze.deepdoop.datalog.Annotation
 import org.clyze.deepdoop.datalog.IVisitable
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
@@ -26,7 +26,7 @@ import static org.clyze.deepdoop.datalog.expr.VariableExpr.genN as varN
 @Canonical
 class InputFactsTransformer extends DefaultTransformer {
 
-	SymbolTableVisitingActor symbolTable
+	RelationInfoVisitingActor RelationInfo
 
 	IVisitable exit(RelDeclaration n) {
 		if (INPUT in n.annotations) {
@@ -63,9 +63,9 @@ class InputFactsTransformer extends DefaultTransformer {
 		def inputTypes = []
 
 		types.withIndex().each { Type t, int i ->
-			def rootT = symbolTable.typeToRootType[t]
+			def rootT = relationInfo.typeToRootType[t]
 			if (rootT) {
-				if (!(rootT in symbolTable.typesToOptimize)) {
+				if (!(rootT in relationInfo.typesToOptimize)) {
 					headElements << new ConstructionElement(new Constructor(rootT.defaultConName, [var1(i), var1(N + i)]), t)
 					vars << var1(N + i)
 				} else {
