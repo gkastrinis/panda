@@ -67,7 +67,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		null
 	}
 
-	String exit(Rule n, Map m) {
+	String exit(Rule n) {
 		emit "${m[n.head]} :- ${m[n.body] ?: "true"}."
 
 		if (PLAN in n.annotations)
@@ -75,7 +75,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		null
 	}
 
-	String exit(AggregationElement n, Map m) {
+	String exit(AggregationElement n) {
 		def pred = n.relation.name
 		def soufflePred = n.relation.exprs ? "$pred(${m[n.relation.exprs.first()]})" : pred
 		if (pred == "count" || pred == "min" || pred == "max" || pred == "sum")
@@ -83,14 +83,17 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		else null
 	}
 
-	String exit(Constructor n, Map m) { exit(n as Relation, m) }
+	String exit(Constructor n) { exit(n as Relation) }
 
-	String exit(Relation n, Map m) { "${fix(n.name)}(${n.exprs.collect { m[it] }.join(", ")})" }
+	String exit(Relation n) { "${fix(n.name)}(${n.exprs.collect { m[it] }.join(", ")})" }
 
-	String exit(Type n, Map m) { n.name }
+	String exit(Type n) { n.name }
 
 	// Must override since the default implementation throws an exception
-	String visit(RecordExpr n) { "[${n.exprs.collect { visit it }.join(", ")}]" }
+	String visit(RecordExpr n) {
+		n.exprs.each { m[it] = visit it }
+		"[${n.exprs.collect { visit(it) }.join(", ")}]"
+	}
 
 	static def fix(def s) { s.replace ":", "_" }
 

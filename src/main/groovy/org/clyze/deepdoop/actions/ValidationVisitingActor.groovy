@@ -1,5 +1,6 @@
 package org.clyze.deepdoop.actions
 
+import groovy.transform.Canonical
 import org.clyze.deepdoop.datalog.Annotation
 import org.clyze.deepdoop.datalog.IVisitable
 import org.clyze.deepdoop.datalog.block.BlockLvl2
@@ -17,7 +18,8 @@ import static org.clyze.deepdoop.system.Error.error
 import static org.clyze.deepdoop.system.Error.warn
 import static org.clyze.deepdoop.system.SourceManager.recallStatic as recall
 
-class ValidationVisitingActor extends DefaultVisitor<IVisitable> implements TDummyActor<IVisitable> {
+@Canonical
+class ValidationVisitingActor extends DefaultVisitor<IVisitable> {
 
 	SymbolTableVisitingActor symbolTable
 
@@ -25,12 +27,7 @@ class ValidationVisitingActor extends DefaultVisitor<IVisitable> implements TDum
 	Set<String> tmpDeclaredTypes = [] as Set
 	Map<String, Integer> arities = [:]
 
-	ValidationVisitingActor(SymbolTableVisitingActor symbolTable) {
-		actor = this
-		this.symbolTable = symbolTable
-	}
-
-	IVisitable exit(BlockLvl2 n, Map m) { n }
+	IVisitable exit(BlockLvl2 n) { n }
 
 	void enter(RelDeclaration n) {
 		if (n.relation.name in tmpDeclaredRelations) error(recall(n), Error.DECL_MULTIPLE, n.relation.name)

@@ -21,7 +21,7 @@ import static org.clyze.deepdoop.datalog.expr.VariableExpr.genN as varN
 import static org.clyze.deepdoop.system.Error.error
 
 @Canonical
-class TypeInferenceTransformer extends DummyTransformer {
+class TypeInferenceTransformer extends DefaultTransformer {
 
 	SymbolTableVisitingActor symbolTable
 
@@ -50,6 +50,7 @@ class TypeInferenceTransformer extends DummyTransformer {
 				error(Error.TYPE_INFERENCE_FAIL, null)
 			oldDeltaRules = deltaRules
 		}
+
 		coalesce()
 
 		// Fill partial declarations and add implicit ones
@@ -70,7 +71,12 @@ class TypeInferenceTransformer extends DummyTransformer {
 		new BlockLvl0(relDs, n.typeDeclarations, n.rules)
 	}
 
-	IVisitable visit(RelDeclaration n) {
+	void enter(RelDeclaration n) {
+		tmpExprTypes = [:].withDefault { [] as Set }
+		tmpExprIndices = [:].withDefault { [:] }
+	}
+
+	IVisitable exit(RelDeclaration n) {
 		relToDecl[n.relation.name] = n
 		if (n.types) {
 			inferredTypes[n.relation.name] = n.types
@@ -79,17 +85,14 @@ class TypeInferenceTransformer extends DummyTransformer {
 		return n
 	}
 
-	IVisitable visit(Rule n) {
+	IVisitable exit(TypeDeclaration n) { n }
+
+	void enter(Rule n) {
 		tmpExprTypes = [:].withDefault { [] as Set }
 		tmpExprIndices = [:].withDefault { [:] }
+	}
 
-		inRuleHead = true
-		m[n.head] = visit n.head
-		inRuleHead = false
-		inRuleBody = true
-		if (n.body) m[n.body] = visit n.body
-		inRuleBody = false
-
+	IVisitable exit(Rule n) {
 		asElements(n.head).each {
 			def relName = (it instanceof ConstructionElement ? it.constructor.name : (it as Relation).name)
 			// null for relations without explicit declarations
@@ -118,22 +121,22 @@ class TypeInferenceTransformer extends DummyTransformer {
 		return n
 	}
 
-	IVisitable exit(AggregationElement n, Map m) {
+	IVisitable exit(AggregationElement n) {
 		tmpExprTypes[n.var] << Type.TYPE_INT
 		return n
 	}
 
-	IVisitable exit(ComparisonElement n, Map m) {
+	IVisitable exit(ComparisonElement n) {
 		tmpExprTypes[n] = tmpExprTypes[n.expr]
 		return n
 	}
 
-	IVisitable exit(ConstructionElement n, Map m) {
+	IVisitable exit(ConstructionElement n) {
 		tmpExprTypes[n.constructor.valueExpr] << n.type
 		return n
 	}
 
-	IVisitable exit(Constructor n, Map m) {
+	IVisitable exit(Constructor n) {
 		def types = tmpRelationTypes[n.name]
 		n.keyExprs.eachWithIndex { expr, i ->
 			tmpExprIndices[n.name][expr] = i
@@ -146,7 +149,7 @@ class TypeInferenceTransformer extends DummyTransformer {
 		return n
 	}
 
-	IVisitable exit(Relation n, Map m) {
+	IVisitable exit(Relation n) {
 		def types = tmpRelationTypes[n.name]
 		n.exprs.eachWithIndex { expr, i ->
 			tmpExprIndices[n.name][expr] = i
@@ -155,16 +158,18 @@ class TypeInferenceTransformer extends DummyTransformer {
 		return n
 	}
 
-	IVisitable exit(BinaryExpr n, Map m) {
+	IVisitable exit(BinaryExpr n) {
 		def union = tmpExprTypes[n.left] + tmpExprTypes[n.right]
 		// Numeric operations
 		if (n.op != BinaryOp.EQ && n.op != BinaryOp.NEQ)
-			union.findAll { it != Type.TYPE_INT && it != Type.TYPE_FLOAT }.each { error(Error.TYPE_INCOMP_EXPR, null) }
+			union.findAll { it != Type.TYPE_INT && it != Type.TYPE_FLOAT }.each {
+				error(Error.TYPE_INCOMP_EXPR, null)
+			}
 		tmpExprTypes[n] = tmpExprTypes[n.left] = tmpExprTypes[n.right] = union
 		return n
 	}
 
-	IVisitable exit(ConstantExpr n, Map m) {
+	IVisitable exit(ConstantExpr n) {
 		if (n.type == REAL || n.type == BOOLEAN) error(Error.TYPE_UNSUPP, n.type as String)
 
 		if (n.type == INTEGER) tmpExprTypes[n] << Type.TYPE_INT
@@ -173,6 +178,8 @@ class TypeInferenceTransformer extends DummyTransformer {
 		else if (n.type == STRING) tmpExprTypes[n] << Type.TYPE_STRING
 		return n
 	}
+
+	IVisitable exit(GroupExpr n) { n }
 
 	private void coalesce() {
 		tmpRelationTypes.each { relation, types ->
@@ -213,12 +220,4 @@ class TypeInferenceTransformer extends DummyTransformer {
 			}
 		}
 	}
-
-	// Overrides to avoid unneeded allocations
-
-	IVisitable exit(TypeDeclaration n, Map m) { n }
-
-	IVisitable exit(Type n, Map m) { n }
-
-	IVisitable exit(GroupExpr n, Map m) { n }
 }

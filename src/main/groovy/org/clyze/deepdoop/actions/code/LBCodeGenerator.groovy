@@ -65,12 +65,9 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 		null
 	}
 
-	String exit(Rule n, Map m) {
-		emit "${m[n.head]}${n.body ? " <- ${m[n.body]}" : ""}."
-		null
-	}
+	String exit(Rule n) { emit "${m[n.head]}${n.body ? " <- ${m[n.body]}" : ""}." }
 
-	String exit(AggregationElement n, Map m) {
+	String exit(AggregationElement n) {
 		def pred = n.relation.name
 		def params = n.relation.exprs ? "${m[n.relation.exprs.first()]}" : ""
 		def lbPred = "${pred.replaceFirst("sum", "total")}($params)"
@@ -79,9 +76,9 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 		else null
 	}
 
-	String exit(Constructor n, Map m) { handleRelation(n) }
+	String exit(Constructor n) { handleRelation n }
 
-	String exit(Relation n, Map m) { handleRelation(n) }
+	String exit(Relation n) { handleRelation n }
 
 	def handleRelation(Relation n) {
 		if (n instanceof Constructor || n.name in functionalRelations)

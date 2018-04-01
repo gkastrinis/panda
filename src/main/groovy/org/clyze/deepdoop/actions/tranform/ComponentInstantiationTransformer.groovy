@@ -19,7 +19,7 @@ import org.clyze.deepdoop.system.Error
 import static org.clyze.deepdoop.system.Error.error
 import static org.clyze.deepdoop.system.SourceManager.recallStatic as recall
 
-class ComponentInstantiationTransformer extends DummyTransformer {
+class ComponentInstantiationTransformer extends DefaultTransformer {
 
 	// Info collection actor for original program
 	private SymbolTableVisitingActor symbolTable = new SymbolTableVisitingActor()
@@ -54,18 +54,20 @@ class ComponentInstantiationTransformer extends DummyTransformer {
 		instantiatedP
 	}
 
-	IVisitable exit(BlockLvl1 n, Map m) { null }
+	IVisitable exit(BlockLvl1 n) { n }
 
-	IVisitable exit(BlockLvl0 n, Map m) {
+	IVisitable exit(BlockLvl0 n) {
 		n.relDeclarations.each { instantiatedP.datalog.relDeclarations << (m[it] as RelDeclaration) }
 		n.typeDeclarations.each { instantiatedP.datalog.typeDeclarations << (m[it] as TypeDeclaration) }
 		n.rules.each { instantiatedP.datalog.rules << (m[it] as Rule) }
 		null
 	}
 
-	IVisitable exit(Constructor n, Map m) { new Constructor(rename(n.name), n.exprs) }
+	IVisitable exit(ComparisonElement n) { n }
 
-	IVisitable exit(Relation n, Map m) {
+	IVisitable exit(Constructor n) { new Constructor(rename(n.name), n.exprs) }
+
+	IVisitable exit(Relation n) {
 		if (n.name.contains("@") && (inDecl || inRuleHead)) error(recall(n), Error.REL_EXT_INVALID)
 
 		def origName = n.name
@@ -83,7 +85,9 @@ class ComponentInstantiationTransformer extends DummyTransformer {
 			if (paramIndex == -1)
 				error(recall(n), Error.COMP_UNKNOWN_PARAM, parameter as String)
 
-			def instParameter = origP.instantiations.find { it.id == currInstanceName }.parameters[paramIndex]
+			def instParameter = origP.instantiations.find {
+				it.id == currInstanceName
+			}.parameters[paramIndex]
 			def externalName = instParameter == "_" ? simpleName : "$instParameter:$simpleName"
 
 			BlockLvl0 externalTemplateDatalog
@@ -100,15 +104,11 @@ class ComponentInstantiationTransformer extends DummyTransformer {
 		}
 	}
 
-	IVisitable exit(Type n, Map m) { n.isPrimitive() ? n : new Type(rename(n.name)) }
+	IVisitable exit(Type n) { n.isPrimitive() ? n : new Type(rename(n.name)) }
 
-	String rename(String name) { currInstanceName ? "$currInstanceName:$name" : name }
+	IVisitable exit(BinaryExpr n) { n }
 
-	// Overrides to avoid unneeded allocations
+	IVisitable exit(GroupExpr n) { n }
 
-	IVisitable exit(ComparisonElement n, Map m) { n }
-
-	IVisitable exit(BinaryExpr n, Map m) { n }
-
-	IVisitable exit(GroupExpr n, Map m) { n }
+	def rename(def name) { currInstanceName ? "$currInstanceName:$name" : name }
 }

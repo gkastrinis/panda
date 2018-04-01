@@ -24,11 +24,11 @@ import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.genN as varN
 
 @Canonical
-class InputFactsTransformer extends DummyTransformer {
+class InputFactsTransformer extends DefaultTransformer {
 
 	SymbolTableVisitingActor symbolTable
 
-	IVisitable exit(RelDeclaration n, Map m) {
+	IVisitable exit(RelDeclaration n) {
 		if (INPUT in n.annotations) {
 			genInput(n.relation.name, n.types, false)
 			return null
@@ -36,11 +36,25 @@ class InputFactsTransformer extends DummyTransformer {
 		return n
 	}
 
-	IVisitable exit(TypeDeclaration n, Map m) {
+	IVisitable exit(TypeDeclaration n) {
 		if (INPUT in n.annotations)
 			genInput(n.type.name, [n.type], true)
 		return n
 	}
+
+	IVisitable exit(ComparisonElement n) { n }
+
+	IVisitable exit(ConstructionElement n) { n }
+
+	IVisitable exit(LogicalElement n) { n }
+
+	IVisitable exit(Constructor n) { n }
+
+	IVisitable exit(Relation n) { n }
+
+	IVisitable exit(BinaryExpr n) { n }
+
+	IVisitable exit(GroupExpr n) { n }
 
 	def genInput(String name, List<Type> types, boolean inTypeDecl) {
 		def N = types.size()
@@ -78,22 +92,4 @@ class InputFactsTransformer extends DummyTransformer {
 				delimeter: new ConstantExpr("\\t")])
 		extraRelDecls << new RelDeclaration(inputRel, inputTypes, [an] as Set)
 	}
-
-	// Overrides to avoid unneeded allocations
-
-	IVisitable exit(LogicalElement n, Map m) { n }
-
-	IVisitable exit(ComparisonElement n, Map m) { n }
-
-	IVisitable exit(ConstructionElement n, Map m) { n }
-
-	IVisitable exit(Constructor n, Map m) { n }
-
-	IVisitable exit(Relation n, Map m) { n }
-
-	IVisitable exit(Type n, Map m) { n }
-
-	IVisitable exit(BinaryExpr n, Map m) { n }
-
-	IVisitable exit(GroupExpr n, Map m) { n }
 }

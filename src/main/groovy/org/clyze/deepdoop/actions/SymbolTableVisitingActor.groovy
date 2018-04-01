@@ -22,7 +22,7 @@ import static org.clyze.deepdoop.datalog.Annotation.TYPE
 import static org.clyze.deepdoop.system.Error.error
 import static org.clyze.deepdoop.system.SourceManager.recallStatic as recall
 
-class SymbolTableVisitingActor extends DefaultVisitor<IVisitable> implements TDummyActor<IVisitable> {
+class SymbolTableVisitingActor extends DefaultVisitor<IVisitable> {
 
 	Map<Type, List<Type>> superTypesOrdered = [:]
 	Map<Type, Set<Type>> subTypes = [:].withDefault { [] as Set }
@@ -61,11 +61,11 @@ class SymbolTableVisitingActor extends DefaultVisitor<IVisitable> implements TDu
 	private Set<VariableExpr> tmpVars = [] as Set
 
 
-	SymbolTableVisitingActor() { actor = this }
+	IVisitable exit(BlockLvl2 n) { n }
 
-	IVisitable exit(BlockLvl2 n, Map m) { n }
+	void enter(BlockLvl0 n) { declaredRelations = [] as Set }
 
-	void enter(BlockLvl0 n) {
+	IVisitable exit(BlockLvl0 n) {
 		n.typeDeclarations.each { d ->
 			superTypesOrdered[d.type] = []
 			def currDecl = d
@@ -81,10 +81,7 @@ class SymbolTableVisitingActor extends DefaultVisitor<IVisitable> implements TDu
 		}
 
 		// Implicitly, add relations supported in aggregation
-		declaredRelations = ["count", "min", "max", "sum"] as Set
-	}
-
-	IVisitable exit(BlockLvl0 n, Map m) {
+		declaredRelations += ["count", "min", "max", "sum"]
 		declaredRelationsPerBlock[n] = declaredRelations
 
 		rootTypes.each { root ->
@@ -106,29 +103,23 @@ class SymbolTableVisitingActor extends DefaultVisitor<IVisitable> implements TDu
 	}
 
 	void enter(TypeDeclaration n) {
-		if (n.annotations.find { it == TYPE }.args["defaultConstructor"]) typesWithDefaultCon << n.type
+		if (n.annotations.find { it == TYPE }.args["defaultConstructor"])
+			typesWithDefaultCon << n.type
 	}
 
-	IVisitable visit(Rule n) {
+	void enter(Rule n) {
 		currRule = n
 		elementToVars = [:]
-		actor.enter(n)
-
 		tmpConVars = []
 		tmpConstructionsOrdered = []
-		inRuleHead = true
-		visit n.head
-		inRuleHead = false
+	}
+
+	IVisitable exit(Rule n) {
 		constructedVars[n] = tmpConVars as Set
 		constructionsOrderedPerRule[n] = tmpConstructionsOrdered
-		inRuleBody = true
-		if (n.body) visit n.body
-		inRuleBody = false
-
 		boundVars[n] = elementToVars[n.body]
 		elementToVars = [:]
-
-		actor.exit(n, m)
+		null
 	}
 
 	void enter(ConstructionElement n) {
@@ -141,8 +132,10 @@ class SymbolTableVisitingActor extends DefaultVisitor<IVisitable> implements TDu
 				.collect { e -> tmpConstructionsOrdered.findIndexOf { it.constructor.valueExpr == e } }
 				.max()
 		// Min index of a constructor that uses the variable constructed by `con`
-		def minAfter = tmpConstructionsOrdered.findIndexValues { n.constructor.valueExpr in it.constructor.keyExprs }
-				.min()
+		def minAfter = tmpConstructionsOrdered.findIndexValues {
+			n.constructor.valueExpr in it.constructor.keyExprs
+		}
+		.min()
 		// `maxBefore` should be strictly before `minAfter`
 		maxBefore = (maxBefore != -1 ? maxBefore : -2)
 		minAfter = (minAfter != null ? minAfter : -1)
@@ -151,7 +144,7 @@ class SymbolTableVisitingActor extends DefaultVisitor<IVisitable> implements TDu
 		tmpConstructionsOrdered.add(maxBefore >= 0 ? maxBefore : 0, n)
 	}
 
-	IVisitable exit(LogicalElement n, Map m) {
+	IVisitable exit(LogicalElement n) {
 		if (n.type == LogicType.OR) {
 			def intersection = elementToVars[n.elements.first()]
 			n.elements.drop(1).each {
@@ -167,14 +160,17 @@ class SymbolTableVisitingActor extends DefaultVisitor<IVisitable> implements TDu
 		null
 	}
 
-	IVisitable exit(NegationElement n, Map m) {
+	IVisitable exit(NegationElement n) {
 		elementToVars.remove(n.element)
 		null
 	}
 
-	void enter(Constructor n) { if (inRuleBody) relUsedInRules[n.name] << currRule }
+	IVisitable exit(Constructor n) {
+		if (inRuleBody) relUsedInRules[n.name] << currRule
+		exit(n as Relation)
+	}
 
-	IVisitable exit(Relation n, Map m) {
+	IVisitable exit(Relation n) {
 		// Relations used in the head are implicitly declared by the rule
 		if (inRuleHead)
 			declaredRelations << n.name

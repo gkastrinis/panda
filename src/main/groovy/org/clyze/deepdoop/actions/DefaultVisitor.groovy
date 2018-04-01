@@ -15,137 +15,135 @@ import org.clyze.deepdoop.datalog.expr.*
 
 class DefaultVisitor<T> {
 
-	protected IActor<T> actor
-	protected Map<IVisitable, T> m = [:]
-	protected inDecl = false
-	protected inRuleHead = false
-	protected inRuleBody = false
+	Map<IVisitable, T> m = [:]
+	boolean inDecl
+	boolean inRuleHead
+	boolean inRuleBody
 
 	T visit(BlockLvl2 n) {
-		actor.enter(n)
+		enter n
 		m[n.datalog] = visit n.datalog
 		n.components.each { m[it] = visit it }
-		actor.exit(n, m)
+		exit n
 	}
 
 	T visit(BlockLvl1 n) {
-		actor.enter(n)
+		enter n
 		m[n.datalog] = visit n.datalog
-		actor.exit(n, m)
+		exit n
 	}
 
 	T visit(BlockLvl0 n) {
-		actor.enter(n)
+		enter n
 		(n.relDeclarations + n.typeDeclarations + n.rules).each { m[it] = visit it }
-		actor.exit(n, m)
+		exit n
 	}
 
 	T visit(RelDeclaration n) {
-		actor.enter(n)
+		enter n
 		inDecl = true
 		m[n.relation] = visit n.relation
 		n.types.each { m[it] = visit it }
 		inDecl = false
-		actor.exit(n, m)
+		exit n
 	}
 
 	T visit(TypeDeclaration n) {
-		actor.enter(n)
+		enter n
 		inDecl = true
 		m[n.type] = visit n.type
 		if (n.supertype) m[n.supertype] = visit n.supertype
 		inDecl = false
-		actor.exit(n, m)
+		exit n
 	}
 
 	T visit(Rule n) {
-		actor.enter(n)
+		enter n
 		inRuleHead = true
 		m[n.head] = visit n.head
 		inRuleHead = false
 		inRuleBody = true
 		if (n.body) m[n.body] = visit n.body
 		inRuleBody = false
-		actor.exit(n, m)
+		exit n
 	}
 
 	T visit(IElement n) { null }
 
 	T visit(AggregationElement n) {
-		actor.enter(n)
+		enter n
 		m[n.var] = visit n.var
 		m[n.relation] = visit n.relation
 		m[n.body] = visit n.body
-		actor.exit(n, m)
+		exit n
 	}
 
 	T visit(ComparisonElement n) {
-		actor.enter(n)
+		enter n
 		m[n.expr] = visit n.expr
-		actor.exit(n, m)
+		exit n
 	}
 
 	T visit(ConstructionElement n) {
-		actor.enter(n)
+		enter n
 		m[n.constructor] = visit n.constructor
 		m[n.type] = visit n.type
-		actor.exit(n, m)
+		exit n
 	}
 
 	T visit(GroupElement n) {
-		actor.enter(n)
+		enter n
 		m[n.element] = visit n.element
-		actor.exit(n, m)
+		exit n
 	}
 
 	T visit(LogicalElement n) {
-		actor.enter(n)
+		enter n
 		n.elements.each { m[it] = visit it }
-		actor.exit(n, m)
+		exit n
 	}
 
 	T visit(NegationElement n) {
-		actor.enter(n)
+		enter n
 		m[n.element] = visit n.element
-		actor.exit(n, m)
+		exit n
 	}
 
 	T visit(Constructor n) {
-		actor.enter(n)
+		enter n
 		n.exprs.each { m[it] = visit it }
-		actor.exit(n, m)
+		exit n
 	}
 
 	T visit(Relation n) {
-		actor.enter(n)
+		enter n
 		n.exprs.each { m[it] = visit it }
-		actor.exit(n, m)
+		exit n
 	}
 
 	T visit(Type n) {
-		actor.enter(n)
-		//n.exprs.each { m[it] = visit it }
-		actor.exit(n, m)
+		enter n
+		exit n
 	}
 
 	T visit(IExpr n) { null }
 
 	T visit(BinaryExpr n) {
-		actor.enter(n)
+		enter n
 		m[n.left] = visit n.left
 		m[n.right] = visit n.right
-		actor.exit(n, m)
+		exit n
 	}
 
 	T visit(ConstantExpr n) {
-		actor.enter(n)
-		actor.exit(n, m)
+		enter n
+		exit n
 	}
 
 	T visit(GroupExpr n) {
-		actor.enter(n)
+		enter n
 		m[n.expr] = visit n.expr
-		actor.exit(n, m)
+		exit n
 	}
 
 	// Handling of RecordExpr is not supported in general since it is reserved for interal use
@@ -153,9 +151,87 @@ class DefaultVisitor<T> {
 	T visit(RecordExpr n) { throw new UnsupportedOperationException() }
 
 	T visit(VariableExpr n) {
-		actor.enter(n)
-		actor.exit(n, m)
+		enter n
+		exit n
 	}
+
+
+	void enter(BlockLvl2 n) {}
+
+	T exit(BlockLvl2 n) { null }
+
+	void enter(BlockLvl1 n) {}
+
+	T exit(BlockLvl1 n) { null }
+
+	void enter(BlockLvl0 n) {}
+
+	T exit(BlockLvl0 n) { null }
+
+	void enter(RelDeclaration n) {}
+
+	T exit(RelDeclaration n) { null }
+
+	void enter(TypeDeclaration n) {}
+
+	T exit(TypeDeclaration n) { null }
+
+	void enter(Rule n) {}
+
+	T exit(Rule n) { null }
+
+	void enter(AggregationElement n) {}
+
+	T exit(AggregationElement n) { null }
+
+	void enter(ComparisonElement n) {}
+
+	T exit(ComparisonElement n) { null }
+
+	void enter(ConstructionElement n) {}
+
+	T exit(ConstructionElement n) { null }
+
+	void enter(GroupElement n) {}
+
+	T exit(GroupElement n) { null }
+
+	void enter(LogicalElement n) {}
+
+	T exit(LogicalElement n) { null }
+
+	void enter(NegationElement n) {}
+
+	T exit(NegationElement n) { null }
+
+	void enter(Relation n) {}
+
+	T exit(Relation n) { null }
+
+	void enter(Constructor n) {}
+
+	T exit(Constructor n) { null }
+
+	void enter(Type n) {}
+
+	T exit(Type n) { null }
+
+	void enter(BinaryExpr n) {}
+
+	T exit(BinaryExpr n) { null }
+
+	void enter(ConstantExpr n) {}
+
+	T exit(ConstantExpr n) { null }
+
+	void enter(GroupExpr n) {}
+
+	T exit(GroupExpr n) { null }
+
+	void enter(VariableExpr n) {}
+
+	T exit(VariableExpr n) { null }
+
 
 	static List<IElement> asElements(IElement n) { (n instanceof LogicalElement) ? n.elements : [n] }
 }

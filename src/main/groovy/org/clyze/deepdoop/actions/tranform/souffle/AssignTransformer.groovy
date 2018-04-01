@@ -2,7 +2,7 @@ package org.clyze.deepdoop.actions.tranform.souffle
 
 import groovy.transform.Canonical
 import org.clyze.deepdoop.actions.SymbolTableVisitingActor
-import org.clyze.deepdoop.actions.tranform.DummyTransformer
+import org.clyze.deepdoop.actions.tranform.DefaultTransformer
 import org.clyze.deepdoop.datalog.IVisitable
 import org.clyze.deepdoop.datalog.clause.RelDeclaration
 import org.clyze.deepdoop.datalog.clause.Rule
@@ -11,7 +11,6 @@ import org.clyze.deepdoop.datalog.element.ComparisonElement
 import org.clyze.deepdoop.datalog.element.IElement
 import org.clyze.deepdoop.datalog.element.LogicalElement
 import org.clyze.deepdoop.datalog.element.NegationElement
-import org.clyze.deepdoop.datalog.element.relation.Type
 import org.clyze.deepdoop.datalog.expr.BinaryOp
 import org.clyze.deepdoop.datalog.expr.IExpr
 import org.clyze.deepdoop.datalog.expr.RecordExpr
@@ -22,7 +21,7 @@ import static org.clyze.deepdoop.datalog.element.ComparisonElement.TRIVIALLY_TRU
 import static org.clyze.deepdoop.system.Error.error
 
 @Canonical
-class AssignTransformer extends DummyTransformer {
+class AssignTransformer extends DefaultTransformer {
 
 	SymbolTableVisitingActor symbolTable
 
@@ -38,9 +37,8 @@ class AssignTransformer extends DummyTransformer {
 	private boolean changes
 
 	IVisitable visit(Rule n) {
-		if (!n.body) return super.visit(n)
+		if (!n.body) return n
 
-		actor.enter(n)
 		assignments = [:]
 		replacedVars = [] as Set
 		boundVars = symbolTable.boundVars[n]
@@ -67,14 +65,18 @@ class AssignTransformer extends DummyTransformer {
 			else if (newElements.size() == 1) body = newElements.first() as IElement
 			else body = null
 		}
-
 		replacedVars = [] as Set
 		m[n.head] = head
 		m[n.body] = body
-		actor.exit(n, m)
+
+		super.exit n
 	}
 
-	IVisitable exit(ComparisonElement n, Map m) {
+	IVisitable exit(RelDeclaration n) { n }
+
+	IVisitable exit(TypeDeclaration n) { n }
+
+	IVisitable exit(ComparisonElement n) {
 		if (n.expr.op == BinaryOp.EQ && n.expr.left instanceof VariableExpr) {
 			def var = n.expr.left as VariableExpr
 			if (!(var in boundVars)) {
@@ -84,39 +86,30 @@ class AssignTransformer extends DummyTransformer {
 				return TRIVIALLY_TRUE
 			}
 		}
-		super.exit(n, m)
+		super.exit n
 	}
 
-	IVisitable visit(LogicalElement n) {
-		actor.enter(n)
-		complexLogic += (n.type == LogicalElement.LogicType.OR) ? 2 : 1
-		n.elements.each { m[it] = visit it }
+	void enter(LogicalElement n) { complexLogic += (n.type == LogicalElement.LogicType.OR) ? 2 : 1 }
+
+	IVisitable exit(LogicalElement n) {
 		complexLogic -= (n.type == LogicalElement.LogicType.OR) ? 2 : 1
-		actor.exit(n, m)
+		super.exit n
 	}
 
-	IVisitable visit(NegationElement n) {
-		actor.enter(n)
-		complexLogic++
-		m[n.element] = visit n.element
+	void enter(NegationElement n) { complexLogic++ }
+
+	IVisitable exit(NegationElement n) {
 		complexLogic--
-		actor.exit(n, m)
+		super.exit n
 	}
 
 	// Must override since the default implementation throws an exception
 	IVisitable visit(RecordExpr n) {
-		actor.enter(n)
 		n.exprs.each { m[it] = visit it }
-		actor.exit(n, m)
+		new RecordExpr(n.exprs.collect { m[it] as IExpr })
 	}
 
-	// Must override since the default implementation throws an exception
-	void enter(RecordExpr n) {}
-
-	// Must override since the default implementation throws an exception
-	IVisitable exit(RecordExpr n, Map m) { new RecordExpr(n.exprs.collect { m[it] as IExpr }) }
-
-	IVisitable exit(VariableExpr n, Map m) {
+	IVisitable exit(VariableExpr n) {
 		if (n in replacedVars) error(Error.VAR_ASGN_CYCLE, n.name)
 		if (assignments[n]) {
 			changes = true
@@ -124,12 +117,4 @@ class AssignTransformer extends DummyTransformer {
 		}
 		return n
 	}
-
-	// Overrides to avoid unneeded allocations
-
-	IVisitable exit(RelDeclaration n, Map m) { n }
-
-	IVisitable exit(TypeDeclaration n, Map m) { n }
-
-	IVisitable exit(Type n, Map m) { n }
 }

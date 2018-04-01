@@ -22,7 +22,7 @@ import static org.clyze.deepdoop.datalog.element.relation.Type.TYPE_STRING
 import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
 
 @Canonical
-class TypesTransformer extends DummyTransformer {
+class TypesTransformer extends DefaultTransformer {
 
 	SymbolTableVisitingActor symbolTable
 
@@ -32,7 +32,9 @@ class TypesTransformer extends DummyTransformer {
 		}
 	}
 
-	IVisitable exit(TypeDeclaration n, Map m) {
+	IVisitable exit(RelDeclaration n) { n }
+
+	IVisitable exit(TypeDeclaration n) {
 		if (TYPEVALUES in n.annotations) {
 			def rootT = symbolTable.typeToRootType[n.type]
 			n.annotations.find { it == TYPEVALUES }.args.each { key, value ->
@@ -54,23 +56,19 @@ class TypesTransformer extends DummyTransformer {
 		return n
 	}
 
-	// Overrides to avoid unneeded allocations
+	IVisitable exit(LogicalElement n) { n }
 
-	IVisitable exit(RelDeclaration n, Map m) { n }
+	IVisitable exit(ComparisonElement n) { n }
 
-	IVisitable exit(LogicalElement n, Map m) { n }
+	IVisitable exit(ConstructionElement n) { n }
 
-	IVisitable exit(ComparisonElement n, Map m) { n }
+	IVisitable exit(Constructor n) { n }
 
-	IVisitable exit(ConstructionElement n, Map m) { n }
+	IVisitable exit(Relation n) { n }
 
-	IVisitable exit(Constructor n, Map m) { n }
+	IVisitable exit(Type n) { n }
 
-	IVisitable exit(Relation n, Map m) { n }
+	IVisitable exit(BinaryExpr n) { n }
 
-	IVisitable exit(Type n, Map m) { n }
-
-	IVisitable exit(BinaryExpr n, Map m) { n }
-
-	IVisitable exit(GroupExpr n, Map m) { n }
+	IVisitable exit(GroupExpr n) { n }
 }

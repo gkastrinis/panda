@@ -2,7 +2,7 @@ package org.clyze.deepdoop.actions.tranform.souffle
 
 import groovy.transform.Canonical
 import org.clyze.deepdoop.actions.SymbolTableVisitingActor
-import org.clyze.deepdoop.actions.tranform.DummyTransformer
+import org.clyze.deepdoop.actions.tranform.DefaultTransformer
 import org.clyze.deepdoop.actions.tranform.TypeInferenceTransformer
 import org.clyze.deepdoop.datalog.IVisitable
 import org.clyze.deepdoop.datalog.block.BlockLvl0
@@ -36,7 +36,7 @@ import static org.clyze.deepdoop.datalog.expr.VariableExpr.gen1 as var1
 // (4) Additionally, rules are generate to propagate entries
 // from subtypes to supertypes.
 @Canonical
-class ConstructorTransformer extends DummyTransformer {
+class ConstructorTransformer extends DefaultTransformer {
 
 	SymbolTableVisitingActor symbolTable
 	TypeInferenceTransformer typeInferenceActor
@@ -58,7 +58,7 @@ class ConstructorTransformer extends DummyTransformer {
 	private Type tmpCurrType
 
 	void enter(BlockLvl0 n) {
-		super.enter(n)
+		super.enter n
 		// Re: (2)
 		symbolTable.rootTypes.each { root ->
 			if (root in symbolTable.typesToOptimize) return
@@ -66,7 +66,9 @@ class ConstructorTransformer extends DummyTransformer {
 			def rootInternalType = new Type("_${root.name}")
 			def types = [root] + symbolTable.subTypes[root]
 			types.each { typeToCommonType[it] = rootInternalType }
-			def constructors = types.collect { symbolTable.constructorsPerType[it] }.flatten() as Set<RelDeclaration>
+			def constructors = types.collect {
+				symbolTable.constructorsPerType[it]
+			}.flatten() as Set<RelDeclaration>
 			constructors.each {
 				extraTypeDecls << new TypeDeclaration(new Type(it.relation.name), new RecordType(it.types.dropRight(1)), [] as Set)
 			}
@@ -76,15 +78,14 @@ class ConstructorTransformer extends DummyTransformer {
 		}
 	}
 
-	IVisitable exit(RelDeclaration n, Map m) {
+	IVisitable exit(RelDeclaration n) {
 		// Re: (1)
 		new RelDeclaration(n.relation, n.types.collect { map(it) }, n.annotations)
 	}
 
-	IVisitable exit(TypeDeclaration n, Map m) {
+	IVisitable exit(TypeDeclaration n) {
 		// Re: 3
 		extraRelDecls << new RelDeclaration(new Relation(n.type.name), [map(n.type)], n.annotations)
-
 		// Re: 4
 		if (n.supertype)
 			extraRules << new Rule(new Relation(n.supertype.name, [var1()]), new Relation(n.type.name, [var1()]))
@@ -92,8 +93,6 @@ class ConstructorTransformer extends DummyTransformer {
 	}
 
 	IVisitable visit(Rule n) {
-		actor.enter(n)
-
 		inRuleHead = true
 		def head = n.head
 		symbolTable.constructionsOrderedPerRule[n].each {
@@ -108,7 +107,6 @@ class ConstructorTransformer extends DummyTransformer {
 		// Remove construction from global map `m`
 		// since they might reappear in a different rule
 		symbolTable.constructionsOrderedPerRule[n].each { m.remove(it) }
-
 		m[n.head] = head
 		inRuleHead = false
 
@@ -116,35 +114,27 @@ class ConstructorTransformer extends DummyTransformer {
 		if (n.body) m[n.body] = visit n.body
 		inRuleBody = false
 
-		actor.exit(n, m)
+		super.exit n
 	}
 
 	IVisitable visit(Constructor n) { visit(n as Relation) }
 
 	IVisitable visit(Relation n) {
-		actor.enter(n)
 		if (!inRuleHead) return n
 		n.exprs.withIndex().each { IExpr e, int i ->
 			tmpCurrType = typeInferenceActor.inferredTypes[n.name][i]
 			m[e] = visit e
 		}
-		actor.exit(n, m)
+		super.exit n
 	}
 
 	// Must override since the default implementation throws an exception
 	IVisitable visit(RecordExpr n) {
-		actor.enter(n)
 		n.exprs.each { m[it] = visit it }
-		actor.exit(n, m)
+		new RecordExpr(n.exprs.collect { m[it] as IExpr })
 	}
 
-	// Must override since the default implementation throws an exception
-	void enter(RecordExpr n) {}
-
-	// Must override since the default implementation throws an exception
-	IVisitable exit(RecordExpr n, Map m) { new RecordExpr(n.exprs.collect { m[it] as IExpr }) }
-
-	IVisitable exit(VariableExpr n, Map m) {
+	IVisitable exit(VariableExpr n) {
 		if (!inRuleHead || n != tmpConVar) return n
 
 		def rawRecord = typeToRecord[tmpCurrType]
