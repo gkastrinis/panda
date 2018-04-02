@@ -116,6 +116,6 @@ enum Error {
 	static void error(SourceLocation loc = null, Error errorId, Object... values) {
 		def msg = "[DD] ERROR: ${MessageFormat.format(msgMap.get(errorId), values)}"
 		if (loc) msg = "$msg\n$loc"
-		throw new DeepDoopException(msg, errorId)
+		throw new PandaException(msg, errorId)
 	}
 }

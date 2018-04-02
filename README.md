@@ -1,9 +1,9 @@
 [![License MIT][badge-license]](LICENSE.txt)
 
-![DEEPDOOP](/panda.png)
+![PANDA](/panda.png)
 =============================
 
-DeepDoop is a Datalog compiler targeting the [LogiQL](http://www.logicblox.com/technology/) as well as the [Souffle](https://github.com/souffle-lang/souffle/) Datalog dialect. Input programs are written in a modern Datalog specification and can afterwards be compiled to valid forms for the aforementioned Datalog engines. DeepDoop can either be used as a tool from command line or a Java/Groovy library for creating Datalog programs from inside your app.
+PaNda is a Datalog compiler targeting the [LogiQL](http://www.logicblox.com/technology/) as well as the [Souffle](https://github.com/souffle-lang/souffle/) Datalog dialect. Input programs are written in a modern Datalog specification and can afterwards be compiled to valid forms for the aforementioned Datalog engines. PaNda can either be used as a tool from command line or a Java/Groovy library for creating Datalog programs from inside your app.
 
 System requirements
 -------------------

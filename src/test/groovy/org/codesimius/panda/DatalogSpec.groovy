@@ -4,8 +4,8 @@ import org.antlr.v4.runtime.ANTLRInputStream
 import org.codesimius.panda.actions.code.LBCodeGenerator
 import org.codesimius.panda.actions.code.SouffleCodeGenerator
 import org.codesimius.panda.system.Compiler
-import org.codesimius.panda.system.DeepDoopException
 import org.codesimius.panda.system.Error
+import org.codesimius.panda.system.PandaException
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -17,7 +17,7 @@ class DatalogSpec extends Specification {
 		test(file)
 
 		then:
-		notThrown(DeepDoopException)
+		notThrown(PandaException)
 
 		where:
 		file  | _
@@ -41,7 +41,7 @@ class DatalogSpec extends Specification {
 		test(file)
 
 		then:
-		def e = thrown(DeepDoopException)
+		def e = thrown(PandaException)
 		e.error == expectedErrorId
 
 		where:
@@ -97,7 +97,7 @@ class DatalogSpec extends Specification {
 		souffleTest(file)
 
 		then:
-		def e = thrown(DeepDoopException)
+		def e = thrown(PandaException)
 		e.error == expectedErrorId
 
 		where:
@@ -121,19 +121,19 @@ class DatalogSpec extends Specification {
 	}
 
 	def test(String file) {
-		DeepDoopException e1 = null, e2 = null
+		PandaException e1 = null, e2 = null
 
 		try {
 			lbTest(file)
 		}
-		catch (DeepDoopException e) {
+		catch (PandaException e) {
 			e1 = e
 		}
 
 		try {
 			souffleTest(file)
 		}
-		catch (DeepDoopException e) {
+		catch (PandaException e) {
 			e2 = e
 		}
 

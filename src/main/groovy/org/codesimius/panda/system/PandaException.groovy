@@ -1,10 +1,10 @@
 package org.codesimius.panda.system
 
-class DeepDoopException extends RuntimeException {
+class PandaException extends RuntimeException {
 
 	Error error
 
-	DeepDoopException(String msg, Error error) {
+	PandaException(String msg, Error error) {
 		super(msg)
 		this.error = error
 	}
