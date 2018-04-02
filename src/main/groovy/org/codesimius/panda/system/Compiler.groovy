@@ -9,8 +9,8 @@ import org.apache.log4j.*
 import org.codesimius.panda.actions.code.LBCodeGenerator
 import org.codesimius.panda.actions.code.SouffleCodeGenerator
 import org.codesimius.panda.datalog.DatalogLexer
-import org.codesimius.panda.datalog.DatalogListenerImpl
 import org.codesimius.panda.datalog.DatalogParser
+import org.codesimius.panda.datalog.DatalogParsingListener
 
 class Compiler {
 
@@ -45,7 +45,7 @@ class Compiler {
 
 	static List<Result> compile0(ANTLRInputStream inputStream, String filename, def codeGenActor) {
 		def parser = new DatalogParser(new CommonTokenStream(new DatalogLexer(inputStream)))
-		def listener = new DatalogListenerImpl(filename)
+		def listener = new DatalogParsingListener(filename)
 		ParseTreeWalker.DEFAULT.walk(listener, parser.program())
 
 		codeGenActor.visit(listener.program)

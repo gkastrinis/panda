@@ -17,7 +17,6 @@ import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.element.relation.Type
 import org.codesimius.panda.datalog.expr.*
 import org.codesimius.panda.system.Error
-import org.codesimius.panda.system.SourceLocation
 import org.codesimius.panda.system.SourceManager
 
 import static org.codesimius.panda.datalog.Annotation.TYPE
@@ -25,18 +24,18 @@ import static org.codesimius.panda.datalog.DatalogParser.*
 import static org.codesimius.panda.system.Error.error
 import static org.codesimius.panda.system.Error.warn
 
-class DatalogListenerImpl extends DatalogBaseListener {
+class DatalogParsingListener extends DatalogBaseListener {
 
 	BlockLvl2 program
-	private BlockLvl0 currDatalog
+	BlockLvl0 currDatalog
 	// Relation Name x Annotations
-	private Map<String, Set<Annotation>> globalPendingAnnotations
-	private Map<String, Set<Annotation>> currPendingAnnotations
+	Map<String, Set<Annotation>> globalPendingAnnotations
+	Map<String, Set<Annotation>> currPendingAnnotations
 	// Extra annotations from annotation blocks
-	private Stack<Set<Annotation>> extraAnnotationsStack = []
-	private def values = [:]
+	Stack<Set<Annotation>> extraAnnotationsStack = []
+	def values = [:]
 
-	DatalogListenerImpl(String filename) {
+	DatalogParsingListener(String filename) {
 		SourceManager.instance.outputFile = new File(filename).absolutePath
 	}
 
@@ -56,8 +55,6 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		currDatalog = new BlockLvl0()
 		currPendingAnnotations = [:].withDefault { [] as Set }
 	}
-
-	Set<String> getComponentIDs() { program.components.collect { it.name } + program.instantiations.collect { it.id } }
 
 	void exitComponent(ComponentContext ctx) {
 		def name = ctx.IDENTIFIER().text
@@ -88,18 +85,6 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		currDatalog = program.datalog
 	}
 
-//	void enterCmd(CmdContext ctx) {
-//		currComp = new CmdComponent(ctx.IDENTIFIER().text)
-//	}
-//
-//	void exitCmd(CmdContext ctx) {
-//		values[ctx.identifierList()].each { String id ->
-//			program.add id, currComp.name
-//		}
-//		program.add currComp
-//		currComp = program.globalComp
-//	}
-
 	void exitInstantiation(InstantiationContext ctx) {
 		def parameters = values[ctx.parameterList()] as List ?: []
 		values[ctx.identifierList()].each { String id ->
@@ -117,7 +102,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 	void exitDeclaration(DeclarationContext ctx) {
 		def loc = rec(null, ctx)
 		def annotations = gatherAnnotations(ctx.annotationList())
-		def extraAnnotations = extraAnnotationsStack.flatten()
+		def extraAnnotations = extraAnnotationsStack.flatten() as Set<Annotation>
 		annotations.findAll { it in extraAnnotations }.each { warn(loc, Error.ANNOTATION_MULTIPLE, it) }
 		annotations += extraAnnotations
 
@@ -134,8 +119,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 			rec(d, ctx)
 		}
 		// Incomplete declaration of the form: `@output Foo`
-		// i.e. binds annotations with a relation name without
-		// providing any details
+		// i.e. binds annotations with a relation name without \providing any details
 		else if (ctx.IDENTIFIER(0)) {
 			currPendingAnnotations[ctx.IDENTIFIER(0).text] += annotations
 		}
@@ -170,13 +154,13 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		def name = ctx.IDENTIFIER(0).text
 		def at = ctx.IDENTIFIER(1) ? "@${ctx.IDENTIFIER(1).text}" : ""
 		def exprs = ctx.exprList() ? values[ctx.exprList()] as List : []
-		values[ctx] = new Relation("$name$at" as String, exprs)
+		values[ctx] = new Relation("$name$at", exprs)
 		rec(values[ctx], ctx)
 	}
 
 	void exitConstructor(ConstructorContext ctx) {
 		def name = ctx.IDENTIFIER().text
-		def exprs = (ctx.exprList() ? values[ctx.exprList()] as List : []) << values[ctx.expr()]
+		def exprs = (ctx.exprList() ? values[ctx.exprList()] as List : []) << (values[ctx.expr()] as IExpr)
 		values[ctx] = new Constructor(name, exprs)
 		rec(values[ctx], ctx)
 	}
@@ -253,9 +237,7 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		}
 	}
 
-	void exitInitValue(InitValueContext ctx) {
-		values[ctx] = [(ctx.IDENTIFIER().text): values[ctx.constant()]]
-	}
+	void exitInitValue(InitValueContext ctx) { values[ctx] = [(ctx.IDENTIFIER().text): values[ctx.constant()]] }
 
 	void exitComparison(ComparisonContext ctx) {
 		def e0 = values[ctx.expr(0)] as IExpr
@@ -335,19 +317,15 @@ class DatalogListenerImpl extends DatalogBaseListener {
 		values[ctx] = ((values[ctx.exprList()] ?: []) as List) << values[ctx.expr()]
 	}
 
-	void exitParameterList(ParameterListContext ctx) {
-		values[ctx] = values[ctx.identifierList()]
+	void exitParameterList(ParameterListContext ctx) { values[ctx] = values[ctx.identifierList()] }
+
+	void visitErrorNode(ErrorNode node) { throw new RuntimeException("Parsing error") }
+
+	Set<String> getComponentIDs() { program.components.collect { it.name } + program.instantiations.collect { it.id } }
+
+	static def hasToken(ParserRuleContext ctx, String token) {
+		ctx.children.any { it instanceof TerminalNode && it.text == token }
 	}
 
-	void visitErrorNode(ErrorNode node) {
-		throw new RuntimeException("Parsing error")
-	}
-
-	static boolean hasToken(ParserRuleContext ctx, String token) {
-		return ctx.children.find { it instanceof TerminalNode && it.text == token } as boolean
-	}
-
-	static SourceLocation rec(Object o, ParserRuleContext ctx) {
-		SourceManager.instance.record(o, ctx.start.getLine())
-	}
+	static def rec(def o, ParserRuleContext ctx) { SourceManager.instance.record(o, ctx.start.getLine()) }
 }

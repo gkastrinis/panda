@@ -8,11 +8,13 @@ class Type implements IElement {
 
 	String name
 
-	boolean isPrimitive() { name in ["int", "float", "boolean", "string"] }
-
 	String toString() { "T##$name" }
 
 	String getDefaultConName() { "$name:byStr" }
+
+	boolean isPrimitive() { isPrimitive name }
+
+	static isPrimitive(String t) { t in ["int", "float", "boolean", "string"] }
 
 	static final TYPE_INT = new Type("int")
 	static final TYPE_FLOAT = new Type("float")
