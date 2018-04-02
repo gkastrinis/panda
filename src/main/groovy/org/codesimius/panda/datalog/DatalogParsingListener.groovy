@@ -19,6 +19,7 @@ import org.codesimius.panda.datalog.expr.*
 import org.codesimius.panda.system.Error
 import org.codesimius.panda.system.SourceManager
 
+import static org.codesimius.panda.datalog.Annotation.NAMESPACE
 import static org.codesimius.panda.datalog.Annotation.TYPE
 import static org.codesimius.panda.datalog.DatalogParser.*
 import static org.codesimius.panda.system.Error.error
@@ -33,6 +34,7 @@ class DatalogParsingListener extends DatalogBaseListener {
 	Map<String, Set<Annotation>> currPendingAnnotations
 	// Extra annotations from annotation blocks
 	Stack<Set<Annotation>> extraAnnotationsStack = []
+	Stack<String> activeNamespaces = []
 	def values = [:]
 
 	DatalogParsingListener(String filename) {
@@ -94,22 +96,31 @@ class DatalogParsingListener extends DatalogBaseListener {
 	}
 
 	void enterAnnotationBlock(AnnotationBlockContext ctx) {
-		extraAnnotationsStack.push(gatherAnnotations(ctx.annotationList()))
+		def annotations = gatherAnnotations(ctx.annotationList())
+		if (NAMESPACE in annotations) {
+			activeNamespaces.push(annotations.find { it == NAMESPACE }.args["v"] as String)
+			annotations.remove NAMESPACE
+		}
+		extraAnnotationsStack.push annotations
 	}
 
-	void exitAnnotationBlock(AnnotationBlockContext ctx) { extraAnnotationsStack.pop() }
+	void exitAnnotationBlock(AnnotationBlockContext ctx) {
+		if (NAMESPACE in extraAnnotationsStack.peek()) activeNamespaces.pop()
+		extraAnnotationsStack.pop()
+	}
 
 	void exitDeclaration(DeclarationContext ctx) {
 		def loc = rec(null, ctx)
 		def annotations = gatherAnnotations(ctx.annotationList())
+		if (NAMESPACE in annotations) error(loc, Error.ANNOTATION_BLOCK_ONLY, NAMESPACE)
 		def extraAnnotations = extraAnnotationsStack.flatten() as Set<Annotation>
 		annotations.findAll { it in extraAnnotations }.each { warn(loc, Error.ANNOTATION_MULTIPLE, it) }
 		annotations += extraAnnotations
 
 		// Type declaration
 		if (ctx.IDENTIFIER(0) && TYPE in annotations) {
-			def type = new Type(ctx.IDENTIFIER(0).text)
-			def supertype = ctx.IDENTIFIER(1) ? new Type(ctx.IDENTIFIER(1).text) : null
+			def type = new Type(suffix(ctx.IDENTIFIER(0).text))
+			def supertype = ctx.IDENTIFIER(1) ? new Type(suffix(ctx.IDENTIFIER(1).text)) : null
 			// Initial values are of the form `key(value)`. E.g., PUBLIC('public')
 			// Keys are used to generate singleton relations. E.g., Modifier:PUBLIC(x)
 			if (ctx.initValueList())
@@ -126,7 +137,7 @@ class DatalogParsingListener extends DatalogBaseListener {
 		// Full declaration of a relation
 		else {
 			def rel = ctx.relation() ? values[ctx.relation()] as Relation : values[ctx.constructor()] as Constructor
-			def types = values[ctx.identifierList()].collect { new Type(it as String) }
+			def types = values[ctx.identifierList()].collect { new Type(suffix(it as String)) }
 			if (rel.exprs.any { rel.exprs.count(it) > 1 }) error(loc, Error.DECL_SAME_VAR)
 			if (rel.exprs.size() != types.size()) error(loc, Error.DECL_MALFORMED)
 			def d = new RelDeclaration(rel, types, annotations)
@@ -139,6 +150,7 @@ class DatalogParsingListener extends DatalogBaseListener {
 		Rule r
 		if (ctx.headList()) {
 			def annotations = gatherAnnotations(ctx.annotationList())
+			if (NAMESPACE in annotations) error(rec(null, ctx), Error.ANNOTATION_BLOCK_ONLY, NAMESPACE)
 			def headList = values[ctx.headList()] as List
 			def head = headList.size() > 1 ? new LogicalElement(headList) : headList.first() as IElement
 			r = new Rule(head, values[ctx.bodyList()] as IElement, annotations)
@@ -151,7 +163,7 @@ class DatalogParsingListener extends DatalogBaseListener {
 	}
 
 	void exitRelation(RelationContext ctx) {
-		def name = ctx.IDENTIFIER(0).text
+		def name = suffix(ctx.IDENTIFIER(0).text)
 		def at = ctx.IDENTIFIER(1) ? "@${ctx.IDENTIFIER(1).text}" : ""
 		def exprs = ctx.exprList() ? values[ctx.exprList()] as List : []
 		values[ctx] = new Relation("$name$at", exprs)
@@ -159,7 +171,7 @@ class DatalogParsingListener extends DatalogBaseListener {
 	}
 
 	void exitConstructor(ConstructorContext ctx) {
-		def name = ctx.IDENTIFIER().text
+		def name = suffix(ctx.IDENTIFIER().text)
 		def exprs = (ctx.exprList() ? values[ctx.exprList()] as List : []) << (values[ctx.expr()] as IExpr)
 		values[ctx] = new Constructor(name, exprs)
 		rec(values[ctx], ctx)
@@ -322,6 +334,11 @@ class DatalogParsingListener extends DatalogBaseListener {
 	void visitErrorNode(ErrorNode node) { throw new RuntimeException("Parsing error") }
 
 	Set<String> getComponentIDs() { program.components.collect { it.name } + program.instantiations.collect { it.id } }
+
+	def suffix(String name) {
+		if (Type.isPrimitive(name)) return name
+		activeNamespaces ? "${activeNamespaces.join(":")}:$name" : name
+	}
 
 	static def hasToken(ParserRuleContext ctx, String token) {
 		ctx.children.any { it instanceof TerminalNode && it.text == token }

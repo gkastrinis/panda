@@ -55,6 +55,9 @@ class Annotation {
 			"INPUT"      : { Annotation a ->
 				OPTIONAL_VALIDATOR.call(a, [filename: STRING, delimeter: STRING])
 			},
+			"NAMESPACE"  : { Annotation a ->
+				MANDATORY_VALIDATOR.call(a, [v: STRING])
+			},
 			"OUTPUT"     : NO_ARGS_VALIDATOR,
 			"PLAN"       : { Annotation a ->
 				MANDATORY_VALIDATOR.call(a, [plan: STRING])
@@ -69,6 +72,7 @@ class Annotation {
 	static final CONSTRUCTOR = new Annotation("CONSTRUCTOR")
 	static final FUNCTIONAL = new Annotation("FUNCTIONAL")
 	static final INPUT = new Annotation("INPUT")
+	static final NAMESPACE = new Annotation("NAMESPACE")
 	static final OUTPUT = new Annotation("OUTPUT")
 	static final PLAN = new Annotation("PLAN")
 	static final TYPE = new Annotation("TYPE")

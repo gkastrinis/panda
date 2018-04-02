@@ -1,0 +1,4 @@
+@namespace(v="A") {
+    Foo(x) : int
+}
+@namespace(v="B") Bar(x) : string

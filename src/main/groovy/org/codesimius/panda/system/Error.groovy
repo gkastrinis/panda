@@ -11,6 +11,7 @@ enum Error {
 	ANNOTATION_MISTYPED_ARG,
 	ANNOTATION_MULTIPLE,
 	ANNOTATION_INVALID,
+	ANNOTATION_BLOCK_ONLY,
 
 	COMP_UNKNOWN,
 	COMP_ID_IN_USE,
@@ -62,6 +63,7 @@ enum Error {
 			(ANNOTATION_MISTYPED_ARG)  : "Type mismatch ({0} instead of {1}) for argument `{2}` of annotation `{3}`",
 			(ANNOTATION_MULTIPLE)      : "Annotation `{0}` appears multiple times in clause",
 			(ANNOTATION_INVALID)       : "Invalid annotation `{0}` for `{1}`",
+			(ANNOTATION_BLOCK_ONLY)    : "Annotation `{0}` only allowed in annotation blocks",
 
 			(COMP_UNKNOWN)             : "Unknown component name `{0}`",
 			(COMP_ID_IN_USE)           : "Component name `{0}` already in use",
