@@ -1,0 +1,3 @@
+@type Shape
+@output
+cons:Shape[x] = y : string, Shape

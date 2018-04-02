@@ -1,3 +1,0 @@
-@Type Animal
-Foo(x) : Animal
-Bar(y) <- Foo(y), y != "cat"

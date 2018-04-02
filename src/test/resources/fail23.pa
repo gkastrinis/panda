@@ -1,0 +1,9 @@
+@type A
+@constructor conA[x,y] = z : A, int, B
+
+@type B
+@constructor conB[x,y] = z : B, int, A
+
+conA[a,b]=c new B,
+conB[c,d]=a new A
+<- b = 1, d = 2

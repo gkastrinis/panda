@@ -1,5 +1,0 @@
-P(42)
-
-component Foo <X, X> {
-	Q(x) <- P@X(x)
-}

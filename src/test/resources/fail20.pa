@@ -1,0 +1,14 @@
+component First {
+	P(42)
+}
+as S1
+
+component Second {
+	Q(42)
+	Q(x), P@ext(x) <- W(x)
+}
+as S2
+
+//S1 {*} -> S2
+
+W(x) : int

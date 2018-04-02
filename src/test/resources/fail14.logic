@@ -1,2 +1,0 @@
-@type(defaultConstructor = true) Animal
-Animal(1)

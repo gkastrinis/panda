@@ -1,0 +1,5 @@
+Foo(x) : string
+Baz(x) : string
+
+@Plan
+Planned(x) <- Foo(x), Baz(x)

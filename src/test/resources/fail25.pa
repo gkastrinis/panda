@@ -1,0 +1,4 @@
+@type Animal
+Foo(x) : Animal
+Bar(x) : int
+Pred(x) <- Foo(x), Bar(y), x + 1 = y + 10

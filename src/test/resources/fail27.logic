@@ -1,9 +1,0 @@
-P(42)
-
-component Foo <X>{
-	Q(x) <- P@X(x)
-}
-
-component Bar <A, B> : Foo<X> {
-	W(x) <- P@A(x)
-}

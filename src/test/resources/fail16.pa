@@ -1,0 +1,3 @@
+@Output(foo=true, bar="abc", baz=1) AP
+
+@Type Shape

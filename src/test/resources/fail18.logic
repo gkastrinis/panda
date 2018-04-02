@@ -1,5 +1,0 @@
-Foo(x) : string
-Baz(x) : string
-
-@Plan(plan = "1:(1,2)", bar = true)
-Planned(x) <- Foo(x), Baz(x)

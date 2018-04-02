@@ -16,7 +16,7 @@ Installation & Testing
 ```bash
 git clone git://github.com/gkastrinis/panda.git
 cd panda
-./gradlew run -Pargs=src/test/resources/t1.logic
+./gradlew run -Pargs=src/test/resources/t0.pa
 ```
 
 Documentation

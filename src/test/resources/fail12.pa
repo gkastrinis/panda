@@ -1,0 +1,3 @@
+Bar(x, y) <- x = "aaa", y = 1
+Foo(x, y) <- x = "abc", y = 12
+Foo(x) <- x = "def"

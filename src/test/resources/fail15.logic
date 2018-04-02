@@ -1,5 +1,0 @@
-@Type Animal
-@Type Shape
-
-Foo(x, y) : Animal, string
-Foo(x, y) : Shape, string

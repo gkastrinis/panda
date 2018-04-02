@@ -1,0 +1,7 @@
+@Type Shape
+@Constructor
+cons:Name[x] = y : string, Shape
+
+@Type Person
+cons:Shape[x] = y new Shape,
+Foo123(y) <- x = "a"
