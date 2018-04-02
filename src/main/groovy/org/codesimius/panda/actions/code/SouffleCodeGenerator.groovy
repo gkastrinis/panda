@@ -88,7 +88,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 
 	String exit(Relation n) { "${fix(n.name)}(${n.exprs.collect { m[it] }.join(", ")})" }
 
-	String exit(Type n) { n.name }
+	String exit(Type n) { fix n.name }
 
 	// Must override since the default implementation throws an exception
 	String visit(RecordExpr n) {
