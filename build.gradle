@@ -7,9 +7,9 @@ plugins {
 	id 'net.researchgate.release' version '2.4.0'
 }
 
-group = "org.clyze"
+group = "org.codesimius"
 
-mainClassName = "org.clyze.deepdoop.Main"
+mainClassName = "org.codesimius.panda.Main"
 
 task wrapper(type: Wrapper) {
 	gradleVersion = "3.5"
@@ -29,7 +29,7 @@ dependencies {
 }
 
 applicationDistribution.from(projectDir) {
-	include "LICENSE.txt", "README.md", "deepdoop-logo.png"
+	include "LICENSE.txt", "README.md", "panda.png"
 }
 
 run {
@@ -38,7 +38,7 @@ run {
 }
 
 task norm (type: JavaExec) {
-	main = "org.clyze.deepdoop.Norm"
+	main = "org.codesimius.panda.Norm"
 	classpath = sourceSets.main.runtimeClasspath
 }
 
