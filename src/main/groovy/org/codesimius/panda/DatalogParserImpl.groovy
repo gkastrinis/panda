@@ -1,8 +1,10 @@
-package org.codesimius.panda.datalog
+package org.codesimius.panda
 
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.ErrorNode
 import org.antlr.v4.runtime.tree.TerminalNode
+import org.codesimius.panda.datalog.Annotation
+import org.codesimius.panda.datalog.DatalogBaseListener
 import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.block.BlockLvl1
 import org.codesimius.panda.datalog.block.BlockLvl2
@@ -19,13 +21,11 @@ import org.codesimius.panda.datalog.expr.*
 import org.codesimius.panda.system.Error
 import org.codesimius.panda.system.SourceManager
 
-import static org.codesimius.panda.datalog.Annotation.NAMESPACE
-import static org.codesimius.panda.datalog.Annotation.TYPE
 import static org.codesimius.panda.datalog.DatalogParser.*
 import static org.codesimius.panda.system.Error.error
 import static org.codesimius.panda.system.Error.warn
 
-class DatalogParsingListener extends DatalogBaseListener {
+class DatalogParserImpl extends DatalogBaseListener {
 
 	BlockLvl2 program
 	BlockLvl0 currDatalog
@@ -37,7 +37,7 @@ class DatalogParsingListener extends DatalogBaseListener {
 	Stack<String> activeNamespaces = []
 	def values = [:]
 
-	DatalogParsingListener(String filename) {
+	DatalogParserImpl(String filename) {
 		SourceManager.instance.outputFile = new File(filename).absolutePath
 	}
 
@@ -97,28 +97,28 @@ class DatalogParsingListener extends DatalogBaseListener {
 
 	void enterAnnotationBlock(AnnotationBlockContext ctx) {
 		def annotations = gatherAnnotations(ctx.annotationList())
-		if (NAMESPACE in annotations) {
-			activeNamespaces.push(annotations.find { it == NAMESPACE }.args["v"] as String)
-			annotations.remove NAMESPACE
+		if (Annotation.NAMESPACE in annotations) {
+			activeNamespaces.push(annotations.find { it == Annotation.NAMESPACE }.args["v"] as String)
+			annotations.remove Annotation.NAMESPACE
 		}
 		extraAnnotationsStack.push annotations
 	}
 
 	void exitAnnotationBlock(AnnotationBlockContext ctx) {
-		if (NAMESPACE in extraAnnotationsStack.peek()) activeNamespaces.pop()
+		if (Annotation.NAMESPACE in extraAnnotationsStack.peek()) activeNamespaces.pop()
 		extraAnnotationsStack.pop()
 	}
 
 	void exitDeclaration(DeclarationContext ctx) {
 		def loc = rec(null, ctx)
 		def annotations = gatherAnnotations(ctx.annotationList())
-		if (NAMESPACE in annotations) error(loc, Error.ANNOTATION_BLOCK_ONLY, NAMESPACE)
+		if (Annotation.NAMESPACE in annotations) error(loc, Error.ANNOTATION_BLOCK_ONLY, Annotation.NAMESPACE)
 		def extraAnnotations = extraAnnotationsStack.flatten() as Set<Annotation>
 		annotations.findAll { it in extraAnnotations }.each { warn(loc, Error.ANNOTATION_MULTIPLE, it) }
 		annotations += extraAnnotations
 
 		// Type declaration
-		if (ctx.IDENTIFIER(0) && TYPE in annotations) {
+		if (ctx.IDENTIFIER(0) && Annotation.TYPE in annotations) {
 			def type = new Type(suffix(ctx.IDENTIFIER(0).text))
 			def supertype = ctx.IDENTIFIER(1) ? new Type(suffix(ctx.IDENTIFIER(1).text)) : null
 			// Initial values are of the form `key(value)`. E.g., PUBLIC('public')
@@ -150,7 +150,7 @@ class DatalogParsingListener extends DatalogBaseListener {
 		Rule r
 		if (ctx.headList()) {
 			def annotations = gatherAnnotations(ctx.annotationList())
-			if (NAMESPACE in annotations) error(rec(null, ctx), Error.ANNOTATION_BLOCK_ONLY, NAMESPACE)
+			if (Annotation.NAMESPACE in annotations) error(rec(null, ctx), Error.ANNOTATION_BLOCK_ONLY, Annotation.NAMESPACE)
 			def headList = values[ctx.headList()] as List
 			def head = headList.size() > 1 ? new LogicalElement(headList) : headList.first() as IElement
 			r = new Rule(head, values[ctx.bodyList()] as IElement, annotations)
