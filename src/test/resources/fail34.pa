@@ -1,3 +1,0 @@
-@type Animal
-@input Foo0(x, y) : Animal, int
-Bar(x, y) <- Foo(x, y)

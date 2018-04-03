@@ -108,14 +108,14 @@ class DatalogSpec extends Specification {
 	}
 
 	def lbTest(String file) {
-		def resourcePath = "/${file}.pa"
+		def resourcePath = "/${file}.pnd"
 		def inputStream = new ANTLRInputStream(this.class.getResourceAsStream(resourcePath))
 		def resource = this.class.getResource(resourcePath).file
 		Compiler.compile0(inputStream, resource, new LBCodeGenerator(new File("build")))
 	}
 
 	def souffleTest(String file) {
-		def resourcePath = "/${file}.pa"
+		def resourcePath = "/${file}.pnd"
 		def inputStream = new ANTLRInputStream(this.class.getResourceAsStream(resourcePath))
 		def resource = this.class.getResource(resourcePath).file
 		Compiler.compile0(inputStream, resource, new SouffleCodeGenerator(new File("build")))
