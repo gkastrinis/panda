@@ -112,7 +112,7 @@ class DatalogSpec extends Specification {
 		def resourcePath = "/${file}.pnd"
 		def inputStream = new ANTLRInputStream(this.class.getResourceAsStream(resourcePath))
 		def resource = this.class.getResource(resourcePath).file
-		Compiler.compile0(inputStream, resource, codeGen.newInstance("build"))
+		Compiler.compile0(inputStream, resource, codeGen.newInstance("build/out"))
 	}
 
 	def test(String file) {
