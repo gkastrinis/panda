@@ -31,9 +31,12 @@ class DefaultCodeGenerator extends DefaultVisitor<String> {
 	// Keep track of active logical and negation elements in order to group them correctly
 	private List<Integer> complexElements = []
 
-	DefaultCodeGenerator(File outDir) { this.outDir = outDir }
+	DefaultCodeGenerator(File outDir) {
+		this.outDir = outDir
+		outDir.mkdirs()
+	}
 
-	DefaultCodeGenerator(String outDir) { this.outDir = new File(outDir) }
+	DefaultCodeGenerator(String outDir) { this(new File(outDir)) }
 
 	String exit(BlockLvl2 n) { fw.close(); null }
 
@@ -67,7 +70,7 @@ class DefaultCodeGenerator extends DefaultVisitor<String> {
 	String exit(VariableExpr n) { n.name }
 
 	void createUniqueFile(String prefix, String suffix) {
-		currentFile = Files.createTempFile(Paths.get(outDir.name), prefix, suffix).toFile()
+		currentFile = Files.createTempFile(Paths.get(outDir.path), prefix, suffix).toFile()
 		if (fw) fw.close()
 		fw = new FileWriter(currentFile)
 	}
