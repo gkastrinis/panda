@@ -83,6 +83,7 @@ class DatalogSpec extends Specification {
 		"fail34" | Error.REL_NO_DECL
 		"fail35" | Error.DECL_SAME_VAR
 		"fail36" | Error.ANNOTATION_BLOCK_ONLY
+		"fail37" | Error.ANNOTATION_UNKNOWN
 //		"fail100" | Error.DEP_CYCLE
 //		"fail101" | Error.CMD_RULE
 //		"fail103" | Error.CMD_DIRECTIVE

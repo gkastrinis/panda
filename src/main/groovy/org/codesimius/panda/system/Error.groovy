@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory
 import java.text.MessageFormat
 
 enum Error {
+	ANNOTATION_UNKNOWN,
 	ANNOTATION_NON_EMPTY,
 	ANNOTATION_MISSING_ARG,
 	ANNOTATION_INVALID_ARG,
@@ -57,6 +58,7 @@ enum Error {
 //	CMD_NO_IMPORT,
 
 	static Map<Error, String> msgMap = [
+			(ANNOTATION_UNKNOWN)       : "Unknown annotation `{0}`",
 			(ANNOTATION_NON_EMPTY)     : "Annotation `{0}` takes no arguments",
 			(ANNOTATION_MISSING_ARG)   : "Missing mandatory argument `{0}` for annotation `{1}`",
 			(ANNOTATION_INVALID_ARG)   : "Invalid argument `{0}` for annotation `{1}`",

@@ -19,7 +19,8 @@ class Annotation {
 
 	Annotation(String name, Map<String, ConstantExpr> args = [:]) {
 		name = name.toUpperCase()
-		this.kind = VALIDATORS.containsKey(name) ? name : null
+		if (!VALIDATORS.containsKey(name)) error(recall(this), Error.ANNOTATION_UNKNOWN, name)
+		this.kind = name
 		this.args = args
 	}
 
