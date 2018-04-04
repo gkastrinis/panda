@@ -96,7 +96,7 @@ class DatalogSpec extends Specification {
 	@Unroll
 	def "Souffle failing tests"() {
 		when:
-		souffleTest(file)
+		test0(file, SouffleCodeGenerator)
 
 		then:
 		def e = thrown(PandaException)
@@ -108,32 +108,24 @@ class DatalogSpec extends Specification {
 		"fail-S1" | Error.VAR_ASGN_COMPLEX
 	}
 
-	def lbTest(String file) {
+	def test0(String file, Class codeGen) {
 		def resourcePath = "/${file}.pnd"
 		def inputStream = new ANTLRInputStream(this.class.getResourceAsStream(resourcePath))
 		def resource = this.class.getResource(resourcePath).file
-		Compiler.compile0(inputStream, resource, new LBCodeGenerator(new File("build")))
-	}
-
-	def souffleTest(String file) {
-		def resourcePath = "/${file}.pnd"
-		def inputStream = new ANTLRInputStream(this.class.getResourceAsStream(resourcePath))
-		def resource = this.class.getResource(resourcePath).file
-		Compiler.compile0(inputStream, resource, new SouffleCodeGenerator(new File("build")))
+		Compiler.compile0(inputStream, resource, codeGen.newInstance("build"))
 	}
 
 	def test(String file) {
 		PandaException e1 = null, e2 = null
 
 		try {
-			lbTest(file)
-		}
-		catch (PandaException e) {
+			test0(file, LBCodeGenerator)
+		} catch (PandaException e) {
 			e1 = e
 		}
 
 		try {
-			souffleTest(file)
+			test0(file, SouffleCodeGenerator)
 		}
 		catch (PandaException e) {
 			e2 = e

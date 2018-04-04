@@ -25,9 +25,11 @@ class Compiler {
 		root.addAppender(new ConsoleAppender(new PatternLayout("%m%n")))
 	}
 
-	static List<Result> compileToLB3(String filename, File outDir) { compile(filename, new LBCodeGenerator(outDir)) }
+	static List<Result> compileToLB3(String filename, String outDir) {
+		compile(filename, new LBCodeGenerator(outDir))
+	}
 
-	static List<Result> compileToSouffle(String filename, File outDir) {
+	static List<Result> compileToSouffle(String filename, String outDir) {
 		compile(filename, new SouffleCodeGenerator(outDir))
 	}
 
@@ -43,12 +45,12 @@ class Compiler {
 		}
 	}
 
-	static List<Result> compile0(ANTLRInputStream inputStream, String filename, def codeGenActor) {
+	static List<Result> compile0(ANTLRInputStream inputStream, String filename, def codeGen) {
 		def parser = new DatalogParser(new CommonTokenStream(new DatalogLexer(inputStream)))
 		def listener = new DatalogParserImpl(filename)
 		ParseTreeWalker.DEFAULT.walk(listener, parser.program())
 
-		codeGenActor.visit(listener.program)
-		codeGenActor.results
+		codeGen.visit(listener.program)
+		codeGen.results
 	}
 }

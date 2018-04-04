@@ -33,6 +33,8 @@ class DefaultCodeGenerator extends DefaultVisitor<String> {
 
 	DefaultCodeGenerator(File outDir) { this.outDir = outDir }
 
+	DefaultCodeGenerator(String outDir) { this.outDir = new File(outDir) }
+
 	String exit(BlockLvl2 n) { fw.close(); null }
 
 	String exit(ComparisonElement n) { n == TRIVIALLY_TRUE ? "true" : m[n.expr] }
