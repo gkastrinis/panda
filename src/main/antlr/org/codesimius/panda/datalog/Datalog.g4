@@ -47,15 +47,6 @@ construction
 aggregation
 	: 'agg' '<<' IDENTIFIER '=' relation '>>' bodyList ;
 
-bodyList
-	: relation
-	| constructor
-	| comparison
-	| '!' bodyList
-	| '(' bodyList ')'
-	| bodyList (',' | ';') bodyList
-	;
-
 value
 	: IDENTIFIER '=' constant ;
 
@@ -82,10 +73,19 @@ initValue
 comparison
 	: expr ('=' | '<' | '<=' | '>' | '>=' | '!=') expr ;
 
-lineMarker
-	: '#' INTEGER STRING INTEGER* ;
+headList
+	: (relation | construction)
+	| headList ',' (relation | construction)
+	;
 
-// Various lists
+bodyList
+	: relation
+	| constructor
+	| comparison
+	| '!' bodyList
+	| '(' bodyList ')'
+	| bodyList (',' | ';') bodyList
+	;
 
 annotationList
 	: annotation
@@ -95,11 +95,6 @@ annotationList
 initValueList
 	: initValue
 	| initValueList ',' initValue
-	;
-
-headList
-	: (relation | construction)
-	| headList ',' (relation | construction)
 	;
 
 identifierList
@@ -120,6 +115,8 @@ exprList
 parameterList
 	: '<' identifierList '>' ;
 
+lineMarker
+	: '#' INTEGER STRING INTEGER* ;
 
 
 // Lexer

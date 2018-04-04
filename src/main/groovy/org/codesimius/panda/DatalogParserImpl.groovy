@@ -151,9 +151,7 @@ class DatalogParserImpl extends DatalogBaseListener {
 		if (ctx.headList()) {
 			def annotations = gatherAnnotations(ctx.annotationList())
 			if (Annotation.NAMESPACE in annotations) error(rec(null, ctx), Error.ANNOTATION_BLOCK_ONLY, Annotation.NAMESPACE)
-			def headList = values[ctx.headList()] as List
-			def head = headList.size() > 1 ? new LogicalElement(headList) : headList.first() as IElement
-			r = new Rule(head, values[ctx.bodyList()] as IElement, annotations)
+			r = new Rule(values[ctx.headList()] as IElement, values[ctx.bodyList()] as IElement, annotations)
 		}
 		// Aggregation
 		else
@@ -188,24 +186,6 @@ class DatalogParserImpl extends DatalogBaseListener {
 				values[ctx.relation()] as Relation,
 				values[ctx.bodyList()] as IElement)
 		rec(values[ctx], ctx)
-	}
-
-	void exitBodyList(BodyListContext ctx) {
-		if (ctx.relation())
-			values[ctx] = values[ctx.relation()]
-		else if (ctx.constructor())
-			values[ctx] = values[ctx.constructor()]
-		else if (ctx.comparison())
-			values[ctx] = values[ctx.comparison()]
-		else if (hasToken(ctx, "!"))
-			values[ctx] = new NegationElement(values[ctx.bodyList(0)] as IElement)
-		else if (hasToken(ctx, "("))
-			values[ctx] = new GroupElement(values[ctx.bodyList(0)] as IElement)
-		else {
-			def list = (0..1).collect { values[ctx.bodyList(it)] as IElement }
-			def type = hasToken(ctx, ",") ? LogicType.AND : LogicType.OR
-			values[ctx] = new LogicalElement(type, list)
-		}
 	}
 
 	void exitConstant(ConstantContext ctx) {
@@ -265,6 +245,62 @@ class DatalogParserImpl extends DatalogBaseListener {
 		values[ctx] = new ComparisonElement(e0, op, e1)
 	}
 
+	void exitHeadList(HeadListContext ctx) {
+		def t = ctx.relation() ? values[ctx.relation()] : values[ctx.construction()]
+		values[ctx] = ctx.headList() ? new LogicalElement([values[ctx.headList()], t] as List<IElement>) : t
+	}
+
+	void exitBodyList(BodyListContext ctx) {
+		if (ctx.relation())
+			values[ctx] = values[ctx.relation()]
+		else if (ctx.constructor())
+			values[ctx] = values[ctx.constructor()]
+		else if (ctx.comparison())
+			values[ctx] = values[ctx.comparison()]
+		else if (hasToken(ctx, "!"))
+			values[ctx] = new NegationElement(values[ctx.bodyList(0)] as IElement)
+		else if (hasToken(ctx, "("))
+			values[ctx] = new GroupElement(values[ctx.bodyList(0)] as IElement)
+		else {
+			def list = (0..1).collect { values[ctx.bodyList(it)] as IElement }
+			def type = hasToken(ctx, ",") ? LogicType.AND : LogicType.OR
+			values[ctx] = new LogicalElement(type, list)
+		}
+	}
+
+	// Special handling (instead of using "exit")
+	private Set<Annotation> gatherAnnotations(AnnotationListContext ctx) {
+		if (!ctx) return [] as Set
+		def valueMap = gatherValues(ctx.annotation().valueList())
+		def annotation = new Annotation(ctx.annotation().IDENTIFIER().text, valueMap)
+		def set = gatherAnnotations(ctx.annotationList())
+		if (annotation in set) warn(rec(annotation, ctx), Error.ANNOTATION_MULTIPLE, annotation.kind)
+		return set << annotation
+	}
+
+	void exitInitValueList(InitValueListContext ctx) {
+		values[ctx] = ((values[ctx.initValueList()] ?: [:]) as Map) << (values[ctx.initValue()] as Map)
+	}
+
+	void exitIdentifierList(IdentifierListContext ctx) {
+		values[ctx] = ((values[ctx.identifierList()] ?: []) as List) << ctx.IDENTIFIER().text
+	}
+
+	// Special handling (instead of using "exit")
+	private Map<String, ConstantExpr> gatherValues(ValueListContext ctx) {
+		if (!ctx) return [:]
+		exitConstant(ctx.value().constant())
+		def constant = values[ctx.value().constant()] as ConstantExpr
+		def value = [(ctx.value().IDENTIFIER().text): constant]
+		return gatherValues(ctx.valueList()) << value
+	}
+
+	void exitExprList(ExprListContext ctx) {
+		values[ctx] = ((values[ctx.exprList()] ?: []) as List) << values[ctx.expr()]
+	}
+
+	void exitParameterList(ParameterListContext ctx) { values[ctx] = values[ctx.identifierList()] }
+
 	void enterLineMarker(LineMarkerContext ctx) {
 		// Line number of the original file (emitted by C-Preprocessor)
 		def markerLine = Integer.parseInt(ctx.INTEGER(0).text)
@@ -292,44 +328,6 @@ class DatalogParserImpl extends DatalogBaseListener {
 		else
 			println "*** Weird line marker flag: $t ***"
 	}
-
-	// Special handling (instead of using "exit")
-	private Set<Annotation> gatherAnnotations(AnnotationListContext ctx) {
-		if (!ctx) return [] as Set
-		def valueMap = gatherValues(ctx.annotation().valueList())
-		def annotation = new Annotation(ctx.annotation().IDENTIFIER().text, valueMap)
-		def set = gatherAnnotations(ctx.annotationList())
-		if (annotation in set) warn(rec(annotation, ctx), Error.ANNOTATION_MULTIPLE, annotation.kind)
-		return set << annotation
-	}
-
-	void exitInitValueList(InitValueListContext ctx) {
-		values[ctx] = ((values[ctx.initValueList()] ?: [:]) as Map) << (values[ctx.initValue()] as Map)
-	}
-
-	void exitHeadList(HeadListContext ctx) {
-		def t = ctx.relation() ? values[ctx.relation()] : values[ctx.construction()]
-		values[ctx] = ((values[ctx.headList()] ?: []) as List) << t
-	}
-
-	void exitIdentifierList(IdentifierListContext ctx) {
-		values[ctx] = ((values[ctx.identifierList()] ?: []) as List) << ctx.IDENTIFIER().text
-	}
-
-	// Special handling (instead of using "exit")
-	private Map<String, ConstantExpr> gatherValues(ValueListContext ctx) {
-		if (!ctx) return [:]
-		exitConstant(ctx.value().constant())
-		def constant = values[ctx.value().constant()] as ConstantExpr
-		def value = [(ctx.value().IDENTIFIER().text): constant]
-		return gatherValues(ctx.valueList()) << value
-	}
-
-	void exitExprList(ExprListContext ctx) {
-		values[ctx] = ((values[ctx.exprList()] ?: []) as List) << values[ctx.expr()]
-	}
-
-	void exitParameterList(ParameterListContext ctx) { values[ctx] = values[ctx.identifierList()] }
 
 	void visitErrorNode(ErrorNode node) { throw new RuntimeException("Parsing error") }
 
