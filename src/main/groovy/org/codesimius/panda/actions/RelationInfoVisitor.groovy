@@ -18,7 +18,7 @@ import static org.codesimius.panda.datalog.Annotation.TYPE
 import static org.codesimius.panda.system.Error.error
 import static org.codesimius.panda.system.SourceManager.recallStatic as recall
 
-class RelationInfoVisitingActor extends DefaultVisitor<IVisitable> {
+class RelationInfoVisitor extends DefaultVisitor<IVisitable> {
 
 	Map<Type, List<Type>> superTypesOrdered = [:]
 	Map<Type, Set<Type>> subTypes = [:].withDefault { [] as Set }

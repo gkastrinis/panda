@@ -1,7 +1,7 @@
 package org.codesimius.panda.actions.code
 
 import groovy.transform.InheritConstructors
-import org.codesimius.panda.actions.ValidationVisitingActor
+import org.codesimius.panda.actions.ValidationVisitor
 import org.codesimius.panda.actions.tranform.ComponentInstantiationTransformer
 import org.codesimius.panda.actions.tranform.InputFactsTransformer
 import org.codesimius.panda.actions.tranform.SyntaxFlatteningTransformer
@@ -36,7 +36,7 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 				.accept(new InputFactsTransformer(relationInfo))
 				.accept(relationInfo)
 				.accept(varInfo)
-				.accept(new ValidationVisitingActor(relationInfo, varInfo))
+				.accept(new ValidationVisitor(relationInfo, varInfo))
 				.accept(typeInferenceTransformer)
 
 		functionalRelations = n.datalog.relDeclarations

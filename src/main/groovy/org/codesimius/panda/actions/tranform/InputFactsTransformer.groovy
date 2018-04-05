@@ -1,7 +1,7 @@
 package org.codesimius.panda.actions.tranform
 
 import groovy.transform.Canonical
-import org.codesimius.panda.actions.RelationInfoVisitingActor
+import org.codesimius.panda.actions.RelationInfoVisitor
 import org.codesimius.panda.datalog.Annotation
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.clause.RelDeclaration
@@ -26,7 +26,7 @@ import static org.codesimius.panda.datalog.expr.VariableExpr.genN as varN
 @Canonical
 class InputFactsTransformer extends DefaultTransformer {
 
-	RelationInfoVisitingActor RelationInfo
+	RelationInfoVisitor RelationInfo
 
 	IVisitable exit(RelDeclaration n) {
 		if (INPUT in n.annotations) {

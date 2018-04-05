@@ -1,7 +1,7 @@
 package org.codesimius.panda.actions.tranform.souffle
 
 import groovy.transform.Canonical
-import org.codesimius.panda.actions.VarInfoVisitingActor
+import org.codesimius.panda.actions.VarInfoVisitor
 import org.codesimius.panda.actions.tranform.DefaultTransformer
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.clause.RelDeclaration
@@ -23,7 +23,7 @@ import static org.codesimius.panda.system.Error.error
 @Canonical
 class AssignTransformer extends DefaultTransformer {
 
-	VarInfoVisitingActor varInfo
+	VarInfoVisitor varInfo
 
 	// Variables that are assigned some expression in a rule body
 	private Map<VariableExpr, IExpr> assignments = [:]

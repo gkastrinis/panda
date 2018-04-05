@@ -1,8 +1,8 @@
 package org.codesimius.panda.actions.code
 
 import org.codesimius.panda.actions.DefaultVisitor
-import org.codesimius.panda.actions.RelationInfoVisitingActor
-import org.codesimius.panda.actions.VarInfoVisitingActor
+import org.codesimius.panda.actions.RelationInfoVisitor
+import org.codesimius.panda.actions.VarInfoVisitor
 import org.codesimius.panda.actions.tranform.TypeInferenceTransformer
 import org.codesimius.panda.datalog.block.BlockLvl2
 import org.codesimius.panda.datalog.element.*
@@ -20,8 +20,8 @@ import static org.codesimius.panda.datalog.element.LogicalElement.LogicType.AND
 
 class DefaultCodeGenerator extends DefaultVisitor<String> {
 
-	RelationInfoVisitingActor relationInfo = new RelationInfoVisitingActor()
-	VarInfoVisitingActor varInfo = new VarInfoVisitingActor()
+	RelationInfoVisitor relationInfo = new RelationInfoVisitor()
+	VarInfoVisitor varInfo = new VarInfoVisitor()
 	TypeInferenceTransformer typeInferenceTransformer = new TypeInferenceTransformer(relationInfo)
 	List<Result> results = []
 

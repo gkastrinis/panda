@@ -19,10 +19,10 @@ import static org.codesimius.panda.system.Error.warn
 import static org.codesimius.panda.system.SourceManager.recallStatic as recall
 
 @Canonical
-class ValidationVisitingActor extends DefaultVisitor<IVisitable> {
+class ValidationVisitor extends DefaultVisitor<IVisitable> {
 
-	RelationInfoVisitingActor relationInfo
-	VarInfoVisitingActor varInfo
+	RelationInfoVisitor relationInfo
+	VarInfoVisitor varInfo
 
 	Set<String> tmpDeclaredRelations = [] as Set
 	Set<String> tmpDeclaredTypes = [] as Set

@@ -10,7 +10,7 @@ import org.codesimius.panda.datalog.expr.BinaryExpr
 import org.codesimius.panda.datalog.expr.GroupExpr
 import org.codesimius.panda.datalog.expr.VariableExpr
 
-class VarInfoVisitingActor extends DefaultVisitor<IVisitable> {
+class VarInfoVisitor extends DefaultVisitor<IVisitable> {
 
 	// List instead of set so we can count occurrences (for validation)
 	Map<IVisitable, List<VariableExpr>> vars = [:].withDefault { [] }

@@ -1,7 +1,7 @@
 package org.codesimius.panda.actions.tranform.souffle
 
 import groovy.transform.Canonical
-import org.codesimius.panda.actions.RelationInfoVisitingActor
+import org.codesimius.panda.actions.RelationInfoVisitor
 import org.codesimius.panda.actions.tranform.DefaultTransformer
 import org.codesimius.panda.actions.tranform.TypeInferenceTransformer
 import org.codesimius.panda.datalog.IVisitable
@@ -38,7 +38,7 @@ import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
 @Canonical
 class ConstructorTransformer extends DefaultTransformer {
 
-	RelationInfoVisitingActor relationInfo
+	RelationInfoVisitor relationInfo
 	TypeInferenceTransformer typeInferenceActor
 
 	// Recurring constant

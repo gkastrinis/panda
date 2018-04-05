@@ -1,7 +1,7 @@
 package org.codesimius.panda.actions.tranform
 
 import groovy.transform.Canonical
-import org.codesimius.panda.actions.RelationInfoVisitingActor
+import org.codesimius.panda.actions.RelationInfoVisitor
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.clause.RelDeclaration
@@ -23,7 +23,7 @@ import static org.codesimius.panda.system.Error.error
 @Canonical
 class TypeInferenceTransformer extends DefaultTransformer {
 
-	RelationInfoVisitingActor relationInfo
+	RelationInfoVisitor relationInfo
 
 	// Relation name x Type (final)
 	Map<String, List<Type>> inferredTypes = [:].withDefault { [] }

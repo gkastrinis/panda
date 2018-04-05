@@ -1,7 +1,7 @@
 package org.codesimius.panda.actions.tranform
 
 import groovy.transform.Canonical
-import org.codesimius.panda.actions.RelationInfoVisitingActor
+import org.codesimius.panda.actions.RelationInfoVisitor
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.clause.RelDeclaration
@@ -24,7 +24,7 @@ import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
 @Canonical
 class TypesTransformer extends DefaultTransformer {
 
-	RelationInfoVisitingActor relationInfo
+	RelationInfoVisitor relationInfo
 
 	void enter(BlockLvl0 n) {
 		relationInfo.rootTypes.findAll { !(it in relationInfo.typesToOptimize) }.each { root ->

@@ -1,6 +1,6 @@
 package org.codesimius.panda.actions.tranform
 
-import org.codesimius.panda.actions.RelationInfoVisitingActor
+import org.codesimius.panda.actions.RelationInfoVisitor
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.block.BlockLvl1
@@ -22,7 +22,7 @@ import static org.codesimius.panda.system.SourceManager.recallStatic as recall
 class ComponentInstantiationTransformer extends DefaultTransformer {
 
 	// Info collection actor for original program
-	private RelationInfoVisitingActor relationInfo = new RelationInfoVisitingActor()
+	private RelationInfoVisitor relationInfo = new RelationInfoVisitor()
 	// Original program before instantiation
 	private BlockLvl2 origP
 	// Program after instantiation (only a global component)
