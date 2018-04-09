@@ -61,7 +61,7 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 		null
 	}
 
-	void enter(RelDeclaration n) { mkNode(currGraph, currGraph.name, n.relation.name, Node.Kind.RELATION) }
+	void enter(RelDeclaration n) { mkNode(currGraph, n.relation.name, Node.Kind.RELATION) }
 
 	void enter(Rule n) {
 		headRelations = [] as Set
@@ -70,9 +70,9 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 
 	IVisitable exit(Rule n) {
 		headRelations.each { headRel ->
-			def headRelNode = mkNode(currGraph, currGraph.name, headRel, Node.Kind.RELATION)
+			def headRelNode = mkNode(currGraph, headRel, Node.Kind.RELATION)
 			bodyRelations.each { rel, inNeg ->
-				def relNode = mkNode(currGraph, currGraph.name, rel, Node.Kind.RELATION)
+				def relNode = mkNode(currGraph, rel, Node.Kind.RELATION)
 				mkEdge(headRelNode, relNode, inNeg ? Edge.Kind.NEGATED : Edge.Kind.RELATION)
 			}
 		}
@@ -94,7 +94,7 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 		String name
 		if (n.name.contains("@") && currGraph) {
 			def (String simpleName, String parameter) = n.name.split("@")
-			def relNode = mkNode(currGraph, currGraph.name, simpleName, Node.Kind.PARAMETER)
+			def relNode = mkNode(currGraph, simpleName, Node.Kind.PARAMETER)
 			mkEdge(relNode, currGraph.headNode, Edge.Kind.PARAMETER, parameter)
 			name = simpleName
 		} else
@@ -109,8 +109,8 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 		graphs[name]
 	}
 
-	static Node mkNode(Graph g, String tag = "", String name, Node.Kind kind) {
-		def id = "$tag:$name" as String
+	static Node mkNode(Graph g, String name, Node.Kind kind) {
+		def id = "${g.name}:$name" as String
 		if (!g.nodes[id]) g.nodes[id] = new Node(id, name, kind)
 		g.nodes[id]
 	}
