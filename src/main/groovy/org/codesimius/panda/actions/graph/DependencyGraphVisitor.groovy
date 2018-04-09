@@ -1,5 +1,6 @@
 package org.codesimius.panda.actions.graph
 
+import groovy.transform.Canonical
 import org.codesimius.panda.actions.DefaultVisitor
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl1
@@ -7,7 +8,10 @@ import org.codesimius.panda.datalog.block.BlockLvl2
 import org.codesimius.panda.datalog.clause.RelDeclaration
 import org.codesimius.panda.datalog.clause.Rule
 import org.codesimius.panda.datalog.element.NegationElement
+import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
+
+import static org.codesimius.panda.datalog.Annotation.CONSTRUCTOR
 
 class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 
@@ -16,9 +20,8 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 	private Graph globalGraph
 	private Graph currGraph
 	private boolean inNegation
-	private Set<String> headRelations
-	// Relation x isNegated
-	private Map<String, Boolean> bodyRelations
+	private Set<RelInfo> headRelations
+	private Set<RelInfo> bodyRelations
 
 	void enter(BlockLvl2 n) {
 		globalGraph = mkGraph("_")
@@ -61,19 +64,21 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 		null
 	}
 
-	void enter(RelDeclaration n) { mkNode(currGraph, n.relation.name, Node.Kind.RELATION) }
+	void enter(RelDeclaration n) {
+		mkNode(currGraph, n.relation.name, CONSTRUCTOR in n.annotations ? Node.Kind.CONSTRUCTOR : Node.Kind.RELATION)
+	}
 
 	void enter(Rule n) {
 		headRelations = [] as Set
-		bodyRelations = [:]
+		bodyRelations = [] as Set
 	}
 
 	IVisitable exit(Rule n) {
 		headRelations.each { headRel ->
-			def headRelNode = mkNode(currGraph, headRel, Node.Kind.RELATION)
-			bodyRelations.each { rel, inNeg ->
-				def relNode = mkNode(currGraph, rel, Node.Kind.RELATION)
-				mkEdge(headRelNode, relNode, inNeg ? Edge.Kind.NEGATED : Edge.Kind.RELATION)
+			def headRelNode = mkNode(currGraph, headRel.name, headRel.isConstructor ? Node.Kind.CONSTRUCTOR : Node.Kind.RELATION)
+			bodyRelations.each { bodyRel ->
+				def relNode = mkNode(currGraph, bodyRel.name, bodyRel.isConstructor ? Node.Kind.CONSTRUCTOR : Node.Kind.RELATION)
+				mkEdge(headRelNode, relNode, bodyRel.isNegated ? Edge.Kind.NEGATED : Edge.Kind.RELATION)
 			}
 		}
 		null
@@ -88,20 +93,22 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 		null
 	}
 
+	void enter(Constructor n) {
+		if (inRuleHead) headRelations << new RelInfo(n.name, true, false)
+		else bodyRelations << new RelInfo(n.name, true, inNegation)
+	}
+
 	void enter(Relation n) {
 		if (inDecl) return
 
-		String name
 		if (n.name.contains("@") && currGraph) {
-			def (String simpleName, String parameter) = n.name.split("@")
-			def relNode = mkNode(currGraph, simpleName, Node.Kind.PARAMETER)
+			def parameter = n.name.split("@").last()
+			def relNode = mkNode(currGraph, n.name, Node.Kind.PARAMETER)
 			mkEdge(relNode, currGraph.headNode, Edge.Kind.PARAMETER, parameter)
-			name = simpleName
-		} else
-			name = n.name
+		}
 
-		if (inRuleHead) headRelations << name
-		else bodyRelations[name] = inNegation
+		if (inRuleHead) headRelations << new RelInfo(n.name, false, false)
+		else bodyRelations << new RelInfo(n.name, false, inNegation)
 	}
 
 	Graph mkGraph(String name) {
@@ -117,5 +124,12 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 
 	static void mkEdge(Node from, Node to, Edge.Kind kind, String label = "") {
 		from.outEdges << new Edge(to, kind, label)
+	}
+
+	@Canonical
+	static class RelInfo {
+		String name
+		boolean isConstructor
+		boolean isNegated
 	}
 }

@@ -17,10 +17,11 @@ class DOTGenerator {
 
 	void gen() {
 		def FONT = "Arial"
-		def REL_NODE_COLOR = "#cce5ff"
 		def COMP_COLOR = "#c4c4c4"
 		def PARAM_NODE_COLOR = "gold"
 		def INST_NODE_COLOR = "orange"
+		def CONSTR_NODE_COLOR = "#9abde2"
+		def DEF_NODE_COLOR = "#cce5ff"
 		def INHERIT_FONT_COLOR = "#666666"
 		def PARAM_FONT_COLOR = INHERIT_FONT_COLOR
 		def INST_FONT_COLOR = INHERIT_FONT_COLOR
@@ -37,7 +38,7 @@ class DOTGenerator {
 		emit "digraph {"
 		emit "rankdir=LR;"
 		emit "outputorder=edgesfirst;"
-		emit """node [style=filled,fillcolor="$REL_NODE_COLOR",fontname="$FONT"];"""
+		emit """node [style=filled,fillcolor="$DEF_NODE_COLOR",fontname="$FONT"];"""
 		emit """edge [fontname="$FONT"];"""
 		dependencyGraph.graphs.each { graphName, graph ->
 			if (graphName != "_") {
@@ -47,10 +48,14 @@ class DOTGenerator {
 			graph.nodes.each { nodeId, node ->
 				if (nodeId == node.name)
 					emit """"$nodeId" [label="",shape=circle,fillcolor=black,width=0.15];"""
-				else if (node.kind == Node.Kind.PARAMETER)
-					emit """"$nodeId" [label="${node.name}",shape=diamond,fillcolor="$PARAM_NODE_COLOR"];"""
+				else if (node.kind == Node.Kind.PARAMETER) {
+					def name = node.name.split("@").first()
+					emit """"$nodeId" [label="$name",shape=diamond,fillcolor="$PARAM_NODE_COLOR"];"""
+				}
 				else if (node.kind == Node.Kind.INSTANCE)
 					emit """"$nodeId" [label="${node.name}",shape=octagon,fillcolor="$INST_NODE_COLOR"];"""
+				else if (node.kind == Node.Kind.CONSTRUCTOR)
+					emit """"$nodeId" [label="${node.name}",shape=doublecircle,fillcolor="$CONSTR_NODE_COLOR"];"""
 				else
 					emit """"$nodeId" [label="${node.name}",shape=circle];"""
 

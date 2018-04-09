@@ -8,7 +8,7 @@ import groovy.transform.ToString
 class Node {
 
 	enum Kind {
-		TEMPLATE, INSTANCE, PARAMETER, RELATION
+		TEMPLATE, INSTANCE, PARAMETER, RELATION, CONSTRUCTOR
 	}
 
 	String id

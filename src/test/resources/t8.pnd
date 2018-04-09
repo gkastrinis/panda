@@ -6,7 +6,9 @@ component Foo {
 	@Constructor
     cons:An[x] = y : string, Animal
 
-    cons:An[x] = y new Animal, foo(y) <- x = "cat"
+    cons:An[x] = y new Animal, foo(y) <- x = "cat", W(x)
+
+    Bar(y) <- cons:An[_] = y
 }
 as S1
 
