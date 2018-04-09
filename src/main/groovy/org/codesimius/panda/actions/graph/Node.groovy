@@ -11,6 +11,7 @@ class Node {
 		TEMPLATE, INSTANCE, PARAMETER, RELATION
 	}
 
+	String id
 	String name
 	Kind kind
 	Set<Edge> outEdges = [] as Set

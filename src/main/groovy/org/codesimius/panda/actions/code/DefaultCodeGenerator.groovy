@@ -24,7 +24,7 @@ class DefaultCodeGenerator extends DefaultVisitor<String> {
 	TypeInferenceTransformer typeInferenceTransformer = new TypeInferenceTransformer(relationInfo)
 	List<Result> results = []
 
-	private File outDir
+	File outDir
 	private File currentFile
 	private FileWriter fw
 	// Keep track of active logical and negation elements in order to group them correctly

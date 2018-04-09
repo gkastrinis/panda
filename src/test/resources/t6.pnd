@@ -19,6 +19,8 @@ component Core <T, G> : Base <G>  {
 	P2(x) <- Q@G(x, _)
 	P3(x) <- Q@G(_, x)
 	W(x) <- Z@T(x)
+	M(x) <- P3(x), !W(x)
+	M(x) <- W(x), x>1000
 }
 
 Core<S3, _> as S4

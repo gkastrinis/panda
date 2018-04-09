@@ -31,8 +31,10 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		createUniqueFile("out_", ".dl")
 		results << new Result(Result.Kind.LOGIC, currentFile)
 
+		def dependencyGraphVisitor = new DependencyGraphVisitor()
+
 		// Transform program before visiting nodes
-		def n = p.accept(new DependencyGraphVisitor())
+		def n = p.accept(dependencyGraphVisitor)
 				.accept(new SyntaxFlatteningTransformer())
 				.accept(new ComponentInstantiationTransformer())
 				.accept(relationInfo)

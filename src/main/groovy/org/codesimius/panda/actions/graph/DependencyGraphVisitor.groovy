@@ -4,6 +4,7 @@ import org.codesimius.panda.actions.DefaultVisitor
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl1
 import org.codesimius.panda.datalog.block.BlockLvl2
+import org.codesimius.panda.datalog.clause.RelDeclaration
 import org.codesimius.panda.datalog.clause.Rule
 import org.codesimius.panda.datalog.element.NegationElement
 import org.codesimius.panda.datalog.element.relation.Relation
@@ -12,7 +13,6 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 
 	Map<String, Graph> graphs = [:]
 
-	private Graph instanceGraph
 	private Graph globalGraph
 	private Graph currGraph
 	private boolean inNegation
@@ -21,7 +21,6 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 	private Map<String, Boolean> bodyRelations
 
 	void enter(BlockLvl2 n) {
-		instanceGraph = mkGraph("")
 		globalGraph = mkGraph("_")
 		graphs["_"] = globalGraph
 		currGraph = globalGraph
@@ -40,10 +39,14 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 			}
 		}
 		n.instantiations.each { inst ->
-			def instanceNode = mkNode(instanceGraph, inst.id, Node.Kind.INSTANCE)
+			def instanceNode = mkNode(globalGraph, inst.id, Node.Kind.INSTANCE)
 			mkEdge(instanceNode, graphs[inst.component].headNode, Edge.Kind.INSTANCE)
-			inst.parameters.each {
-				mkEdge(instanceNode, mkNode(instanceGraph, it, Node.Kind.INSTANCE), Edge.Kind.PARAMETER)
+
+			def comp = n.components.find { it.name == inst.component }
+			Map<String, List<String>> actualToFormals = [:].withDefault { [] }
+			inst.parameters.withIndex().each { String param, int i -> actualToFormals[param] << comp.parameters[i] }
+			actualToFormals.each { actual, formals ->
+				mkEdge(instanceNode, mkNode(globalGraph, actual, Node.Kind.INSTANCE), Edge.Kind.PARAMETER, formals.join(", "))
 			}
 		}
 		return n
@@ -57,6 +60,8 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 		currGraph = globalGraph
 		null
 	}
+
+	void enter(RelDeclaration n) { mkNode(currGraph, currGraph.name, n.relation.name, Node.Kind.RELATION) }
 
 	void enter(Rule n) {
 		headRelations = [] as Set
@@ -92,11 +97,9 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 			def relNode = mkNode(currGraph, currGraph.name, simpleName, Node.Kind.PARAMETER)
 			mkEdge(relNode, currGraph.headNode, Edge.Kind.PARAMETER, parameter)
 			name = simpleName
-		} else {
-			def relNode = mkNode(currGraph, currGraph.name, n.name, Node.Kind.RELATION)
-			mkEdge(relNode, currGraph.headNode, Edge.Kind.RELATION)
+		} else
 			name = n.name
-		}
+
 		if (inRuleHead) headRelations << name
 		else bodyRelations[name] = inNegation
 	}
@@ -108,7 +111,7 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 
 	static Node mkNode(Graph g, String tag = "", String name, Node.Kind kind) {
 		def id = "$tag:$name" as String
-		if (!g.nodes[id]) g.nodes[id] = new Node(name, kind)
+		if (!g.nodes[id]) g.nodes[id] = new Node(id, name, kind)
 		g.nodes[id]
 	}
 

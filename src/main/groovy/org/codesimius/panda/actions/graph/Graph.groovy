@@ -9,7 +9,7 @@ class Graph {
 	Map<String, Node> nodes = [:]
 
 	Node getHeadNode() {
-		if (!nodes[""]) nodes[""] = new Node(name, Node.Kind.TEMPLATE)
-		nodes[""]
+		if (!nodes[name]) nodes[name] = new Node(name, name, Node.Kind.TEMPLATE)
+		nodes[name]
 	}
 }
