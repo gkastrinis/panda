@@ -10,42 +10,51 @@ import org.codesimius.panda.datalog.element.relation.Relation
 
 class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 
-	Map<String, Node> nodes = [:]
+	Map<String, Graph> graphs = [:]
 
-	private Node globalNode = mkNode("_", Node.Kind.INSTANCE)
-	private Node currNode = globalNode
+	private Graph instanceGraph
+	private Graph globalGraph
+	private Graph currGraph
 	private boolean inNegation
 	private Set<String> headRelations
 	// Relation x isNegated
 	private Map<String, Boolean> bodyRelations
 
+	void enter(BlockLvl2 n) {
+		instanceGraph = mkGraph("")
+		globalGraph = mkGraph("_")
+		graphs["_"] = globalGraph
+		currGraph = globalGraph
+	}
+
 	IVisitable exit(BlockLvl2 n) {
 		n.components.each { comp ->
 			if (comp.superComponent) {
 				def superComp = n.components.find { it.name == comp.superComponent }
-				def baseNode = mkNode(comp.name, Node.Kind.TEMPLATE)
-				def superNode = mkNode(comp.superComponent, Node.Kind.TEMPLATE)
+				def baseNode = mkGraph(comp.name)
+				def superNode = mkGraph(comp.superComponent)
 				def label = comp.superParameters.withIndex().collect { superParam, int i ->
 					"$superParam/${superComp.parameters[i]}"
 				}.join(", ")
-				mkEdge(baseNode, superNode, Edge.Kind.INHERITANCE, label)
+				mkEdge(baseNode.headNode, superNode.headNode, Edge.Kind.INHERITANCE, label)
 			}
 		}
 		n.instantiations.each { inst ->
-			def templateNode = mkNode(inst.component, Node.Kind.TEMPLATE)
-			def instanceNode = mkNode(inst.id, Node.Kind.INSTANCE)
-			mkEdge(instanceNode, templateNode, Edge.Kind.INSTANCE)
-			inst.parameters.each { mkEdge(instanceNode, mkNode(it, Node.Kind.INSTANCE), Edge.Kind.PARAMETER) }
+			def instanceNode = mkNode(instanceGraph, inst.id, Node.Kind.INSTANCE)
+			mkEdge(instanceNode, graphs[inst.component].headNode, Edge.Kind.INSTANCE)
+			inst.parameters.each {
+				mkEdge(instanceNode, mkNode(instanceGraph, it, Node.Kind.INSTANCE), Edge.Kind.PARAMETER)
+			}
 		}
 		return n
 	}
 
 	void enter(BlockLvl1 n) {
-		currNode = mkNode(n.name, Node.Kind.TEMPLATE)
+		currGraph = mkGraph(n.name)
 	}
 
 	IVisitable exit(BlockLvl1 n) {
-		currNode = globalNode
+		currGraph = globalGraph
 		null
 	}
 
@@ -56,9 +65,9 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 
 	IVisitable exit(Rule n) {
 		headRelations.each { headRel ->
-			def headRelNode = mkNode(currNode.name, headRel, Node.Kind.RELATION)
+			def headRelNode = mkNode(currGraph, currGraph.name, headRel, Node.Kind.RELATION)
 			bodyRelations.each { rel, inNeg ->
-				def relNode = mkNode(currNode.name, rel, Node.Kind.RELATION)
+				def relNode = mkNode(currGraph, currGraph.name, rel, Node.Kind.RELATION)
 				mkEdge(headRelNode, relNode, inNeg ? Edge.Kind.NEGATED : Edge.Kind.RELATION)
 			}
 		}
@@ -78,24 +87,29 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 		if (inDecl) return
 
 		String name
-		if (n.name.contains("@") && currNode) {
+		if (n.name.contains("@") && currGraph) {
 			def (String simpleName, String parameter) = n.name.split("@")
-			def relNode = mkNode(currNode.name, simpleName, Node.Kind.PARAMETER)
-			mkEdge(relNode, currNode, Edge.Kind.PARAMETER, parameter)
+			def relNode = mkNode(currGraph, currGraph.name, simpleName, Node.Kind.PARAMETER)
+			mkEdge(relNode, currGraph.headNode, Edge.Kind.PARAMETER, parameter)
 			name = simpleName
 		} else {
-			def relNode = mkNode(currNode.name, n.name, Node.Kind.RELATION)
-			mkEdge(relNode, currNode, Edge.Kind.RELATION)
+			def relNode = mkNode(currGraph, currGraph.name, n.name, Node.Kind.RELATION)
+			mkEdge(relNode, currGraph.headNode, Edge.Kind.RELATION)
 			name = n.name
 		}
 		if (inRuleHead) headRelations << name
 		else bodyRelations[name] = inNegation
 	}
 
-	Node mkNode(String tag = "", String name, Node.Kind kind) {
+	Graph mkGraph(String name) {
+		if (!graphs[name]) graphs[name] = new Graph(name)
+		graphs[name]
+	}
+
+	static Node mkNode(Graph g, String tag = "", String name, Node.Kind kind) {
 		def id = "$tag:$name" as String
-		if (!nodes[id]) nodes[id] = new Node(name, kind)
-		nodes[id]
+		if (!g.nodes[id]) g.nodes[id] = new Node(name, kind)
+		g.nodes[id]
 	}
 
 	static void mkEdge(Node from, Node to, Edge.Kind kind, String label = "") {
