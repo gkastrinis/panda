@@ -2,6 +2,7 @@ package org.codesimius.panda.actions.code
 
 import groovy.transform.InheritConstructors
 import org.codesimius.panda.actions.ValidationVisitor
+import org.codesimius.panda.actions.graph.DependencyGraphVisitor
 import org.codesimius.panda.actions.tranform.ComponentInstantiationTransformer
 import org.codesimius.panda.actions.tranform.InputFactsTransformer
 import org.codesimius.panda.actions.tranform.SyntaxFlatteningTransformer
@@ -29,7 +30,8 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 		results << new Result(Result.Kind.LOGIC, currentFile)
 
 		// Transform program before visiting nodes
-		def n = p.accept(new SyntaxFlatteningTransformer())
+		def n = p.accept(new DependencyGraphVisitor())
+				.accept(new SyntaxFlatteningTransformer())
 				.accept(new ComponentInstantiationTransformer())
 				.accept(relationInfo)
 				.accept(new TypesTransformer(relationInfo))
