@@ -63,12 +63,12 @@ class SyntaxFlatteningTransformer extends DefaultTransformer {
 		def newElements = []
 		n.elements.each {
 			def flatE = m[it] as IElement
-			if (flatE instanceof LogicalElement && flatE.type == n.type)
+			if (flatE instanceof LogicalElement && flatE.kind == n.kind)
 				newElements += flatE.elements
 			else
 				newElements << flatE
 		}
-		new LogicalElement(n.type, newElements)
+		new LogicalElement(n.kind, newElements)
 	}
 
 	IVisitable exit(Constructor n) { n }

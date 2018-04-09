@@ -6,7 +6,7 @@ import org.codesimius.panda.datalog.expr.ConstantExpr
 import org.codesimius.panda.system.Error
 import org.codesimius.panda.system.SourceManager
 
-import static org.codesimius.panda.datalog.expr.ConstantExpr.Type.*
+import static org.codesimius.panda.datalog.expr.ConstantExpr.Kind.*
 import static org.codesimius.panda.system.Error.error
 import static org.codesimius.panda.system.SourceManager.recallStatic as recall
 
@@ -32,21 +32,21 @@ class Annotation {
 		if (!a.args.isEmpty()) error(SourceManager.instance.recall(a), Error.ANNOTATION_NON_EMPTY, a.kind)
 	}
 
-	static def MANDATORY_VALIDATOR = { Annotation a, Map<String, ConstantExpr.Type> mandatory ->
+	static def MANDATORY_VALIDATOR = { Annotation a, Map<String, ConstantExpr.Kind> mandatory ->
 		mandatory.findAll { argName, type -> !a.args[argName] }.each {
 			error(recall(a), Error.ANNOTATION_MISSING_ARG, it, a.kind)
 		}
-		mandatory.findAll { argName, type -> a.args[argName].type != type }.each { argName, type ->
-			error(recall(a), Error.ANNOTATION_MISTYPED_ARG, a.args[argName].type, type, argName, a.kind)
+		mandatory.findAll { argName, type -> a.args[argName].kind != type }.each { argName, type ->
+			error(recall(a), Error.ANNOTATION_MISTYPED_ARG, a.args[argName].kind, type, argName, a.kind)
 		}
 	}
 
-	static def OPTIONAL_VALIDATOR = { Annotation a, Map<String, ConstantExpr.Type> optional ->
+	static def OPTIONAL_VALIDATOR = { Annotation a, Map<String, ConstantExpr.Kind> optional ->
 		a.args.findAll { argName, value -> !optional[argName] }.each {
 			error(recall(a), Error.ANNOTATION_INVALID_ARG, it.key, a.kind)
 		}
-		a.args.findAll { argName, value -> optional[argName] != value.type }.each { argName, value ->
-			error(recall(a), Error.ANNOTATION_MISTYPED_ARG, a.args[argName].type, optional[argName], argName, a.kind)
+		a.args.findAll { argName, value -> optional[argName] != value.kind }.each { argName, value ->
+			error(recall(a), Error.ANNOTATION_MISTYPED_ARG, a.args[argName].kind, optional[argName], argName, a.kind)
 		}
 	}
 

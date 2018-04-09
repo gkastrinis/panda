@@ -64,7 +64,7 @@ class DefaultTransformer extends DefaultVisitor<IVisitable> {
 
 	IVisitable exit(GroupElement n) { new GroupElement(m[n.element] as IElement) }
 
-	IVisitable exit(LogicalElement n) { new LogicalElement(n.type, n.elements.collect { m[it] as IElement }) }
+	IVisitable exit(LogicalElement n) { new LogicalElement(n.kind, n.elements.collect { m[it] as IElement }) }
 
 	IVisitable exit(NegationElement n) { new NegationElement(m[n.element] as IElement) }
 

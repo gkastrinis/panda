@@ -5,30 +5,30 @@ import groovy.transform.Canonical
 @Canonical
 class ConstantExpr implements IExpr {
 
-	enum Type {
+	enum Kind {
 		INTEGER, REAL, BOOLEAN, STRING
 	}
 
-	Type type
+	Kind kind
 	Object value
 
 	ConstantExpr(Long l) {
-		type = Type.INTEGER
+		kind = Kind.INTEGER
 		value = l
 	}
 
 	ConstantExpr(Double r) {
-		type = Type.REAL
+		kind = Kind.REAL
 		value = r
 	}
 
 	ConstantExpr(Boolean b) {
-		type = Type.BOOLEAN
+		kind = Kind.BOOLEAN
 		value = b
 	}
 
 	ConstantExpr(String s) {
-		type = Type.STRING
+		kind = Kind.STRING
 		value = s.startsWith("'") ? s.replaceAll(/^'|'$/, '"') : s
 	}
 

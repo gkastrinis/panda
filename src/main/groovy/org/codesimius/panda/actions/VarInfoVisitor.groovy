@@ -62,7 +62,7 @@ class VarInfoVisitor extends DefaultVisitor<IVisitable> {
 
 	static List<VariableExpr> handleVars(LogicalElement n, Map<IVisitable, List<VariableExpr>> vars) {
 		def res = []
-		if (n.type == LogicalElement.LogicType.OR) {
+		if (n.kind == LogicalElement.Kind.OR) {
 			res = vars[n.elements.first()]
 			n.elements.drop(1).each {
 				def vs = vars[it]

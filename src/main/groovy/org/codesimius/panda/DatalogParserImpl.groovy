@@ -13,7 +13,6 @@ import org.codesimius.panda.datalog.clause.RelDeclaration
 import org.codesimius.panda.datalog.clause.Rule
 import org.codesimius.panda.datalog.clause.TypeDeclaration
 import org.codesimius.panda.datalog.element.*
-import org.codesimius.panda.datalog.element.LogicalElement.LogicType
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.element.relation.Type
@@ -263,7 +262,7 @@ class DatalogParserImpl extends DatalogBaseListener {
 			values[ctx] = new GroupElement(values[ctx.bodyList(0)] as IElement)
 		else {
 			def list = (0..1).collect { values[ctx.bodyList(it)] as IElement }
-			def type = hasToken(ctx, ",") ? LogicType.AND : LogicType.OR
+			def type = hasToken(ctx, ",") ? LogicalElement.Kind.AND : LogicalElement.Kind.OR
 			values[ctx] = new LogicalElement(type, list)
 		}
 	}

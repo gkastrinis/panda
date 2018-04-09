@@ -7,20 +7,20 @@ import groovy.transform.ToString
 @ToString(includePackage = false)
 class LogicalElement implements IElement {
 
-	enum LogicType {
+	enum Kind {
 		AND, OR
 	}
 
-	LogicType type
+	Kind kind
 	List<IElement> elements
 
-	LogicalElement(LogicType type = LogicType.AND, List<IElement> elements) {
-		this.type = type
+	LogicalElement(Kind kind = Kind.AND, List<IElement> elements) {
+		this.kind = kind
 		this.elements = elements
 	}
 
 	LogicalElement(IElement element) {
-		this.type = LogicType.AND
+		this.kind = Kind.AND
 		this.elements = [element]
 	}
 }

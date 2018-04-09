@@ -61,7 +61,7 @@ class AssignTransformer extends DefaultTransformer {
 		def elements = asElements(body)
 		if (elements.any { it == TRIVIALLY_TRUE }) {
 			def newElements = elements.findAll { it != TRIVIALLY_TRUE }
-			if (newElements.size() > 1) body = new LogicalElement((body as LogicalElement).type, newElements)
+			if (newElements.size() > 1) body = new LogicalElement((body as LogicalElement).kind, newElements)
 			else if (newElements.size() == 1) body = newElements.first() as IElement
 			else body = null
 		}
@@ -89,10 +89,10 @@ class AssignTransformer extends DefaultTransformer {
 		super.exit n
 	}
 
-	void enter(LogicalElement n) { complexLogic += (n.type == LogicalElement.LogicType.OR) ? 2 : 1 }
+	void enter(LogicalElement n) { complexLogic += (n.kind == LogicalElement.Kind.OR) ? 2 : 1 }
 
 	IVisitable exit(LogicalElement n) {
-		complexLogic -= (n.type == LogicalElement.LogicType.OR) ? 2 : 1
+		complexLogic -= (n.kind == LogicalElement.Kind.OR) ? 2 : 1
 		super.exit n
 	}
 

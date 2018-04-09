@@ -16,7 +16,7 @@ import org.codesimius.panda.datalog.element.relation.Type
 import org.codesimius.panda.datalog.expr.*
 import org.codesimius.panda.system.Error
 
-import static org.codesimius.panda.datalog.expr.ConstantExpr.Type.*
+import static org.codesimius.panda.datalog.expr.ConstantExpr.Kind.*
 import static org.codesimius.panda.datalog.expr.VariableExpr.genN as varN
 import static org.codesimius.panda.system.Error.error
 
@@ -170,12 +170,12 @@ class TypeInferenceTransformer extends DefaultTransformer {
 	}
 
 	IVisitable exit(ConstantExpr n) {
-		if (n.type == REAL || n.type == BOOLEAN) error(Error.TYPE_UNSUPP, n.type as String)
+		if (n.kind == REAL || n.kind == BOOLEAN) error(Error.TYPE_UNSUPP, n.kind as String)
 
-		if (n.type == INTEGER) tmpExprTypes[n] << Type.TYPE_INT
-		else if (n.type == REAL) tmpExprTypes[n] << Type.TYPE_FLOAT
-		else if (n.type == BOOLEAN) tmpExprTypes[n] << Type.TYPE_BOOLEAN
-		else if (n.type == STRING) tmpExprTypes[n] << Type.TYPE_STRING
+		if (n.kind == INTEGER) tmpExprTypes[n] << Type.TYPE_INT
+		else if (n.kind == REAL) tmpExprTypes[n] << Type.TYPE_FLOAT
+		else if (n.kind == BOOLEAN) tmpExprTypes[n] << Type.TYPE_BOOLEAN
+		else if (n.kind == STRING) tmpExprTypes[n] << Type.TYPE_STRING
 		return n
 	}
 
@@ -207,7 +207,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 
 							def superTypesOfT1 = relationInfo.superTypesOrdered[t1]
 							def superTypesOfT2 = relationInfo.superTypesOrdered[t2]
-							// Move upwards in the hierarchy until a common type is found
+							// Move upwards in the hierarchy until a common kind is found
 							def superT = t1 = superTypesOfT1.find { it in superTypesOfT2 }
 							if (!superT) error(Error.TYPE_INCOMP, relation, i)
 						}

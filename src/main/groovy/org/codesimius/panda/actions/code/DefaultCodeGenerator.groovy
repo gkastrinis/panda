@@ -16,7 +16,6 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 import static org.codesimius.panda.datalog.element.ComparisonElement.TRIVIALLY_TRUE
-import static org.codesimius.panda.datalog.element.LogicalElement.LogicType.AND
 
 class DefaultCodeGenerator extends DefaultVisitor<String> {
 
@@ -50,7 +49,7 @@ class DefaultCodeGenerator extends DefaultVisitor<String> {
 
 	String exit(LogicalElement n) {
 		complexElements = complexElements.dropRight(1)
-		def str = n.elements.findAll { m[it] }.collect { m[it] }.join(n.type == AND ? ", " : "; ")
+		def str = n.elements.findAll { m[it] }.collect { m[it] }.join(n.kind == LogicalElement.Kind.AND ? ", " : "; ")
 		(complexElements && complexElements.last() != map(n)) ? "($str)" : str
 	}
 
@@ -63,7 +62,7 @@ class DefaultCodeGenerator extends DefaultVisitor<String> {
 
 	String exit(BinaryExpr n) { "${m[n.left]} ${n.op} ${m[n.right]}" }
 
-	String exit(ConstantExpr n) { n.type == ConstantExpr.Type.STRING ? "\"${n.value}\"" : "${n.value}" }
+	String exit(ConstantExpr n) { n.kind == ConstantExpr.Kind.STRING ? "\"${n.value}\"" : "${n.value}" }
 
 	String exit(GroupExpr n) { "(${m[n.expr]})" }
 
@@ -79,7 +78,7 @@ class DefaultCodeGenerator extends DefaultVisitor<String> {
 
 	void emit(String data) { fw.write "$data\n" }
 
-	private static int map(LogicalElement n) { n.type == AND ? 0 : 1 }
+	private static int map(LogicalElement n) { n.kind == LogicalElement.Kind.AND ? 0 : 1 }
 
 	private static int map(NegationElement n) { 2 }
 }
