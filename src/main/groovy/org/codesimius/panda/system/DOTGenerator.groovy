@@ -51,8 +51,7 @@ class DOTGenerator {
 				else if (node.kind == Node.Kind.PARAMETER) {
 					def name = node.name.split("@").first()
 					emit """"$nodeId" [label="$name",shape=diamond,fillcolor="$PARAM_NODE_COLOR"];"""
-				}
-				else if (node.kind == Node.Kind.INSTANCE)
+				} else if (node.kind == Node.Kind.INSTANCE)
 					emit """"$nodeId" [label="${node.name}",shape=octagon,fillcolor="$INST_NODE_COLOR"];"""
 				else if (node.kind == Node.Kind.CONSTRUCTOR)
 					emit """"$nodeId" [label="${node.name}",shape=doublecircle,fillcolor="$CONSTR_NODE_COLOR"];"""

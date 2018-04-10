@@ -95,7 +95,7 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 
 	void enter(Constructor n) {
 		if (inRuleHead) headRelations << new RelInfo(n.name, true, false)
-		else bodyRelations << new RelInfo(n.name, true, inNegation)
+		else if (inRuleBody) bodyRelations << new RelInfo(n.name, true, inNegation)
 	}
 
 	void enter(Relation n) {
@@ -108,7 +108,7 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 		}
 
 		if (inRuleHead) headRelations << new RelInfo(n.name, false, false)
-		else bodyRelations << new RelInfo(n.name, false, inNegation)
+		else if (inRuleBody) bodyRelations << new RelInfo(n.name, false, inNegation)
 	}
 
 	Graph mkGraph(String name) {
