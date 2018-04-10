@@ -31,25 +31,36 @@ class ComponentInstantiationTransformer extends DefaultTransformer {
 	private String currInstanceName
 	// Current component being instantiated
 	private BlockLvl1 currComp
+	// Keep a mapping from current component parameter to the appropriate instantiation parameter
+	private Map<String, String> mapParams
 
 	// Instantiate components (add transformed contents in a single component)
 	// A component might be visited multiple times (depending on instantiations)
-	// Components with no instantiations are dropped
+	// Components with no instantiations are skipped
 	IVisitable visit(BlockLvl2 n) {
 		origP = n
 		instantiatedP = new BlockLvl2()
 
 		relationInfo.visit origP
-
 		visit origP.datalog
-		origP.instantiations.each { inst ->
+
+		n.instantiations.each { inst ->
 			currInstanceName = inst.id
 			currComp = n.components.find { it.name == inst.component }
-			if (!currComp)
-				error(Error.COMP_UNKNOWN, inst.component)
-			if (currComp.parameters.size() != inst.parameters.size())
-				error(Error.COMP_INST_ARITY, inst.parameters, inst.component, inst.id)
-			visit currComp.datalog
+			// A list of indexes of super parameters in the original parameter list
+			// e.g. in `component A <X,Y,Z> : B <Z, X>`, we get [2, 0] (initially it is [0, 1, 2])
+			def indexes = (0..<inst.parameters.size())
+			def computeMappings = {
+				mapParams = currComp.parameters.withIndex().collectEntries { param, int i -> [(param): inst.parameters[indexes[i]]] }
+			}
+			computeMappings()
+			visit currComp
+			while (currComp.superComponent) {
+				indexes = currComp.superParameters.collect { indexes[currComp.parameters.indexOf(it)] }
+				currComp = n.components.find { it.name == currComp.superComponent }
+				computeMappings()
+				visit currComp
+			}
 		}
 		instantiatedP
 	}
@@ -68,39 +79,28 @@ class ComponentInstantiationTransformer extends DefaultTransformer {
 	IVisitable exit(Constructor n) { new Constructor(rename(n.name), n.exprs) }
 
 	IVisitable exit(Relation n) {
-		if (n.name.contains("@") && (inDecl || inRuleHead)) error(recall(n), Error.REL_EXT_INVALID)
+		if (!n.name.contains("@"))
+			return new Relation(rename(n.name), n.exprs)
 
-		def origName = n.name
-		if (!origName.contains("@"))
-			return new Relation(rename(origName), n.exprs)
-
-		def (simpleName, parameter) = origName.split("@")
-		// Global space
-		if (!currComp) {
-			if (!origP.instantiations.any { it.id == parameter })
-				error(recall(n), Error.COMP_UNKNOWN, parameter as String)
+		def (simpleName, String parameter) = n.name.split("@")
+		// null when in global space
+		if (!currComp)
 			return new Relation("$parameter:$simpleName", n.exprs)
-		} else {
-			def paramIndex = currComp.parameters.findIndexOf { it == parameter }
-			if (paramIndex == -1)
-				error(recall(n), Error.COMP_UNKNOWN_PARAM, parameter as String)
-
-			def instParameter = origP.instantiations.find {
-				it.id == currInstanceName
-			}.parameters[paramIndex]
-			def externalName = instParameter == "_" ? simpleName : "$instParameter:$simpleName"
+		else {
+			def newParameter = mapParams[parameter]
+			def newName = newParameter == "_" ? simpleName : "$newParameter:$simpleName"
 
 			BlockLvl0 externalTemplateDatalog
-			if (instParameter == "_")
+			if (newParameter == "_")
 				externalTemplateDatalog = origP.datalog
 			else {
-				def name = origP.instantiations.find { it.id == instParameter }.component
+				def name = origP.instantiations.find { it.id == newParameter }.component
 				externalTemplateDatalog = origP.components.find { it.name == name }.datalog
 			}
 			if (!relationInfo.declaredRelationsPerBlock[externalTemplateDatalog].any { it == simpleName })
 				error(recall(n), Error.REL_EXT_NO_DECL, simpleName as String)
 
-			return new Relation(externalName, n.exprs)
+			return new Relation(newName, n.exprs)
 		}
 	}
 

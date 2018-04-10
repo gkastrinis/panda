@@ -10,8 +10,11 @@ import org.codesimius.panda.datalog.clause.Rule
 import org.codesimius.panda.datalog.element.NegationElement
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
+import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.datalog.Annotation.CONSTRUCTOR
+import static org.codesimius.panda.system.Error.error
+import static org.codesimius.panda.system.SourceManager.recallStatic as recall
 
 class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 
@@ -22,10 +25,13 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 	private boolean inNegation
 	private Set<RelInfo> headRelations
 	private Set<RelInfo> bodyRelations
+	private BlockLvl2 origP
+	private BlockLvl1 currComp
 
 	void enter(BlockLvl2 n) {
 		globalGraph = mkGraph("_")
 		graphs["_"] = globalGraph
+		origP = n
 		currGraph = globalGraph
 	}
 
@@ -42,6 +48,12 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 			}
 		}
 		n.instantiations.each { inst ->
+			currComp = n.components.find { it.name == inst.component }
+			if (!currComp)
+				error(Error.COMP_UNKNOWN, inst.component)
+			if (currComp.parameters.size() != inst.parameters.size())
+				error(Error.COMP_INST_ARITY, inst.parameters, inst.component, inst.id)
+
 			def instanceNode = mkNode(globalGraph, inst.id, Node.Kind.INSTANCE)
 			mkEdge(instanceNode, graphs[inst.component].headNode, Edge.Kind.INSTANCE)
 
@@ -57,11 +69,12 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 
 	void enter(BlockLvl1 n) {
 		currGraph = mkGraph(n.name)
+		currComp = n
 	}
 
 	IVisitable exit(BlockLvl1 n) {
 		currGraph = globalGraph
-		null
+		currComp = null
 	}
 
 	void enter(RelDeclaration n) {
@@ -99,10 +112,19 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 	}
 
 	void enter(Relation n) {
+		if (n.name.contains("@") && (inDecl || inRuleHead))
+			error(recall(n), Error.REL_EXT_INVALID)
+
 		if (inDecl) return
 
 		if (n.name.contains("@") && currGraph) {
 			def parameter = n.name.split("@").last()
+			// null when in global space
+			if (!currComp && !origP.instantiations.any { it.id == parameter })
+				error(recall(n), Error.INST_UNKNOWN, parameter as String)
+			if (currComp && !currComp.parameters.any { it == parameter })
+				error(recall(n), Error.COMP_UNKNOWN_PARAM, parameter as String)
+
 			def relNode = mkNode(currGraph, n.name, Node.Kind.PARAMETER)
 			mkEdge(relNode, currGraph.headNode, Edge.Kind.PARAMETER, parameter)
 		}

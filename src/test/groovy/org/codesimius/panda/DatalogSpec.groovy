@@ -76,7 +76,7 @@ class DatalogSpec extends Specification {
 		"fail27" | Error.COMP_SUPER_PARAM_MISMATCH
 		"fail28" | Error.COMP_INST_ARITY
 		"fail29" | Error.REL_EXT_INVALID
-		"fail30" | Error.COMP_UNKNOWN
+		"fail30" | Error.INST_UNKNOWN
 		"fail31" | Error.VAR_UNKNOWN
 		"fail32" | Error.TYPE_INFERENCE_FAIL
 		"fail33" | Error.REL_ARITY

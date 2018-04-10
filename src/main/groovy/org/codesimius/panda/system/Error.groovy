@@ -21,6 +21,7 @@ enum Error {
 	COMP_INST_ARITY,
 	COMP_UNKNOWN_PARAM,
 	INST_ID_IN_USE,
+	INST_UNKNOWN,
 
 	DECL_SAME_VAR,
 	DECL_MALFORMED,
@@ -74,6 +75,7 @@ enum Error {
 			(COMP_INST_ARITY)          : "Wrong arity for instantiation parameters ({0}) of component `{1}` as `{2}`",
 			(COMP_UNKNOWN_PARAM)       : "Unknown `@` parameter `{0}` used in component",
 			(INST_ID_IN_USE)           : "Instantiation name `{0}` already in use",
+			(INST_UNKNOWN)             : "Unknown instantiation `{0}`",
 
 			(DECL_SAME_VAR)            : "Same variable used multiple times in declaration",
 			(DECL_MALFORMED)           : "Number of variables and types in declaration not matching",
