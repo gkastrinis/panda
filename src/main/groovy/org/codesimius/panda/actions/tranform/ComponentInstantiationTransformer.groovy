@@ -21,10 +21,6 @@ import static org.codesimius.panda.system.SourceManager.recallStatic as recall
 
 class ComponentInstantiationTransformer extends DefaultTransformer {
 
-	// Info collection actor for original program
-	private RelationInfoVisitor relationInfo = new RelationInfoVisitor()
-	// Original program before instantiation
-	private BlockLvl2 origP
 	// Program after instantiation (only a global component)
 	private BlockLvl2 instantiatedP
 	// Current name used for instantiation
@@ -33,16 +29,16 @@ class ComponentInstantiationTransformer extends DefaultTransformer {
 	private BlockLvl1 currComp
 	// Keep a mapping from current component parameter to the appropriate instantiation parameter
 	private Map<String, String> mapParams
+	// External relations (with "@") that need to be checked for having a declaration
+	private Set<String> pendingRelations = [] as Set
 
 	// Instantiate components (add transformed contents in a single component)
 	// A component might be visited multiple times (depending on instantiations)
 	// Components with no instantiations are skipped
 	IVisitable visit(BlockLvl2 n) {
-		origP = n
 		instantiatedP = new BlockLvl2()
 
-		relationInfo.visit origP
-		visit origP.datalog
+		visit n.datalog
 
 		n.instantiations.each { inst ->
 			currInstanceName = inst.id
@@ -62,6 +58,13 @@ class ComponentInstantiationTransformer extends DefaultTransformer {
 				visit currComp
 			}
 		}
+
+		def relationInfo = new RelationInfoVisitor()
+		relationInfo.visit instantiatedP
+		pendingRelations.findAll { !(it in relationInfo.declaredRelations) }.each {
+			error(recall(n), Error.REL_EXT_NO_DECL, it.split(":").drop(1).join(":"))
+		}
+
 		instantiatedP
 	}
 
@@ -82,24 +85,15 @@ class ComponentInstantiationTransformer extends DefaultTransformer {
 		if (!n.name.contains("@"))
 			return new Relation(rename(n.name), n.exprs)
 
-		def (simpleName, String parameter) = n.name.split("@")
+		def (String simpleName, String parameter) = n.name.split("@")
 		// null when in global space
-		if (!currComp)
+		if (!currComp) {
+			pendingRelations << ("$parameter:$simpleName" as String)
 			return new Relation("$parameter:$simpleName", n.exprs)
-		else {
+		} else {
 			def newParameter = mapParams[parameter]
 			def newName = newParameter == "_" ? simpleName : "$newParameter:$simpleName"
-
-			BlockLvl0 externalTemplateDatalog
-			if (newParameter == "_")
-				externalTemplateDatalog = origP.datalog
-			else {
-				def name = origP.instantiations.find { it.id == newParameter }.component
-				externalTemplateDatalog = origP.components.find { it.name == name }.datalog
-			}
-			if (!relationInfo.declaredRelationsPerBlock[externalTemplateDatalog].any { it == simpleName })
-				error(recall(n), Error.REL_EXT_NO_DECL, simpleName as String)
-
+			pendingRelations << (newName as String)
 			return new Relation(newName, n.exprs)
 		}
 	}
