@@ -1,0 +1,3 @@
+component Foo<X>{}
+component Bar{} as B
+Foo<B2> as F

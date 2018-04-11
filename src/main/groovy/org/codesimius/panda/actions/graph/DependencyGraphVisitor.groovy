@@ -53,6 +53,9 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 				error(Error.COMP_UNKNOWN, inst.component)
 			if (currComp.parameters.size() != inst.parameters.size())
 				error(Error.COMP_INST_ARITY, inst.parameters, inst.component, inst.id)
+			inst.parameters.findAll { param -> param != "_" && !n.instantiations.any { it.id == param } }.each {
+				error(recall(inst), Error.COMP_UNKNOWN_PARAM, it)
+			}
 
 			def instanceNode = mkNode(globalGraph, inst.id, Node.Kind.INSTANCE)
 			mkEdge(instanceNode, graphs[inst.component].headNode, Edge.Kind.INSTANCE)
