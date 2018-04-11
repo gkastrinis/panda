@@ -1,4 +1,5 @@
-[![License MIT][badge-license]](LICENSE.txt)
+[![License MIT][badge-license]](LICENSE.txt) ![Travis CI](https://travis-ci.org/gkastrinis/panda.svg?branch=master)
+
 
 ![PANDA](/panda.png)
 =============================
