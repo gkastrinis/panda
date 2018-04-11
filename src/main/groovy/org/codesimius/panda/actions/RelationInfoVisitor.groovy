@@ -30,8 +30,7 @@ class RelationInfoVisitor extends DefaultVisitor<IVisitable> {
 
 	///////////////////////////////////////////////////
 
-	Set<String> declaredRelations
-	Map<BlockLvl0, Set<String>> declaredRelationsPerBlock = [:]
+	Set<String> declaredRelations = [] as Set
 	Map<String, Set<Rule>> relUsedInRules = [:].withDefault { [] as Set }
 	private Rule currRule
 
@@ -56,7 +55,7 @@ class RelationInfoVisitor extends DefaultVisitor<IVisitable> {
 
 	IVisitable exit(BlockLvl2 n) { n }
 
-	void enter(BlockLvl0 n) {
+	IVisitable exit(BlockLvl0 n) {
 		n.typeDeclarations.each { d ->
 			superTypesOrdered[d.type] = []
 			def currDecl = d
@@ -72,11 +71,7 @@ class RelationInfoVisitor extends DefaultVisitor<IVisitable> {
 		}
 
 		// Implicitly, add relations supported in aggregation
-		declaredRelations = ["count", "min", "max", "sum"] as Set
-	}
-
-	IVisitable exit(BlockLvl0 n) {
-		declaredRelationsPerBlock[n] = declaredRelations
+		declaredRelations += ["count", "min", "max", "sum"]
 
 		rootTypes.each { root ->
 			def types = [root] + subTypes[root]
