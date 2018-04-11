@@ -32,6 +32,7 @@ class DatalogSpec extends Specification {
 		"t8"  | _
 		"t9"  | _
 		"t10" | _
+		"t11" | _
 		//"t100" | _
 	}
 

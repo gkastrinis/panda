@@ -1,0 +1,11 @@
+component Base {
+    P(x) : int
+}
+component Core : Base {
+    Q(x) : int
+} as C1
+component Foo<X> {
+    W(x) <- P@X(x)
+    Z(x) <- Q@X(x)
+}
+Foo<C1> as F1
