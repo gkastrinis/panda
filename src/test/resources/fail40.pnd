@@ -1,0 +1,4 @@
+component Foo {
+    P(x) : int
+}
+as Foo:Bar

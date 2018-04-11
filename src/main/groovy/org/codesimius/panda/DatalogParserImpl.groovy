@@ -65,17 +65,18 @@ class DatalogParserImpl extends DatalogBaseListener {
 
 		if (componentIDs.any { it == name })
 			error(Error.COMP_ID_IN_USE, name)
-
 		if (parameters.size() != parameters.toSet().size())
 			error(Error.COMP_DUPLICATE_PARAMS, parameters, name)
-
 		if (superParameters.any { !(it in parameters) })
 			error(Error.COMP_SUPER_PARAM_MISMATCH, superParameters, parameters, superName)
+		if (name.contains(":"))
+			error(Error.COMP_NAME_LIMITS, name)
 
 		program.components << new BlockLvl1(name, superName, parameters, superParameters, currDatalog)
 
 		values[ctx.identifierList()].each { String id ->
 			if (componentIDs.any { it == id }) error(Error.INST_ID_IN_USE, id)
+			if (id.contains(":")) error(Error.COMP_NAME_LIMITS, id)
 			program.instantiations << new Instantiation(name, id, [])
 		}
 
@@ -90,6 +91,7 @@ class DatalogParserImpl extends DatalogBaseListener {
 		def parameters = values[ctx.parameterList()] as List ?: []
 		values[ctx.identifierList()].each { String id ->
 			if (componentIDs.any { it == id }) error(Error.INST_ID_IN_USE, id)
+			if (id.contains(":")) error(Error.COMP_NAME_LIMITS, id)
 			program.instantiations << new Instantiation(ctx.IDENTIFIER().text, id, parameters)
 		}
 	}

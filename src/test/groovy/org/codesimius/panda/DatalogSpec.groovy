@@ -87,6 +87,8 @@ class DatalogSpec extends Specification {
 		"fail37" | Error.ANNOTATION_UNKNOWN
 		"fail38" | Error.REL_EXT_NO_DECL
 		"fail39" | Error.COMP_UNKNOWN_PARAM
+		"fail40" | Error.COMP_NAME_LIMITS
+		"fail41" | Error.COMP_NAME_LIMITS
 //		"fail100" | Error.DEP_CYCLE
 //		"fail101" | Error.CMD_RULE
 //		"fail103" | Error.CMD_DIRECTIVE

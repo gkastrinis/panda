@@ -20,6 +20,7 @@ enum Error {
 	COMP_SUPER_PARAM_MISMATCH,
 	COMP_INST_ARITY,
 	COMP_UNKNOWN_PARAM,
+	COMP_NAME_LIMITS,
 	INST_ID_IN_USE,
 	INST_UNKNOWN,
 
@@ -74,6 +75,7 @@ enum Error {
 			(COMP_SUPER_PARAM_MISMATCH): "Super component parameters ({0}) not matching parameters ({1}) of component `{2}`",
 			(COMP_INST_ARITY)          : "Wrong arity for instantiation parameters ({0}) of component `{1}` as `{2}`",
 			(COMP_UNKNOWN_PARAM)       : "Unknown `@` parameter `{0}` used in component",
+			(COMP_NAME_LIMITS)         : "Non-valid character `:` in component/instantiation name (`{0}`)",
 			(INST_ID_IN_USE)           : "Instantiation name `{0}` already in use",
 			(INST_UNKNOWN)             : "Unknown instantiation `{0}`",
 
