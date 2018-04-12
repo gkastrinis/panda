@@ -113,7 +113,6 @@ class DatalogParserImpl extends DatalogBaseListener {
 	void exitDeclaration(DeclarationContext ctx) {
 		def loc = rec(null, ctx)
 		def annotations = gatherAnnotations(ctx.annotationList())
-		if (Annotation.NAMESPACE in annotations) error(loc, Error.ANNOTATION_BLOCK_ONLY, Annotation.NAMESPACE)
 		def extraAnnotations = extraAnnotationsStack.flatten() as Set<Annotation>
 		annotations.findAll { it in extraAnnotations }.each { warn(loc, Error.ANNOTATION_MULTIPLE, it) }
 		annotations += extraAnnotations
@@ -151,7 +150,6 @@ class DatalogParserImpl extends DatalogBaseListener {
 		Rule r
 		if (ctx.headList()) {
 			def annotations = gatherAnnotations(ctx.annotationList())
-			if (Annotation.NAMESPACE in annotations) error(rec(null, ctx), Error.ANNOTATION_BLOCK_ONLY, Annotation.NAMESPACE)
 			r = new Rule(values[ctx.headList()] as IElement, values[ctx.bodyList()] as IElement, annotations)
 		}
 		// Aggregation
