@@ -48,10 +48,10 @@ class DatalogSpec extends Specification {
 		where:
 		file     | expectedErrorId
 		"fail0"  | Error.COMP_UNKNOWN_PARAM
-		"fail1"  | Error.INST_ID_IN_USE
-		"fail2"  | Error.COMP_ID_IN_USE
+		"fail1"  | Error.ID_IN_USE
+		"fail2"  | Error.ID_IN_USE
 		"fail3"  | Error.COMP_UNKNOWN
-		"fail4"  | Error.INST_ID_IN_USE
+		"fail4"  | Error.ID_IN_USE
 		"fail5"  | Error.REL_EXT_NO_DECL
 		"fail6"  | Error.CONSTR_TYPE_INCOMP
 		"fail7"  | Error.FUNC_NON_CONSTR
@@ -88,6 +88,8 @@ class DatalogSpec extends Specification {
 		"fail38" | Error.REL_EXT_NO_DECL
 		"fail39" | Error.COMP_UNKNOWN_PARAM
 		"fail40" | Error.COMP_NAME_LIMITS
+		"fail41" | Error.REL_NAME_LIMITS
+		"fail42" | Error.REL_NAME_LIMITS
 //		"fail100" | Error.DEP_CYCLE
 //		"fail101" | Error.CMD_RULE
 //		"fail103" | Error.CMD_DIRECTIVE

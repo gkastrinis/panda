@@ -21,7 +21,6 @@ import org.codesimius.panda.system.Error
 import org.codesimius.panda.system.SourceManager
 
 import static org.codesimius.panda.datalog.DatalogParser.*
-import static org.codesimius.panda.system.Error.error
 import static org.codesimius.panda.system.Error.warn
 
 class DatalogParserImpl extends DatalogBaseListener {
@@ -63,11 +62,7 @@ class DatalogParserImpl extends DatalogBaseListener {
 		def parameters = values[ctx.parameterList()] as List ?: []
 		def superParameters = ctx.superComponent()?.parameterList() ? values[ctx.superComponent().parameterList()] as List : []
 
-		if (program.components.any { it.name == name } || program.instantiations.any { it.id == name })
-			error(Error.COMP_ID_IN_USE, name)
-
 		program.components << new BlockLvl1(name, superName, parameters, superParameters, currDatalog)
-
 		values[ctx.identifierList()].each { String id -> program.instantiations << new Instantiation(name, id, []) }
 
 		currPendingAnnotations.each {

@@ -10,8 +10,8 @@ import org.codesimius.panda.datalog.IVisitable
 class BlockLvl2 implements IVisitable {
 
 	BlockLvl0 datalog = new BlockLvl0()
-	Set<BlockLvl1> components = [] as Set
-	Set<Instantiation> instantiations = [] as Set
+	Collection<BlockLvl1> components = []
+	Collection<Instantiation> instantiations = []
 
 	BlockLvl2 accept(DefaultVisitor<IVisitable> v) { v.visit this }
 }

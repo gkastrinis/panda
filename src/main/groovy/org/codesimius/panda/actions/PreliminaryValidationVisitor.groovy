@@ -21,12 +21,17 @@ class PreliminaryValidationVisitor extends DefaultVisitor<IVisitable> {
 
 	private BlockLvl2 prog
 	private BlockLvl1 currComp
+	private List<String> ids = []
 
 	void enter(BlockLvl2 n) {
+		ids = n.components.collect { it.name } + n.instantiations.collect { it.id }
+		ids.findAll { ids.count(it) > 1 }.each {
+			error(Error.ID_IN_USE, it)
+		}
+		n.components = n.components.toSet()
+		n.instantiations = n.instantiations.toSet()
+
 		n.instantiations.each { inst ->
-			def IDs = n.components.collect { it.name } + n.instantiations.collect { it.id }
-			if (IDs.count { it == inst.id } > 1)
-				error(Error.INST_ID_IN_USE, inst.id)
 			if (inst.id.contains(":"))
 				error(Error.COMP_NAME_LIMITS, inst.id)
 
@@ -71,6 +76,9 @@ class PreliminaryValidationVisitor extends DefaultVisitor<IVisitable> {
 	}
 
 	void enter(Relation n) {
+		ids.findAll { n.name.startsWith("$it:") }.each {
+			error(recall(n), Error.REL_NAME_LIMITS, "$it:", n.name)
+		}
 		if (n.name.contains("@")) {
 			def parameter = n.name.split("@").last() as String
 			if (inDecl || inRuleHead)
