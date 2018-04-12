@@ -63,22 +63,12 @@ class DatalogParserImpl extends DatalogBaseListener {
 		def parameters = values[ctx.parameterList()] as List ?: []
 		def superParameters = ctx.superComponent()?.parameterList() ? values[ctx.superComponent().parameterList()] as List : []
 
-		if (componentIDs.any { it == name })
+		if (program.components.any { it.name == name } || program.instantiations.any { it.id == name })
 			error(Error.COMP_ID_IN_USE, name)
-		if (parameters.size() != parameters.toSet().size())
-			error(Error.COMP_DUPLICATE_PARAMS, parameters, name)
-		if (superParameters.any { !(it in parameters) })
-			error(Error.COMP_SUPER_PARAM_MISMATCH, superParameters, parameters, superName)
-		if (name.contains(":"))
-			error(Error.COMP_NAME_LIMITS, name)
 
 		program.components << new BlockLvl1(name, superName, parameters, superParameters, currDatalog)
 
-		values[ctx.identifierList()].each { String id ->
-			if (componentIDs.any { it == id }) error(Error.INST_ID_IN_USE, id)
-			if (id.contains(":")) error(Error.COMP_NAME_LIMITS, id)
-			program.instantiations << new Instantiation(name, id, [])
-		}
+		values[ctx.identifierList()].each { String id -> program.instantiations << new Instantiation(name, id, []) }
 
 		currPendingAnnotations.each {
 			currDatalog.relDeclarations << new RelDeclaration(new Relation(it.key), [], it.value)
@@ -90,8 +80,6 @@ class DatalogParserImpl extends DatalogBaseListener {
 	void exitInstantiation(InstantiationContext ctx) {
 		def parameters = values[ctx.parameterList()] as List ?: []
 		values[ctx.identifierList()].each { String id ->
-			if (componentIDs.any { it == id }) error(Error.INST_ID_IN_USE, id)
-			if (id.contains(":")) error(Error.COMP_NAME_LIMITS, id)
 			program.instantiations << new Instantiation(ctx.IDENTIFIER().text, id, parameters)
 		}
 	}
@@ -138,8 +126,6 @@ class DatalogParserImpl extends DatalogBaseListener {
 		else {
 			def rel = ctx.relation() ? values[ctx.relation()] as Relation : values[ctx.constructor()] as Constructor
 			def types = values[ctx.identifierList()].collect { new Type(suffix(it as String)) }
-			if (rel.exprs.any { rel.exprs.count(it) > 1 }) error(loc, Error.DECL_SAME_VAR)
-			if (rel.exprs.size() != types.size()) error(loc, Error.DECL_MALFORMED)
 			def d = new RelDeclaration(rel, types, annotations)
 			currDatalog.relDeclarations << d
 			rec(d, ctx)
@@ -329,8 +315,6 @@ class DatalogParserImpl extends DatalogBaseListener {
 	}
 
 	void visitErrorNode(ErrorNode node) { throw new RuntimeException("Parsing error") }
-
-	Set<String> getComponentIDs() { program.components.collect { it.name } + program.instantiations.collect { it.id } }
 
 	def suffix(String name) {
 		if (Type.isPrimitive(name)) return name

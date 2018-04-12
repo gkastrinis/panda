@@ -1,6 +1,7 @@
 package org.codesimius.panda.actions.code
 
 import groovy.transform.InheritConstructors
+import org.codesimius.panda.actions.PreliminaryValidationVisitor
 import org.codesimius.panda.actions.ValidationVisitor
 import org.codesimius.panda.actions.graph.DependencyGraphVisitor
 import org.codesimius.panda.actions.tranform.ComponentInstantiationTransformer
@@ -35,7 +36,8 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		def dependencyGraphVisitor = new DependencyGraphVisitor()
 
 		// Transform program before visiting nodes
-		def n = p.accept(dependencyGraphVisitor)
+		def n = p.accept(new PreliminaryValidationVisitor())
+				.accept(dependencyGraphVisitor)
 				.accept(new SyntaxFlatteningTransformer())
 				.accept(new ComponentInstantiationTransformer())
 				.accept(relationInfo)

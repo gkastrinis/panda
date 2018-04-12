@@ -170,8 +170,6 @@ class TypeInferenceTransformer extends DefaultTransformer {
 	}
 
 	IVisitable exit(ConstantExpr n) {
-		if (n.kind == REAL || n.kind == BOOLEAN) error(Error.TYPE_UNSUPP, n.kind as String)
-
 		if (n.kind == INTEGER) tmpExprTypes[n] << Type.TYPE_INT
 		else if (n.kind == REAL) tmpExprTypes[n] << Type.TYPE_FLOAT
 		else if (n.kind == BOOLEAN) tmpExprTypes[n] << Type.TYPE_BOOLEAN

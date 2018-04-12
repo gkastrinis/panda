@@ -31,16 +31,12 @@ class ValidationVisitor extends DefaultVisitor<IVisitable> {
 	IVisitable exit(BlockLvl2 n) { n }
 
 	void enter(RelDeclaration n) {
-		if (n.relation.name in tmpDeclaredRelations) error(recall(n), Error.DECL_MULTIPLE, n.relation.name)
+		if (n.relation.name in tmpDeclaredRelations)
+			error(recall(n), Error.DECL_MULTIPLE, n.relation.name)
 		tmpDeclaredRelations << n.relation.name
 
 		checkAnnotations(n.annotations, [CONSTRUCTOR, FUNCTIONAL, INPUT, OUTPUT], "Declarations")
 		checkArity(n.relation.name, n.types.size(), n)
-
-		if (CONSTRUCTOR in n.annotations && !(n.relation instanceof Constructor))
-			error(recall(n), Error.CONSTR_NON_FUNC, n.relation.name)
-		if (n.relation instanceof Constructor && !(CONSTRUCTOR in n.annotations))
-			error(recall(n), Error.FUNC_NON_CONSTR, n.relation.name)
 
 		n.types.findAll { !it.isPrimitive() }
 				.findAll { !(it in relationInfo.allTypes) }
@@ -48,7 +44,8 @@ class ValidationVisitor extends DefaultVisitor<IVisitable> {
 	}
 
 	void enter(TypeDeclaration n) {
-		if (n.type.name in tmpDeclaredTypes) error(recall(n), Error.DECL_MULTIPLE, n.type.name)
+		if (n.type.name in tmpDeclaredTypes)
+			error(recall(n), Error.DECL_MULTIPLE, n.type.name)
 		tmpDeclaredTypes << n.type.name
 
 		checkAnnotations(n.annotations, [INPUT, OUTPUT, TYPE, TYPEVALUES], "Type")
@@ -88,7 +85,6 @@ class ValidationVisitor extends DefaultVisitor<IVisitable> {
 		def t = new Type(n.name)
 		if (inRuleHead && (t in relationInfo.allTypes) && !(t in relationInfo.typesToOptimize))
 			error(recall(n), Error.TYPE_RULE, n.name)
-
 		if (inRuleBody && !(n.name in relationInfo.declaredRelations))
 			error(recall(n), Error.REL_NO_DECL, n.name)
 

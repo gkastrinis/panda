@@ -77,7 +77,7 @@ enum Error {
 			(INST_ID_IN_USE)           : "Instantiation name `{0}` already in use",
 			(INST_UNKNOWN)             : "Unknown instantiation `{0}`",
 
-			(DECL_SAME_VAR)            : "Same variable used multiple times in declaration",
+			(DECL_SAME_VAR)            : "Same variable `{0}` used multiple times in declaration",
 			(DECL_MALFORMED)           : "Number of variables and types in declaration not matching",
 			(DECL_MULTIPLE)            : "Multiple declarations for relation or type `{0}`",
 			(CONSTR_NON_FUNC)          : "Constructor `{0}` must use functional syntax",
