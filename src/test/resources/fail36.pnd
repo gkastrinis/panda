@@ -1,4 +1,4 @@
-@namespace(v="A") {
-    Foo(x) : int
+component Foo:Bar {
+    P(x) : int
 }
-@namespace(v="B") Bar(x) : string
+as F1

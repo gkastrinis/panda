@@ -1,4 +1,0 @@
-component Foo:Bar {
-    P(x) : int
-}
-as F1
