@@ -60,7 +60,7 @@ class PreliminaryValidationVisitor extends DefaultVisitor<IVisitable> {
 
 	void enter(RelDeclaration n) {
 		if (n.relation.exprs.size() != n.types.size())
-			error(Error.DECL_MALFORMED)
+			error(Error.DECL_MALFORMED, null)
 		n.relation.exprs.findAll { n.relation.exprs.count(it) > 1 }.each {
 			error(Error.DECL_SAME_VAR, it)
 		}
