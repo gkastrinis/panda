@@ -12,7 +12,7 @@ group = "org.codesimius"
 mainClassName = "org.codesimius.panda.Main"
 
 task wrapper(type: Wrapper) {
-	gradleVersion = "3.5"
+	gradleVersion = "4.6"
 }
 
 repositories {
