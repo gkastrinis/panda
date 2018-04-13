@@ -15,7 +15,8 @@ import static org.codesimius.panda.datalog.Annotation.CONSTRUCTOR
 
 class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 
-	Map<String, Graph> graphs = [:]
+	// Each subgraph represents a different component
+	Map<String, Graph> graphs = [:].withDefault { new Graph(it) }
 
 	private Graph globalGraph
 	private Graph currGraph
@@ -26,7 +27,7 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 	private BlockLvl1 currComp
 
 	void enter(BlockLvl2 n) {
-		globalGraph = mkGraph("_")
+		globalGraph = graphs["_"]
 		graphs["_"] = globalGraph
 		origP = n
 		currGraph = globalGraph
@@ -36,30 +37,31 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 		n.components.each { comp ->
 			if (comp.superComponent) {
 				def superComp = n.components.find { it.name == comp.superComponent }
-				def baseNode = mkGraph(comp.name)
-				def superNode = mkGraph(comp.superComponent)
+				def baseGraph = graphs[comp.name]
+				def superGraph = graphs[comp.superComponent]
 				def label = comp.superParameters.withIndex().collect { superParam, int i ->
 					"$superParam/${superComp.parameters[i]}"
 				}.join(", ")
-				mkEdge(baseNode.headNode, superNode.headNode, Edge.Kind.INHERITANCE, label)
+				baseGraph.headNode.connectTo(superGraph.headNode, Edge.Kind.INHERITANCE, label)
 			}
 		}
 		n.instantiations.each { inst ->
-			def instanceNode = mkNode(globalGraph, inst.id, Node.Kind.INSTANCE)
-			mkEdge(instanceNode, graphs[inst.component].headNode, Edge.Kind.INSTANCE)
+			def instanceNode = globalGraph.touch(inst.id, Node.Kind.INSTANCE)
+			instanceNode.connectTo(graphs[inst.component].headNode, Edge.Kind.INSTANCE)
 
 			def comp = n.components.find { it.name == inst.component }
 			Map<String, List<String>> actualToFormals = [:].withDefault { [] }
 			inst.parameters.withIndex().each { String param, int i -> actualToFormals[param] << comp.parameters[i] }
 			actualToFormals.each { actual, formals ->
-				mkEdge(instanceNode, mkNode(globalGraph, actual, Node.Kind.INSTANCE), Edge.Kind.PARAMETER, formals.join(", "))
+				def node = globalGraph.touch(actual, Node.Kind.INSTANCE)
+				instanceNode.connectTo(node, Edge.Kind.PARAMETER, formals.join(", "))
 			}
 		}
 		return n
 	}
 
 	void enter(BlockLvl1 n) {
-		currGraph = mkGraph(n.name)
+		currGraph = graphs[n.name]
 		currComp = n
 	}
 
@@ -69,7 +71,7 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 	}
 
 	void enter(RelDeclaration n) {
-		mkNode(currGraph, n.relation.name, CONSTRUCTOR in n.annotations ? Node.Kind.CONSTRUCTOR : Node.Kind.RELATION)
+		currGraph.touch(n.relation.name, CONSTRUCTOR in n.annotations ? Node.Kind.CONSTRUCTOR : Node.Kind.RELATION)
 	}
 
 	void enter(Rule n) {
@@ -79,10 +81,10 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 
 	IVisitable exit(Rule n) {
 		headRelations.each { headRel ->
-			def headRelNode = mkNode(currGraph, headRel.name, headRel.isConstructor ? Node.Kind.CONSTRUCTOR : Node.Kind.RELATION)
+			def headRelNode = currGraph.touch(headRel.name, headRel.isConstructor ? Node.Kind.CONSTRUCTOR : Node.Kind.RELATION)
 			bodyRelations.each { bodyRel ->
-				def relNode = mkNode(currGraph, bodyRel.name, bodyRel.isConstructor ? Node.Kind.CONSTRUCTOR : Node.Kind.RELATION)
-				mkEdge(headRelNode, relNode, bodyRel.isNegated ? Edge.Kind.NEGATED : Edge.Kind.RELATION)
+				def relNode = currGraph.touch(bodyRel.name, bodyRel.isConstructor ? Node.Kind.CONSTRUCTOR : Node.Kind.RELATION)
+				headRelNode.connectTo(relNode, bodyRel.isNegated ? Edge.Kind.NEGATED : Edge.Kind.RELATION)
 			}
 		}
 		null
@@ -107,27 +109,12 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 
 		if (n.name.contains("@") && currGraph) {
 			def parameter = n.name.split("@").last()
-			def relNode = mkNode(currGraph, n.name, Node.Kind.PARAMETER)
-			mkEdge(relNode, currGraph.headNode, Edge.Kind.PARAMETER, parameter)
+			def relNode = currGraph.touch(n.name, Node.Kind.PARAMETER)
+			relNode.connectTo(currGraph.headNode, Edge.Kind.PARAMETER, parameter)
 		}
 
 		if (inRuleHead) headRelations << new RelInfo(n.name, false, false)
 		else if (inRuleBody) bodyRelations << new RelInfo(n.name, false, inNegation)
-	}
-
-	Graph mkGraph(String name) {
-		if (!graphs[name]) graphs[name] = new Graph(name)
-		graphs[name]
-	}
-
-	static Node mkNode(Graph g, String name, Node.Kind kind) {
-		def id = "${g.name}:$name" as String
-		if (!g.nodes[id]) g.nodes[id] = new Node(id, name, kind)
-		g.nodes[id]
-	}
-
-	static void mkEdge(Node from, Node to, Edge.Kind kind, String label = "") {
-		from.outEdges << new Edge(to, kind, label)
 	}
 
 	@Canonical
