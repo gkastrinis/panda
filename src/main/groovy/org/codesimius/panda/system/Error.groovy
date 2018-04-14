@@ -19,6 +19,7 @@ enum Error {
 	COMP_INST_ARITY,
 	COMP_UNKNOWN_PARAM,
 	COMP_NAME_LIMITS,
+	INST_CYCLE,
 	INST_UNKNOWN,
 	ID_IN_USE,
 
@@ -49,14 +50,7 @@ enum Error {
 	TYPE_UNKNOWN,
 	TYPE_RULE,
 
-//	MULTIPLE_ENT_DECLS,
-//	DEP_CYCLE,
 //	DEP_GLOBAL,
-//	CMD_DIRECTIVE,
-//	CMD_EVAL,
-//	CMD_RULE,
-//	CMD_NO_DECL,
-//	CMD_NO_IMPORT,
 
 	static Map<Error, String> msgMap = [
 			(ANNOTATION_UNKNOWN)       : "Unknown annotation `{0}`",
@@ -73,6 +67,7 @@ enum Error {
 			(COMP_INST_ARITY)          : "Wrong arity for instantiation parameters ({0}) of component `{1}` as `{2}`",
 			(COMP_UNKNOWN_PARAM)       : "Unknown `@` parameter `{0}` used in component",
 			(COMP_NAME_LIMITS)         : "Non-valid character `:` in component/instantiation name (`{0}`)",
+			(INST_CYCLE)               : "Cycle detected in instantiations ({0})",
 			(INST_UNKNOWN)             : "Unknown instantiation `{0}`",
 			(ID_IN_USE)                : "Component or instantiation name `{0}` already in use",
 
@@ -103,14 +98,7 @@ enum Error {
 			(TYPE_UNKNOWN)             : "Unknown type `{0}`",
 			(TYPE_RULE)                : "Type `{0}` used as a normal relation in rule head",
 
-//			(MULTIPLE_ENT_DECLS)       : "Multiple declarations for Type `{0}` in previous components",
-//			(DEP_CYCLE)                : "Cycle detected in the dependency graph of components",
 //			(DEP_GLOBAL)               : "Reintroducing relation `{0}` to global space",
-//			(CMD_DIRECTIVE)            : "Invalid directive in command block `{0}`",
-//			(CMD_EVAL)                 : "EVAL property already specified in command block `{0}`",
-//			(CMD_RULE)                 : "Normal rules are not supported in a command block",
-//			(CMD_NO_DECL)              : "Relation `{0}` is imported but has no declaration",
-//			(CMD_NO_IMPORT)            : "Relation `{0}` is declared but not imported",
 	]
 
 	static void warn(SourceLocation loc = null, Error errorId, Object... values) {

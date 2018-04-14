@@ -1,0 +1,9 @@
+component Foo<X> {
+    P(x) <- Q@X(x)
+}
+component Bar<Y> {
+    Q(x) <- P@Y(x)
+}
+
+Foo<B> as F
+Bar<F> as B

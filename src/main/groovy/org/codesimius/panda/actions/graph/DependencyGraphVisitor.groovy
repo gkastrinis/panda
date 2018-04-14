@@ -10,8 +10,10 @@ import org.codesimius.panda.datalog.clause.Rule
 import org.codesimius.panda.datalog.element.NegationElement
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
+import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.datalog.Annotation.CONSTRUCTOR
+import static org.codesimius.panda.system.Error.error
 
 class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 
@@ -57,6 +59,9 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 				instanceNode.connectTo(node, Edge.Kind.PARAMETER, formals.join(", "))
 			}
 		}
+
+		topologicalSort()
+
 		return n
 	}
 
@@ -115,6 +120,30 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 
 		if (inRuleHead) headRelations << new RelInfo(n.name, false, false)
 		else if (inRuleBody) bodyRelations << new RelInfo(n.name, false, inNegation)
+	}
+
+	// Kahn's algorithm
+	void topologicalSort() {
+		List<Set<Node>> layers = []
+
+		// Just sort instantiations nodes (top level graph)
+		Map<Node, Integer> inDegrees = graphs["_"].nodes.values()
+				.findAll { it.kind == Node.Kind.INSTANCE }
+				.collectEntries { [(it): it.inEdges.size()] }
+
+		Set<Node> zeroInNodes = inDegrees.findAll { !it.value }.collect { it.key as Node }
+
+		while (!zeroInNodes.isEmpty()) {
+			zeroInNodes.each { n ->
+				inDegrees.remove(n)
+				// Remove incoming edge for nodes in the top level graph
+				n.outEdges.findAll { graphs["_"].nodes[it.node.id] }.collect { it.node }.each { inDegrees[it]-- }
+			}
+			layers << zeroInNodes
+			zeroInNodes = inDegrees.findAll { !it.value }.collect { it.key as Node }
+		}
+		if (!inDegrees.isEmpty())
+			error(Error.INST_CYCLE, inDegrees.collect { it.key.name })
 	}
 
 	@Canonical

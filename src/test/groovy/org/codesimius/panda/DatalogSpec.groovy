@@ -90,6 +90,7 @@ class DatalogSpec extends Specification {
 		"fail40" | Error.COMP_NAME_LIMITS
 		"fail41" | Error.REL_NAME_LIMITS
 		"fail42" | Error.REL_NAME_LIMITS
+		"fail43" | Error.INST_CYCLE
 //		"fail100" | Error.DEP_CYCLE
 //		"fail101" | Error.CMD_RULE
 //		"fail103" | Error.CMD_DIRECTIVE

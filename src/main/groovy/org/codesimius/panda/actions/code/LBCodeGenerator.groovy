@@ -3,6 +3,7 @@ package org.codesimius.panda.actions.code
 import groovy.transform.InheritConstructors
 import org.codesimius.panda.actions.PreliminaryValidationVisitor
 import org.codesimius.panda.actions.ValidationVisitor
+import org.codesimius.panda.actions.graph.DependencyGraphVisitor
 import org.codesimius.panda.actions.tranform.ComponentInstantiationTransformer
 import org.codesimius.panda.actions.tranform.InputFactsTransformer
 import org.codesimius.panda.actions.tranform.SyntaxFlatteningTransformer
@@ -14,6 +15,7 @@ import org.codesimius.panda.datalog.clause.TypeDeclaration
 import org.codesimius.panda.datalog.element.AggregationElement
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
+import org.codesimius.panda.system.DOTGenerator
 import org.codesimius.panda.system.Result
 
 import static org.codesimius.panda.datalog.Annotation.*
@@ -29,8 +31,11 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 		createUniqueFile("out_", ".logic")
 		results << new Result(Result.Kind.LOGIC, currentFile)
 
+		def dependencyGraphVisitor = new DependencyGraphVisitor()
+
 		// Transform program before visiting nodes
 		def n = p.accept(new PreliminaryValidationVisitor())
+				.accept(dependencyGraphVisitor)
 				.accept(new SyntaxFlatteningTransformer())
 				.accept(new ComponentInstantiationTransformer())
 				.accept(relationInfo)
@@ -44,6 +49,8 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 		functionalRelations = n.datalog.relDeclarations
 				.findAll { FUNCTIONAL in it.annotations }
 				.collect { it.relation.name } as Set
+
+		new DOTGenerator(outDir, dependencyGraphVisitor).gen()
 
 		super.visit(n)
 	}
