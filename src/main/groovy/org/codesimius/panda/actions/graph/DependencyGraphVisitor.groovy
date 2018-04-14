@@ -143,7 +143,7 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 			zeroInNodes = inDegrees.findAll { !it.value }.collect { it.key as Node }
 		}
 		if (!inDegrees.isEmpty())
-			error(Error.INST_CYCLE, inDegrees.collect { it.key.name })
+			error(Error.INST_CYCLE, inDegrees.collect { it.key.title })
 	}
 
 	@Canonical

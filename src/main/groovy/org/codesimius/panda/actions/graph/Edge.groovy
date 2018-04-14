@@ -13,5 +13,5 @@ class Edge {
 	Kind kind
 	String label
 
-	String toString() { "$kind:$label:${node.name}" }
+	String toString() { "$kind:$label:${node.title}" }
 }

@@ -46,17 +46,17 @@ class DOTGenerator {
 				emit """label="$graphName";style=rounded;bgcolor="$COMP_COLOR";peripheries=0;fontname="$FONT";"""
 			}
 			graph.nodes.each { nodeId, node ->
-				if (nodeId == node.name)
+				if (nodeId == node.title)
 					emit """"$nodeId" [label="",shape=circle,fillcolor=black,width=0.15];"""
 				else if (node.kind == Node.Kind.PARAMETER) {
-					def name = node.name.split("@").first()
+					def name = node.title.split("@").first()
 					emit """"$nodeId" [label="$name",shape=diamond,fillcolor="$PARAM_NODE_COLOR"];"""
 				} else if (node.kind == Node.Kind.INSTANCE)
-					emit """"$nodeId" [label="${node.name}",shape=octagon,fillcolor="$INST_NODE_COLOR"];"""
+					emit """"$nodeId" [label="${node.title}",shape=octagon,fillcolor="$INST_NODE_COLOR"];"""
 				else if (node.kind == Node.Kind.CONSTRUCTOR)
-					emit """"$nodeId" [label="${node.name}",shape=doublecircle,fillcolor="$CONSTR_NODE_COLOR"];"""
+					emit """"$nodeId" [label="${node.title}",shape=doublecircle,fillcolor="$CONSTR_NODE_COLOR"];"""
 				else
-					emit """"$nodeId" [label="${node.name}",shape=circle];"""
+					emit """"$nodeId" [label="${node.title}",shape=circle];"""
 
 				node.outEdges.each {
 					def toId = it.node.id

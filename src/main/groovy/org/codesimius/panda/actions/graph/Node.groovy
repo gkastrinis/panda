@@ -14,7 +14,7 @@ class Node {
 	}
 
 	String id
-	String name
+	String title
 	Kind kind
 	Set<Edge> outEdges = [] as Set
 	Set<Edge> inEdges = [] as Set
