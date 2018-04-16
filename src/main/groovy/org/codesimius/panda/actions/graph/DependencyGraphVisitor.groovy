@@ -129,7 +129,7 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 		// Just sort instantiations nodes (top level graph)
 		Map<Node, Integer> inDegrees = graphs["_"].nodes.values()
 				.findAll { it.kind == Node.Kind.INSTANCE }
-				.collectEntries { [(it): it.inEdges.size()] }
+				.collectEntries { [(it): it.inEdgesCount] }
 
 		Set<Node> zeroInNodes = inDegrees.findAll { !it.value }.collect { it.key as Node }
 
