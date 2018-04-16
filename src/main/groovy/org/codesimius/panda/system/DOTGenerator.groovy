@@ -9,6 +9,8 @@ import org.codesimius.panda.actions.graph.Node
 import java.nio.file.Files
 import java.nio.file.Paths
 
+import static org.codesimius.panda.actions.graph.DependencyGraphVisitor.INSTANTIATION as INSTANTIATION_GRAPH
+
 @Canonical
 class DOTGenerator {
 
@@ -35,13 +37,31 @@ class DOTGenerator {
 		def log = LogFactory.getLog(DOTGenerator.class)
 		log.info("[DD] GRAPH: ${f.canonicalPath}")
 
+		def pendingEdges = []
+		def getEdge = { String nodeId, Node node, Edge edge ->
+			def toId = edge.node.id
+			def l = edge.label
+			if (edge.kind == Edge.Kind.INHERITANCE)
+				""""$nodeId" -> "$toId" [label="$l",fontcolor="$INHERIT_FONT_COLOR",color="$INHERIT_FONT_COLOR",style=dashed];"""
+			else if (edge.kind == Edge.Kind.PARAMETER && node.kind == Node.Kind.PARAMETER)
+				""""$nodeId" -> "$toId" [label="$l",fontcolor="$PARAM_FONT_COLOR",color="$PARAM_FONT_COLOR:$PARAM_NODE_COLOR",penwidth=2,arrowhead=none];"""
+			else if (edge.kind == Edge.Kind.PARAMETER)
+				""""$nodeId" -> "$toId" [label="$l",fontcolor="$PARAM_FONT_COLOR",color="$PARAM_FONT_COLOR:$INST_NODE_COLOR",penwidth=2];"""
+			else if (edge.kind == Edge.Kind.INSTANCE)
+				""""$nodeId" -> "$toId" [color="$INST_FONT_COLOR",arrowhead=none];"""
+			else if (edge.kind == Edge.Kind.NEGATED)
+				""""$nodeId" -> "$toId" [color="$NEG_FONT_COLOR"];"""
+			else
+				""""$nodeId" -> "$toId" [color="$DEF_FONT_COLOR"];"""
+		}
+
 		emit "digraph {"
 		emit "rankdir=LR;"
 		emit "outputorder=edgesfirst;"
 		emit """node [style=filled,fillcolor="$DEF_NODE_COLOR",fontname="$FONT"];"""
 		emit """edge [fontname="$FONT"];"""
 		dependencyGraph.graphs.each { graphName, graph ->
-			if (graphName != "_") {
+			if (graphName != INSTANTIATION_GRAPH) {
 				emit "subgraph cluster_$graphName {"
 				emit """label="$graphName";style=rounded;bgcolor="$COMP_COLOR";peripheries=0;fontname="$FONT";"""
 			}
@@ -60,24 +80,16 @@ class DOTGenerator {
 
 				node.outEdges.each {
 					def toId = it.node.id
-					def l = it.label
-
-					if (it.kind == Edge.Kind.INHERITANCE)
-						emit """"$nodeId" -> "$toId" [label="$l",fontcolor="$INHERIT_FONT_COLOR",color="$INHERIT_FONT_COLOR",style=dashed];"""
-					else if (it.kind == Edge.Kind.PARAMETER && node.kind == Node.Kind.PARAMETER)
-						emit """"$nodeId" -> "$toId" [label="$l",fontcolor="$PARAM_FONT_COLOR",color="$PARAM_FONT_COLOR:$PARAM_NODE_COLOR",penwidth=2,arrowhead=none];"""
-					else if (it.kind == Edge.Kind.PARAMETER)
-						emit """"$nodeId" -> "$toId" [label="$l",fontcolor="$PARAM_FONT_COLOR",color="$PARAM_FONT_COLOR:$INST_NODE_COLOR",penwidth=2];"""
-					else if (it.kind == Edge.Kind.INSTANCE)
-						emit """"$nodeId" -> "$toId" [color="$INST_FONT_COLOR",arrowhead=none];"""
-					else if (it.kind == Edge.Kind.NEGATED)
-						emit """"$nodeId" -> "$toId" [color="$NEG_FONT_COLOR"];"""
+					def str = getEdge(nodeId, node, it)
+					if (graphName != INSTANTIATION_GRAPH && dependencyGraph.graphs[INSTANTIATION_GRAPH].nodes[toId])
+						pendingEdges << str
 					else
-						emit """"$nodeId" -> "$toId" [color="$DEF_FONT_COLOR"];"""
+						emit str
 				}
 			}
-			if (graphName != "_") emit "}"
+			if (graphName != INSTANTIATION_GRAPH) emit "}"
 		}
+		pendingEdges.each { emit it }
 		emit "}"
 		fw.close()
 	}

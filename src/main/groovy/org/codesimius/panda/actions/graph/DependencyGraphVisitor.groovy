@@ -20,7 +20,6 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 	// Each subgraph represents a different component
 	Map<String, Graph> graphs = [:].withDefault { new Graph(it) }
 
-	private Graph globalGraph
 	private Graph currGraph
 	private boolean inNegation
 	private Set<RelInfo> headRelations
@@ -28,11 +27,12 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 	private BlockLvl2 origP
 	private BlockLvl1 currComp
 
+	static final String GLOBAL = ""
+	static final String INSTANTIATION = null
+
 	void enter(BlockLvl2 n) {
-		globalGraph = graphs["_"]
-		graphs["_"] = globalGraph
+		currGraph = graphs[GLOBAL]
 		origP = n
-		currGraph = globalGraph
 	}
 
 	IVisitable exit(BlockLvl2 n) {
@@ -48,17 +48,20 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 			}
 		}
 		n.instantiations.each { inst ->
-			def instanceNode = globalGraph.touch(inst.id, Node.Kind.INSTANCE)
+			def instanceNode = graphs[INSTANTIATION].touch(inst.id, Node.Kind.INSTANCE)
 			instanceNode.connectTo(graphs[inst.component].headNode, Edge.Kind.INSTANCE)
 
 			def comp = n.components.find { it.name == inst.component }
 			Map<String, List<String>> actualToFormals = [:].withDefault { [] }
 			inst.parameters.withIndex().each { String param, int i -> actualToFormals[param] << comp.parameters[i] }
 			actualToFormals.each { actual, formals ->
-				def node = globalGraph.touch(actual, Node.Kind.INSTANCE)
+				def node = graphs[INSTANTIATION].touch(actual, Node.Kind.INSTANCE)
 				instanceNode.connectTo(node, Edge.Kind.PARAMETER, formals.join(", "))
 			}
 		}
+		// Implicit edge from global component graph to instantiation "_"
+		def node = graphs[INSTANTIATION].touch("_", Node.Kind.INSTANCE)
+		node.connectTo(graphs[GLOBAL].headNode, Edge.Kind.INSTANCE)
 
 		topologicalSort()
 
@@ -71,7 +74,7 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 	}
 
 	IVisitable exit(BlockLvl1 n) {
-		currGraph = globalGraph
+		currGraph = graphs[GLOBAL]
 		currComp = null
 	}
 
@@ -112,10 +115,14 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 	void enter(Relation n) {
 		if (inDecl) return
 
-		if (n.name.contains("@") && currGraph) {
+		if (n.name.contains("@")) {
 			def parameter = n.name.split("@").last()
 			def relNode = currGraph.touch(n.name, Node.Kind.PARAMETER)
-			relNode.connectTo(currGraph.headNode, Edge.Kind.PARAMETER, parameter)
+			// In global component, thus `@` refers to an instantiation
+			if (!currComp)
+				relNode.connectTo(graphs[INSTANTIATION].touch(parameter, Node.Kind.INSTANCE), Edge.Kind.PARAMETER)
+			else
+				relNode.connectTo(currGraph.headNode, Edge.Kind.PARAMETER, parameter)
 		}
 
 		if (inRuleHead) headRelations << new RelInfo(n.name, false, false)
@@ -127,7 +134,7 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 		List<Set<Node>> layers = []
 
 		// Just sort instantiations nodes (top level graph)
-		Map<Node, Integer> inDegrees = graphs["_"].nodes.values()
+		Map<Node, Integer> inDegrees = graphs[INSTANTIATION].nodes.values()
 				.findAll { it.kind == Node.Kind.INSTANCE }
 				.collectEntries { [(it): it.inEdgesCount] }
 
@@ -137,7 +144,9 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 			zeroInNodes.each { n ->
 				inDegrees.remove(n)
 				// Remove incoming edge for nodes in the top level graph
-				n.outEdges.findAll { graphs["_"].nodes[it.node.id] }.collect { it.node }.each { inDegrees[it]-- }
+				n.outEdges.findAll { graphs[INSTANTIATION].nodes[it.node.id] }.collect { it.node }.each {
+					inDegrees[it]--
+				}
 			}
 			layers << zeroInNodes
 			zeroInNodes = inDegrees.findAll { !it.value }.collect { it.key as Node }
