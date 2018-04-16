@@ -56,7 +56,7 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 			inst.parameters.withIndex().each { String param, int i -> actualToFormals[param] << comp.parameters[i] }
 			actualToFormals.each { actual, formals ->
 				def node = graphs[INSTANTIATION].touch(actual, Node.Kind.INSTANCE)
-				instanceNode.connectTo(node, Edge.Kind.PARAM_COMP, formals.join(", "))
+				instanceNode.connectTo(node, Edge.Kind.ACTUAL_PARAM, formals.join(", "))
 			}
 		}
 		// Implicit edge from global component graph to instantiation "_"
@@ -92,7 +92,7 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 			def headRelNode = currGraph.touch(headRel.name, headRel.isConstructor ? Node.Kind.CONSTRUCTOR : Node.Kind.RELATION)
 			bodyRelations.each { bodyRel ->
 				def relNode = currGraph.touch(bodyRel.name, bodyRel.isConstructor ? Node.Kind.CONSTRUCTOR : Node.Kind.RELATION)
-				headRelNode.connectTo(relNode, bodyRel.isNegated ? Edge.Kind.NEGATED : Edge.Kind.RELATION)
+				headRelNode.connectTo(relNode, bodyRel.isNegated ? Edge.Kind.NEGATION : Edge.Kind.RELATION)
 			}
 		}
 		null
@@ -118,11 +118,12 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 		if (n.name.contains("@")) {
 			def parameter = n.name.split("@").last()
 			def relNode = currGraph.touch(n.name, Node.Kind.PARAMETER)
-			// In global component, thus `@` refers to an instantiation
+			// Relation refers to a certain instantiation (in global space)
 			if (!currComp)
-				relNode.connectTo(graphs[INSTANTIATION].touch(parameter, Node.Kind.INSTANCE), Edge.Kind.PARAM_REL)
+				relNode.connectTo(graphs[INSTANTIATION].touch(parameter, Node.Kind.INSTANCE), Edge.Kind.REVERSE_PARAM)
+			// Relation refers to formal param (inside a component)
 			else
-				relNode.connectTo(currGraph.headNode, Edge.Kind.PARAM_REL, parameter)
+				relNode.connectTo(currGraph.headNode, Edge.Kind.FORMAL_PARAM, parameter)
 		}
 
 		if (inRuleHead) headRelations << new RelInfo(n.name, false, false)
@@ -136,7 +137,7 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 		// Just sort instantiations nodes (top level graph)
 		Map<Node, Integer> inDegrees = graphs[INSTANTIATION].nodes.values()
 				.findAll { it.kind == Node.Kind.INSTANCE }
-				.collectEntries { [(it): it.inEdgesCount] }
+				.collectEntries { [(it): it.inEdgesCounters[Edge.Kind.ACTUAL_PARAM]] }
 
 		Set<Node> zeroInNodes = inDegrees.findAll { !it.value }.collect { it.key as Node }
 

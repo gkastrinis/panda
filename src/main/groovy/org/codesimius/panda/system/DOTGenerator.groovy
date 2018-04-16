@@ -43,13 +43,15 @@ class DOTGenerator {
 			def l = edge.label
 			if (edge.kind == Edge.Kind.INHERITANCE)
 				""""$nodeId" -> "$toId" [label="$l",fontcolor="$INHERIT_FONT_COLOR",color="$INHERIT_FONT_COLOR",style=dashed];"""
-			else if (edge.kind == Edge.Kind.PARAM_REL)
-				""""$nodeId" -> "$toId" [label="$l",fontcolor="$PARAM_FONT_COLOR",color="$PARAM_FONT_COLOR:$PARAM_NODE_COLOR",penwidth=2,arrowhead=none];"""
-			else if (edge.kind == Edge.Kind.PARAM_COMP)
-				""""$nodeId" -> "$toId" [label="$l",fontcolor="$PARAM_FONT_COLOR",color="$PARAM_FONT_COLOR:$INST_NODE_COLOR",penwidth=2];"""
 			else if (edge.kind == Edge.Kind.INSTANCE)
-				""""$nodeId" -> "$toId" [color="$INST_FONT_COLOR",arrowhead=none];"""
-			else if (edge.kind == Edge.Kind.NEGATED)
+				""""$nodeId" -> "$toId" [color="$INST_FONT_COLOR",arrowhead=none,style=dashed,penwidth=2];"""
+			else if (edge.kind == Edge.Kind.FORMAL_PARAM)
+				""""$nodeId" -> "$toId" [label="$l",fontcolor="$PARAM_FONT_COLOR",color="$PARAM_FONT_COLOR:$PARAM_NODE_COLOR",penwidth=2,arrowhead=none];"""
+			else if (edge.kind == Edge.Kind.ACTUAL_PARAM)
+				""""$nodeId" -> "$toId" [label="$l",fontcolor="$PARAM_FONT_COLOR",color="$PARAM_FONT_COLOR:$INST_NODE_COLOR",penwidth=2];"""
+			else if (edge.kind == Edge.Kind.REVERSE_PARAM && edge.node.kind == Node.Kind.INSTANCE)
+				""""$nodeId" -> "$toId" [label="$l",fontcolor="$PARAM_FONT_COLOR",color="$PARAM_FONT_COLOR:$PARAM_NODE_COLOR",penwidth=2];"""
+			else if (edge.kind == Edge.Kind.NEGATION)
 				""""$nodeId" -> "$toId" [color="$NEG_FONT_COLOR"];"""
 			else
 				""""$nodeId" -> "$toId" [color="$DEF_FONT_COLOR"];"""
@@ -80,9 +82,8 @@ class DOTGenerator {
 
 				node.outEdges.each {
 					def str = getEdge(nodeId, node, it)
-					// Parameter node connecting to "global" instantiation nodes
-					// Edge must be declared outside the current subgraph
-					if (graphName != INSTANTIATION_GRAPH && it.kind == Edge.Kind.PARAM_REL)
+					// Edges to different subgraphs must be declared outside the current one
+					if (it.kind == Edge.Kind.REVERSE_PARAM)
 						pendingEdges << str
 					else
 						emit str
