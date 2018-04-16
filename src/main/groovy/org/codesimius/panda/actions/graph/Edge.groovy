@@ -6,7 +6,8 @@ import groovy.transform.Canonical
 class Edge {
 
 	enum Kind {
-		INHERITANCE, INSTANCE, PARAMETER, RELATION, NEGATED
+		INHERITANCE, INSTANCE, PARAM_COMP, PARAM_REL,
+		RELATION, NEGATED
 	}
 
 	Node node

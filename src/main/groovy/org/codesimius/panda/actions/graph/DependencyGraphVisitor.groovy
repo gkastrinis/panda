@@ -56,7 +56,7 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 			inst.parameters.withIndex().each { String param, int i -> actualToFormals[param] << comp.parameters[i] }
 			actualToFormals.each { actual, formals ->
 				def node = graphs[INSTANTIATION].touch(actual, Node.Kind.INSTANCE)
-				instanceNode.connectTo(node, Edge.Kind.PARAMETER, formals.join(", "))
+				instanceNode.connectTo(node, Edge.Kind.PARAM_COMP, formals.join(", "))
 			}
 		}
 		// Implicit edge from global component graph to instantiation "_"
@@ -120,9 +120,9 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 			def relNode = currGraph.touch(n.name, Node.Kind.PARAMETER)
 			// In global component, thus `@` refers to an instantiation
 			if (!currComp)
-				relNode.connectTo(graphs[INSTANTIATION].touch(parameter, Node.Kind.INSTANCE), Edge.Kind.PARAMETER)
+				relNode.connectTo(graphs[INSTANTIATION].touch(parameter, Node.Kind.INSTANCE), Edge.Kind.PARAM_REL)
 			else
-				relNode.connectTo(currGraph.headNode, Edge.Kind.PARAMETER, parameter)
+				relNode.connectTo(currGraph.headNode, Edge.Kind.PARAM_REL, parameter)
 		}
 
 		if (inRuleHead) headRelations << new RelInfo(n.name, false, false)

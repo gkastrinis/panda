@@ -21,6 +21,6 @@ class Node {
 
 	void connectTo(Node to, Edge.Kind kind, String label = "") {
 		outEdges << new Edge(to, kind, label)
-		to.inEdgesCount++
+		if (kind != Edge.Kind.PARAM_REL) to.inEdgesCount++
 	}
 }

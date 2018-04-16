@@ -43,9 +43,9 @@ class DOTGenerator {
 			def l = edge.label
 			if (edge.kind == Edge.Kind.INHERITANCE)
 				""""$nodeId" -> "$toId" [label="$l",fontcolor="$INHERIT_FONT_COLOR",color="$INHERIT_FONT_COLOR",style=dashed];"""
-			else if (edge.kind == Edge.Kind.PARAMETER && node.kind == Node.Kind.PARAMETER)
+			else if (edge.kind == Edge.Kind.PARAM_REL)
 				""""$nodeId" -> "$toId" [label="$l",fontcolor="$PARAM_FONT_COLOR",color="$PARAM_FONT_COLOR:$PARAM_NODE_COLOR",penwidth=2,arrowhead=none];"""
-			else if (edge.kind == Edge.Kind.PARAMETER)
+			else if (edge.kind == Edge.Kind.PARAM_COMP)
 				""""$nodeId" -> "$toId" [label="$l",fontcolor="$PARAM_FONT_COLOR",color="$PARAM_FONT_COLOR:$INST_NODE_COLOR",penwidth=2];"""
 			else if (edge.kind == Edge.Kind.INSTANCE)
 				""""$nodeId" -> "$toId" [color="$INST_FONT_COLOR",arrowhead=none];"""
@@ -79,9 +79,10 @@ class DOTGenerator {
 					emit """"$nodeId" [label="${node.title}",shape=circle];"""
 
 				node.outEdges.each {
-					def toId = it.node.id
 					def str = getEdge(nodeId, node, it)
-					if (graphName != INSTANTIATION_GRAPH && dependencyGraph.graphs[INSTANTIATION_GRAPH].nodes[toId])
+					// Parameter node connecting to "global" instantiation nodes
+					// Edge must be declared outside the current subgraph
+					if (graphName != INSTANTIATION_GRAPH && it.kind == Edge.Kind.PARAM_REL)
 						pendingEdges << str
 					else
 						emit str
