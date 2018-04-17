@@ -14,6 +14,7 @@ import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.datalog.Annotation.CONSTRUCTOR
 import static org.codesimius.panda.system.Error.error
+import static org.codesimius.panda.system.SourceManager.recallStatic as recall
 
 class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 
@@ -26,6 +27,8 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 	private Set<RelInfo> bodyRelations
 	private BlockLvl2 origP
 	private BlockLvl1 currComp
+	// Indirect edges are added in the end so we can first check if the target node exists
+	private Map<Node, String> pendingIndirectEdges = [:]
 
 	static final String GLOBAL = "_"
 	static final String INSTANTIATION = null
@@ -50,6 +53,14 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 				def paramNode = graphs[INSTANTIATION].touch(it, Node.Kind.INSTANCE)
 				instanceNode.connectTo(paramNode, Edge.Kind.ACTUAL_PARAM)
 			}
+		}
+		pendingIndirectEdges.each { relNode, complexName ->
+			def (String name, String parameter) = complexName.split("@")
+			def graphName = parameter == "_" ? GLOBAL : parameter
+			if (!graphs[graphName].nodes.values().any { it.title == name })
+				error(recall(n), Error.REL_EXT_NO_DECL, name)
+			def paramNode = graphs[graphName].touch(name, Node.Kind.RELATION)
+			relNode.connectTo(paramNode, Edge.Kind.INDIRECT_PARAM)
 		}
 
 		topologicalSort()
@@ -105,10 +116,8 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 		if (inDecl) return
 
 		if (n.name.contains("@")) {
-			def (String name, String parameter) = n.name.split("@")
 			def relNode = currGraph.touch(n.name, Node.Kind.PARAMETER)
-			def paramNode = graphs[parameter == "_" ? GLOBAL : parameter].touch(name, Node.Kind.RELATION)
-			relNode.connectTo(paramNode, Edge.Kind.INDIRECT_PARAM)
+			pendingIndirectEdges[relNode] = n.name
 		}
 
 		if (inRuleHead) headRelations << new RelInfo(n.name, false, false)

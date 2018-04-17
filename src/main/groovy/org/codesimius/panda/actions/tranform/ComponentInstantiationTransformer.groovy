@@ -20,9 +20,6 @@ class ComponentInstantiationTransformer extends DefaultTransformer {
 	// Keep a mapping from current component parameter to the appropriate instantiation parameter
 	private Map<String, String> mapParams
 
-	// External relations (with "@") that need to be checked for having a declaration
-	//private Set<String> pendingRelations = [] as Set
-
 	// Create new components for each instantiation with the appropriate parameter mappings
 	// A component might be visited multiple times (depending on instantiations)
 	// Components with no instantiations are skipped
@@ -54,12 +51,6 @@ class ComponentInstantiationTransformer extends DefaultTransformer {
 
 			newCurrComp
 		}
-
-		//def relationInfo = new RelationInfoVisitor()
-		//relationInfo.visit instantiatedP
-		//pendingRelations.findAll { !(it in relationInfo.declaredRelations) }.each {
-		//	error(recall(n), Error.REL_EXT_NO_DECL, it.split(":").drop(1).join(":"))
-		//}
 
 		// Keep instantiations to use in the dependency graph generation
 		new BlockLvl2(n.datalog, newComponents + extraComponents, n.instantiations)
