@@ -17,7 +17,7 @@ import org.codesimius.panda.datalog.element.relation.RecordType
 import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.element.relation.Type
 import org.codesimius.panda.datalog.expr.RecordExpr
-import org.codesimius.panda.system.DOTGenerator
+import org.codesimius.panda.system.DependencyGraphDOTGenerator
 import org.codesimius.panda.system.Result
 
 import static org.codesimius.panda.datalog.Annotation.*
@@ -48,7 +48,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 				.accept(new ConstructorTransformer(relationInfo, typeInferenceTransformer))
 				.accept(new AssignTransformer(varInfo))
 
-		new DOTGenerator(outDir, dependencyGraphVisitor).gen()
+		new DependencyGraphDOTGenerator(outDir, dependencyGraphVisitor).gen()
 
 		super.visit(n)
 	}

@@ -13,7 +13,7 @@ import static org.codesimius.panda.actions.graph.DependencyGraphVisitor.GLOBAL a
 import static org.codesimius.panda.actions.graph.DependencyGraphVisitor.INSTANTIATION as INSTANTIATION_GRAPH
 
 @Canonical
-class DOTGenerator {
+class DependencyGraphDOTGenerator {
 
 	File outDir
 	DependencyGraphVisitor dependencyGraph
@@ -23,7 +23,7 @@ class DOTGenerator {
 		def fw = new FileWriter(f)
 		def emit = { fw.write "$it\n" }
 
-		def log = LogFactory.getLog(DOTGenerator.class)
+		def log = LogFactory.getLog(DependencyGraphDOTGenerator.class)
 		log.info("[DD] GRAPH: ${f.canonicalPath}")
 
 		def edges = []

@@ -12,7 +12,7 @@ import org.codesimius.panda.datalog.clause.TypeDeclaration
 import org.codesimius.panda.datalog.element.AggregationElement
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
-import org.codesimius.panda.system.DOTGenerator
+import org.codesimius.panda.system.DependencyGraphDOTGenerator
 import org.codesimius.panda.system.Result
 
 import static org.codesimius.panda.datalog.Annotation.*
@@ -48,7 +48,7 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 				.findAll { FUNCTIONAL in it.annotations }
 				.collect { it.relation.name } as Set
 
-		new DOTGenerator(outDir, dependencyGraphVisitor).gen()
+		new DependencyGraphDOTGenerator(outDir, dependencyGraphVisitor).gen()
 
 		super.visit(n)
 	}
