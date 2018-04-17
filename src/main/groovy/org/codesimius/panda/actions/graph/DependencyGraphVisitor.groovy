@@ -27,7 +27,7 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 	private BlockLvl2 origP
 	private BlockLvl1 currComp
 
-	static final String GLOBAL = ""
+	static final String GLOBAL = "_"
 	static final String INSTANTIATION = null
 
 	void enter(BlockLvl2 n) {
@@ -36,32 +36,21 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 	}
 
 	IVisitable exit(BlockLvl2 n) {
-		n.components.each { comp ->
-			if (comp.superComponent) {
-				def superComp = n.components.find { it.name == comp.superComponent }
-				def baseGraph = graphs[comp.name]
-				def superGraph = graphs[comp.superComponent]
-				def label = comp.superParameters.withIndex().collect { superParam, int i ->
-					"$superParam/${superComp.parameters[i]}"
-				}.join(", ")
-				baseGraph.headNode.connectTo(superGraph.headNode, Edge.Kind.INHERITANCE, label)
-			}
+		n.components.findAll { comp -> !n.instantiations.any { it.id == comp.name } }.each { comp ->
+			def baseNode = graphs[INSTANTIATION].touch(comp.name, Node.Kind.TEMPLATE)
+			def superNode = graphs[INSTANTIATION].touch(comp.superComponent, Node.Kind.TEMPLATE)
+			baseNode.connectTo(superNode, Edge.Kind.INHERITANCE)
 		}
 		n.instantiations.each { inst ->
+			def templateNode = graphs[INSTANTIATION].touch(inst.component, Node.Kind.TEMPLATE)
 			def instanceNode = graphs[INSTANTIATION].touch(inst.id, Node.Kind.INSTANCE)
-			instanceNode.connectTo(graphs[inst.component].headNode, Edge.Kind.INSTANCE)
+			instanceNode.connectTo(templateNode, Edge.Kind.INSTANCE)
 
-			def comp = n.components.find { it.name == inst.component }
-			Map<String, List<String>> actualToFormals = [:].withDefault { [] }
-			inst.parameters.withIndex().each { String param, int i -> actualToFormals[param] << comp.parameters[i] }
-			actualToFormals.each { actual, formals ->
-				def node = graphs[INSTANTIATION].touch(actual, Node.Kind.INSTANCE)
-				instanceNode.connectTo(node, Edge.Kind.ACTUAL_PARAM, formals.join(", "))
+			inst.parameters.each {
+				def paramNode = graphs[INSTANTIATION].touch(it, Node.Kind.INSTANCE)
+				instanceNode.connectTo(paramNode, Edge.Kind.ACTUAL_PARAM)
 			}
 		}
-		// Implicit edge from global component graph to instantiation "_"
-		def node = graphs[INSTANTIATION].touch("_", Node.Kind.INSTANCE)
-		node.connectTo(graphs[GLOBAL].headNode, Edge.Kind.INSTANCE)
 
 		topologicalSort()
 
@@ -116,14 +105,10 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 		if (inDecl) return
 
 		if (n.name.contains("@")) {
-			def parameter = n.name.split("@").last()
+			def (String name, String parameter) = n.name.split("@")
 			def relNode = currGraph.touch(n.name, Node.Kind.PARAMETER)
-			// Relation refers to a certain instantiation (in global space)
-			if (!currComp)
-				relNode.connectTo(graphs[INSTANTIATION].touch(parameter, Node.Kind.INSTANCE), Edge.Kind.REVERSE_PARAM)
-			// Relation refers to formal param (inside a component)
-			else
-				relNode.connectTo(currGraph.headNode, Edge.Kind.FORMAL_PARAM, parameter)
+			def paramNode = graphs[parameter == "_" ? GLOBAL : parameter].touch(name, Node.Kind.RELATION)
+			relNode.connectTo(paramNode, Edge.Kind.INDIRECT_PARAM)
 		}
 
 		if (inRuleHead) headRelations << new RelInfo(n.name, false, false)
@@ -137,17 +122,15 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 		// Just sort instantiations nodes (top level graph)
 		Map<Node, Integer> inDegrees = graphs[INSTANTIATION].nodes.values()
 				.findAll { it.kind == Node.Kind.INSTANCE }
-				.collectEntries { [(it): it.inEdgesCounters[Edge.Kind.ACTUAL_PARAM]] }
+				.collectEntries { [(it): it.inEdges.count { it.kind == Edge.Kind.ACTUAL_PARAM }] }
 
 		Set<Node> zeroInNodes = inDegrees.findAll { !it.value }.collect { it.key as Node }
 
 		while (!zeroInNodes.isEmpty()) {
 			zeroInNodes.each { n ->
 				inDegrees.remove(n)
-				// Remove incoming edge for nodes in the top level graph
-				n.outEdges.findAll { graphs[INSTANTIATION].nodes[it.node.id] }.collect { it.node }.each {
-					inDegrees[it]--
-				}
+				// Remove incoming edges
+				n.outEdges.findAll { it.kind == Edge.Kind.ACTUAL_PARAM }.each { inDegrees[it.node]-- }
 			}
 			layers << zeroInNodes
 			zeroInNodes = inDegrees.findAll { !it.value }.collect { it.key as Node }

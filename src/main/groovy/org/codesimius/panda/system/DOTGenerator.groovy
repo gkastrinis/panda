@@ -9,6 +9,7 @@ import org.codesimius.panda.actions.graph.Node
 import java.nio.file.Files
 import java.nio.file.Paths
 
+import static org.codesimius.panda.actions.graph.DependencyGraphVisitor.GLOBAL as GLOBAL_GRAPH
 import static org.codesimius.panda.actions.graph.DependencyGraphVisitor.INSTANTIATION as INSTANTIATION_GRAPH
 
 @Canonical
@@ -18,18 +19,6 @@ class DOTGenerator {
 	DependencyGraphVisitor dependencyGraph
 
 	void gen() {
-		def FONT = "Arial"
-		def COMP_COLOR = "#c4c4c4"
-		def PARAM_NODE_COLOR = "gold"
-		def INST_NODE_COLOR = "orange"
-		def CONSTR_NODE_COLOR = "#9abde2"
-		def DEF_NODE_COLOR = "#cce5ff"
-		def INHERIT_FONT_COLOR = "#666666"
-		def PARAM_FONT_COLOR = INHERIT_FONT_COLOR
-		def INST_FONT_COLOR = INHERIT_FONT_COLOR
-		def NEG_FONT_COLOR = "red"
-		def DEF_FONT_COLOR = "#333333"
-
 		def f = Files.createTempFile(Paths.get(outDir.path), "graph_", ".dot").toFile()
 		def fw = new FileWriter(f)
 		def emit = { fw.write "$it\n" }
@@ -37,61 +26,71 @@ class DOTGenerator {
 		def log = LogFactory.getLog(DOTGenerator.class)
 		log.info("[DD] GRAPH: ${f.canonicalPath}")
 
-		def pendingEdges = []
-		def getEdge = { String nodeId, Node node, Edge edge ->
-			def toId = edge.node.id
-			def l = edge.label
-			if (edge.kind == Edge.Kind.INHERITANCE)
-				""""$nodeId" -> "$toId" [label="$l",fontcolor="$INHERIT_FONT_COLOR",color="$INHERIT_FONT_COLOR",style=dashed];"""
-			else if (edge.kind == Edge.Kind.INSTANCE)
-				""""$nodeId" -> "$toId" [color="$INST_FONT_COLOR",arrowhead=none,style=dashed,penwidth=2];"""
-			else if (edge.kind == Edge.Kind.FORMAL_PARAM)
-				""""$nodeId" -> "$toId" [label="$l",fontcolor="$PARAM_FONT_COLOR",color="$PARAM_FONT_COLOR:$PARAM_NODE_COLOR",penwidth=2,arrowhead=none];"""
-			else if (edge.kind == Edge.Kind.ACTUAL_PARAM)
-				""""$nodeId" -> "$toId" [label="$l",fontcolor="$PARAM_FONT_COLOR",color="$PARAM_FONT_COLOR:$INST_NODE_COLOR",penwidth=2];"""
-			else if (edge.kind == Edge.Kind.REVERSE_PARAM && edge.node.kind == Node.Kind.INSTANCE)
-				""""$nodeId" -> "$toId" [label="$l",fontcolor="$PARAM_FONT_COLOR",color="$PARAM_FONT_COLOR:$PARAM_NODE_COLOR",penwidth=2];"""
-			else if (edge.kind == Edge.Kind.NEGATION)
-				""""$nodeId" -> "$toId" [color="$NEG_FONT_COLOR"];"""
-			else
-				""""$nodeId" -> "$toId" [color="$DEF_FONT_COLOR"];"""
-		}
-
+		def edges = []
+		def FONT = "Arial"
 		emit "digraph {"
 		emit "rankdir=LR;"
 		emit "outputorder=edgesfirst;"
-		emit """node [style=filled,fillcolor="$DEF_NODE_COLOR",fontname="$FONT"];"""
-		emit """edge [fontname="$FONT"];"""
+		emit """node [style=filled,fillcolor="#bdd0ef",fontname="$FONT"];"""
+		emit """edge [fontname="$FONT",penwidth=2];"""
 		dependencyGraph.graphs.each { graphName, graph ->
+			if (graphName == GLOBAL_GRAPH) graphName = ""
 			if (graphName != INSTANTIATION_GRAPH) {
 				emit "subgraph cluster_$graphName {"
-				emit """label="$graphName";style=rounded;bgcolor="$COMP_COLOR";peripheries=0;fontname="$FONT";"""
+				emit """label="$graphName";style=rounded;bgcolor="#c4c4c4";peripheries=0;fontname="$FONT";"""
 			}
-			graph.nodes.each { nodeId, node ->
-				if (nodeId == node.title)
-					emit """"$nodeId" [label="",shape=circle,fillcolor=black,width=0.15];"""
-				else if (node.kind == Node.Kind.PARAMETER) {
-					def name = node.title.split("@").first()
-					emit """"$nodeId" [label="$name",shape=diamond,fillcolor="$PARAM_NODE_COLOR"];"""
-				} else if (node.kind == Node.Kind.INSTANCE)
-					emit """"$nodeId" [label="${node.title}",shape=octagon,fillcolor="$INST_NODE_COLOR"];"""
-				else if (node.kind == Node.Kind.CONSTRUCTOR)
-					emit """"$nodeId" [label="${node.title}",shape=doublecircle,fillcolor="$CONSTR_NODE_COLOR"];"""
-				else
-					emit """"$nodeId" [label="${node.title}",shape=circle];"""
+			graph.nodes.values().each { node ->
+				switch (node.kind) {
+					case Node.Kind.TEMPLATE:
+						emit """"${node.id}" [label="${node.title}",shape=rectangle,fillcolor="#cc7284"];"""
+						break
+					case Node.Kind.INSTANCE:
+						emit """"${node.id}" [label="${node.title}",shape=octagon,fillcolor="orange"];"""
+						break
+					case Node.Kind.PARAMETER:
+						def name = node.title.split("@").first()
+						emit """"${node.id}" [label="$name",shape=diamond,fillcolor="gold"];"""
+						break
+					case Node.Kind.RELATION:
+						emit """"${node.id}" [label="${node.title}",shape=circle];"""
+						break
+					case Node.Kind.CONSTRUCTOR:
+						emit """"${node.id}" [label="${node.title}",shape=doublecircle,fillcolor="#9abde2"];"""
+						break
+				}
 
-				node.outEdges.each {
-					def str = getEdge(nodeId, node, it)
-					// Edges to different subgraphs must be declared outside the current one
-					if (it.kind == Edge.Kind.REVERSE_PARAM)
-						pendingEdges << str
-					else
-						emit str
+				node.outEdges.each { edge ->
+					def toId = edge.node.id
+					def l = edge.label
+					switch (edge.kind) {
+						case Edge.Kind.INHERITANCE:
+							edges << """"${
+								node.id
+							}" -> "$toId" [label="$l",fontcolor="#cc7284",color="#cc7284",style=dashed];"""
+							break
+						case Edge.Kind.INSTANCE:
+							edges << """"${node.id}" -> "$toId" [color="#cc7284",arrowhead=none];"""
+							break
+						case Edge.Kind.ACTUAL_PARAM:
+							edges << """"${
+								node.id
+							}" -> "$toId" [label="$l",fontcolor="#666666",color="#666666:orange"];"""
+							break
+						case Edge.Kind.INDIRECT_PARAM:
+							edges << """"${node.id}" -> "$toId" [label="$l",color="#666666:gold",style=dashed];"""
+							break
+						case Edge.Kind.NEGATION:
+							edges << """"${node.id}" -> "$toId" [color="red"];"""
+							break
+						case Edge.Kind.RELATION:
+							edges << """"${node.id}" -> "$toId" """
+							break
+					}
 				}
 			}
 			if (graphName != INSTANTIATION_GRAPH) emit "}"
 		}
-		pendingEdges.each { emit it }
+		edges.each { emit it }
 		emit "}"
 		fw.close()
 	}

@@ -6,13 +6,7 @@ import groovy.transform.Canonical
 class Edge {
 
 	enum Kind {
-		INHERITANCE,    // Template component inherits from component
-		INSTANCE,       // Instantiation of a template component
-		FORMAL_PARAM,   // Relation refers to formal param (inside a component)
-		ACTUAL_PARAM,   // Instantiation takes another one as parameter
-		REVERSE_PARAM,  // Relation refers to a certain instantiation (in global space)
-		NEGATION,       // Relation depends on another one, through negation
-		RELATION,       // Relation depends on another one
+		INHERITANCE, INSTANCE, ACTUAL_PARAM, INDIRECT_PARAM, NEGATION, RELATION,
 	}
 
 	Node node

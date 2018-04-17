@@ -4,10 +4,7 @@ import groovy.transform.InheritConstructors
 import org.codesimius.panda.actions.PreliminaryValidationVisitor
 import org.codesimius.panda.actions.ValidationVisitor
 import org.codesimius.panda.actions.graph.DependencyGraphVisitor
-import org.codesimius.panda.actions.tranform.ComponentInstantiationTransformer
-import org.codesimius.panda.actions.tranform.InputFactsTransformer
-import org.codesimius.panda.actions.tranform.SyntaxFlatteningTransformer
-import org.codesimius.panda.actions.tranform.TypesTransformer
+import org.codesimius.panda.actions.tranform.*
 import org.codesimius.panda.actions.tranform.souffle.AssignTransformer
 import org.codesimius.panda.actions.tranform.souffle.ConstructorTransformer
 import org.codesimius.panda.datalog.block.BlockLvl2
@@ -37,9 +34,10 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 
 		// Transform program before visiting nodes
 		def n = p.accept(new PreliminaryValidationVisitor())
-				.accept(dependencyGraphVisitor)
 				.accept(new SyntaxFlatteningTransformer())
 				.accept(new ComponentInstantiationTransformer())
+				.accept(dependencyGraphVisitor)
+				.accept(new ComponentFlatteningTransformer())
 				.accept(relationInfo)
 				.accept(new TypesTransformer(relationInfo))
 				.accept(new InputFactsTransformer(relationInfo))

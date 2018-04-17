@@ -17,11 +17,10 @@ class Node {
 	String title
 	Kind kind
 	Set<Edge> outEdges = [] as Set
-	// Aggregate counter for each kind of incoming edges
-	Map<Edge.Kind, Integer> inEdgesCounters = [:].withDefault { 0 } as Map<Edge.Kind, Integer>
+	Set<Edge> inEdges = [] as Set
 
 	void connectTo(Node to, Edge.Kind kind, String label = "") {
 		outEdges << new Edge(to, kind, label)
-		to.inEdgesCounters[kind]++
+		to.inEdges << new Edge(this, kind)
 	}
 }
