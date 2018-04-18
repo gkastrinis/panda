@@ -33,6 +33,8 @@ class DatalogSpec extends Specification {
 		"t9"  | _
 		"t10" | _
 		"t11" | _
+		"t12" | _
+		"t13" | _
 	}
 
 	@Unroll

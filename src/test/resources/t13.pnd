@@ -1,0 +1,26 @@
+component FooBar<X, Y> : Baz<Y, Y> {
+    P(x) <- Q@X(x), R@Y(x)
+}
+
+component Foo<E, F> : Baz<F, E> {
+    P3(x) <- Q@E(x), R@F(x)
+}
+
+component Baz<C, D> : Bar<D, C> {
+    P2(x) <- Q@D(x), R@C(x)
+}
+
+component Bar<A, B> {
+    P1(x) <- Q@A(x), R@B(x)
+}
+
+
+component Base1 {
+    Q(x) : int
+} as B1
+
+component Base2 {
+    R(x) : int
+} as B2
+
+Foo<B1, B2> as FFFF
