@@ -35,6 +35,19 @@ class CycleDetector {
 		)
 	}
 
+	void checkNegation() {
+		check(
+				graphs.findAll { it.key != INSTANTIATION }
+						.collect { it.value.nodes.values() }.flatten() as Collection<Node>,
+				{ true },
+				{ Node node, List<Node> visitedNodes, List<Edge> visitedEdges ->
+					def cycleEdges = visitedEdges.drop(visitedNodes.indexOf(node))
+					if (cycleEdges.any { it.kind == Edge.Kind.NEGATION })
+						error(Error.REL_NEGATION_CYCLE, cycleEdges.collect { prettify it.node.id }.join(" - "))
+				}
+		)
+	}
+
 	static def check(Collection<Node> nodes, Closure<Boolean> validateEdge, Closure handleCycle) {
 		Set<Node> verifiedNodes = [] as Set
 		List<Node> visitedNodes

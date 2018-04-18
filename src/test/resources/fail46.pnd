@@ -1,0 +1,5 @@
+Foo(x) : int
+Bar(x) : int
+P(x) <- Foo(x), !Bar(x)
+Q(x) <- P(x), x > 10
+Bar(x) <- Foo(x), Q(x)

@@ -69,6 +69,7 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 		new CycleDetector(graphs).with {
 			checkInstantiations()
 			checkIndirectEdges()
+			checkNegation()
 			//topologicalSort()
 		}
 
