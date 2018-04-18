@@ -74,9 +74,7 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 		def pred = n.relation.name
 		def params = n.relation.exprs ? "${m[n.relation.exprs.first()]}" : ""
 		def lbPred = "${pred.replaceFirst("sum", "total")}($params)"
-		if (pred == "count" || pred == "min" || pred == "max" || pred == "sum")
-			"agg<<${m[n.var]} = $lbPred>> ${m[n.body]}"
-		else null
+		"agg<<${m[n.var]} = $lbPred>> ${m[n.body]}"
 	}
 
 	String exit(Constructor n) { handleRelation n }

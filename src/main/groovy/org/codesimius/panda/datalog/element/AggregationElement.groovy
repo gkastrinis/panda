@@ -12,4 +12,6 @@ class AggregationElement implements IElement {
 	VariableExpr var
 	Relation relation
 	IElement body
+
+	static final List<String> SUPPORTED_PREDICATES = ["count", "min", "max", "sum"]
 }

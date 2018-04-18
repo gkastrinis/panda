@@ -81,9 +81,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	String exit(AggregationElement n) {
 		def pred = n.relation.name
 		def soufflePred = n.relation.exprs ? "$pred(${m[n.relation.exprs.first()]})" : pred
-		if (pred == "count" || pred == "min" || pred == "max" || pred == "sum")
-			"${m[n.body]}, ${m[n.var]} = $soufflePred : { ${m[n.body]} }"
-		else null
+		"${m[n.body]}, ${m[n.var]} = $soufflePred : { ${m[n.body]} }"
 	}
 
 	String exit(Constructor n) { exit(n as Relation) }

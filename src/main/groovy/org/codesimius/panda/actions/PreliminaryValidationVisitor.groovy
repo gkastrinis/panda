@@ -5,6 +5,7 @@ import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl1
 import org.codesimius.panda.datalog.block.BlockLvl2
 import org.codesimius.panda.datalog.clause.RelDeclaration
+import org.codesimius.panda.datalog.element.AggregationElement
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.expr.ConstantExpr
@@ -73,6 +74,11 @@ class PreliminaryValidationVisitor extends DefaultVisitor<IVisitable> {
 			error(recall(n), Error.CONSTR_NON_FUNC, n.relation.name)
 		if (n.relation instanceof Constructor && !(CONSTRUCTOR in n.annotations))
 			error(recall(n), Error.FUNC_NON_CONSTR, n.relation.name)
+	}
+
+	void enter(AggregationElement n) {
+		if (!(n.relation.name in AggregationElement.SUPPORTED_PREDICATES))
+			error(Error.AGGR_UNSUPPORTED_REL, n.relation.name)
 	}
 
 	void enter(Relation n) {
