@@ -33,7 +33,6 @@ class DatalogSpec extends Specification {
 		"t9"  | _
 		"t10" | _
 		"t11" | _
-		//"t100" | _
 	}
 
 	@Unroll
@@ -91,13 +90,6 @@ class DatalogSpec extends Specification {
 		"fail41" | Error.REL_NAME_LIMITS
 		"fail42" | Error.REL_NAME_LIMITS
 		"fail43" | Error.INST_CYCLE
-//		"fail100" | Error.DEP_CYCLE
-//		"fail101" | Error.CMD_RULE
-//		"fail103" | Error.CMD_DIRECTIVE
-//		"fail104" | Error.CMD_NO_DECL
-//		"fail105" | Error.CMD_NO_IMPORT
-//		"fail106" | Error.CMD_EVAL
-//		"fail108" | Error.MULTIPLE_ENT_DECLS
 	}
 
 	@Unroll

@@ -50,8 +50,6 @@ enum Error {
 	TYPE_UNKNOWN,
 	TYPE_RULE,
 
-//	DEP_GLOBAL,
-
 	static Map<Error, String> msgMap = [
 			(ANNOTATION_UNKNOWN)       : "Unknown annotation `{0}`",
 			(ANNOTATION_NON_EMPTY)     : "Annotation `{0}` takes no arguments",
@@ -97,8 +95,6 @@ enum Error {
 			(TYPE_UNSUPP)              : "Currently unsupported type `{0}`",
 			(TYPE_UNKNOWN)             : "Unknown type `{0}`",
 			(TYPE_RULE)                : "Type `{0}` used as a normal relation in rule head",
-
-//			(DEP_GLOBAL)               : "Reintroducing relation `{0}` to global space",
 	]
 
 	static void warn(SourceLocation loc = null, Error errorId, Object... values) {
