@@ -90,6 +90,7 @@ class DatalogSpec extends Specification {
 		"fail41" | Error.REL_NAME_LIMITS
 		"fail42" | Error.REL_NAME_LIMITS
 		"fail43" | Error.INST_CYCLE
+		"fail44" | Error.REL_EXT_CYCLE
 	}
 
 	@Unroll

@@ -62,8 +62,11 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 			def paramNode = graphs[graphName].touch(name, Node.Kind.RELATION)
 			relNode.connectTo(paramNode, Edge.Kind.INDIRECT_PARAM)
 		}
-
-		topologicalSort()
+		new CycleDetector(graphs).with {
+			checkInstantiations()
+			checkIndirectEdges()
+			//topologicalSort()
+		}
 
 		return n
 	}
@@ -115,38 +118,13 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 	void enter(Relation n) {
 		if (inDecl) return
 
-		if (n.name.contains("@")) {
-			def relNode = currGraph.touch(n.name, Node.Kind.PARAMETER)
-			pendingIndirectEdges[relNode] = n.name
-		}
+		if (n.name.contains("@"))
+			pendingIndirectEdges[currGraph.touch(n.name, Node.Kind.PARAMETER)] = n.name
 
 		if (inRuleHead) headRelations << new RelInfo(n.name, false, false)
 		else if (inRuleBody) bodyRelations << new RelInfo(n.name, false, inNegation)
 	}
 
-	// Kahn's algorithm
-	void topologicalSort() {
-		List<Set<Node>> layers = []
-
-		// Just sort instantiations nodes (top level graph)
-		Map<Node, Integer> inDegrees = graphs[INSTANTIATION].nodes.values()
-				.findAll { it.kind == Node.Kind.INSTANCE }
-				.collectEntries { [(it): it.inEdges.count { it.kind == Edge.Kind.ACTUAL_PARAM }] }
-
-		Set<Node> zeroInNodes = inDegrees.findAll { !it.value }.collect { it.key as Node }
-
-		while (!zeroInNodes.isEmpty()) {
-			zeroInNodes.each { n ->
-				inDegrees.remove(n)
-				// Remove incoming edges
-				n.outEdges.findAll { it.kind == Edge.Kind.ACTUAL_PARAM }.each { inDegrees[it.node]-- }
-			}
-			layers << zeroInNodes
-			zeroInNodes = inDegrees.findAll { !it.value }.collect { it.key as Node }
-		}
-		if (!inDegrees.isEmpty())
-			error(Error.INST_CYCLE, inDegrees.collect { it.key.title })
-	}
 
 	@Canonical
 	static class RelInfo {
