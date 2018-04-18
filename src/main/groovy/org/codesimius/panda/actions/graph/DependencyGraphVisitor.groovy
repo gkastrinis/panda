@@ -7,6 +7,7 @@ import org.codesimius.panda.datalog.block.BlockLvl1
 import org.codesimius.panda.datalog.block.BlockLvl2
 import org.codesimius.panda.datalog.clause.RelDeclaration
 import org.codesimius.panda.datalog.clause.Rule
+import org.codesimius.panda.datalog.element.AggregationElement
 import org.codesimius.panda.datalog.element.NegationElement
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
@@ -103,6 +104,11 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 				headRelNode.connectTo(relNode, bodyRel.isNegated ? Edge.Kind.NEGATION : Edge.Kind.RELATION)
 			}
 		}
+		null
+	}
+
+	IVisitable visit(AggregationElement n) {
+		m[n.body] = visit n.body
 		null
 	}
 
