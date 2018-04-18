@@ -10,14 +10,17 @@ import org.codesimius.panda.datalog.clause.Rule
 import org.codesimius.panda.datalog.element.NegationElement
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
+import org.codesimius.panda.system.DependencyGraphDOTGenerator
 import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.datalog.Annotation.CONSTRUCTOR
 import static org.codesimius.panda.system.Error.error
 import static org.codesimius.panda.system.SourceManager.recallStatic as recall
 
+@Canonical
 class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 
+	File outDir
 	// Each subgraph represents a different component
 	Map<String, Graph> graphs = [:].withDefault { new Graph(it) }
 
@@ -67,6 +70,8 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 			checkIndirectEdges()
 			//topologicalSort()
 		}
+
+		new DependencyGraphDOTGenerator(outDir, this).gen()
 
 		return n
 	}

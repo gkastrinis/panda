@@ -17,7 +17,6 @@ import org.codesimius.panda.datalog.element.relation.RecordType
 import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.element.relation.Type
 import org.codesimius.panda.datalog.expr.RecordExpr
-import org.codesimius.panda.system.DependencyGraphDOTGenerator
 import org.codesimius.panda.system.Result
 
 import static org.codesimius.panda.datalog.Annotation.*
@@ -30,13 +29,11 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		createUniqueFile("out_", ".dl")
 		results << new Result(Result.Kind.LOGIC, currentFile)
 
-		def dependencyGraphVisitor = new DependencyGraphVisitor()
-
 		// Transform program before visiting nodes
 		def n = p.accept(new PreliminaryValidationVisitor())
 				.accept(new SyntaxFlatteningTransformer())
 				.accept(new ComponentInstantiationTransformer())
-				.accept(dependencyGraphVisitor)
+				.accept(new DependencyGraphVisitor(outDir))
 				.accept(new ComponentFlatteningTransformer())
 				.accept(relationInfo)
 				.accept(new TypesTransformer(relationInfo))
@@ -47,8 +44,6 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 				.accept(typeInferenceTransformer)
 				.accept(new ConstructorTransformer(relationInfo, typeInferenceTransformer))
 				.accept(new AssignTransformer(varInfo))
-
-		new DependencyGraphDOTGenerator(outDir, dependencyGraphVisitor).gen()
 
 		super.visit(n)
 	}

@@ -12,7 +12,6 @@ import org.codesimius.panda.datalog.clause.TypeDeclaration
 import org.codesimius.panda.datalog.element.AggregationElement
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
-import org.codesimius.panda.system.DependencyGraphDOTGenerator
 import org.codesimius.panda.system.Result
 
 import static org.codesimius.panda.datalog.Annotation.*
@@ -28,13 +27,11 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 		createUniqueFile("out_", ".logic")
 		results << new Result(Result.Kind.LOGIC, currentFile)
 
-		def dependencyGraphVisitor = new DependencyGraphVisitor()
-
 		// Transform program before visiting nodes
 		def n = p.accept(new PreliminaryValidationVisitor())
 				.accept(new SyntaxFlatteningTransformer())
 				.accept(new ComponentInstantiationTransformer())
-				.accept(dependencyGraphVisitor)
+				.accept(new DependencyGraphVisitor(outDir))
 				.accept(new ComponentFlatteningTransformer())
 				.accept(relationInfo)
 				.accept(new TypesTransformer(relationInfo))
@@ -47,8 +44,6 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 		functionalRelations = n.datalog.relDeclarations
 				.findAll { FUNCTIONAL in it.annotations }
 				.collect { it.relation.name } as Set
-
-		new DependencyGraphDOTGenerator(outDir, dependencyGraphVisitor).gen()
 
 		super.visit(n)
 	}
