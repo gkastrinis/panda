@@ -1,9 +1,22 @@
 language: groovy
+
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
 cache:
   directories:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
+
 notifications:
   email: false
+
+env:
+  - VERSION=$(grep '^version=' gradle.properties | sed 's/version=//')
+deploy:
+  on:
+    tags: true
+  provider: releases
+  skip_cleanup: true
+  api_key:
+    secure: ZTXJq/1IO8SNCo0rqnj8pyEhEPD5zlZ6rCbTmnRfFG2bi9wdZaH4fV+9SkXfOZBZxYmYcs4FxBJQLXgkKbPOb5XQqS3qw7tQulXrVPbHVBubc58AH9ln1q0kRcA+F8MVvi4EejWvVsFwv+5jFcY692301SpcnOZluciY76eBDEzolIQeUd4Pw1q/0MOI4H247xIECee8chcu1jV3EfLYJX0Y/3cQxVZWrQPsXc51yPJsfcwAzpehj5dDOalzkCcEIfKH5NTSqWIVY0GJEWoxVE42xT/j+p+iRcAmX0UKDEkZ17/ZSybTAL1ZRVgLnZ+kf/PRfXn0vs4fs9mc9KlN2dpcLil2OQmsWQfYZV6gyVDqsPDz4BFBZn4Lg9psVBCkul5W4B+M6fEfqcoB0+vizOAjBnfNG0yKeF5SB6U979ibKEUtE6jm2tRJY+wc/rJsDCFljKQHOkaPz0hxngphKh2SwiTg0/49GZgJyrS/A6ZH1sJLRJUkxFfGBaEqQhJO8R9VW+SoKBvPd7pehx0M1mri57MXLydeCgf5yivJ0LwWo6OQIra4VJLZe5OsCqRl0dAHIYcaiaBKEB+We9ErZ98CUKZTW+w3sNzeU7WDnqVPiwdGyKK+nhFZdfuCxN73aYtZJ7/TiqYkC/Zs2GPa+rD0ubN4wT+bQXPSyZeiIxA=
+  file: "build/distributions/panda-$VERSION.zip"
