@@ -1,4 +1,4 @@
-[![License MIT][badge-license]](LICENSE.txt) ![Travis CI](https://travis-ci.org/gkastrinis/panda.svg?branch=master)
+[![License MIT][badge-license]](LICENSE.txt) ![Travis CI](https://travis-ci.org/gkastrinis/panda.svg?branch=master) [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/paNda-datalog/Lobby)
 
 
 ![PANDA](/panda.png)
