@@ -10,7 +10,9 @@ import groovy.transform.ToString
 class Node {
 
 	enum Kind {
-		TEMPLATE, INSTANCE, PARAMETER, RELATION, CONSTRUCTOR
+		TEMPLATE, INSTANCE, PARAMETER,
+		RELATION, CONSTRUCTOR,
+		TYPE
 	}
 
 	String id

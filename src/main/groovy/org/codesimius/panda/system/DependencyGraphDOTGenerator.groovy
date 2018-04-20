@@ -57,6 +57,9 @@ class DependencyGraphDOTGenerator {
 					case Node.Kind.CONSTRUCTOR:
 						emit """"${node.id}" [label="${node.title}",shape=doublecircle,fillcolor="#9abde2"];"""
 						break
+					case Node.Kind.TYPE:
+						emit """"${node.id}" [label="${node.title}",shape=Mcircle,fillcolor="#96d67a"];"""
+						break
 				}
 
 				node.outEdges.each { edge ->
@@ -84,6 +87,9 @@ class DependencyGraphDOTGenerator {
 							break
 						case Edge.Kind.RELATION:
 							edges << """"${node.id}" -> "$toId" """
+							break
+						case Edge.Kind.SUBTYPE:
+							edges << """"${node.id}" -> "$toId" [color="#666666:#96d67a",style=dashed];"""
 							break
 					}
 				}

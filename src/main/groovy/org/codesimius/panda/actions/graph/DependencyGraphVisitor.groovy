@@ -7,6 +7,7 @@ import org.codesimius.panda.datalog.block.BlockLvl1
 import org.codesimius.panda.datalog.block.BlockLvl2
 import org.codesimius.panda.datalog.clause.RelDeclaration
 import org.codesimius.panda.datalog.clause.Rule
+import org.codesimius.panda.datalog.clause.TypeDeclaration
 import org.codesimius.panda.datalog.element.AggregationElement
 import org.codesimius.panda.datalog.element.NegationElement
 import org.codesimius.panda.datalog.element.relation.Constructor
@@ -90,6 +91,14 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 
 	void enter(RelDeclaration n) {
 		currGraph.touch(n.relation.name, CONSTRUCTOR in n.annotations ? Node.Kind.CONSTRUCTOR : Node.Kind.RELATION)
+	}
+
+	void enter(TypeDeclaration n) {
+		def typeNode = currGraph.touch(n.type.name, Node.Kind.TYPE)
+		if (n.supertype) {
+			def superTypeNode = currGraph.touch(n.supertype.name, Node.Kind.TYPE)
+			typeNode.connectTo(superTypeNode, Edge.Kind.SUBTYPE)
+		}
 	}
 
 	void enter(Rule n) {
