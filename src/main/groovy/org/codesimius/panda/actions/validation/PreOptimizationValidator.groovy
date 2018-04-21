@@ -1,6 +1,8 @@
-package org.codesimius.panda.actions
+package org.codesimius.panda.actions.validation
 
 import groovy.transform.Canonical
+import org.codesimius.panda.actions.DefaultVisitor
+import org.codesimius.panda.actions.TypeInfoVisitor
 import org.codesimius.panda.datalog.Annotation
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl2
@@ -12,12 +14,11 @@ import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.element.relation.Type
 import org.codesimius.panda.system.Error
 
-import static org.codesimius.panda.datalog.Annotation.*
 import static org.codesimius.panda.system.Error.error
 import static org.codesimius.panda.system.SourceManager.recallStatic as recall
 
 @Canonical
-class PreOptimizationValidationVisitor extends DefaultVisitor<IVisitable> {
+class PreOptimizationValidator extends DefaultVisitor<IVisitable> {
 
 	TypeInfoVisitor typeInfo
 	private Set<String> tmpDeclaredRelations = [] as Set
@@ -29,15 +30,15 @@ class PreOptimizationValidationVisitor extends DefaultVisitor<IVisitable> {
 			error(recall(n), Error.DECL_MULTIPLE, n.relation.name)
 		tmpDeclaredRelations << n.relation.name
 
-		checkAnnotations(n.annotations, [CONSTRUCTOR, FUNCTIONAL, INPUT, OUTPUT], "Declarations")
+		checkAnnotations(n.annotations, [Annotation.CONSTRUCTOR, Annotation.FUNCTIONAL, Annotation.INPUT, Annotation.OUTPUT], "Declarations")
 	}
 
 	void enter(TypeDeclaration n) {
-		checkAnnotations(n.annotations, [INPUT, OUTPUT, TYPE, TYPEVALUES], "Type")
+		checkAnnotations(n.annotations, [Annotation.INPUT, Annotation.OUTPUT, Annotation.TYPE, Annotation.TYPEVALUES], "Type")
 	}
 
 	void enter(Rule n) {
-		checkAnnotations(n.annotations, [PLAN], "Rule")
+		checkAnnotations(n.annotations, [Annotation.PLAN], "Rule")
 	}
 
 	void enter(ConstructionElement n) {

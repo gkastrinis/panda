@@ -1,6 +1,10 @@
-package org.codesimius.panda.actions
+package org.codesimius.panda.actions.validation
 
 import groovy.transform.Canonical
+import org.codesimius.panda.actions.DefaultVisitor
+import org.codesimius.panda.actions.RelationInfoVisitor
+import org.codesimius.panda.actions.TypeInfoVisitor
+import org.codesimius.panda.actions.VarInfoVisitor
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl2
 import org.codesimius.panda.datalog.clause.RelDeclaration
@@ -16,7 +20,7 @@ import static org.codesimius.panda.system.Error.warn
 import static org.codesimius.panda.system.SourceManager.recallStatic as recall
 
 @Canonical
-class ValidationVisitor extends DefaultVisitor<IVisitable> {
+class MainValidator extends DefaultVisitor<IVisitable> {
 
 	TypeInfoVisitor typeInfo
 	RelationInfoVisitor relationInfo

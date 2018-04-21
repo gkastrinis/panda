@@ -1,11 +1,11 @@
 package org.codesimius.panda.actions.code
 
 import groovy.transform.InheritConstructors
-import org.codesimius.panda.actions.PreOptimizationValidationVisitor
-import org.codesimius.panda.actions.PreliminaryValidationVisitor
-import org.codesimius.panda.actions.ValidationVisitor
 import org.codesimius.panda.actions.graph.DependencyGraphVisitor
 import org.codesimius.panda.actions.tranform.*
+import org.codesimius.panda.actions.validation.MainValidator
+import org.codesimius.panda.actions.validation.PreOptimizationValidator
+import org.codesimius.panda.actions.validation.PreliminaryValidator
 import org.codesimius.panda.datalog.block.BlockLvl2
 import org.codesimius.panda.datalog.clause.RelDeclaration
 import org.codesimius.panda.datalog.clause.Rule
@@ -29,18 +29,18 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 		results << new Result(Result.Kind.LOGIC, currentFile)
 
 		// Transform program before visiting nodes
-		def n = p.accept(new PreliminaryValidationVisitor())
+		def n = p.accept(new PreliminaryValidator())
 				.accept(new SyntaxFlatteningTransformer())
 				.accept(new ComponentInstantiationTransformer())
 				.accept(new DependencyGraphVisitor(outDir))
 				.accept(new ComponentFlatteningTransformer())
 				.accept(typeInfo)
-				.accept(new PreOptimizationValidationVisitor(typeInfo))
+				.accept(new PreOptimizationValidator(typeInfo))
 				.accept(new TypesTransformer(typeInfo))
 				.accept(new InputFactsTransformer(typeInfo))
 				.accept(relationInfo)
 				.accept(varInfo)
-				.accept(new ValidationVisitor(typeInfo, relationInfo, varInfo))
+				.accept(new MainValidator(typeInfo, relationInfo, varInfo))
 				.accept(typeInferenceTransformer)
 
 		functionalRelations = n.datalog.relDeclarations

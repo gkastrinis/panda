@@ -1,6 +1,8 @@
-package org.codesimius.panda.actions
+package org.codesimius.panda.actions.validation
 
 import groovy.transform.Canonical
+import org.codesimius.panda.actions.DefaultVisitor
+import org.codesimius.panda.datalog.Annotation
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl1
 import org.codesimius.panda.datalog.block.BlockLvl2
@@ -11,14 +13,13 @@ import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.expr.ConstantExpr
 import org.codesimius.panda.system.Error
 
-import static org.codesimius.panda.datalog.Annotation.CONSTRUCTOR
 import static org.codesimius.panda.datalog.expr.ConstantExpr.Kind.BOOLEAN
 import static org.codesimius.panda.datalog.expr.ConstantExpr.Kind.REAL
 import static org.codesimius.panda.system.Error.error
 import static org.codesimius.panda.system.SourceManager.recallStatic as recall
 
 @Canonical
-class PreliminaryValidationVisitor extends DefaultVisitor<IVisitable> {
+class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 
 	private BlockLvl2 prog
 	private BlockLvl1 currComp
@@ -70,9 +71,9 @@ class PreliminaryValidationVisitor extends DefaultVisitor<IVisitable> {
 		n.relation.exprs.findAll { n.relation.exprs.count(it) > 1 }.each {
 			error(Error.DECL_SAME_VAR, it)
 		}
-		if (CONSTRUCTOR in n.annotations && !(n.relation instanceof Constructor))
+		if (Annotation.CONSTRUCTOR in n.annotations && !(n.relation instanceof Constructor))
 			error(recall(n), Error.CONSTR_NON_FUNC, n.relation.name)
-		if (n.relation instanceof Constructor && !(CONSTRUCTOR in n.annotations))
+		if (n.relation instanceof Constructor && !(Annotation.CONSTRUCTOR in n.annotations))
 			error(recall(n), Error.FUNC_NON_CONSTR, n.relation.name)
 	}
 
