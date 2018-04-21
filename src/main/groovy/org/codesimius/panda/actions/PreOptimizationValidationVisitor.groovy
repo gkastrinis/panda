@@ -45,7 +45,7 @@ class PreOptimizationValidationVisitor extends DefaultVisitor<IVisitable> {
 		if (!baseType)
 			error(recall(n), Error.CONSTR_UNKNOWN, n.constructor.name)
 		if (n.type != baseType && !(baseType in typeInfo.superTypesOrdered[n.type]))
-			error(recall(n), Error.CONSTR_TYPE_INCOMP, n.constructor.name, n.type.name)
+			error(recall(n), Error.CONSTR_TYPE_INCOMPAT, n.constructor.name, n.type.name)
 	}
 
 	IVisitable exit(Relation n) {

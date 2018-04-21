@@ -54,12 +54,12 @@ class DatalogSpec extends Specification {
 		"fail3"  | Error.COMP_UNKNOWN
 		"fail4"  | Error.ID_IN_USE
 		"fail5"  | Error.REL_EXT_NO_DECL
-		"fail6"  | Error.CONSTR_TYPE_INCOMP
+		"fail6"  | Error.CONSTR_TYPE_INCOMPAT
 		"fail7"  | Error.FUNC_NON_CONSTR
 		"fail8"  | Error.TYPE_UNKNOWN
 		"fail9"  | Error.CONSTR_UNKNOWN
 		"fail10" | Error.CONSTR_NON_FUNC
-		"fail11" | Error.TYPE_INCOMP
+		"fail11" | Error.TYPE_INCOMPAT
 		"fail12" | Error.REL_ARITY
 		"fail13" | Error.TYPE_INFERENCE_FIXED
 		"fail14" | Error.TYPE_RULE
@@ -73,7 +73,7 @@ class DatalogSpec extends Specification {
 		"fail22" | Error.ANNOTATION_MISTYPED_ARG
 		"fail23" | Error.CONSTR_RULE_CYCLE
 		"fail24" | Error.VAR_MULTIPLE_CONSTR
-		"fail25" | Error.TYPE_INCOMP_EXPR
+		"fail25" | Error.TYPE_INCOMPAT_EXPR
 		"fail26" | Error.COMP_DUPLICATE_PARAMS
 		"fail27" | Error.COMP_SUPER_PARAM_MISMATCH
 		"fail28" | Error.COMP_INST_ARITY

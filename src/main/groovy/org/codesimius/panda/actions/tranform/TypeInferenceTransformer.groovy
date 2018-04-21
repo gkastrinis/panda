@@ -165,7 +165,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 		// Numeric operations
 		if (n.op != BinaryOp.EQ && n.op != BinaryOp.NEQ)
 			union.findAll { it != Type.TYPE_INT && it != Type.TYPE_FLOAT }.each {
-				error(Error.TYPE_INCOMP_EXPR, null)
+				error(Error.TYPE_INCOMPAT_EXPR, null)
 			}
 		tmpExprTypes[n] = tmpExprTypes[n.left] = tmpExprTypes[n.right] = union
 		return n
@@ -209,7 +209,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 							def superTypesOfT2 = typeInfo.superTypesOrdered[t2]
 							// Move upwards in the hierarchy until a common kind is found
 							def superT = t1 = superTypesOfT1.find { it in superTypesOfT2 }
-							if (!superT) error(Error.TYPE_INCOMP, relation, i)
+							if (!superT) error(Error.TYPE_INCOMPAT, relation, i)
 						}
 						coalescedType = t1
 					} else
