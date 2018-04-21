@@ -2,6 +2,7 @@ package org.codesimius.panda.actions.tranform
 
 import groovy.transform.Canonical
 import org.codesimius.panda.actions.RelationInfoVisitor
+import org.codesimius.panda.actions.TypeInfoVisitor
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.clause.RelDeclaration
@@ -23,6 +24,7 @@ import static org.codesimius.panda.system.Error.error
 @Canonical
 class TypeInferenceTransformer extends DefaultTransformer {
 
+	TypeInfoVisitor typeInfo
 	RelationInfoVisitor relationInfo
 
 	// Relation name x Type (final)
@@ -54,7 +56,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 		coalesce()
 
 		// Fill partial declarations and add implicit ones
-		def relDs = inferredTypes.findAll { rel, types -> !(new Type(rel) in relationInfo.typesToOptimize) }.collect { rel, types ->
+		def relDs = inferredTypes.collect { rel, types ->
 			RelDeclaration d = relToDecl[rel]
 			if (d?.types) return d
 
@@ -104,7 +106,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 					// There is an explicit declaration and the possible types
 					// for some expressions are more generic that the declared ones
 					if (declaredTypes) {
-						def superTs = relationInfo.superTypesOrdered[declaredTypes[i]]
+						def superTs = typeInfo.superTypesOrdered[declaredTypes[i]]
 						if (currTypeSet.any { it in superTs })
 							error(Error.TYPE_INFERENCE_FIXED, declaredTypes[i], i, relName)
 					}
@@ -190,7 +192,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 
 					// Phase 1: Include types that don't have a better representative already in the set
 					typeSet.each { t ->
-						def superTs = relationInfo.superTypesOrdered[t]
+						def superTs = typeInfo.superTypesOrdered[t]
 						if (!superTs.any { it in typeSet }) workingSet << t
 					}
 
@@ -203,8 +205,8 @@ class TypeInferenceTransformer extends DefaultTransformer {
 							def t2 = workingSet.first()
 							workingSet.removeAt(0)
 
-							def superTypesOfT1 = relationInfo.superTypesOrdered[t1]
-							def superTypesOfT2 = relationInfo.superTypesOrdered[t2]
+							def superTypesOfT1 = typeInfo.superTypesOrdered[t1]
+							def superTypesOfT2 = typeInfo.superTypesOrdered[t2]
 							// Move upwards in the hierarchy until a common kind is found
 							def superT = t1 = superTypesOfT1.find { it in superTypesOfT2 }
 							if (!superT) error(Error.TYPE_INCOMP, relation, i)

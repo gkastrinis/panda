@@ -2,6 +2,7 @@ package org.codesimius.panda.actions.code
 
 import org.codesimius.panda.actions.DefaultVisitor
 import org.codesimius.panda.actions.RelationInfoVisitor
+import org.codesimius.panda.actions.TypeInfoVisitor
 import org.codesimius.panda.actions.VarInfoVisitor
 import org.codesimius.panda.actions.tranform.TypeInferenceTransformer
 import org.codesimius.panda.datalog.block.BlockLvl2
@@ -19,9 +20,10 @@ import static org.codesimius.panda.datalog.element.ComparisonElement.TRIVIALLY_T
 
 class DefaultCodeGenerator extends DefaultVisitor<String> {
 
+	TypeInfoVisitor typeInfo = new TypeInfoVisitor()
 	RelationInfoVisitor relationInfo = new RelationInfoVisitor()
 	VarInfoVisitor varInfo = new VarInfoVisitor()
-	TypeInferenceTransformer typeInferenceTransformer = new TypeInferenceTransformer(relationInfo)
+	TypeInferenceTransformer typeInferenceTransformer = new TypeInferenceTransformer(typeInfo, relationInfo)
 	List<Result> results = []
 
 	File outDir

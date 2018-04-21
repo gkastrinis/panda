@@ -1,7 +1,7 @@
 package org.codesimius.panda.actions.tranform
 
 import groovy.transform.Canonical
-import org.codesimius.panda.actions.RelationInfoVisitor
+import org.codesimius.panda.actions.TypeInfoVisitor
 import org.codesimius.panda.datalog.Annotation
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.clause.RelDeclaration
@@ -26,7 +26,7 @@ import static org.codesimius.panda.datalog.expr.VariableExpr.genN as varN
 @Canonical
 class InputFactsTransformer extends DefaultTransformer {
 
-	RelationInfoVisitor RelationInfo
+	TypeInfoVisitor typeInfo
 
 	IVisitable exit(RelDeclaration n) {
 		if (INPUT in n.annotations) {
@@ -63,19 +63,14 @@ class InputFactsTransformer extends DefaultTransformer {
 		def inputTypes = []
 
 		types.withIndex().each { Type t, int i ->
-			def rootT = relationInfo.typeToRootType[t]
-			if (rootT) {
-				if (!(rootT in relationInfo.typesToOptimize)) {
-					headElements << new ConstructionElement(new Constructor(rootT.defaultConName, [var1(i), var1(N + i)]), t)
-					vars << var1(N + i)
-				} else {
-					headElements << new Relation(t.name, [var1(i)])
-					vars << var1(i)
-				}
-				inputTypes << TYPE_STRING
-			} else {
+			if (t.isPrimitive()) {
 				vars << var1(i)
 				inputTypes << t
+			} else {
+				def rootT = typeInfo.typeToRootType[t]
+				headElements << new ConstructionElement(new Constructor(rootT.defaultConName, [var1(i), var1(N + i)]), t)
+				vars << var1(N + i)
+				inputTypes << TYPE_STRING
 			}
 		}
 

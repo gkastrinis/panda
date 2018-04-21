@@ -2,6 +2,7 @@ package org.codesimius.panda.actions.tranform.souffle
 
 import groovy.transform.Canonical
 import org.codesimius.panda.actions.RelationInfoVisitor
+import org.codesimius.panda.actions.TypeInfoVisitor
 import org.codesimius.panda.actions.tranform.DefaultTransformer
 import org.codesimius.panda.actions.tranform.TypeInferenceTransformer
 import org.codesimius.panda.datalog.IVisitable
@@ -19,7 +20,6 @@ import org.codesimius.panda.datalog.expr.IExpr
 import org.codesimius.panda.datalog.expr.RecordExpr
 import org.codesimius.panda.datalog.expr.VariableExpr
 
-import static org.codesimius.panda.datalog.element.relation.Type.TYPE_STRING
 import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
 
 // (1) For each constructor, a new type is generated that
@@ -38,6 +38,7 @@ import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
 @Canonical
 class ConstructorTransformer extends DefaultTransformer {
 
+	TypeInfoVisitor typeInfo
 	RelationInfoVisitor relationInfo
 	TypeInferenceTransformer typeInferenceActor
 
@@ -60,14 +61,12 @@ class ConstructorTransformer extends DefaultTransformer {
 	void enter(BlockLvl0 n) {
 		super.enter n
 		// Re: (2)
-		relationInfo.rootTypes.each { root ->
-			if (root in relationInfo.typesToOptimize) return
-
+		typeInfo.rootTypes.each { root ->
 			def rootInternalType = new Type("_${root.name}")
-			def types = [root] + relationInfo.subTypes[root]
+			def types = [root] + typeInfo.subTypes[root]
 			types.each { typeToCommonType[it] = rootInternalType }
 			def constructors = types.collect {
-				relationInfo.constructorsPerType[it]
+				typeInfo.constructorsPerType[it]
 			}.flatten() as Set<RelDeclaration>
 			constructors.each {
 				extraTypeDecls << new TypeDeclaration(new Type(it.relation.name), new RecordType(it.types.dropRight(1)), [] as Set)
@@ -146,5 +145,5 @@ class ConstructorTransformer extends DefaultTransformer {
 		new RecordExpr(record)
 	}
 
-	Type map(Type t) { (t in relationInfo.typesToOptimize) ? TYPE_STRING : (typeToCommonType[t] ?: t) }
+	Type map(Type t) { typeToCommonType[t] ?: t }
 }

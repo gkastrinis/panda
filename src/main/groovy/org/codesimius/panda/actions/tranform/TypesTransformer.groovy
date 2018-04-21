@@ -1,9 +1,10 @@
 package org.codesimius.panda.actions.tranform
 
 import groovy.transform.Canonical
-import org.codesimius.panda.actions.RelationInfoVisitor
+import org.codesimius.panda.actions.TypeInfoVisitor
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl0
+import org.codesimius.panda.datalog.block.BlockLvl2
 import org.codesimius.panda.datalog.clause.RelDeclaration
 import org.codesimius.panda.datalog.clause.Rule
 import org.codesimius.panda.datalog.clause.TypeDeclaration
@@ -24,36 +25,48 @@ import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
 @Canonical
 class TypesTransformer extends DefaultTransformer {
 
-	RelationInfoVisitor relationInfo
+	TypeInfoVisitor typeInfo
+
+	IVisitable exit(BlockLvl2 n) {
+		typeInfo.removeOptimizedTypes()
+		super.exit n
+	}
 
 	void enter(BlockLvl0 n) {
-		relationInfo.rootTypes.findAll { !(it in relationInfo.typesToOptimize) }.each { root ->
-			extraRelDecls << new RelDeclaration(new Constructor(root.defaultConName, []), [TYPE_STRING, root], [CONSTRUCTOR] as Set)
+		// Add default constructors
+		typeInfo.rootTypes.findAll { !(it in typeInfo.typesToOptimize) }.each { root ->
+			def conDecl = new RelDeclaration(new Constructor(root.defaultConName, []), [TYPE_STRING, root], [CONSTRUCTOR] as Set)
+			extraRelDecls << conDecl
+			typeInfo.constructorsPerType[root] << conDecl
 		}
 	}
 
-	IVisitable exit(RelDeclaration n) { n }
-
 	IVisitable exit(TypeDeclaration n) {
+		def optimized = n.type in typeInfo.typesToOptimize
+
 		if (TYPEVALUES in n.annotations) {
-			def rootT = relationInfo.typeToRootType[n.type]
+			def rootT = typeInfo.typeToRootType[n.type]
 			n.annotations.find { it == TYPEVALUES }.args.each { key, value ->
 				def relName = "${n.type.name}:$key"
 
-				if (!(n.type in relationInfo.typesToOptimize)) {
-					def rel = new Relation(relName, [var1()])
-					extraRelDecls << new RelDeclaration(rel, [n.type])
-					def con = new ConstructionElement(new Constructor(rootT.defaultConName, [value, var1()]), n.type)
-					extraRules << new Rule(new LogicalElement([con, rel]), null)
-				} else {
+				if (optimized) {
 					def rel = new Relation(relName, [value])
 					extraRelDecls << new RelDeclaration(rel, [TYPE_STRING])
 					def typeRel = new Relation(n.type.name, [value])
 					extraRules << new Rule(new LogicalElement([typeRel, rel]), null)
+				} else {
+					def rel = new Relation(relName, [var1()])
+					extraRelDecls << new RelDeclaration(rel, [n.type])
+					def con = new ConstructionElement(new Constructor(rootT.defaultConName, [value, var1()]), n.type)
+					extraRules << new Rule(new LogicalElement([con, rel]), null)
 				}
 			}
 		}
-		return n
+		if (optimized) {
+			extraRelDecls << new RelDeclaration(new Relation(n.type.name), [TYPE_STRING])
+			return null
+		} else
+			return n
 	}
 
 	IVisitable exit(LogicalElement n) { n }
@@ -66,7 +79,7 @@ class TypesTransformer extends DefaultTransformer {
 
 	IVisitable exit(Relation n) { n }
 
-	IVisitable exit(Type n) { n }
+	IVisitable exit(Type n) { n in typeInfo.typesToOptimize ? TYPE_STRING : n }
 
 	IVisitable exit(BinaryExpr n) { n }
 

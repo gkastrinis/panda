@@ -1,4 +1,4 @@
-@type Animal
+@type(defaultConstructor = true) Animal
 @type Cat : Animal with A("A")
 @constructor byNum[x] = y : int, Cat
 @type @input PersianCat : Cat
@@ -13,4 +13,4 @@ byNum[42] = x new PersianCat
 	P4(x,y) : Cat, Animal
 }
 
-bar(x, y) <- P1(x), P3(z,y)
+bar(x, y) <- P1(x), P3(_,y)
