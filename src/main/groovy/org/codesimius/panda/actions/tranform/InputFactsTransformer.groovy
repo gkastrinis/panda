@@ -74,17 +74,16 @@ class InputFactsTransformer extends DefaultTransformer {
 			}
 		}
 
-		Relation inputRel
-		if (headElements) {
-			if (!inTypeDecl) headElements << new Relation(name, vars)
-			inputRel = new Relation("__SYS_IN_$name", varN(N))
-			extraRules << new Rule(headElements.size() > 1 ? new LogicalElement(headElements) : headElements.first() as IElement, inputRel)
-		} else {
-			inputRel = new Relation(name, varN(N))
-		}
 		def an = new Annotation("INPUT", [
 				filename : new ConstantExpr("${name.replace ":", "_"}.facts"),
 				delimeter: new ConstantExpr("\\t")])
-		extraRelDecls << new RelDeclaration(inputRel, inputTypes, [an] as Set)
+
+		if (headElements) {
+			if (!inTypeDecl) headElements << new Relation(name, vars)
+			def inputRel = new Relation("__SYS_IN_$name", varN(N))
+			extraRules << new Rule(headElements.size() > 1 ? new LogicalElement(headElements) : headElements.first() as IElement, inputRel)
+			extraRelDecls << new RelDeclaration(inputRel, inputTypes, [an] as Set)
+		} else
+			extraRelDecls << new RelDeclaration(new Relation(name, varN(N)), inputTypes, [an] as Set)
 	}
 }
