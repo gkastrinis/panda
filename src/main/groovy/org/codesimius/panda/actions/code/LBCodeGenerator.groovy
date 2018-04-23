@@ -33,14 +33,14 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 				.accept(new ComponentInstantiationTransformer())
 				.accept(new DependencyGraphVisitor(outDir))
 				.accept(new ComponentFlatteningTransformer())
-				.accept(typeInfo)
-				.accept(new TypesTransformer(typeInfo))
-				.accept(new InputFactsTransformer(typeInfo))
-				.accept(relationInfo)
-				.accept(varInfo)
+				.accept(symbolTable.typeInfo)
+				.accept(new TypesTransformer(symbolTable))
+				.accept(new InputFactsTransformer(symbolTable))
+				.accept(symbolTable.relationInfo)
+				.accept(symbolTable.varInfo)
 				.accept(typeInferenceTransformer)
-				.accept(new MainValidator(typeInfo, relationInfo, varInfo))
-				.accept(new TypesOptimizer(typeInfo, relationInfo))
+				.accept(new MainValidator(symbolTable))
+				.accept(new TypesOptimizer(symbolTable))
 
 		functionalRelations = n.datalog.relDeclarations
 				.findAll { FUNCTIONAL in it.annotations }

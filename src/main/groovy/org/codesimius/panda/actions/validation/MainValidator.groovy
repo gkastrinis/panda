@@ -2,9 +2,7 @@ package org.codesimius.panda.actions.validation
 
 import groovy.transform.Canonical
 import org.codesimius.panda.actions.DefaultVisitor
-import org.codesimius.panda.actions.symbol.RelationInfoVisitor
-import org.codesimius.panda.actions.symbol.TypeInfoVisitor
-import org.codesimius.panda.actions.symbol.VarInfoVisitor
+import org.codesimius.panda.actions.symbol.SymbolTable
 import org.codesimius.panda.datalog.Annotation
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl2
@@ -24,9 +22,7 @@ import static org.codesimius.panda.system.SourceManager.recallStatic as recall
 @Canonical
 class MainValidator extends DefaultVisitor<IVisitable> {
 
-	TypeInfoVisitor typeInfo
-	RelationInfoVisitor relationInfo
-	VarInfoVisitor varInfo
+	SymbolTable symbolTable
 
 	private Set<String> tmpDeclaredRelations = [] as Set
 	private Set<String> tmpDeclaredTypes = [] as Set
@@ -43,7 +39,7 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 		checkArity(n.relation.name, n.types.size(), n)
 
 		n.types.findAll { !it.isPrimitive() }
-				.findAll { !(it in typeInfo.allTypes) }
+				.findAll { !(it in symbolTable.allTypes) }
 				.each { error(recall(it), Error.TYPE_UNKNOWN, it.name) }
 	}
 
@@ -58,9 +54,9 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 	void enter(Rule n) {
 		checkAnnotations(n.annotations, [Annotation.PLAN], "Rule")
 
-		def varsInHead = varInfo.vars[n.head]
-		def varsInBody = varInfo.vars[n.body]
-		def conVars = relationInfo.constructedVars[n]
+		def varsInHead = symbolTable.vars[n.head]
+		def varsInBody = symbolTable.vars[n.body]
+		def conVars = symbolTable.constructedVars[n]
 		varsInHead.findAll { !(it in varsInBody) && !(it in conVars) }
 				.each { error(recall(n), Error.VAR_UNKNOWN, it.name) }
 
@@ -71,13 +67,13 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 	}
 
 	void enter(ConstructionElement n) {
-		def baseType = relationInfo.constructorBaseType[n.constructor.name]
+		def baseType = symbolTable.constructorBaseType[n.constructor.name]
 		if (!baseType)
 			error(recall(n), Error.CONSTR_UNKNOWN, n.constructor.name)
-		if (n.type != baseType && !(baseType in typeInfo.superTypesOrdered[n.type]))
+		if (n.type != baseType && !(baseType in symbolTable.superTypesOrdered[n.type]))
 			error(recall(n), Error.CONSTR_TYPE_INCOMPAT, n.constructor.name, n.type.name)
 
-		if (!(n.type in typeInfo.allTypes)) error(recall(n), Error.TYPE_UNKNOWN, n.type.name)
+		if (!(n.type in symbolTable.allTypes)) error(recall(n), Error.TYPE_UNKNOWN, n.type.name)
 	}
 
 	void enter(Constructor n) { if (!inDecl) checkRelation(n) }
@@ -86,17 +82,17 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 
 	def checkRelation(Relation n) {
 		// Type is used in rule head
-		if (inRuleHead && (new Type(n.name) in typeInfo.allTypes))
+		if (inRuleHead && (new Type(n.name) in symbolTable.allTypes))
 			error(recall(n), Error.TYPE_RULE, n.name)
 
-		if (inRuleBody && !(n.name in relationInfo.declaredRelations))
+		if (inRuleBody && !(n.name in symbolTable.declaredRelations))
 			error(recall(n), Error.REL_NO_DECL, n.name)
 
 		checkArity(n.name, n.arity, n)
 	}
 
 	def checkArity(String name, int arity, IVisitable n) {
-		if (inRuleBody && typeInfo.allTypes.find { it.name == name } && arity != 1)
+		if (inRuleBody && symbolTable.allTypes.find { it.name == name } && arity != 1)
 			error(recall(n), Error.REL_ARITY, name)
 
 		def prevArity = arities[name]

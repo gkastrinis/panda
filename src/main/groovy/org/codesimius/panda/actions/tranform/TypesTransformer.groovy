@@ -1,7 +1,7 @@
 package org.codesimius.panda.actions.tranform
 
 import groovy.transform.Canonical
-import org.codesimius.panda.actions.symbol.TypeInfoVisitor
+import org.codesimius.panda.actions.symbol.SymbolTable
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.clause.RelDeclaration
@@ -24,11 +24,11 @@ import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
 @Canonical
 class TypesTransformer extends DefaultTransformer {
 
-	TypeInfoVisitor typeInfo
+	SymbolTable symbolTable
 
 	void enter(BlockLvl0 n) {
 		// Add default constructors
-		typeInfo.rootTypes.each { root ->
+		symbolTable.rootTypes.each { root ->
 			extraRelDecls << new RelDeclaration(new Constructor(root.defaultConName, []), [TYPE_STRING, root], [CONSTRUCTOR] as Set)
 		}
 	}
@@ -36,7 +36,7 @@ class TypesTransformer extends DefaultTransformer {
 	IVisitable exit(TypeDeclaration n) {
 		def ann = n.annotations.find { it == TYPEVALUES }
 		if (ann) {
-			def rootT = typeInfo.typeToRootType[n.type]
+			def rootT = symbolTable.typeToRootType[n.type]
 			ann.args.each { key, value ->
 				def rel = new Relation("${n.type.name}:$key", [var1()])
 				extraRelDecls << new RelDeclaration(rel, [n.type])

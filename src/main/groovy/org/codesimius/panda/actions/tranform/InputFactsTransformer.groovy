@@ -1,7 +1,7 @@
 package org.codesimius.panda.actions.tranform
 
 import groovy.transform.Canonical
-import org.codesimius.panda.actions.symbol.TypeInfoVisitor
+import org.codesimius.panda.actions.symbol.SymbolTable
 import org.codesimius.panda.datalog.Annotation
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.clause.RelDeclaration
@@ -26,7 +26,7 @@ import static org.codesimius.panda.datalog.expr.VariableExpr.genN as varN
 @Canonical
 class InputFactsTransformer extends DefaultTransformer {
 
-	TypeInfoVisitor typeInfo
+	SymbolTable symbolTable
 
 	IVisitable exit(RelDeclaration n) {
 		if (INPUT in n.annotations) {
@@ -67,7 +67,7 @@ class InputFactsTransformer extends DefaultTransformer {
 				vars << var1(i)
 				inputTypes << t
 			} else {
-				def rootT = typeInfo.typeToRootType[t]
+				def rootT = symbolTable.typeToRootType[t]
 				headElements << new ConstructionElement(new Constructor(rootT.defaultConName, [var1(i), var1(N + i)]), t)
 				vars << var1(N + i)
 				inputTypes << TYPE_STRING

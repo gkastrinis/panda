@@ -1,8 +1,7 @@
 package org.codesimius.panda.actions.tranform
 
 import groovy.transform.Canonical
-import org.codesimius.panda.actions.symbol.RelationInfoVisitor
-import org.codesimius.panda.actions.symbol.TypeInfoVisitor
+import org.codesimius.panda.actions.symbol.SymbolTable
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.clause.RelDeclaration
@@ -22,8 +21,7 @@ import static org.codesimius.panda.datalog.element.relation.Type.TYPE_STRING
 @Canonical
 class TypesOptimizer extends DefaultTransformer {
 
-	TypeInfoVisitor typeInfo
-	RelationInfoVisitor relationInfo
+	SymbolTable symbolTable
 
 	Set<Type> typesToOptimize = [] as Set
 
@@ -31,13 +29,13 @@ class TypesOptimizer extends DefaultTransformer {
 		n.typeDeclarations.each { decl ->
 			if (decl.annotations.find { it == TYPE }.args["opt"]) {
 				// assert to type higher
-				typesToOptimize += ([decl.type] + typeInfo.subTypes[decl.type])
+				typesToOptimize += ([decl.type] + symbolTable.subTypes[decl.type])
 			}
 		}
 		typesToOptimize.each { t ->
-			typeInfo.superTypesOrdered.remove t
-			typeInfo.subTypes.remove t
-			typeInfo.typeToRootType.remove t
+			symbolTable.superTypesOrdered.remove t
+			symbolTable.subTypes.remove t
+			symbolTable.typeToRootType.remove t
 		}
 	}
 
@@ -56,7 +54,7 @@ class TypesOptimizer extends DefaultTransformer {
 	IVisitable exit(ComparisonElement n) { n }
 
 	IVisitable exit(ConstructionElement n) {
-		def baseT = relationInfo.constructorBaseType[n.constructor.name]
+		def baseT = symbolTable.constructorBaseType[n.constructor.name]
 		(n.type in typesToOptimize && n.constructor.name == baseT.defaultConName) ? new Relation(n.type.name, [n.constructor.keyExprs.first()]) : n
 	}
 

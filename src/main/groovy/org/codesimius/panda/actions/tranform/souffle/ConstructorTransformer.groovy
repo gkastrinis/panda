@@ -1,8 +1,7 @@
 package org.codesimius.panda.actions.tranform.souffle
 
 import groovy.transform.Canonical
-import org.codesimius.panda.actions.symbol.RelationInfoVisitor
-import org.codesimius.panda.actions.symbol.TypeInfoVisitor
+import org.codesimius.panda.actions.symbol.SymbolTable
 import org.codesimius.panda.actions.tranform.DefaultTransformer
 import org.codesimius.panda.actions.tranform.TypeInferenceTransformer
 import org.codesimius.panda.datalog.IVisitable
@@ -38,9 +37,8 @@ import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
 @Canonical
 class ConstructorTransformer extends DefaultTransformer {
 
-	TypeInfoVisitor typeInfo
-	RelationInfoVisitor relationInfo
-	TypeInferenceTransformer typeInferenceActor
+	SymbolTable symbolTable
+	TypeInferenceTransformer typeInference
 
 	// Recurring constant
 	private IExpr NIL = new ConstantExpr("nil")
@@ -61,12 +59,12 @@ class ConstructorTransformer extends DefaultTransformer {
 	void enter(BlockLvl0 n) {
 		super.enter n
 		// Re: (2)
-		typeInfo.rootTypes.each { root ->
+		symbolTable.rootTypes.each { root ->
 			def rootInternalType = new Type("_${root.name}")
-			def types = [root] + typeInfo.subTypes[root]
+			def types = [root] + symbolTable.subTypes[root]
 			types.each { typeToCommonType[it] = rootInternalType }
 			def constructors = types.collect {
-				relationInfo.constructorsPerType[it]
+				symbolTable.constructorsPerType[it]
 			}.flatten() as Set<RelDeclaration>
 			constructors.each {
 				extraTypeDecls << new TypeDeclaration(new Type(it.relation.name), new RecordType(it.types.dropRight(1)), [] as Set)
@@ -94,7 +92,7 @@ class ConstructorTransformer extends DefaultTransformer {
 	IVisitable visit(Rule n) {
 		inRuleHead = true
 		def head = n.head
-		relationInfo.constructionsOrderedPerRule[n].each {
+		symbolTable.constructionsOrderedPerRule[n].each {
 			// Map to the updated (from a previous iteration)
 			// version of the constructor, if any
 			def con = (m[it] ?: it) as ConstructionElement
@@ -105,7 +103,7 @@ class ConstructorTransformer extends DefaultTransformer {
 		}
 		// Remove construction from global map `m`
 		// since they might reappear in a different rule
-		relationInfo.constructionsOrderedPerRule[n].each { m.remove(it) }
+		symbolTable.constructionsOrderedPerRule[n].each { m.remove(it) }
 		m[n.head] = head
 		inRuleHead = false
 
@@ -121,7 +119,7 @@ class ConstructorTransformer extends DefaultTransformer {
 	IVisitable visit(Relation n) {
 		if (!inRuleHead) return n
 		n.exprs.withIndex().each { IExpr e, int i ->
-			tmpCurrType = typeInferenceActor.inferredTypes[n.name][i]
+			tmpCurrType = typeInference.inferredTypes[n.name][i]
 			m[e] = visit e
 		}
 		super.exit n
