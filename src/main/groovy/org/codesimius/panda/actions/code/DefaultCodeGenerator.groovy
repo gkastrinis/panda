@@ -1,9 +1,9 @@
 package org.codesimius.panda.actions.code
 
 import org.codesimius.panda.actions.DefaultVisitor
-import org.codesimius.panda.actions.RelationInfoVisitor
-import org.codesimius.panda.actions.TypeInfoVisitor
-import org.codesimius.panda.actions.VarInfoVisitor
+import org.codesimius.panda.actions.symbol.RelationInfoVisitor
+import org.codesimius.panda.actions.symbol.TypeInfoVisitor
+import org.codesimius.panda.actions.symbol.VarInfoVisitor
 import org.codesimius.panda.actions.tranform.TypeInferenceTransformer
 import org.codesimius.panda.datalog.block.BlockLvl2
 import org.codesimius.panda.datalog.element.*

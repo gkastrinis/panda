@@ -1,8 +1,8 @@
 package org.codesimius.panda.actions.tranform.souffle
 
 import groovy.transform.Canonical
-import org.codesimius.panda.actions.RelationInfoVisitor
-import org.codesimius.panda.actions.TypeInfoVisitor
+import org.codesimius.panda.actions.symbol.RelationInfoVisitor
+import org.codesimius.panda.actions.symbol.TypeInfoVisitor
 import org.codesimius.panda.actions.tranform.DefaultTransformer
 import org.codesimius.panda.actions.tranform.TypeInferenceTransformer
 import org.codesimius.panda.datalog.IVisitable

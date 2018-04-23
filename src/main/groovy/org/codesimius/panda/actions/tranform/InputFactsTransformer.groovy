@@ -1,7 +1,7 @@
 package org.codesimius.panda.actions.tranform
 
 import groovy.transform.Canonical
-import org.codesimius.panda.actions.TypeInfoVisitor
+import org.codesimius.panda.actions.symbol.TypeInfoVisitor
 import org.codesimius.panda.datalog.Annotation
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.clause.RelDeclaration

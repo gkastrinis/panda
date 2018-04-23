@@ -1,5 +1,6 @@
-package org.codesimius.panda.actions
+package org.codesimius.panda.actions.symbol
 
+import org.codesimius.panda.actions.DefaultVisitor
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl2
 import org.codesimius.panda.datalog.clause.Rule

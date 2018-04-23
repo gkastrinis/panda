@@ -1,7 +1,7 @@
 package org.codesimius.panda.actions.tranform.souffle
 
 import groovy.transform.Canonical
-import org.codesimius.panda.actions.VarInfoVisitor
+import org.codesimius.panda.actions.symbol.VarInfoVisitor
 import org.codesimius.panda.actions.tranform.DefaultTransformer
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.clause.RelDeclaration

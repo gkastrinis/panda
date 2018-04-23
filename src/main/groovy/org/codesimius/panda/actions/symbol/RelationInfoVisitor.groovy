@@ -1,5 +1,7 @@
-package org.codesimius.panda.actions
+package org.codesimius.panda.actions.symbol
 
+import org.codesimius.panda.actions.DefaultVisitor
+import org.codesimius.panda.datalog.Annotation
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.block.BlockLvl2
@@ -13,7 +15,6 @@ import org.codesimius.panda.datalog.element.relation.Type
 import org.codesimius.panda.datalog.expr.VariableExpr
 import org.codesimius.panda.system.Error
 
-import static org.codesimius.panda.datalog.Annotation.CONSTRUCTOR
 import static org.codesimius.panda.system.Error.error
 import static org.codesimius.panda.system.SourceManager.recallStatic as recall
 
@@ -50,7 +51,7 @@ class RelationInfoVisitor extends DefaultVisitor<IVisitable> {
 	void enter(RelDeclaration n) {
 		declaredRelations << n.relation.name
 
-		if (CONSTRUCTOR in n.annotations) {
+		if (Annotation.CONSTRUCTOR in n.annotations) {
 			constructorBaseType[n.relation.name] = n.types.last()
 			constructorsPerType[n.types.last()] << n
 		}
