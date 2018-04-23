@@ -95,6 +95,8 @@ class DatalogSpec extends Specification {
 		"fail44" | Error.REL_EXT_CYCLE
 		"fail45" | Error.AGGR_UNSUPPORTED_REL
 		"fail46" | Error.REL_NEGATION_CYCLE
+		"fail47" | Error.VAR_UNBOUND_HEAD
+		"fail48" | Error.VAR_CONSTR_BODY
 	}
 
 	@Unroll

@@ -1,0 +1,2 @@
+Foo(x, y) : int, int
+Bar(x, _) <- Foo(x, x)

@@ -57,12 +57,13 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 		def varsInHead = symbolTable.vars[n.head]
 		def varsInBody = symbolTable.vars[n.body]
 		def conVars = symbolTable.constructedVars[n]
+		varsInHead.findAll { it.name == "_" }
+				.each { error(recall(n), Error.VAR_UNBOUND_HEAD, null) }
 		varsInHead.findAll { !(it in varsInBody) && !(it in conVars) }
 				.each { error(recall(n), Error.VAR_UNKNOWN, it.name) }
-
-		varsInBody.findAll { it.name != "_" }
-				.findAll { !(it in varsInHead) }
-				.findAll { varsInBody.count(it) == 1 }
+		varsInBody.findAll { it in conVars }
+				.each { error(recall(n), Error.VAR_CONSTR_BODY, it.name) }
+		varsInBody.findAll { it.name != "_" && !(it in varsInHead) && (varsInBody.count(it) == 1) }
 				.each { warn(recall(n), Error.VAR_UNUSED, it.name) }
 	}
 
