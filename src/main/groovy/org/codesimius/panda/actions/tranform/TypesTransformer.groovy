@@ -15,11 +15,14 @@ import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.element.relation.Type
 import org.codesimius.panda.datalog.expr.BinaryExpr
 import org.codesimius.panda.datalog.expr.GroupExpr
+import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.datalog.Annotation.CONSTRUCTOR
 import static org.codesimius.panda.datalog.Annotation.TYPEVALUES
 import static org.codesimius.panda.datalog.element.relation.Type.TYPE_STRING
 import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
+import static org.codesimius.panda.system.Error.error
+import static org.codesimius.panda.system.SourceManager.recallStatic as recall
 
 @Canonical
 class TypesTransformer extends DefaultTransformer {
@@ -29,6 +32,9 @@ class TypesTransformer extends DefaultTransformer {
 	void enter(BlockLvl0 n) {
 		// Add default constructors
 		symbolTable.rootTypes.each { root ->
+			n.relDeclarations.findAll { it.relation.name == root.defaultConName }
+					.each { error(recall(it), Error.REL_NAME_DEFCONSTR, it.relation.name) }
+
 			extraRelDecls << new RelDeclaration(new Constructor(root.defaultConName, []), [TYPE_STRING, root], [CONSTRUCTOR] as Set)
 		}
 	}

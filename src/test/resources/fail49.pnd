@@ -1,0 +1,5 @@
+@type Animal
+@type Cat : Animal
+
+Cat:byStr(x, y) : int, int
+Animal:byStr(x, y) : int, int

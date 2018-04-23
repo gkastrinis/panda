@@ -89,14 +89,17 @@ class DatalogSpec extends Specification {
 		"fail38" | Error.REL_EXT_NO_DECL
 		"fail39" | Error.COMP_UNKNOWN_PARAM
 		"fail40" | Error.COMP_NAME_LIMITS
-		"fail41" | Error.REL_NAME_LIMITS
-		"fail42" | Error.REL_NAME_LIMITS
+		"fail41" | Error.REL_NAME_COMP
+		"fail42" | Error.REL_NAME_COMP
 		"fail43" | Error.INST_CYCLE
 		"fail44" | Error.REL_EXT_CYCLE
 		"fail45" | Error.AGGR_UNSUPPORTED_REL
 		"fail46" | Error.REL_NEGATION_CYCLE
 		"fail47" | Error.VAR_UNBOUND_HEAD
 		"fail48" | Error.VAR_CONSTR_BODY
+		"fail49" | Error.REL_NAME_DEFCONSTR
+		"fail50" | Error.TYPE_OPT_NONROOT
+		"fail51" | Error.TYPE_OPT_CONSTR
 	}
 
 	@Unroll

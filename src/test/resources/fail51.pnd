@@ -1,0 +1,4 @@
+@type(opt = true) Animal
+@type Cat : Animal
+
+@constructor byNum[x] = y : int, Cat

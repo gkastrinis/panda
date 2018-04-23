@@ -2,7 +2,6 @@ package org.codesimius.panda.actions.validation
 
 import groovy.transform.Canonical
 import org.codesimius.panda.actions.DefaultVisitor
-import org.codesimius.panda.datalog.Annotation
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl1
 import org.codesimius.panda.datalog.block.BlockLvl2
@@ -13,6 +12,7 @@ import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.expr.ConstantExpr
 import org.codesimius.panda.system.Error
 
+import static org.codesimius.panda.datalog.Annotation.CONSTRUCTOR
 import static org.codesimius.panda.datalog.expr.ConstantExpr.Kind.BOOLEAN
 import static org.codesimius.panda.datalog.expr.ConstantExpr.Kind.REAL
 import static org.codesimius.panda.system.Error.error
@@ -71,9 +71,9 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 		n.relation.exprs.findAll { n.relation.exprs.count(it) > 1 }.each {
 			error(Error.DECL_SAME_VAR, it)
 		}
-		if (Annotation.CONSTRUCTOR in n.annotations && !(n.relation instanceof Constructor))
+		if (CONSTRUCTOR in n.annotations && !(n.relation instanceof Constructor))
 			error(recall(n), Error.CONSTR_NON_FUNC, n.relation.name)
-		if (n.relation instanceof Constructor && !(Annotation.CONSTRUCTOR in n.annotations))
+		if (n.relation instanceof Constructor && !(CONSTRUCTOR in n.annotations))
 			error(recall(n), Error.FUNC_NON_CONSTR, n.relation.name)
 	}
 
@@ -84,7 +84,7 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 
 	void enter(Relation n) {
 		ids.findAll { n.name.startsWith("$it:") }.each {
-			error(recall(n), Error.REL_NAME_LIMITS, "$it:", n.name)
+			error(recall(n), Error.REL_NAME_COMP, "$it:", n.name)
 		}
 		if (n.name.contains("@")) {
 			def parameter = n.name.split("@").last() as String

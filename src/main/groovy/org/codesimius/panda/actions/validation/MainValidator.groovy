@@ -5,6 +5,7 @@ import org.codesimius.panda.actions.DefaultVisitor
 import org.codesimius.panda.actions.symbol.SymbolTable
 import org.codesimius.panda.datalog.Annotation
 import org.codesimius.panda.datalog.IVisitable
+import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.block.BlockLvl2
 import org.codesimius.panda.datalog.clause.RelDeclaration
 import org.codesimius.panda.datalog.clause.Rule
@@ -15,6 +16,7 @@ import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.element.relation.Type
 import org.codesimius.panda.system.Error
 
+import static org.codesimius.panda.datalog.Annotation.*
 import static org.codesimius.panda.system.Error.error
 import static org.codesimius.panda.system.Error.warn
 import static org.codesimius.panda.system.SourceManager.recallStatic as recall
@@ -27,32 +29,44 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 	private Set<String> tmpDeclaredRelations = [] as Set
 	private Set<String> tmpDeclaredTypes = [] as Set
 	private Map<String, Integer> arities = [:]
+	private BlockLvl0 currDatalog
 
 	IVisitable exit(BlockLvl2 n) { n }
+
+	void enter(BlockLvl0 n) { currDatalog = n }
 
 	void enter(RelDeclaration n) {
 		if (n.relation.name in tmpDeclaredRelations)
 			error(recall(n), Error.DECL_MULTIPLE, n.relation.name)
 		tmpDeclaredRelations << n.relation.name
 
-		checkAnnotations(n.annotations, [Annotation.CONSTRUCTOR, Annotation.FUNCTIONAL, Annotation.INPUT, Annotation.OUTPUT], "Declarations")
+		checkAnnotations(n.annotations, [CONSTRUCTOR, FUNCTIONAL, INPUT, OUTPUT], "Declarations")
 		checkArity(n.relation.name, n.types.size(), n)
 
 		n.types.findAll { !it.isPrimitive() }
 				.findAll { !(it in symbolTable.allTypes) }
 				.each { error(recall(it), Error.TYPE_UNKNOWN, it.name) }
+
+		if (CONSTRUCTOR in n.annotations) {
+			def rootT = symbolTable.typeToRootType[n.types.last()]
+			if (currDatalog.typeDeclarations.find { it.type == rootT }.annotations.find { it == TYPE }.args["opt"])
+				error(recall(n), Error.TYPE_OPT_CONSTR, n.relation.name)
+		}
 	}
 
 	void enter(TypeDeclaration n) {
-		checkAnnotations(n.annotations, [Annotation.INPUT, Annotation.OUTPUT, Annotation.TYPE, Annotation.TYPEVALUES], "Type")
+		checkAnnotations(n.annotations, [INPUT, OUTPUT, TYPE, TYPEVALUES], "Type")
 
 		if (n.type.name in tmpDeclaredTypes)
 			error(recall(n), Error.DECL_MULTIPLE, n.type.name)
 		tmpDeclaredTypes << n.type.name
+
+		if (n.annotations.find { it == TYPE }.args["opt"] && !(n.type in symbolTable.rootTypes))
+			error(recall(n), Error.TYPE_OPT_NONROOT, n.type.name)
 	}
 
 	void enter(Rule n) {
-		checkAnnotations(n.annotations, [Annotation.PLAN], "Rule")
+		checkAnnotations(n.annotations, [PLAN], "Rule")
 
 		def varsInHead = symbolTable.vars[n.head]
 		def varsInBody = symbolTable.vars[n.body]
