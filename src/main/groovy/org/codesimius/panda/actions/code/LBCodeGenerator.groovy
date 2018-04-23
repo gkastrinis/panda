@@ -38,8 +38,8 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 				.accept(new InputFactsTransformer(symbolTable))
 				.accept(symbolTable.relationInfo)
 				.accept(symbolTable.varInfo)
-				.accept(typeInferenceTransformer)
 				.accept(new MainValidator(symbolTable))
+				.accept(typeInferenceTransformer)
 				.accept(new TypesOptimizer(symbolTable))
 
 		functionalRelations = n.datalog.relDeclarations
