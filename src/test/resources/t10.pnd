@@ -1,4 +1,4 @@
-@type(defaultConstructor = true) Animal
+@type Animal
 @type Cat : Animal with A("A")
 @constructor byNum[x] = y : int, Cat
 @type @input PersianCat : Cat

@@ -65,7 +65,7 @@ class Annotation {
 				OPTIONAL_VALIDATOR.call(a, [plan: STRING])
 			},
 			"TYPE"       : { Annotation a ->
-				OPTIONAL_VALIDATOR.call(a, [capacity: INTEGER, defaultConstructor: BOOLEAN])
+				OPTIONAL_VALIDATOR.call(a, [capacity: INTEGER, opt: BOOLEAN])
 			},
 			"TYPEVALUES" : {},
 	]

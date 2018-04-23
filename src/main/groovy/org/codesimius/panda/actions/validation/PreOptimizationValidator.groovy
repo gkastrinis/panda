@@ -2,6 +2,7 @@ package org.codesimius.panda.actions.validation
 
 import groovy.transform.Canonical
 import org.codesimius.panda.actions.DefaultVisitor
+import org.codesimius.panda.actions.RelationInfoVisitor
 import org.codesimius.panda.actions.TypeInfoVisitor
 import org.codesimius.panda.datalog.Annotation
 import org.codesimius.panda.datalog.IVisitable
@@ -21,6 +22,7 @@ import static org.codesimius.panda.system.SourceManager.recallStatic as recall
 class PreOptimizationValidator extends DefaultVisitor<IVisitable> {
 
 	TypeInfoVisitor typeInfo
+	RelationInfoVisitor relationInfo
 	private Set<String> tmpDeclaredRelations = [] as Set
 
 	IVisitable exit(BlockLvl2 n) { n }
@@ -42,7 +44,7 @@ class PreOptimizationValidator extends DefaultVisitor<IVisitable> {
 	}
 
 	void enter(ConstructionElement n) {
-		def baseType = typeInfo.constructorBaseType[n.constructor.name]
+		def baseType = relationInfo.constructorBaseType[n.constructor.name]
 		if (!baseType)
 			error(recall(n), Error.CONSTR_UNKNOWN, n.constructor.name)
 		if (n.type != baseType && !(baseType in typeInfo.superTypesOrdered[n.type]))

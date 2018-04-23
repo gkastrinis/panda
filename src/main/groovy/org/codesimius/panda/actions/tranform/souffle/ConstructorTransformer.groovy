@@ -66,7 +66,7 @@ class ConstructorTransformer extends DefaultTransformer {
 			def types = [root] + typeInfo.subTypes[root]
 			types.each { typeToCommonType[it] = rootInternalType }
 			def constructors = types.collect {
-				typeInfo.constructorsPerType[it]
+				relationInfo.constructorsPerType[it]
 			}.flatten() as Set<RelDeclaration>
 			constructors.each {
 				extraTypeDecls << new TypeDeclaration(new Type(it.relation.name), new RecordType(it.types.dropRight(1)), [] as Set)

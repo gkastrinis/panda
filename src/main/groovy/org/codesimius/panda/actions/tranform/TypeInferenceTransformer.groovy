@@ -42,6 +42,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 	private Set<Rule> deltaRules
 
 	IVisitable visit(BlockLvl0 n) {
+		// Gather candidate types for relations, until fix-point
 		n.relDeclarations.each { visit it }
 
 		Set<Rule> oldDeltaRules = n.rules
@@ -52,12 +53,12 @@ class TypeInferenceTransformer extends DefaultTransformer {
 				error(Error.TYPE_INFERENCE_FAIL, null)
 			oldDeltaRules = deltaRules
 		}
-
+		// Type inference
 		coalesce()
 
 		// Fill partial declarations and add implicit ones
 		def relDs = inferredTypes.collect { rel, types ->
-			RelDeclaration d = relToDecl[rel]
+			def d = relToDecl[rel]
 			if (d?.types) return d
 
 			def vars = varN(types.size())

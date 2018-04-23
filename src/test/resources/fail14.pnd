@@ -1,2 +1,2 @@
-@type(defaultConstructor = true) Animal
+@type Animal
 Animal(1)
