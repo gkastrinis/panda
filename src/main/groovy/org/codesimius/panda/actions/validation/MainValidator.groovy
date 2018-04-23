@@ -5,6 +5,7 @@ import org.codesimius.panda.actions.DefaultVisitor
 import org.codesimius.panda.actions.RelationInfoVisitor
 import org.codesimius.panda.actions.TypeInfoVisitor
 import org.codesimius.panda.actions.VarInfoVisitor
+import org.codesimius.panda.datalog.Annotation
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl2
 import org.codesimius.panda.datalog.clause.RelDeclaration
@@ -13,6 +14,7 @@ import org.codesimius.panda.datalog.clause.TypeDeclaration
 import org.codesimius.panda.datalog.element.ConstructionElement
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
+import org.codesimius.panda.datalog.element.relation.Type
 import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.system.Error.error
@@ -26,12 +28,18 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 	RelationInfoVisitor relationInfo
 	VarInfoVisitor varInfo
 
+	private Set<String> tmpDeclaredRelations = [] as Set
 	private Set<String> tmpDeclaredTypes = [] as Set
 	private Map<String, Integer> arities = [:]
 
 	IVisitable exit(BlockLvl2 n) { n }
 
 	void enter(RelDeclaration n) {
+		if (n.relation.name in tmpDeclaredRelations)
+			error(recall(n), Error.DECL_MULTIPLE, n.relation.name)
+		tmpDeclaredRelations << n.relation.name
+
+		checkAnnotations(n.annotations, [Annotation.CONSTRUCTOR, Annotation.FUNCTIONAL, Annotation.INPUT, Annotation.OUTPUT], "Declarations")
 		checkArity(n.relation.name, n.types.size(), n)
 
 		n.types.findAll { !it.isPrimitive() }
@@ -40,12 +48,16 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 	}
 
 	void enter(TypeDeclaration n) {
+		checkAnnotations(n.annotations, [Annotation.INPUT, Annotation.OUTPUT, Annotation.TYPE, Annotation.TYPEVALUES], "Type")
+
 		if (n.type.name in tmpDeclaredTypes)
 			error(recall(n), Error.DECL_MULTIPLE, n.type.name)
 		tmpDeclaredTypes << n.type.name
 	}
 
 	void enter(Rule n) {
+		checkAnnotations(n.annotations, [Annotation.PLAN], "Rule")
+
 		def varsInHead = varInfo.vars[n.head]
 		def varsInBody = varInfo.vars[n.body]
 		def conVars = relationInfo.constructedVars[n]
@@ -59,6 +71,12 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 	}
 
 	void enter(ConstructionElement n) {
+		def baseType = relationInfo.constructorBaseType[n.constructor.name]
+		if (!baseType)
+			error(recall(n), Error.CONSTR_UNKNOWN, n.constructor.name)
+		if (n.type != baseType && !(baseType in typeInfo.superTypesOrdered[n.type]))
+			error(recall(n), Error.CONSTR_TYPE_INCOMPAT, n.constructor.name, n.type.name)
+
 		if (!(n.type in typeInfo.allTypes)) error(recall(n), Error.TYPE_UNKNOWN, n.type.name)
 	}
 
@@ -67,6 +85,10 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 	void enter(Relation n) { if (!inDecl) checkRelation(n) }
 
 	def checkRelation(Relation n) {
+		// Type is used in rule head
+		if (inRuleHead && (new Type(n.name) in typeInfo.allTypes))
+			error(recall(n), Error.TYPE_RULE, n.name)
+
 		if (inRuleBody && !(n.name in relationInfo.declaredRelations))
 			error(recall(n), Error.REL_NO_DECL, n.name)
 
@@ -80,5 +102,12 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 		def prevArity = arities[name]
 		if (prevArity && prevArity != arity) error(recall(n), Error.REL_ARITY, name)
 		if (!prevArity) arities[name] = arity
+	}
+
+	static def checkAnnotations(Set<Annotation> annotations, List<Annotation> allowedAnnotations, String kind) {
+		annotations
+				.findAll { !(it in allowedAnnotations) }
+				.each { error(recall(it), Error.ANNOTATION_INVALID, it, kind) }
+		annotations.each { it.validate() }
 	}
 }

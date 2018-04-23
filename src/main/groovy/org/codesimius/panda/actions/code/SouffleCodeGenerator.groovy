@@ -6,7 +6,6 @@ import org.codesimius.panda.actions.tranform.*
 import org.codesimius.panda.actions.tranform.souffle.AssignTransformer
 import org.codesimius.panda.actions.tranform.souffle.ConstructorTransformer
 import org.codesimius.panda.actions.validation.MainValidator
-import org.codesimius.panda.actions.validation.PreOptimizationValidator
 import org.codesimius.panda.actions.validation.PreliminaryValidator
 import org.codesimius.panda.datalog.block.BlockLvl2
 import org.codesimius.panda.datalog.clause.RelDeclaration
@@ -42,7 +41,6 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 				.accept(relationInfo)
 				.accept(varInfo)
 				.accept(typeInferenceTransformer)
-				.accept(new PreOptimizationValidator(typeInfo, relationInfo))
 				.accept(new MainValidator(typeInfo, relationInfo, varInfo))
 				.accept(new TypesOptimizer(typeInfo, relationInfo))
 				.accept(new ConstructorTransformer(typeInfo, relationInfo, typeInferenceTransformer))
