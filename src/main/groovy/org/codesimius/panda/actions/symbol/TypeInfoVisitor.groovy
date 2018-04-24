@@ -18,7 +18,7 @@ class TypeInfoVisitor extends DefaultVisitor<IVisitable> {
 
 	IVisitable exit(BlockLvl2 n) { n }
 
-	IVisitable exit(BlockLvl0 n) {
+	IVisitable visit(BlockLvl0 n) {
 		n.typeDeclarations.each { d ->
 			superTypesOrdered[d.type] = []
 			def currDecl = d

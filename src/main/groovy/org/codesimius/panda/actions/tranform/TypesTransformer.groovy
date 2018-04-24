@@ -7,14 +7,10 @@ import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.clause.RelDeclaration
 import org.codesimius.panda.datalog.clause.Rule
 import org.codesimius.panda.datalog.clause.TypeDeclaration
-import org.codesimius.panda.datalog.element.ComparisonElement
 import org.codesimius.panda.datalog.element.ConstructionElement
 import org.codesimius.panda.datalog.element.LogicalElement
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
-import org.codesimius.panda.datalog.element.relation.Type
-import org.codesimius.panda.datalog.expr.BinaryExpr
-import org.codesimius.panda.datalog.expr.GroupExpr
 import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.datalog.Annotation.CONSTRUCTOR
@@ -29,7 +25,7 @@ class TypesTransformer extends DefaultTransformer {
 
 	SymbolTable symbolTable
 
-	void enter(BlockLvl0 n) {
+	IVisitable visit(BlockLvl0 n) {
 		// Add default constructors
 		symbolTable.rootTypes.each { root ->
 			n.relDeclarations.findAll { it.relation.name == root.defaultConName }
@@ -37,6 +33,8 @@ class TypesTransformer extends DefaultTransformer {
 
 			extraRelDecls << new RelDeclaration(new Constructor(root.defaultConName, []), [TYPE_STRING, root], [CONSTRUCTOR] as Set)
 		}
+		n.typeDeclarations.each { visit it }
+		new BlockLvl0(n.relDeclarations + extraRelDecls, n.typeDeclarations, n.rules + extraRules)
 	}
 
 	IVisitable exit(TypeDeclaration n) {
@@ -52,20 +50,4 @@ class TypesTransformer extends DefaultTransformer {
 		}
 		return n
 	}
-
-	IVisitable exit(LogicalElement n) { n }
-
-	IVisitable exit(ComparisonElement n) { n }
-
-	IVisitable exit(ConstructionElement n) { n }
-
-	IVisitable exit(Constructor n) { n }
-
-	IVisitable exit(Relation n) { n }
-
-	IVisitable exit(Type n) { n }
-
-	IVisitable exit(BinaryExpr n) { n }
-
-	IVisitable exit(GroupExpr n) { n }
 }
