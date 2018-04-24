@@ -33,4 +33,8 @@ class ConstantExpr implements IExpr {
 	}
 
 	String toString() { value }
+
+	private ConstantExpr() { value = "nil" }
+
+	static final NIL = new ConstantExpr()
 }

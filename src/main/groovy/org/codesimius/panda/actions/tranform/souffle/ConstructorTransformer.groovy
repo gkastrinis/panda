@@ -14,11 +14,11 @@ import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.RecordType
 import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.element.relation.Type
-import org.codesimius.panda.datalog.expr.ConstantExpr
 import org.codesimius.panda.datalog.expr.IExpr
 import org.codesimius.panda.datalog.expr.RecordExpr
 import org.codesimius.panda.datalog.expr.VariableExpr
 
+import static org.codesimius.panda.datalog.expr.ConstantExpr.NIL
 import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
 
 // (1) For each constructor, a new type is generated that
@@ -39,9 +39,6 @@ class ConstructorTransformer extends DefaultTransformer {
 
 	SymbolTable symbolTable
 	TypeInferenceTransformer typeInference
-
-	// Recurring constant
-	private IExpr NIL = new ConstantExpr("nil")
 
 	// Re: 2
 	private Map<Type, List<Type>> typeToRecord = [:]
