@@ -40,18 +40,20 @@ class ConstructorTransformer extends DefaultTransformer {
 	SymbolTable symbolTable
 	TypeInferenceTransformer typeInference
 
+	// Re: 1
+	private Map<String, Type> constructorType = [:]
 	// Re: 2
-	private Map<Type, List<Type>> typeToRecord = [:]
+	private Map<Type, RecordType> typeToRecordType = [:]
 	private Map<Type, Type> typeToCommonType = [:]
 
 	// The variable currently being constructed
 	private VariableExpr tmpConVar
-	// The internal record representing the constructed value
-	private RecordExpr tmpConRecord
-	// The internal record type, e.g. ConType01
-	private Type tmpConRecordType
+	// The constructor currently used
+	private String tmpCurrConstructor
 	// Type for current relation parameter (in rule head)
 	private Type tmpCurrType
+	// The internal record representing the constructed value
+	private RecordExpr tmpConRecord
 
 	void enter(BlockLvl0 n) {
 		super.enter n
@@ -60,15 +62,19 @@ class ConstructorTransformer extends DefaultTransformer {
 			def rootInternalType = new Type("_${root.name}")
 			def types = [root] + symbolTable.subTypes[root]
 			types.each { typeToCommonType[it] = rootInternalType }
-			def constructors = types.collect {
-				symbolTable.constructorsPerType[it]
-			}.flatten() as Set<RelDeclaration>
-			constructors.each {
-				extraTypeDecls << new TypeDeclaration(new Type(it.relation.name), new RecordType(it.types.dropRight(1)), [] as Set)
+
+			def recordType = new RecordType([])
+			types.each {
+				typeToRecordType[it] = recordType
+				// Re: (1)
+				symbolTable.constructorsPerType[it].each { conDecl ->
+					def conT = new Type(conDecl.relation.name)
+					constructorType[conDecl.relation.name] = conT
+					extraTypeDecls << new TypeDeclaration(conT, new RecordType(conDecl.types.dropRight(1)))
+					recordType.innerTypes << conT
+				}
 			}
-			def record = constructors.collect { new Type(it.relation.name) }
-			types.each { typeToRecord[it] = record }
-			extraTypeDecls << new TypeDeclaration(rootInternalType, new RecordType(record), [] as Set)
+			extraTypeDecls << new TypeDeclaration(rootInternalType, recordType)
 		}
 	}
 
@@ -83,7 +89,7 @@ class ConstructorTransformer extends DefaultTransformer {
 		// Re: 4
 		if (n.supertype)
 			extraRules << new Rule(new Relation(n.supertype.name, [var1()]), new Relation(n.type.name, [var1()]))
-		null
+		return null
 	}
 
 	IVisitable visit(Rule n) {
@@ -94,8 +100,8 @@ class ConstructorTransformer extends DefaultTransformer {
 			// version of the constructor, if any
 			def con = (m[it] ?: it) as ConstructionElement
 			tmpConVar = con.constructor.valueExpr as VariableExpr
+			tmpCurrConstructor = con.constructor.name
 			tmpConRecord = new RecordExpr(con.constructor.keyExprs)
-			tmpConRecordType = new Type(con.constructor.name)
 			head = visit head
 		}
 		// Remove construction from global map `m`
@@ -131,13 +137,11 @@ class ConstructorTransformer extends DefaultTransformer {
 	IVisitable exit(VariableExpr n) {
 		if (!inRuleHead || n != tmpConVar) return n
 
-		def rawRecord = typeToRecord[tmpCurrType]
-		// rawRecord is null when the constructed type is optimized (replaced by the string type)
-		if (!rawRecord) return tmpConRecord.exprs[0]
-
-		def record = (0..<rawRecord.size()).collect { NIL as IExpr }
-		record[rawRecord.findIndexOf { it == tmpConRecordType }] = tmpConRecord
-		new RecordExpr(record)
+		def conT = constructorType[tmpCurrConstructor]
+		def recordType = typeToRecordType[tmpCurrType]
+		def record = new RecordExpr((0..<recordType.innerTypes.size()).collect { NIL as IExpr })
+		record.exprs[recordType.findIndexOf { it == conT }] = tmpConRecord
+		return record
 	}
 
 	Type map(Type t) { typeToCommonType[t] ?: t }
