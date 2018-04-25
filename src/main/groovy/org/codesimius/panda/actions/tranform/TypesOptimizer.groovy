@@ -67,7 +67,7 @@ class TypesOptimizer extends DefaultTransformer {
 		inRuleBody = true
 		if (n.body) m[n.body] = visit n.body
 		inRuleBody = false
-		exit n
+		super.exit n
 	}
 
 	IVisitable exit(ComparisonElement n) { n }

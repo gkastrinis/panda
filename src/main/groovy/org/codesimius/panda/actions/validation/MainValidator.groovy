@@ -2,6 +2,7 @@ package org.codesimius.panda.actions.validation
 
 import groovy.transform.Canonical
 import org.codesimius.panda.actions.DefaultVisitor
+import org.codesimius.panda.actions.symbol.ConstructionInfoVisitor
 import org.codesimius.panda.actions.symbol.SymbolTable
 import org.codesimius.panda.datalog.Annotation
 import org.codesimius.panda.datalog.IVisitable
@@ -85,6 +86,9 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 				.each { error(recall(n), Error.VAR_CONSTR_BODY, it.name) }
 		varsInBody.findAll { it.name != "_" && !(it in varsInHead) && (varsInBody.count(it) == 1) }
 				.each { warn(recall(n), Error.VAR_UNUSED, it.name) }
+
+		// Visit the rule for error checking reasons
+		new ConstructionInfoVisitor().visit n
 	}
 
 	void enter(ConstructionElement n) {

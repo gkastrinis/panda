@@ -1,6 +1,7 @@
 package org.codesimius.panda.actions.tranform.souffle
 
 import groovy.transform.Canonical
+import org.codesimius.panda.actions.symbol.ConstructionInfoVisitor
 import org.codesimius.panda.actions.symbol.SymbolTable
 import org.codesimius.panda.actions.tranform.DefaultTransformer
 import org.codesimius.panda.actions.tranform.TypeInferenceTransformer
@@ -95,18 +96,17 @@ class ConstructorTransformer extends DefaultTransformer {
 	IVisitable visit(Rule n) {
 		inRuleHead = true
 		def head = n.head
-		symbolTable.constructionsOrderedPerRule[n].each {
-			// Map to the updated (from a previous iteration)
-			// version of the constructor, if any
-			def con = (m[it] ?: it) as ConstructionElement
-			tmpConVar = con.constructor.valueExpr as VariableExpr
-			tmpCurrConstructor = con.constructor.name
-			tmpConRecord = new RecordExpr(con.constructor.keyExprs)
-			head = visit head
+		new ConstructionInfoVisitor().with {
+			visit n
+			constructionsOrderedPerRule[n].each {
+				// Map to the updated (from a previous iteration) version of the constructor, if any
+				def con = (m[it] ?: it) as ConstructionElement
+				tmpConVar = con.constructor.valueExpr as VariableExpr
+				tmpCurrConstructor = con.constructor.name
+				tmpConRecord = new RecordExpr(con.constructor.keyExprs)
+				head = visit head
+			}
 		}
-		// Remove construction from global map `m`
-		// since they might reappear in a different rule
-		symbolTable.constructionsOrderedPerRule[n].each { m.remove(it) }
 		m[n.head] = head
 		inRuleHead = false
 
