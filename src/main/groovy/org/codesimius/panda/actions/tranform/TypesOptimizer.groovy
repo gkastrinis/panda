@@ -20,6 +20,7 @@ import org.codesimius.panda.datalog.expr.VariableExpr
 import static org.codesimius.panda.datalog.Annotation.CONSTRUCTOR
 import static org.codesimius.panda.datalog.Annotation.TYPE
 import static org.codesimius.panda.datalog.element.relation.Type.TYPE_STRING
+import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
 
 @Canonical
 class TypesOptimizer extends DefaultTransformer {
@@ -30,12 +31,10 @@ class TypesOptimizer extends DefaultTransformer {
 	private Map<IExpr, IExpr> mapExprs
 
 	void enter(BlockLvl0 n) {
-		n.typeDeclarations.each { decl ->
-			if (decl.annotations.find { it == TYPE }.args["opt"]) {
-				// assert to type higher
-				typesToOptimize += ([decl.type] + symbolTable.subTypes[decl.type])
-			}
-		}
+		n.typeDeclarations
+				.findAll { decl -> decl.annotations.find { it == TYPE }.args["opt"] }
+				.each { decl -> typesToOptimize += ([decl.type] + symbolTable.subTypes[decl.type]) }
+
 		typesToOptimize.each { t ->
 			symbolTable.superTypesOrdered.remove t
 			symbolTable.subTypes.remove t
@@ -50,6 +49,8 @@ class TypesOptimizer extends DefaultTransformer {
 	IVisitable exit(TypeDeclaration n) {
 		if (n.type in typesToOptimize) {
 			extraRelDecls << new RelDeclaration(new Relation(n.type.name), [TYPE_STRING])
+			if (n.supertype)
+				extraRules << new Rule(new Relation(n.supertype.name, [var1()]), new Relation(n.type.name, [var1()]))
 			return null
 		} else
 			return n
