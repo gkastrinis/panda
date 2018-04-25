@@ -98,7 +98,7 @@ class DatalogSpec extends Specification {
 		"fail47" | Error.VAR_UNBOUND_HEAD
 		"fail48" | Error.VAR_CONSTR_BODY
 		"fail49" | Error.REL_NAME_DEFCONSTR
-		"fail50" | Error.TYPE_OPT_NONROOT
+		"fail50" | Error.TYPE_OPT_ROOT_NONOPT
 		"fail51" | Error.TYPE_OPT_CONSTR
 		"fail52" | Error.TYPE_UNKNOWN
 	}

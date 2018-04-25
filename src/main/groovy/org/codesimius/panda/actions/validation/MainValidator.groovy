@@ -64,8 +64,11 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 			error(recall(n), Error.DECL_MULTIPLE, n.type.name)
 		tmpDeclaredTypes << n.type.name
 
-		if (n.annotations.find { it == TYPE }.args["opt"] && !(n.type in symbolTable.rootTypes))
-			error(recall(n), Error.TYPE_OPT_NONROOT, n.type.name)
+		if (n.annotations.find { it == TYPE }.args["opt"]) {
+			def rootT = symbolTable.typeToRootType[n.type]
+			if (!currDatalog.typeDeclarations.find { it.type == rootT }.annotations.find { it == TYPE }.args["opt"])
+				error(recall(n), Error.TYPE_OPT_ROOT_NONOPT, n.type.name)
+		}
 	}
 
 	void enter(Rule n) {

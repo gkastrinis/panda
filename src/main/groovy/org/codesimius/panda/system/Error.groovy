@@ -55,16 +55,16 @@ enum Error {
 	TYPE_UNSUPP,
 	TYPE_UNKNOWN,
 	TYPE_RULE,
-	TYPE_OPT_NONROOT,
+	TYPE_OPT_ROOT_NONOPT,
 	TYPE_OPT_CONSTR,
 
 	static Map<Error, String> msgMap = [
-			(ANNOTATION_UNKNOWN)       : "Unknown annotation `{0}`",
-			(ANNOTATION_NON_EMPTY)     : "Annotation `{0}` takes no arguments",
-			(ANNOTATION_MISSING_ARG)   : "Missing mandatory argument `{0}` for annotation `{1}`",
-			(ANNOTATION_INVALID_ARG)   : "Invalid argument `{0}` for annotation `{1}`",
-			(ANNOTATION_MISTYPED_ARG)  : "Type mismatch ({0} instead of {1}) for argument `{2}` of annotation `{3}`",
-			(ANNOTATION_MULTIPLE)      : "Annotation `{0}` appears multiple times in clause",
+			(ANNOTATION_UNKNOWN)     : "Unknown annotation `{0}`",
+			(ANNOTATION_NON_EMPTY)   : "Annotation `{0}` takes no arguments",
+			(ANNOTATION_MISSING_ARG) : "Missing mandatory argument `{0}` for annotation `{1}`",
+			(ANNOTATION_INVALID_ARG) : "Invalid argument `{0}` for annotation `{1}`",
+			(ANNOTATION_MISTYPED_ARG): "Type mismatch ({0} instead of {1}) for argument `{2}` of annotation `{3}`",
+			(ANNOTATION_MULTIPLE)    : "Annotation `{0}` appears multiple times in clause",
 			(ANNOTATION_INVALID)       : "Invalid annotation `{0}` for `{1}`",
 
 			(COMP_UNKNOWN)             : "Unknown component name `{0}`",
@@ -102,15 +102,15 @@ enum Error {
 			(VAR_ASGN_CYCLE)           : "Assignment on var `{0}` is part of an assignment cycle",
 			(VAR_ASGN_COMPLEX)         : "Assignment on var `{0}` is part of a complicated logical structure",
 
-			(TYPE_INFERENCE_FAIL)      : "Type inference was inconclusive: cannot reach fixpoint",
-			(TYPE_INFERENCE_FIXED)     : "Type inference in conflict with declared type `{0}` (at index {1}) for relation `{2}`",
-			(TYPE_INCOMPAT_EXPR)       : "Incompatible types for numeric expression",
-			(TYPE_INCOMPAT)            : "Incompatible types for relation `{0}` (at index {1})",
-			(TYPE_UNSUPP)              : "Currently unsupported type `{0}`",
-			(TYPE_UNKNOWN)             : "Unknown type `{0}`",
-			(TYPE_RULE)                : "Type `{0}` used as a normal relation in rule head",
-			(TYPE_OPT_NONROOT)         : "Only root types of a hierarchy can be marked for optimization (`{0}`)",
-			(TYPE_OPT_CONSTR)          : "Type hierarchies marked for optimization cannot have user defined constructors (`{0}`)",
+			(TYPE_INFERENCE_FAIL)    : "Type inference was inconclusive: cannot reach fixpoint",
+			(TYPE_INFERENCE_FIXED)   : "Type inference in conflict with declared type `{0}` (at index {1}) for relation `{2}`",
+			(TYPE_INCOMPAT_EXPR)     : "Incompatible types for numeric expression",
+			(TYPE_INCOMPAT)          : "Incompatible types for relation `{0}` (at index {1})",
+			(TYPE_UNSUPP)            : "Currently unsupported type `{0}`",
+			(TYPE_UNKNOWN)           : "Unknown type `{0}`",
+			(TYPE_RULE)              : "Type `{0}` used as a normal relation in rule head",
+			(TYPE_OPT_ROOT_NONOPT)   : "Root types of a hierarchy must be explicitly marked for optimization (`{0}`) when optimizing types",
+			(TYPE_OPT_CONSTR)        : "Type hierarchies marked for optimization cannot have user defined constructors (`{0}`)",
 	]
 
 	static void warn(SourceLocation loc = null, Error errorId, Object... values) {
