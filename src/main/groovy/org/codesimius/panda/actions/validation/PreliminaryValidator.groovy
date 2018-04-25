@@ -3,6 +3,7 @@ package org.codesimius.panda.actions.validation
 import groovy.transform.Canonical
 import org.codesimius.panda.actions.DefaultVisitor
 import org.codesimius.panda.datalog.IVisitable
+import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.block.BlockLvl1
 import org.codesimius.panda.datalog.block.BlockLvl2
 import org.codesimius.panda.datalog.clause.RelDeclaration
@@ -64,6 +65,13 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 	}
 
 	IVisitable exit(BlockLvl1 n) { currComp = null }
+
+	void enter(BlockLvl0 n) {
+		n.typeDeclarations
+				.findAll { it.supertype }
+				.findAll { decl -> !n.typeDeclarations.any { it.type == decl.supertype } }
+				.each { error(recall(it), Error.TYPE_UNKNOWN, it.supertype.name) }
+	}
 
 	void enter(RelDeclaration n) {
 		if (n.relation.exprs.size() != n.types.size())

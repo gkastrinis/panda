@@ -1,0 +1,2 @@
+@type Animal
+@type Cat : Animel
