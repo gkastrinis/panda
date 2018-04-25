@@ -49,9 +49,9 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 
 		if (CONSTRUCTOR in n.annotations) {
 			def rootT = symbolTable.typeToRootType[n.types.last()]
-			def optimized = currDatalog.typeDeclarations.find { it.type == rootT }.annotations.find {
-				it == TYPE
-			}.args["opt"]
+			def optimized = currDatalog.typeDeclarations
+					.find { it.type == rootT }
+					.annotations.find { it == TYPE }.args["opt"]
 			if (optimized && rootT.defaultConName != n.relation.name)
 				error(recall(n), Error.TYPE_OPT_CONSTR, n.relation.name)
 		}

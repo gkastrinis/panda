@@ -5,6 +5,7 @@ import org.codesimius.panda.actions.symbol.SymbolTable
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.clause.RelDeclaration
+import org.codesimius.panda.datalog.clause.Rule
 import org.codesimius.panda.datalog.clause.TypeDeclaration
 import org.codesimius.panda.datalog.element.ComparisonElement
 import org.codesimius.panda.datalog.element.ConstructionElement
@@ -13,6 +14,8 @@ import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.element.relation.Type
 import org.codesimius.panda.datalog.expr.BinaryExpr
 import org.codesimius.panda.datalog.expr.GroupExpr
+import org.codesimius.panda.datalog.expr.IExpr
+import org.codesimius.panda.datalog.expr.VariableExpr
 
 import static org.codesimius.panda.datalog.Annotation.CONSTRUCTOR
 import static org.codesimius.panda.datalog.Annotation.TYPE
@@ -23,7 +26,8 @@ class TypesOptimizer extends DefaultTransformer {
 
 	SymbolTable symbolTable
 
-	Set<Type> typesToOptimize = [] as Set
+	private Set<Type> typesToOptimize = [] as Set
+	private Map<IExpr, IExpr> mapExprs
 
 	void enter(BlockLvl0 n) {
 		n.typeDeclarations.each { decl ->
@@ -51,20 +55,40 @@ class TypesOptimizer extends DefaultTransformer {
 			return n
 	}
 
+	IVisitable visit(Rule n) {
+		inRuleHead = true
+		mapExprs = [:]
+		// Visit head twice to make sure all variables have been handled
+		visit n.head
+		m[n.head] = visit n.head
+		inRuleHead = false
+
+		inRuleBody = true
+		if (n.body) m[n.body] = visit n.body
+		inRuleBody = false
+		exit n
+	}
+
 	IVisitable exit(ComparisonElement n) { n }
 
 	IVisitable exit(ConstructionElement n) {
-		def baseT = symbolTable.constructorBaseType[n.constructor.name]
-		(n.type in typesToOptimize && n.constructor.name == baseT.defaultConName) ? new Relation(n.type.name, [n.constructor.keyExprs.first()]) : n
+		if (n.type in typesToOptimize) {
+			def keyExpr = n.constructor.keyExprs.first()
+			mapExprs << [(n.constructor.valueExpr): keyExpr]
+			return new Relation(n.type.name, [keyExpr])
+		} else
+			return n
 	}
 
-	IVisitable exit(Constructor n) { n }
+	IVisitable exit(Constructor n) { inRuleHead ? super.exit(n) : n }
 
-	IVisitable exit(Relation n) { n }
+	IVisitable exit(Relation n) { inRuleHead ? super.exit(n) : n }
 
 	IVisitable exit(Type n) { n in typesToOptimize ? TYPE_STRING : n }
 
 	IVisitable exit(BinaryExpr n) { n }
 
 	IVisitable exit(GroupExpr n) { n }
+
+	IVisitable exit(VariableExpr n) { inRuleHead ? (mapExprs[n] ?: n) : n }
 }
