@@ -36,15 +36,22 @@ instructions.each { fw.write(it) }
 fw.close()
 
 
-fw = new FileWriter(new File("build/FormalParam0.facts"))
-new File("build/FormalParam.facts").eachLine {
-	def (index, method, var) = it.split("\t")
-	fw.write("$method\t$index\t$var\n")
+def swap = { oldName, newName, List<Integer> swaps ->
+	fw = new FileWriter(new File("build/${newName}.facts"))
+	new File("build/${oldName}.facts").eachLine {
+		def parts = it.split("\t")
+		def line = swaps ? swaps.collect { i -> parts[i] }.join("\t") : it
+		fw.write("$line\n")
+	}
+	fw.close()
 }
-fw.close()
-fw = new FileWriter(new File("build/ActualParam0.facts"))
-new File("build/ActualParam.facts").eachLine {
-	def (index, invo, var) = it.split("\t")
-	fw.write("$invo\t$index\t$var\n")
-}
-fw.close()
+swap("DirectSuperinterface", "DirectSuperInterface", null)
+swap("ComponentType", "ArrayComponentType", null)
+swap("ThisVar", "Method_ThisVar", null)
+swap("ArrayInsnIndex", "ArrayInstruction_IndexVar", null)
+swap("Method-DeclaresException", "Method_DeclaresException", [1, 0])
+swap("ClassModifier", "Class_Modifier", [1, 0])
+swap("Method-Modifier", "Method_Modifier", [1, 0])
+swap("Field-Modifier", "Field_Modifier", [1, 0])
+swap("FormalParam", "FormalParam0", [1, 0, 2])
+swap("ActualParam", "ActualParam0", [1, 0, 2])
