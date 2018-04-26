@@ -101,6 +101,7 @@ class DatalogSpec extends Specification {
 		"fail50" | Error.TYPE_OPT_ROOT_NONOPT
 		"fail51" | Error.TYPE_OPT_CONSTR
 		"fail52" | Error.TYPE_UNKNOWN
+		"fail53" | Error.CONSTR_AS_REL
 	}
 
 	@Unroll

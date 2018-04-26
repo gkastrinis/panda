@@ -31,10 +31,14 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 	private Set<String> tmpDeclaredTypes = [] as Set
 	private Map<String, Integer> arities = [:]
 	private BlockLvl0 currDatalog
+	private Set<String> allConstructors
 
 	IVisitable exit(BlockLvl2 n) { n }
 
-	void enter(BlockLvl0 n) { currDatalog = n }
+	void enter(BlockLvl0 n) {
+		currDatalog = n
+		allConstructors = symbolTable.constructorBaseType.keySet()
+	}
 
 	void enter(RelDeclaration n) {
 		if (n.relation.name in tmpDeclaredRelations)
@@ -103,7 +107,12 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 
 	void enter(Constructor n) { if (!inDecl) checkRelation(n) }
 
-	void enter(Relation n) { if (!inDecl) checkRelation(n) }
+	void enter(Relation n) {
+		if (!inDecl) checkRelation(n)
+
+		if (n.name in allConstructors)
+			error(recall(n), Error.CONSTR_AS_REL, n.name)
+	}
 
 	def checkRelation(Relation n) {
 		// Type is used in rule head

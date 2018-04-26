@@ -1,0 +1,6 @@
+@type Foo
+@constructor byN[x] = y : int, Foo
+
+byN[42] = x new Foo, Bar(x)
+
+Baz(x) <- byN(_, x)
