@@ -37,9 +37,7 @@ class DefaultTransformer extends DefaultVisitor<IVisitable> {
 	IVisitable exit(BlockLvl0 n) {
 		// grep() returns all elements which satisfy Groovy truth (i.e. not null)
 		def relDs = (n.relDeclarations.collect { m[it] as RelDeclaration } + extraRelDecls).grep() as Set
-		def typeDs = (n.typeDeclarations.collect {
-			m[it] as TypeDeclaration
-		} + extraTypeDecls).grep() as Set
+		def typeDs = (n.typeDeclarations.collect { m[it] as TypeDeclaration } + extraTypeDecls).grep() as Set
 		def rs = (n.rules.collect { m[it] as Rule } + extraRules).grep() as Set
 		new BlockLvl0(relDs, typeDs, rs)
 	}
