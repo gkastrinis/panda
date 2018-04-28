@@ -16,6 +16,7 @@ import org.codesimius.panda.datalog.element.relation.Type
 import org.codesimius.panda.datalog.expr.*
 import org.codesimius.panda.system.Error
 
+import static org.codesimius.panda.datalog.element.relation.Type.*
 import static org.codesimius.panda.datalog.expr.ConstantExpr.Kind.*
 import static org.codesimius.panda.datalog.expr.VariableExpr.genN as varN
 import static org.codesimius.panda.system.Error.error
@@ -25,19 +26,18 @@ class TypeInferenceTransformer extends DefaultTransformer {
 
 	SymbolTable symbolTable
 
-	// Relation name x Type (final)
+	// Relation x Types (final)
 	Map<String, List<Type>> inferredTypes = [:].withDefault { [] }
-
-	// Relation name x Type Set for each index
-	private Map<String, List<Set<Type>>> tmpRelationTypes = [:].withDefault { [] }
-	// Expression x Type Set (for current clause)
-	private Map<IVisitable, Set<Type>> tmpExprTypes
-	// Relation Name x Parameter Expression x Index (for current clause)
-	private Map<String, Map<IExpr, Integer>> tmpExprIndices
-
-	private Map<String, RelDeclaration> relToDecl = [:]
+	// Relation x Type Set (for each index)
+	Map<String, List<Set<Type>>> candidateTypes = [:].withDefault { [].withDefault { [] as Set } }
+	// Expression x Type Set (for active rule)
+	Map<IExpr, Set<Type>> exprTypes
+	// Relations (found in hear and body) of the active rule
+	Set<Relation> relations
 	// Implementing fix-point computation
-	private Set<Rule> deltaRules
+	Set<Rule> deltaRules
+	// Relation x Declaration
+	Map<String, RelDeclaration> relDeclarations = [:]
 
 	IVisitable visit(BlockLvl0 n) {
 		// Gather candidate types for relations, until fix-point
@@ -56,32 +56,30 @@ class TypeInferenceTransformer extends DefaultTransformer {
 
 		// Fill partial declarations and add implicit ones
 		def relDs = inferredTypes.collect { rel, types ->
-			def d = relToDecl[rel]
+			def d = relDeclarations[rel]
+			// Explicit, non-partial declaration
 			if (d?.types) return d
 
 			def vars = varN(types.size())
+			// Explicit, partial declaration
 			if (d) {
 				d.relation.exprs = vars
 				d.types = types
 				return d
 			}
 
+			// Implicit declaration
 			return new RelDeclaration(new Relation(rel, vars), types)
 		} as Set
 
 		new BlockLvl0(relDs, n.typeDeclarations, n.rules)
 	}
 
-	void enter(RelDeclaration n) {
-		tmpExprTypes = [:].withDefault { [] as Set }
-		tmpExprIndices = [:].withDefault { [:] }
-	}
-
 	IVisitable exit(RelDeclaration n) {
-		relToDecl[n.relation.name] = n
+		relDeclarations[n.relation.name] = n
 		if (n.types) {
 			inferredTypes[n.relation.name] = n.types
-			tmpRelationTypes[n.relation.name] = n.types.collect { [it] as Set }
+			candidateTypes[n.relation.name] = n.types.collect { [it] as Set }
 		}
 		return n
 	}
@@ -89,31 +87,21 @@ class TypeInferenceTransformer extends DefaultTransformer {
 	IVisitable exit(TypeDeclaration n) { n }
 
 	void enter(Rule n) {
-		tmpExprTypes = [:].withDefault { [] as Set }
-		tmpExprIndices = [:].withDefault { [:] }
+		exprTypes = [:].withDefault { [] as Set }
+		relations = [] as Set
 	}
 
 	IVisitable exit(Rule n) {
-		asElements(n.head).each {
-			def relName = (it instanceof ConstructionElement ? it.constructor.name : (it as Relation).name)
-			// null for relations without explicit declarations
-			def declaredTypes = inferredTypes[relName]
-			tmpExprIndices[relName].each { expr, i ->
-				// expr might not have possible types yet
-				def currTypeSet = tmpExprTypes[expr]
+		relations.each { rel ->
+			rel.exprs.eachWithIndex { expr, int i ->
+				def currTypeSet = exprTypes[expr]
 				if (currTypeSet) {
-					// There is an explicit declaration and the possible types
-					// for some expressions are more generic that the declared ones
-					if (declaredTypes) {
-						def superTs = symbolTable.superTypesOrdered[declaredTypes[i]]
-						if (currTypeSet.any { it in superTs })
-							error(Error.TYPE_INFERENCE_FIXED, declaredTypes[i], i, relName)
-					}
-					def prevTypeSet = tmpRelationTypes[relName][i] ?: [] as Set
-					def newTypeSet = (prevTypeSet + currTypeSet) as Set
+					def prevTypeSet = candidateTypes[rel.name][i]
+					def newTypeSet = prevTypeSet + currTypeSet
 					if (prevTypeSet != newTypeSet) {
-						tmpRelationTypes[relName][i] = newTypeSet
-						deltaRules += symbolTable.relUsedInRules[relName]
+						candidateTypes[rel.name][i] = newTypeSet
+						// Ignore current rule (in case of recursive relations)
+						deltaRules += symbolTable.relUsedInRules[rel.name] - n
 					}
 				} else
 					deltaRules << n
@@ -123,66 +111,78 @@ class TypeInferenceTransformer extends DefaultTransformer {
 	}
 
 	IVisitable exit(AggregationElement n) {
-		tmpExprTypes[n.var] << Type.TYPE_INT
+		exprTypes[n.var] << TYPE_INT
 		return n
 	}
 
-	IVisitable exit(ComparisonElement n) {
-		tmpExprTypes[n] = tmpExprTypes[n.expr]
-		return n
-	}
+	IVisitable exit(ComparisonElement n) { n }
 
 	IVisitable exit(ConstructionElement n) {
-		tmpExprTypes[n.constructor.valueExpr] << n.type
+		// The type for constructed vars is fixed
+		exprTypes[n.constructor.valueExpr] = [n.type] as Set
 		return n
 	}
 
-	IVisitable exit(Constructor n) {
-		def types = tmpRelationTypes[n.name]
-		n.keyExprs.eachWithIndex { expr, i ->
-			tmpExprIndices[n.name][expr] = i
-			if (types && types[i]) tmpExprTypes[expr] += types[i]
-		}
-		if (inRuleBody) {
-			int i = n.keyExprs.size()
-			if (types && types[i]) tmpExprTypes[n.valueExpr] += types[i]
-		}
-		return n
-	}
+	IVisitable exit(Constructor n) { exit(n as Relation) }
 
 	IVisitable exit(Relation n) {
-		def types = tmpRelationTypes[n.name]
-		n.exprs.eachWithIndex { expr, i ->
-			tmpExprIndices[n.name][expr] = i
-			if (inRuleBody && types && types[i]) tmpExprTypes[expr] += types[i]
-		}
+		if (inDecl) return n
+
+		def types = candidateTypes[n.name]
+		n.exprs.eachWithIndex { expr, i -> if (types) exprTypes[expr] += types[i] }
+		relations << n
 		return n
 	}
 
 	IVisitable exit(BinaryExpr n) {
-		def union = tmpExprTypes[n.left] + tmpExprTypes[n.right]
-		// Numeric operations
-		if (n.op != BinaryOp.EQ && n.op != BinaryOp.NEQ)
-			union.findAll { it != Type.TYPE_INT && it != Type.TYPE_FLOAT }.each {
-				error(Error.TYPE_INCOMPAT_EXPR, null)
-			}
-		tmpExprTypes[n] = tmpExprTypes[n.left] = tmpExprTypes[n.right] = union
+		def union = exprTypes[n.left] + exprTypes[n.right]
+		// Need to share type in both parts of the expression
+		exprTypes[n.left] = exprTypes[n.right] = union
+		switch (n.op) {
+			case BinaryOp.LT:
+			case BinaryOp.LEQ:
+			case BinaryOp.GT:
+			case BinaryOp.GEQ:
+			case BinaryOp.EQ:
+			case BinaryOp.NEQ:
+				exprTypes[n] << TYPE_BOOLEAN
+				break
+			case BinaryOp.PLUS:
+			case BinaryOp.MINUS:
+			case BinaryOp.MULT:
+			case BinaryOp.DIV:
+				union.findAll { it != TYPE_INT && it != TYPE_FLOAT }.each {
+					error(Error.TYPE_INCOMPAT_EXPR, n)
+				}
+				exprTypes[n] += union
+				break
+		}
 		return n
 	}
 
 	IVisitable exit(ConstantExpr n) {
-		if (n.kind == INTEGER) tmpExprTypes[n] << Type.TYPE_INT
-		else if (n.kind == REAL) tmpExprTypes[n] << Type.TYPE_FLOAT
-		else if (n.kind == BOOLEAN) tmpExprTypes[n] << Type.TYPE_BOOLEAN
-		else if (n.kind == STRING) tmpExprTypes[n] << Type.TYPE_STRING
+		if (n.kind == INTEGER) exprTypes[n] << TYPE_INT
+		else if (n.kind == REAL) exprTypes[n] << TYPE_FLOAT
+		else if (n.kind == BOOLEAN) exprTypes[n] << TYPE_BOOLEAN
+		else if (n.kind == STRING) exprTypes[n] << TYPE_STRING
 		return n
 	}
 
 	IVisitable exit(GroupExpr n) { n }
 
 	private void coalesce() {
-		tmpRelationTypes.each { relation, types ->
+		candidateTypes.each { relation, types ->
+			def declaredTypes = inferredTypes[relation]
 			types.eachWithIndex { typeSet, i ->
+				// Non-empty for relations with explicit declarations
+				if (declaredTypes) {
+					// There is an explicit declaration and the possible types
+					// for some expressions are more generic that the declared ones
+					def superTs = symbolTable.superTypesOrdered[declaredTypes[i]]
+					if (typeSet.any { it in superTs })
+						error(Error.TYPE_INFERENCE_FIXED, declaredTypes[i], i, relation)
+				}
+
 				if (typeSet.size() == 1)
 					inferredTypes[relation][i] = typeSet.first()
 				else {
@@ -207,8 +207,9 @@ class TypeInferenceTransformer extends DefaultTransformer {
 							def superTypesOfT1 = symbolTable.superTypesOrdered[t1]
 							def superTypesOfT2 = symbolTable.superTypesOrdered[t2]
 							// Move upwards in the hierarchy until a common kind is found
-							def superT = t1 = superTypesOfT1.find { it in superTypesOfT2 }
-							if (!superT) error(Error.TYPE_INCOMPAT, relation, i)
+							t1 = superTypesOfT1.find { it in superTypesOfT2 }
+							if (!t1)
+								error(Error.TYPE_INCOMPAT, relation, i, typeSet.collect { it.name }.join(", "))
 						}
 						coalescedType = t1
 					} else
