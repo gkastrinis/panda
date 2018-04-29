@@ -46,9 +46,7 @@ class DatalogParserImpl extends DatalogBaseListener {
 	}
 
 	void exitProgram(ProgramContext ctx) {
-		currPendingAnnotations.each {
-			currDatalog.relDeclarations << new RelDeclaration(new Relation(it.key), [], it.value)
-		}
+		currPendingAnnotations.each { addAnnotationsToRelDecl(it.key, it.value) }
 	}
 
 	void enterComponent(ComponentContext ctx) {
@@ -65,9 +63,8 @@ class DatalogParserImpl extends DatalogBaseListener {
 		program.components << new BlockLvl1(name, superName, parameters, superParameters, currDatalog)
 		values[ctx.identifierList()].each { String id -> program.instantiations << new Instantiation(name, id, []) }
 
-		currPendingAnnotations.each {
-			currDatalog.relDeclarations << new RelDeclaration(new Relation(it.key), [], it.value)
-		}
+		currPendingAnnotations.each { addAnnotationsToRelDecl(it.key, it.value) }
+
 		currPendingAnnotations = globalPendingAnnotations
 		currDatalog = program.datalog
 	}
@@ -314,6 +311,14 @@ class DatalogParserImpl extends DatalogBaseListener {
 	def suffix(String name) {
 		if (Type.isPrimitive(name)) return name
 		activeNamespaces ? "${activeNamespaces.join(":")}:$name" : name
+	}
+
+	def addAnnotationsToRelDecl(String relName, Set<Annotation> annotations) {
+		def rd = currDatalog.relDeclarations.find { it.relation.name == relName }
+		if (rd)
+			rd.annotations += annotations
+		else
+			currDatalog.relDeclarations << new RelDeclaration(new Relation(relName), [], annotations)
 	}
 
 	static def hasToken(ParserRuleContext ctx, String token) {
