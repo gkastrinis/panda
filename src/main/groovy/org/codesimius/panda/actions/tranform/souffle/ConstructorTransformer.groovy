@@ -121,7 +121,7 @@ class ConstructorTransformer extends DefaultTransformer {
 
 	IVisitable visit(Relation n) {
 		if (!inRuleHead) return n
-		n.exprs.withIndex().each { IExpr e, int i ->
+		n.exprs.eachWithIndex { IExpr e, int i ->
 			tmpCurrType = typeInference.inferredTypes[n.name][i]
 			m[e] = visit e
 		}

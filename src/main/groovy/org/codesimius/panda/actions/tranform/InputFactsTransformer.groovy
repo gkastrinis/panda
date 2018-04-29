@@ -53,7 +53,7 @@ class InputFactsTransformer extends DefaultTransformer {
 		def vars = []
 		def inputTypes = []
 
-		types.withIndex().each { Type t, int i ->
+		types.eachWithIndex { Type t, int i ->
 			if (t.isPrimitive()) {
 				vars << var1(i)
 				inputTypes << t
