@@ -55,7 +55,11 @@ class TypeInferenceTransformer extends DefaultTransformer {
 		coalesce()
 
 		// Fill partial declarations and add implicit ones
-		def relDs = inferredTypes.collect { rel, types ->
+		// Ignore relations that derive from types
+		def relDs = inferredTypes
+				.findAll { rel, types -> !symbolTable.allTypes.any { it.name == rel } }
+				.collect { rel, types ->
+
 			def d = relDeclarations[rel]
 			// Explicit, non-partial declaration
 			if (d?.types) return d
