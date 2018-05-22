@@ -128,8 +128,10 @@ class TypeInferenceTransformer extends DefaultTransformer {
 	IVisitable exit(Relation n) {
 		if (inDecl) return n
 
-		def types = candidateTypes[n.name]
-		n.exprs.eachWithIndex { expr, i -> if (types) exprTypes[expr] += types[i] }
+		if (inRuleBody) {
+			def types = candidateTypes[n.name]
+			n.exprs.eachWithIndex { expr, i -> if (types) exprTypes[expr] += types[i] }
+		}
 		relations << n
 		return n
 	}
