@@ -1,15 +1,15 @@
-//component Facts {
+//@Namespace(v = "Facts") {
 	//-----------------------------
 	// [Java Types]
 	//-----------------------------
-	@type {
+	@type(opt=true) {
 		Modifier with
-			Abstract('abstract'),
-			Final('final'),
-			Public('public'),
-			Private('private'),
-			Static('static'),
-			Transient('transient')
+		    Abstract('abstract'),
+		    Final('final'),
+		    Public('public'),
+		    Private('private'),
+		    Static('static'),
+		    Transient('transient')
 
 		Type
 		PrimitiveType : Type with
@@ -52,18 +52,29 @@
 	//-----------------------------
 	// [Method]
 	//-----------------------------
-	@type {
+	@type(opt=true) {
 		Method
 		// Return type and argument types of a method
-		MethodDescriptor
+		Descriptor
 	}
 
 	Method:Name(method, name) : Method, string
-	Method:Descriptor(method, desc) : Method, MethodDescriptor
+	Method:Descriptor(method, desc) : Method, Descriptor
 	Method:DeclaringType(method, declaringType) : Method, ReferenceType
 	Method:ReturnType(method, returnType) : Method, Type
 	@input Method:Modifier(method, mod) : Method, Modifier
 	ApplicationMethod(m) <- Method:DeclaringType(m, t), ApplicationClass(t)
+
+	@output MainMethod
+	@output MainClass
+	@output Method:Modifier
+
+	MainMethod(m) <-
+		MainClass(c),
+		Method:DeclaringType(m, c),
+		Method:Name(m, "main"),
+		Method:Descriptor(m, @"void(java.lang.String[])"),
+		Method:Modifier(m, @"public"), Method:Modifier(m, @"static")
 
 	@input(filename="FormalParam0.facts") FormalParam(method, index, var) : Method, int, Var
 	@input Method:ThisVar(method, var) : Method, Var
@@ -76,18 +87,18 @@
 	//-----------------------------
 	// [Field]
 	//-----------------------------
-	@type Field
+	@type(opt=true) Field
 
 	Field:Name(field, name) : Field, string
 	Field:DeclaringType(field, declaringType) : Field, ReferenceType
 	Field:Type(field, type) : Field, Type
-	@input Field:Modifier(field, mod) : Field, Modifier // mod, field
+	@input Field:Modifier(field, mod) : Field, Modifier
 
 
 	//-----------------------------
 	// [Var]
 	//-----------------------------
-	@type Var
+	@type(opt=true) Var
 
 	Var:Type(var, type) : Var, Type
 	Var:DeclaringMethod(var, method) : Var, Method
@@ -97,7 +108,7 @@
 	//-----------------------------
 	// [Heap Allocation]
 	//-----------------------------
-	@type {
+	@type(opt=true) {
 		HeapAllocation
 		NormalHeap : HeapAllocation
 		//StringConstant : HeapAllocation
@@ -111,9 +122,8 @@
 	//-----------------------------
 	// [Bytecode Instructions]
 	//-----------------------------
-	@type {
+	@type(opt=true) {
 		Instruction
-
 		FieldInstruction : Instruction
 		LoadInstanceField : FieldInstruction
 		StoreInstanceField : FieldInstruction
@@ -185,25 +195,25 @@
 	// [Raw Input Transformations]
 	//-----------------------------
 
-	@input Method0(method, name, desc, declType, retType, jvmDesc) : Method, string, MethodDescriptor, ReferenceType, Type, string
+	@input(filename="Method.facts") Method0(method, name, desc, declType, retType, jvmDesc) : Method, string, Descriptor, ReferenceType, Type, string
 	Method:Name(method, name),
 	Method:Descriptor(method, desc),
 	Method:DeclaringType(method, declType),
 	Method:ReturnType(method, retType) <- Method0(method, name, desc, declType, retType, _)
 
-	@input Field0(field, declType, name, type) : Field, ReferenceType, string, Type
+	@input(filename="Field.facts") Field0(field, declType, name, type) : Field, ReferenceType, string, Type
 	Field:Name(field, name),
 	Field:DeclaringType(field, declType),
 	Field:Type(field, type) <- Field0(field, declType, name, type)
 
-	@input Var0(var, declType, method) : Var, Type, Method
-	Var:Type(var, declType),
-	Var:DeclaringMethod(var, method) <- Var0(var, declType, method)
+	@input Var0(var, type, method) : Var, Type, Method
+	Var:Type(var, type),
+	Var:DeclaringMethod(var, method) <- Var0(var, type, method)
 
-	@input NormalHeap0(heap, type) : NormalHeap, Type
+	@input(filename="NormalHeap.facts") NormalHeap0(heap, type) : NormalHeap, Type
 	Allocation:Type(heap, type) <- NormalHeap0(heap, type)
 
-	@input ClassHeap0(heap, instanceType) : ClassHeap, Type
+	@input(filename="ClassHeap.facts") ClassHeap0(heap, instanceType) : ClassHeap, Type
 	Allocation:Type(heap, javaClass),
 	ClassHeap:InstanceType(heap, instanceType) <- ClassHeap0(heap, instanceType), ClassType:Class(javaClass)
 
@@ -268,4 +278,4 @@
 	MethodInvocation:Method(invo, invoMethod),
 	MethodInvocation:Base(invo, base) <- SpecialMethodInvocation0(invo, invoMethod, base)
 
-//} as facts
+//}

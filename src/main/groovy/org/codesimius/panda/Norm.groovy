@@ -55,3 +55,17 @@ swap("Method-Modifier", "Method_Modifier", [1, 0])
 swap("Field-Modifier", "Field_Modifier", [1, 0])
 swap("FormalParam", "FormalParam0", [1, 0, 2])
 swap("ActualParam", "ActualParam0", [1, 0, 2])
+
+def varType = [:]
+def varMethod = [:]
+new File("build/Var-Type.facts").eachLine {
+	def (var, type) = it.split("\t")
+	varType[var] = type
+}
+new File("build/Var-DeclaringMethod.facts").eachLine {
+	def (var, method) = it.split("\t")
+	varMethod[var] = method
+}
+def fw = new FileWriter(new File("build/Var0.facts"))
+varType.each { var, type -> fw.write("$var\t$type\t${varMethod[var]}\n") }
+fw.close()
