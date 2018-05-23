@@ -4,7 +4,7 @@ plugins {
 	id 'groovy'
 	id 'maven-publish'
 	//see https://github.com/researchgate/gradle-release
-	id 'net.researchgate.release' version '2.4.0'
+	id 'net.researchgate.release' version '2.6.0'
 }
 
 group = "org.codesimius"
