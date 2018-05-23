@@ -35,6 +35,7 @@ class DatalogSpec extends Specification {
 		"t11" | _
 		"t12" | _
 		"t13" | _
+		"t14" | _
 	}
 
 	@Unroll
@@ -102,6 +103,9 @@ class DatalogSpec extends Specification {
 		"fail51" | Error.TYPE_OPT_CONSTR
 		"fail52" | Error.TYPE_UNKNOWN
 		"fail53" | Error.CONSTR_AS_REL
+		"fail54" | Error.SMART_LIT_NON_PRIMITIVE
+		"fail55" | Error.SMART_LIT_NO_DIRECT_REL
+		"fail56" | Error.SMART_LIT_NO_DIRECT_REL
 	}
 
 	@Unroll

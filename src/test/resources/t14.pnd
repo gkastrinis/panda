@@ -1,0 +1,6 @@
+@type Animal
+@type Cat : Animal
+@type Shape
+Foo(x, y) : int, Cat
+Baz(a, b, c) <- Shape:byStr["123"] = a, b = 42, c = "abc"
+Bar(x, y) <- Foo(x, @"abc"), Baz(@"123", x, y)

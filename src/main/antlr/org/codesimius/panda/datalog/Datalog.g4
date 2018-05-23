@@ -57,7 +57,7 @@ constant
 	: INTEGER
 	| REAL
 	| BOOLEAN
-	| STRING
+	| '@'? STRING
 	;
 
 expr

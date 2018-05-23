@@ -6,7 +6,7 @@ import groovy.transform.Canonical
 class ConstantExpr implements IExpr {
 
 	enum Kind {
-		INTEGER, REAL, BOOLEAN, STRING
+		INTEGER, REAL, BOOLEAN, STRING, SMART_LIT
 	}
 
 	Kind kind
@@ -27,8 +27,8 @@ class ConstantExpr implements IExpr {
 		value = b
 	}
 
-	ConstantExpr(String s) {
-		kind = Kind.STRING
+	ConstantExpr(String s, boolean isSmartLiteral = false) {
+		kind = isSmartLiteral ? Kind.SMART_LIT : Kind.STRING
 		value = s.startsWith("'") ? s.replaceAll(/^'|'$/, '"') : s
 	}
 

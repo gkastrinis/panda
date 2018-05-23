@@ -40,6 +40,7 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 				.accept(symbolTable.varInfo)
 				.accept(new MainValidator(symbolTable))
 				.accept(typeInferenceTransformer)
+				.accept(new SmartLiteralTransformer(symbolTable, typeInferenceTransformer))
 				.accept(new TypesOptimizer(symbolTable))
 
 		functionalRelations = n.datalog.relDeclarations
