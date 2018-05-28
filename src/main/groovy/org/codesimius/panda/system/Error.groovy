@@ -51,10 +51,11 @@ enum Error {
 	SMART_LIT_NON_PRIMITIVE,
 	SMART_LIT_NO_DIRECT_REL,
 
-	TYPE_INFERENCE_FAIL,
-	TYPE_INFERENCE_FIXED,
-	TYPE_INCOMPAT_EXPR,
-	TYPE_INCOMPAT,
+	TYPE_INF_FAIL,
+	TYPE_INF_INCOMPAT_NUM,
+	TYPE_INF_INCOMPAT_DISJ,
+	TYPE_INF_INCOMPAT_BRANCH,
+	TYPE_INF_INCOMPAT_USE,
 	TYPE_UNSUPP,
 	TYPE_UNKNOWN,
 	TYPE_RULE,
@@ -62,10 +63,10 @@ enum Error {
 	TYPE_OPT_CONSTR,
 
 	static Map<Error, String> msgMap = [
-			(ANNOTATION_UNKNOWN)     : "Unknown annotation `{0}`",
-			(ANNOTATION_NON_EMPTY)   : "Annotation `{0}` takes no arguments",
-			(ANNOTATION_MISSING_ARG) : "Missing mandatory argument `{0}` for annotation `{1}`",
-			(ANNOTATION_INVALID_ARG) : "Invalid argument `{0}` for annotation `{1}`",
+			(ANNOTATION_UNKNOWN)       : "Unknown annotation `{0}`",
+			(ANNOTATION_NON_EMPTY)     : "Annotation `{0}` takes no arguments",
+			(ANNOTATION_MISSING_ARG)   : "Missing mandatory argument `{0}` for annotation `{1}`",
+			(ANNOTATION_INVALID_ARG)   : "Invalid argument `{0}` for annotation `{1}`",
 			(ANNOTATION_MISTYPED_ARG)  : "Type mismatch ({0} instead of {1}) for argument `{2}` of annotation `{3}`",
 			(ANNOTATION_MULTIPLE)      : "Annotation `{0}` appears multiple times in clause",
 			(ANNOTATION_INVALID)       : "Invalid annotation `{0}` for `{1}`",
@@ -88,45 +89,46 @@ enum Error {
 			(FUNC_NON_CONSTR)          : "Functional syntax available only for constructors (`{0}`)",
 			(REL_ARITY)                : "Inconsistent arity for relation `{0}`",
 			(REL_EXT_CYCLE)            : "Cycle detected involving a global relation used with a `@` paramater ({0})",
-			(REL_EXT_INVALID)        : "Relation with a parameter only allowed in a rule body, inside a component",
-			(REL_EXT_NO_DECL)        : "Unknown relation `{0}` used with a parameter",
-			(REL_NO_DECL)            : "Unknown relation `{0}`",
-			(REL_NAME_COMP)          : "Invalid prefix `{0}` in relation name `{1}` (component/instantiation name)",
-			(REL_NAME_DEFCONSTR)     : "Default constructor name used in user defined relation `{0}`",
-			(REL_NEGATION_CYCLE)     : "Cycle detected involving negation ({0})",
-			(CONSTR_RULE_CYCLE)      : "Constructor `{0}` appears in a cycle in rule head",
-			(CONSTR_UNKNOWN)         : "Unknown constructor `{0}`",
-			(CONSTR_TYPE_INCOMPAT)   : "Constructor `{0}` used with incompatible type `{1}`",
-			(CONSTR_AS_REL)          : "Constructor `{0}` used with relation syntax",
-			(VAR_MULTIPLE_CONSTR)    : "Var `{0}` constructed by multiple constructors in rule head",
-			(VAR_UNKNOWN)            : "Unknown var `{0}`",
-			(VAR_UNUSED)             : "Unused var `{0}`",
-			(VAR_UNBOUND_HEAD)       : "Unbound var `_` used in rule head",
-			(VAR_CONSTR_BODY)        : "Constructed bar `{0}` cannot appear in rule body",
-			(VAR_ASGN_CYCLE)         : "Assignment on var `{0}` is part of an assignment cycle",
-			(VAR_ASGN_COMPLEX)       : "Assignment on var `{0}` is part of a complicated logical structure",
-			(SMART_LIT_NON_PRIMITIVE): "Smart literals (`{0}`) can only be use for user defined types (type `{1}`)",
-			(SMART_LIT_NO_DIRECT_REL): "Smart literals (`{0}`) can only be direct parameters of a relation/constructor",
+			(REL_EXT_INVALID)          : "Relation with a parameter only allowed in a rule body, inside a component",
+			(REL_EXT_NO_DECL)          : "Unknown relation `{0}` used with a parameter",
+			(REL_NO_DECL)              : "Unknown relation `{0}`",
+			(REL_NAME_COMP)            : "Invalid prefix `{0}` in relation name `{1}` (component/instantiation name)",
+			(REL_NAME_DEFCONSTR)       : "Default constructor name used in user defined relation `{0}`",
+			(REL_NEGATION_CYCLE)       : "Cycle detected involving negation ({0})",
+			(CONSTR_RULE_CYCLE)        : "Constructor `{0}` appears in a cycle in rule head",
+			(CONSTR_UNKNOWN)           : "Unknown constructor `{0}`",
+			(CONSTR_TYPE_INCOMPAT)     : "Constructor `{0}` used with incompatible type `{1}`",
+			(CONSTR_AS_REL)            : "Constructor `{0}` used with relation syntax",
+			(VAR_MULTIPLE_CONSTR)      : "Var `{0}` constructed by multiple constructors in rule head",
+			(VAR_UNKNOWN)              : "Unknown var `{0}`",
+			(VAR_UNUSED)               : "Unused var `{0}`",
+			(VAR_UNBOUND_HEAD)         : "Unbound var `_` used in rule head",
+			(VAR_CONSTR_BODY)          : "Constructed bar `{0}` cannot appear in rule body",
+			(VAR_ASGN_CYCLE)           : "Assignment on var `{0}` is part of an assignment cycle",
+			(VAR_ASGN_COMPLEX)         : "Assignment on var `{0}` is part of a complicated logical structure",
+			(SMART_LIT_NON_PRIMITIVE)  : "Smart literals (`{0}`) can only be use for user defined types (type `{1}`)",
+			(SMART_LIT_NO_DIRECT_REL)  : "Smart literals (`{0}`) can only be direct parameters of a relation/constructor",
 
-			(TYPE_INFERENCE_FAIL)    : "Type inference was inconclusive: cannot reach fixpoint",
-			(TYPE_INFERENCE_FIXED)   : "Type inference in conflict with declared type `{0}` (at index {1}) for relation `{2}`",
-			(TYPE_INCOMPAT_EXPR)     : "Incompatible types for numeric expression ({0})",
-			(TYPE_INCOMPAT)          : "Incompatible types for relation `{0}` at index {1} ({2})",
-			(TYPE_UNSUPP)            : "Currently unsupported type `{0}`",
-			(TYPE_UNKNOWN)           : "Unknown type `{0}`",
-			(TYPE_RULE)              : "Type `{0}` used as a normal relation in rule head",
-			(TYPE_OPT_ROOT_NONOPT)   : "Root types of a hierarchy must be explicitly marked for optimization (`{0}`) when optimizing types",
-			(TYPE_OPT_CONSTR)        : "Type hierarchies marked for optimization cannot have user defined constructors (`{0}`)",
+			(TYPE_INF_FAIL)            : "Type inference was inconclusive: cannot reach fixpoint",
+			(TYPE_INF_INCOMPAT_NUM)    : "Incompatible types for numeric expression ({0})",
+			(TYPE_INF_INCOMPAT_DISJ)   : "Incompatible types in different hierarchies ({0})",
+			(TYPE_INF_INCOMPAT_BRANCH) : "Incompatible types in different branches of the same hierarchy ({0})",
+			(TYPE_INF_INCOMPAT_USE)    : "Incompatible types used for relation `{0}` at index {1} (expected `{2}` & used {3})",
+			(TYPE_UNSUPP)              : "Currently unsupported type `{0}`",
+			(TYPE_UNKNOWN)             : "Unknown type `{0}`",
+			(TYPE_RULE)                : "Type `{0}` used as a normal relation in rule head",
+			(TYPE_OPT_ROOT_NONOPT)     : "Root types of a hierarchy must be explicitly marked for optimization (`{0}`) when optimizing types",
+			(TYPE_OPT_CONSTR)          : "Type hierarchies marked for optimization cannot have user defined constructors (`{0}`)",
 	]
 
 	static void warn(SourceLocation loc = null, Error errorId, Object... values) {
-		def msg = "[DD] WARNING: ${MessageFormat.format(msgMap.get(errorId), values)}"
+		def msg = "[DD] WARNING: ${MessageFormat.format(msgMap.get(errorId), values)} -- [$errorId]"
 		if (loc) msg = "$msg\n$loc"
 		LogFactory.getLog(Error.class).warn(msg)
 	}
 
 	static void error(SourceLocation loc = null, Error errorId, Object... values) {
-		def msg = "[DD] ERROR: ${MessageFormat.format(msgMap.get(errorId), values)}"
+		def msg = "[DD] ERROR: ${MessageFormat.format(msgMap.get(errorId), values)} -- [$errorId]"
 		if (loc) msg = "$msg\n$loc"
 		throw new PandaException(msg, errorId)
 	}

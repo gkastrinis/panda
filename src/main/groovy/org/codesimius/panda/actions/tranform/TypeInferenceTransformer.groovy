@@ -28,93 +28,159 @@ class TypeInferenceTransformer extends DefaultTransformer {
 
 	// Relation x Types (final)
 	Map<String, List<Type>> inferredTypes = [:].withDefault { [] }
-	// Relation x Type Set (for each index)
-	Map<String, List<Set<Type>>> candidateTypes = [:].withDefault { [].withDefault { [] as Set } }
+
+	// Relation x Types
+	Map<String, List<Type>> candidateTypes = [:].withDefault { [] }
+	// Relations found in the current rule head that will have types inferred
+	Set<Relation> forInference
+
+	// Relation x Type Set for each column
+	// Keep track of all types that a relation was used with
+	Map<String, List<Set<Type>>> usedTypes = [:].withDefault { [].withDefault { [] as Set } }
+	// Relations found in the current rule (head/body) that will have types validated
+	// For those found in the head, this is because there is an explicit declaration
+	Set<Relation> forValidation
+
 	// Expression x Type Set (for active rule)
 	Map<IExpr, Set<Type>> exprTypes
-	// Relations (found in hear and body) of the active rule
-	Set<Relation> relations
+
+	// Relation x Declaration
+	Map<String, RelDeclaration> relToDeclaration = [:]
+
 	// Implementing fix-point computation
 	Set<Rule> deltaRules
-	// Relation x Declaration
-	Map<String, RelDeclaration> relDeclarations = [:]
 
 	IVisitable visit(BlockLvl0 n) {
-		// Gather candidate types for relations, until fix-point
+		// Gather explicit types
 		n.relDeclarations.each { visit it }
+		n.typeDeclarations.each { visit it }
 
+		// Gather candidate types for relations, until fix-point
 		Set<Rule> oldDeltaRules = n.rules
 		while (!oldDeltaRules.isEmpty()) {
 			deltaRules = [] as Set
 			oldDeltaRules.each { visit it }
 			if (oldDeltaRules == deltaRules)
-				error(Error.TYPE_INFERENCE_FAIL, null)
+				error(Error.TYPE_INF_FAIL, null)
 			oldDeltaRules = deltaRules
 		}
-		// Type inference
-		coalesce()
+
+		// Copy inferred types in the final map
+		candidateTypes.each { relName, type -> inferredTypes[relName] = type }
+
+		// Validate type usage
+		usedTypes.each { relName, types ->
+			def inferredTs = inferredTypes[relName]
+			types.eachWithIndex { typeSet, i ->
+				// All types used must be a subtype of the inferred (or declared) type
+				def subtypes = [inferredTs[i]] + symbolTable.subTypes[inferredTs[i]]
+				if (typeSet.any { !(it in subtypes) })
+					error(Error.TYPE_INF_INCOMPAT_USE, relName, i, inferredTs[i].name, typeSet.collect { it.name })
+			}
+		}
 
 		// Fill partial declarations and add implicit ones
 		// Ignore relations that derive from types
-		def relDs = inferredTypes
+		def relDeclarations = inferredTypes
 				.findAll { rel, types -> !symbolTable.allTypes.any { it.name == rel } }
 				.collect { rel, types ->
 
-			def d = relDeclarations[rel]
-			// Explicit, non-partial declaration
-			if (d?.types) return d
-
 			def vars = varN(types.size())
+			def d = relToDeclaration[rel]
 			// Explicit, partial declaration
-			if (d) {
+			if (d && !d.types) {
 				d.relation.exprs = vars
 				d.types = types
-				return d
+			}
+			// Implicit declaration
+			else if (!d) {
+				d = new RelDeclaration(new Relation(rel, vars), types)
 			}
 
-			// Implicit declaration
-			return new RelDeclaration(new Relation(rel, vars), types)
+			return d
 		} as Set
 
-		new BlockLvl0(relDs, n.typeDeclarations, n.rules)
+		new BlockLvl0(relDeclarations, n.typeDeclarations, n.rules)
 	}
 
 	IVisitable exit(RelDeclaration n) {
-		relDeclarations[n.relation.name] = n
-		if (n.types) {
-			inferredTypes[n.relation.name] = n.types
-			candidateTypes[n.relation.name] = n.types.collect { [it] as Set }
-		}
+		relToDeclaration[n.relation.name] = n
+		// Not a partial declaration
+		if (n.types) inferredTypes[n.relation.name] = n.types
 		return n
 	}
 
-	IVisitable exit(TypeDeclaration n) { n }
+	IVisitable exit(TypeDeclaration n) {
+		// Types can be used as single column relations (with the same type)
+		inferredTypes[n.type.name] = [n.type]
+		return n
+	}
 
 	void enter(Rule n) {
+		forInference = [] as Set
+		forValidation = [] as Set
 		exprTypes = [:].withDefault { [] as Set }
-		relations = [] as Set
 	}
 
 	IVisitable exit(Rule n) {
-		relations.each { rel ->
-			rel.exprs.eachWithIndex { expr, int i ->
-				def currTypeSet = exprTypes[expr]
-				if (currTypeSet) {
-					def prevTypeSet = candidateTypes[rel.name][i]
-					def newTypeSet = prevTypeSet + currTypeSet
-					if (prevTypeSet != newTypeSet) {
-						candidateTypes[rel.name][i] = newTypeSet
+		// For inferring a type *in* a rule body, approximate by assuming all relations are used conjunctively
+		// Therefore, infer the lowest type in the hierarchy that is present
+		Map<IExpr, Type> coalescedExprTypes = [:]
+		def coalesce = { IExpr expr ->
+			if (!coalescedExprTypes[expr]) {
+				def types = exprTypes[expr]
+				if (types.collect { symbolTable.typeToRootType[it] }.toSet().size() > 1)
+					error(Error.TYPE_INF_INCOMPAT_DISJ, types.collect { it.name })
+				if (inDiffBranches(types))
+					error(Error.TYPE_INF_INCOMPAT_BRANCH, types.collect { it.name })
+
+				coalescedExprTypes[expr] = types.find { t -> !symbolTable.subTypes[t].any { it in types } }
+			}
+			return coalescedExprTypes[expr]
+		}
+
+		forInference.each { relation ->
+			relation.exprs.eachWithIndex { expr, int i ->
+				def prevCandidate = candidateTypes[relation.name][i]
+				def currCandidate = coalesce(expr)
+
+				if (currCandidate) {
+					if (prevCandidate && prevCandidate != currCandidate) {
+						if (symbolTable.typeToRootType[prevCandidate] != symbolTable.typeToRootType[currCandidate])
+							error(Error.TYPE_INF_INCOMPAT_DISJ, [prevCandidate, currCandidate].collect { it.name })
+						// For inferring a type *among* different rules of the same relation, treat it as a disjunction
+						// Therefore, infer the lowest, *higher* common type in the hierarchy
+						candidateTypes[relation.name][i] = lowestHigherType(prevCandidate, currCandidate)
+					} else
+						candidateTypes[relation.name][i] = currCandidate
+
+					if (prevCandidate != candidateTypes[relation.name][i]) {
 						// Ignore current rule (in case of recursive relations)
-						deltaRules += symbolTable.relUsedInRules[rel.name] - n
+						deltaRules += symbolTable.relUsedInRules[relation.name] - n
 					}
-				} else
+				}
+				// Still missing type information
+				else
 					deltaRules << n
+			}
+		}
+
+		forValidation.each { relation ->
+			relation.exprs.eachWithIndex { expr, int i ->
+				def types = exprTypes[expr]
+				// Still missing type information
+				if (!types) return
+				// Ignore relations that have an explicit declaration and are used with the same exact types
+				if (isExplicit(relation) && types.size() == 1 && types.first() == inferredTypes[relation.name][i]) return
+
+				usedTypes[relation.name][i] << coalesce(expr)
 			}
 		}
 		return n
 	}
 
 	IVisitable exit(AggregationElement n) {
+		inferredTypes[n.relation.name] = [TYPE_INT]
 		exprTypes[n.var] << TYPE_INT
 		return n
 	}
@@ -130,13 +196,13 @@ class TypeInferenceTransformer extends DefaultTransformer {
 	IVisitable exit(Constructor n) { exit(n as Relation) }
 
 	IVisitable exit(Relation n) {
-		if (inDecl) return n
-
-		if (inRuleBody) {
-			def types = candidateTypes[n.name]
-			n.exprs.eachWithIndex { expr, i -> if (types) exprTypes[expr] += types[i] }
+		if (inRuleHead)
+			(isExplicit(n) ? forValidation : forInference) << n
+		else if (inRuleBody) {
+			forValidation << n
+			def types = (isExplicit(n) ? inferredTypes[n.name] : candidateTypes[n.name])
+			if (types) n.exprs.eachWithIndex { expr, i -> exprTypes[expr] << types[i] }
 		}
-		relations << n
 		return n
 	}
 
@@ -158,7 +224,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 			case BinaryOp.MULT:
 			case BinaryOp.DIV:
 				union.findAll { it != TYPE_INT && it != TYPE_FLOAT }.each {
-					error(Error.TYPE_INCOMPAT_EXPR, n)
+					error(Error.TYPE_INF_INCOMPAT_NUM, n)
 				}
 				exprTypes[n] += union
 				break
@@ -176,54 +242,23 @@ class TypeInferenceTransformer extends DefaultTransformer {
 
 	IVisitable exit(GroupExpr n) { n }
 
-	private void coalesce() {
-		candidateTypes.each { relation, types ->
-			def declaredTypes = inferredTypes[relation]
-			types.eachWithIndex { typeSet, i ->
-				// Non-empty for relations with explicit declarations
-				if (declaredTypes) {
-					// There is an explicit declaration and the possible types
-					// for some expressions are more generic that the declared ones
-					def superTs = symbolTable.superTypesOrdered[declaredTypes[i]]
-					if (typeSet.any { it in superTs })
-						error(Error.TYPE_INFERENCE_FIXED, declaredTypes[i], i, relation)
-				}
+	def isExplicit(def rel) { inferredTypes.containsKey(rel.name) }
 
-				if (typeSet.size() == 1)
-					inferredTypes[relation][i] = typeSet.first()
-				else {
-					def workingSet = [] as List<Type>
-					Type coalescedType
+	Type lowestHigherType(Type t1, Type t2) {
+		// Traverse the type hierarhcy from the top and stop at the first branching point
+		def superTs1 = [t1] + symbolTable.superTypesOrdered[t1]
+		def superTs2 = [t2] + symbolTable.superTypesOrdered[t2]
+		def k = superTs1.size() - 1, l = superTs2.size() - 1
+		while (k >= 0 && l >= 0 && superTs1[k--] == superTs2[l--])
+		superTs1[k + 1]
+	}
 
-					// Phase 1: Include types that don't have a better representative already in the set
-					typeSet.each { t ->
-						def superTs = symbolTable.superTypesOrdered[t]
-						if (!superTs.any { it in typeSet }) workingSet << t
-					}
-
-					// Phase 2: Find first common supertype for types in the same hierarchy
-					if (workingSet.size() != 1) {
-						def t1 = workingSet.first()
-						workingSet.removeAt(0)
-						while (workingSet) {
-							// Iterate types in pairs
-							def t2 = workingSet.first()
-							workingSet.removeAt(0)
-
-							def superTypesOfT1 = symbolTable.superTypesOrdered[t1]
-							def superTypesOfT2 = symbolTable.superTypesOrdered[t2]
-							// Move upwards in the hierarchy until a common kind is found
-							t1 = superTypesOfT1.find { it in superTypesOfT2 }
-							if (!t1)
-								error(Error.TYPE_INCOMPAT, relation, i, typeSet.collect { it.name }.join(", "))
-						}
-						coalescedType = t1
-					} else
-						coalescedType = workingSet.first()
-
-					inferredTypes[relation][i] = coalescedType
-				}
-			}
-		}
+	boolean inDiffBranches(Set<Type> types) {
+		def superTs = types.collect { [it] + symbolTable.superTypesOrdered[it] }
+		def indexes = superTs.collect { it.size() - 1 }
+		int counter
+		while ((counter = indexes.withIndex().collect { int index, int i -> index >= 0 ? superTs[i][index] : null }.toSet().grep().size()) == 1)
+			indexes = indexes.collect { it - 1 }
+		return counter > 1
 	}
 }

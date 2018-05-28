@@ -1,0 +1,5 @@
+@type Animal
+@type Shape
+
+foo(x) <- Shape(x)
+foo(x) <- Animal(x)

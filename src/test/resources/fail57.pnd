@@ -1,0 +1,5 @@
+@type Animal
+@type Cat : Animal
+@type Dog : Animal
+
+foo(x) <- Cat(x), Dog(x)
