@@ -34,16 +34,12 @@ class InputFactsTransformer extends DefaultTransformer {
 	}
 
 	IVisitable exit(RelDeclaration n) {
-		if (INPUT in n.annotations) {
-			genInput(n.relation.name, n.types, n.annotations)
-			return null
-		}
+		if (INPUT in n.annotations) genInput(n.relation.name, n.types, n.annotations)
 		return n
 	}
 
 	IVisitable exit(TypeDeclaration n) {
-		if (INPUT in n.annotations)
-			genInput(n.type.name, [n.type], n.annotations)
+		if (INPUT in n.annotations) genInput(n.type.name, [n.type], n.annotations)
 		return n
 	}
 
@@ -69,13 +65,16 @@ class InputFactsTransformer extends DefaultTransformer {
 		def an = new Annotation("INPUT", [
 				filename : origAn.args["filename"] ?: new ConstantExpr("${name.replace ":", "_"}.facts"),
 				delimeter: origAn.args["delimeter"] ?: new ConstantExpr("\\t")])
+		annotations.remove INPUT
 
 		if (headElements) {
 			if (!annotations.any { it == TYPE }) headElements << new Relation(name, vars)
 			def inputRel = new Relation("__SYS_IN_$name", varN(N))
 			extraRules << new Rule(headElements.size() > 1 ? new LogicalElement(headElements) : headElements.first() as IElement, inputRel)
 			extraRelDecls << new RelDeclaration(inputRel, inputTypes, [an] as Set)
-		} else
+		} else if (!types.any { !it.isPrimitive() })
+			annotations << an
+		else
 			extraRelDecls << new RelDeclaration(new Relation(name, varN(N)), inputTypes, [an] as Set)
 	}
 }
