@@ -1,6 +1,6 @@
 package org.codesimius.panda.system
 
-import org.apache.commons.logging.LogFactory
+import org.apache.log4j.Level
 
 import java.text.MessageFormat
 
@@ -122,13 +122,13 @@ enum Error {
 	]
 
 	static void warn(SourceLocation loc = null, Error errorId, Object... values) {
-		def msg = "[DD] WARNING: ${MessageFormat.format(msgMap.get(errorId), values)} -- [$errorId]"
+		def msg = "${MessageFormat.format(msgMap.get(errorId), values)} -- [$errorId]"
 		if (loc) msg = "$msg\n$loc"
-		LogFactory.getLog(Error.class).warn(msg)
+		Logger.log(msg, "WARNING", Level.WARN)
 	}
 
 	static void error(SourceLocation loc = null, Error errorId, Object... values) {
-		def msg = "[DD] ERROR: ${MessageFormat.format(msgMap.get(errorId), values)} -- [$errorId]"
+		def msg = "${MessageFormat.format(msgMap.get(errorId), values)} -- [$errorId]"
 		if (loc) msg = "$msg\n$loc"
 		throw new PandaException(msg, errorId)
 	}

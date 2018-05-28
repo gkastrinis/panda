@@ -1,7 +1,6 @@
 package org.codesimius.panda.system
 
 import groovy.transform.Canonical
-import org.apache.commons.logging.LogFactory
 import org.codesimius.panda.actions.graph.DependencyGraphVisitor
 import org.codesimius.panda.actions.graph.Edge
 import org.codesimius.panda.actions.graph.Node
@@ -23,8 +22,7 @@ class DependencyGraphDOTGenerator {
 		def fw = new FileWriter(f)
 		def emit = { fw.write "$it\n" }
 
-		def log = LogFactory.getLog(DependencyGraphDOTGenerator.class)
-		log.info("[DD] GRAPH: ${f.canonicalPath}")
+		Logger.log(f.canonicalPath, "GRAPH")
 
 		def edges = []
 		def FONT = "Arial"

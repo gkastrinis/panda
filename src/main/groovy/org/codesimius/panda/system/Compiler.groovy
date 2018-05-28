@@ -4,8 +4,11 @@ import org.antlr.v4.runtime.ANTLRFileStream
 import org.antlr.v4.runtime.ANTLRInputStream
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTreeWalker
-import org.apache.commons.logging.LogFactory
-import org.apache.log4j.*
+import org.apache.log4j.ConsoleAppender
+import org.apache.log4j.DailyRollingFileAppender
+import org.apache.log4j.Level
+import org.apache.log4j.Logger as Log4J
+import org.apache.log4j.PatternLayout
 import org.codesimius.panda.DatalogParserImpl
 import org.codesimius.panda.actions.code.LBCodeGenerator
 import org.codesimius.panda.actions.code.SouffleCodeGenerator
@@ -19,7 +22,7 @@ class Compiler {
 		def dir = new File(logDir)
 		if (!dir) dir.mkdir()
 
-		def root = Logger.rootLogger
+		def root = Log4J.rootLogger
 		root.setLevel(Level.toLevel("INFO", Level.WARN))
 		root.addAppender(new DailyRollingFileAppender(new PatternLayout("%d [%t] %-5p %c - %m%n"), "$logDir/panda.log", "'.'yyyy-MM-dd"))
 		root.addAppender(new ConsoleAppender(new PatternLayout("%m%n")))
@@ -34,13 +37,12 @@ class Compiler {
 	}
 
 	static List<Result> compile(String filename, def codeGenActor) {
-		def log = LogFactory.getLog(Compiler.class)
-		log.info("[DD] COMPILE: $filename with ${codeGenActor.class.name}")
+		Logger.log("$filename with ${codeGenActor.class.name}", "COMPILE")
 
 		try {
 			return compile0(new ANTLRFileStream(filename), filename, codeGenActor)
 		} catch (e) {
-			log.error(e.message, e)
+			Logger.log(e.message, "ERROR", Level.ERROR, e)
 			return null
 		}
 	}
