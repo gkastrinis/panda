@@ -34,20 +34,20 @@
 	}
 
 	@input {
-		Class:Modifier(class, mod) : ReferenceType, Modifier
+		Type:Modifier(class, mod) : ReferenceType, Modifier
 
-		DirectSuperClass(class, superclass) : ClassType, ClassType
-		DirectSuperInterface(class, interface) : ReferenceType, InterfaceType
+		DirectSuperClass(class, superClass) : ClassType, ClassType
+		DirectSuperInterface(class, superInterface) : ReferenceType, InterfaceType
 
-		ApplicationClass(class) : ReferenceType
+		ApplicationType(t) : ReferenceType
 		MainClass(class) : ClassType
 
 		ArrayComponentType(arrayType, componentType) : ArrayType, Type
 	}
 	// TODO improve syntax
-	_AbstractClass(c) <- Class:Modifier(c, mod), Modifier:Abstract(mod)
-	ConcreteClass(c) <- ClassType(c), !_AbstractClass(c)
-
+	// what happens with smart literals?
+	_AbstractType(t) <- Type:Modifier(t, mod), Modifier:Abstract(mod)
+	ConcreteClass(c) <- ClassType(c), !_AbstractType(c)
 
 	//-----------------------------
 	// [Method]
@@ -63,18 +63,7 @@
 	Method:DeclaringType(method, declaringType) : Method, ReferenceType
 	Method:ReturnType(method, returnType) : Method, Type
 	@input Method:Modifier(method, mod) : Method, Modifier
-	ApplicationMethod(m) <- Method:DeclaringType(m, t), ApplicationClass(t)
-
-	@output MainMethod
-	@output MainClass
-	@output Method:Modifier
-
-	MainMethod(m) <-
-		MainClass(c),
-		Method:DeclaringType(m, c),
-		Method:Name(m, "main"),
-		Method:Descriptor(m, @"void(java.lang.String[])"),
-		Method:Modifier(m, @"public"), Method:Modifier(m, @"static")
+	ApplicationMethod(m) <- Method:DeclaringType(m, t), ApplicationType(t)
 
 	@input(filename="FormalParam0.facts") FormalParam(method, index, var) : Method, int, Var
 	@input Method:ThisVar(method, var) : Method, Var
@@ -279,3 +268,47 @@
 	MethodInvocation:Base(invo, base) <- SpecialMethodInvocation0(invo, invoMethod, base)
 
 //}
+
+
+@output MainMethod
+MainMethod(m) <-
+	MainClass(c),
+	Method:DeclaringType(m, c),
+	Method:Name(m, "main"),
+	Method:Descriptor(m, @"void(java.lang.String[])"),
+	Method:Modifier(m, @"public"), Method:Modifier(m, @"static")
+
+Foo(method) <- VirtualMethodInvocation(invo), Instruction:Method(invo, method)
+Bar(method) <- Method(method), !Foo(method)
+@output Bar
+
+
+SuperTypeOf(t, t) <- Type(t)
+
+SuperTypeOf(objT, t) <- ClassType:Object(objT), ReferenceType(t)
+
+// Null type acts as a bottom type (for references)
+SuperTypeOf(t, nullT) <- ReferenceType(t), NullType(nullT)
+
+// TODO try similar with smart-lit
+// Arrays implicitly are subtypes of "Cloneable" and "Serializable"
+SuperTypeOf(t, arrayT) <-
+	((Type:byStr["java.lang.Cloneable"]  = t, InterfaceType(t)) ;
+	 (Type:byStr["java.io.Serializable"] = t, InterfaceType(t))),
+	ArrayType(arrayT)
+
+// TODO allow smart-lit
+SuperTypeOf(d, f) <- PrimitiveType:Double(d), PrimitiveType:Float(f)
+SuperTypeOf(f, l) <- PrimitiveType:Float(f), PrimitiveType:Long(l)
+SuperTypeOf(l, i) <- PrimitiveType:Long(l), PrimitiveType:Int(i)
+SuperTypeOf(i, c) <- PrimitiveType:Int(i), PrimitiveType:Char(c)
+SuperTypeOf(i, s) <- PrimitiveType:Int(i), PrimitiveType:Short(s)
+SuperTypeOf(s, b) <- PrimitiveType:Short(s), PrimitiveType:Byte(b)
+
+SuperTypeOf(super, t) <- DirectSuperClass(t, super)
+SuperTypeOf(super, t) <- DirectSuperInterface(t, super)
+
+SuperTypeOf(super, t) <- SuperTypeOf(x, t), DirectSuperClass(x, super)
+SuperTypeOf(super, t) <- SuperTypeOf(x, t), DirectSuperInterface(x, super)
+
+SubTypeOf(sub, t) <- SuperTypeOf(t, sub)
