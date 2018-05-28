@@ -249,7 +249,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 		def superTs1 = [t1] + symbolTable.superTypesOrdered[t1]
 		def superTs2 = [t2] + symbolTable.superTypesOrdered[t2]
 		def k = superTs1.size() - 1, l = superTs2.size() - 1
-		while (k >= 0 && l >= 0 && superTs1[k--] == superTs2[l--])
+		while (k >= 0 && l >= 0 && superTs1[k--] == superTs2[l--]) assert true
 		superTs1[k + 1]
 	}
 
