@@ -1,0 +1,10 @@
+@type Animal
+baz(x) : int
+bar(x) : Animal
+bar(@"abc"), foo(x) <- baz(x)
+p(x) <- foo(x), (bar(@"123") ; bar(@"abc")), baz(x)
+
+@type(opt=true) Shape
+q(x) : int
+foobaz(x) : Shape
+foobaz(@"123") <- q(42)

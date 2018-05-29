@@ -20,28 +20,28 @@ class SmartLiteralTransformer extends DefaultTransformer {
 	SymbolTable symbolTable
 	TypeInferenceTransformer typeInference
 
+	List<IElement> extraElementsForBody
 	Set<VariableExpr> currVars
 	boolean parentIsRelation
 
-	void enter(Rule n) { currVars = (symbolTable.vars[n.head] + symbolTable.vars[n.body]).toSet() }
+	void enter(Rule n) {
+		extraElementsForBody = []
+		currVars = (symbolTable.vars[n.head] + symbolTable.vars[n.body]).toSet()
+	}
 
-	IVisitable exit(Rule n) { new SyntaxFlatteningTransformer().visit(super.exit(n) as Rule) }
+	IVisitable exit(Rule n) {
+		def bodyElements = (m[n.body] ? [m[n.body] as IElement] : []) + extraElementsForBody
+		def r = new Rule(m[n.head] as IElement, new LogicalElement(bodyElements), n.annotations)
+		new SyntaxFlatteningTransformer().visit(r)
+	}
 
 	void enter(Constructor n) { parentIsRelation = true }
 
-	IVisitable exit(Constructor n) {
-		parentIsRelation = false
-		def (List<IElement> elements, List<IExpr> newExprs) = handleSmartLiterals(n.name, n.keyExprs)
-		elements ? new LogicalElement(elements << new Constructor(n.name, newExprs << n.valueExpr)) : n
-	}
+	IVisitable exit(Constructor n) { handleRelation(n, n.keyExprs, new Constructor(n.name, [])) }
 
 	void enter(Relation n) { parentIsRelation = true }
 
-	IVisitable exit(Relation n) {
-		parentIsRelation = false
-		def (List<IElement> elements, List<IExpr> newExprs) = handleSmartLiterals(n.name, n.exprs)
-		elements ? new LogicalElement(elements << new Relation(n.name, newExprs)) : n
-	}
+	IVisitable exit(Relation n) { handleRelation(n, n.exprs, new Relation(n.name, [])) }
 
 	void enter(BinaryExpr n) { parentIsRelation = false }
 
@@ -52,30 +52,37 @@ class SmartLiteralTransformer extends DefaultTransformer {
 
 	void enter(GroupExpr n) { parentIsRelation = false }
 
-	def handleSmartLiterals(String name, List<IExpr> exprs) {
+	def handleRelation(Relation n, List<IExpr> exprs, Relation clone) {
+		parentIsRelation = false
+
 		def elements = []
 		def newExprs = []
 		exprs.eachWithIndex { expr, int i ->
 			if (expr instanceof ConstantExpr && expr.kind == ConstantExpr.Kind.SMART_LIT) {
-				def inferredType = typeInference.inferredTypes[name][i]
+				def inferredType = typeInference.inferredTypes[n.name][i]
 				if (inferredType.primitive)
 					error(Error.SMART_LIT_NON_PRIMITIVE, expr.value, inferredType.name)
 
 				def rootType = symbolTable.typeToRootType[inferredType]
-				def var = findUnused(currVars)
+
+				def j = 0
+				def var = var1(j)
+				while (var in currVars) var = var1(j++)
+
 				newExprs << var
 				currVars << var
 				elements << new Constructor(rootType.defaultConName, [new ConstantExpr(expr.value as String), var])
 			} else
 				newExprs << expr
 		}
-		[elements, newExprs]
-	}
+		clone.exprs = newExprs
 
-	static def findUnused(def vars) {
-		int i = 0
-		def v = var1(i)
-		while (v in vars) v = var1(i++)
-		return v
+		if (!elements)
+			return n
+		else if (inRuleHead) {
+			extraElementsForBody += elements
+			return clone
+		} else
+			return new LogicalElement(elements << clone)
 	}
 }
