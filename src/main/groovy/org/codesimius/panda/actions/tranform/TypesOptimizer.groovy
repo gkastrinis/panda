@@ -56,15 +56,21 @@ class TypesOptimizer extends DefaultTransformer {
 
 	IVisitable visit(Rule n) {
 		mapExprs = [:]
-		inRuleHead = true
-		// Visit head twice to make sure all variables have been handled
-		visit n.head
-		m[n.head] = visit n.head
-		inRuleHead = false
+		def head = n.head
+		def body = n.body
+		// 1st pass: find all changes (e.g. change x with y)
+		// 2nd pass: apply changes
+		2.times {
+			inRuleHead = true
+			head = visit head
+			inRuleHead = false
 
-		inRuleBody = true
-		if (n.body) m[n.body] = visit n.body
-		inRuleBody = false
+			inRuleBody = true
+			if (n.body) body = visit body
+			inRuleBody = false
+		}
+		m[n.head] = head
+		if (n.body) m[n.body] = body
 		mapExprs = [:]
 		super.exit n
 	}
