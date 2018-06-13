@@ -1,9 +1,10 @@
 package org.codesimius.panda.system
 
-import org.apache.log4j.Level
+import groovy.util.logging.Log4j
 
 import java.text.MessageFormat
 
+@Log4j
 enum Error {
 	ANNOTATION_UNKNOWN,
 	ANNOTATION_NON_EMPTY,
@@ -124,7 +125,7 @@ enum Error {
 	static void warn(SourceLocation loc = null, Error errorId, Object... values) {
 		def msg = "${MessageFormat.format(msgMap.get(errorId), values)} -- [$errorId]"
 		if (loc) msg = "$msg\n$loc"
-		Logger.log(msg, "WARNING", Level.WARN)
+		log.warn(tag(msg, "WARNING"))
 	}
 
 	static void error(SourceLocation loc = null, Error errorId, Object... values) {
@@ -132,4 +133,6 @@ enum Error {
 		if (loc) msg = "$msg\n$loc"
 		throw new PandaException(msg, errorId)
 	}
+
+	static String tag(String msg, String tag) { "[paNda] $tag: $msg" }
 }

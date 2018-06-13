@@ -1,6 +1,7 @@
 package org.codesimius.panda.system
 
 import groovy.transform.Canonical
+import groovy.util.logging.Log4j
 import org.codesimius.panda.actions.graph.DependencyGraphVisitor
 import org.codesimius.panda.actions.graph.Edge
 import org.codesimius.panda.actions.graph.Node
@@ -10,8 +11,10 @@ import java.nio.file.Paths
 
 import static org.codesimius.panda.actions.graph.DependencyGraphVisitor.GLOBAL as GLOBAL_GRAPH
 import static org.codesimius.panda.actions.graph.DependencyGraphVisitor.INSTANTIATION as INSTANTIATION_GRAPH
+import static org.codesimius.panda.system.Error.tag
 
 @Canonical
+@Log4j
 class DependencyGraphDOTGenerator {
 
 	File outDir
@@ -22,7 +25,7 @@ class DependencyGraphDOTGenerator {
 		def fw = new FileWriter(f)
 		def emit = { fw.write "$it\n" }
 
-		Logger.log(f.canonicalPath, "GRAPH")
+		log.info(tag(f.canonicalPath, "GRAPH"))
 
 		def edges = []
 		def FONT = "Arial"
