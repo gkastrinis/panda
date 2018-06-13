@@ -37,11 +37,6 @@ run {
 	if (project.hasProperty("args")) args project.property("args").split()
 }
 
-task norm (type: JavaExec) {
-	main = "org.codesimius.panda.Norm"
-	classpath = sourceSets.main.runtimeClasspath
-}
-
 test {
 	testLogging {
 		exceptionFormat = "full"
