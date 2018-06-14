@@ -17,7 +17,8 @@ import org.codesimius.panda.datalog.element.relation.RecordType
 import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.element.relation.Type
 import org.codesimius.panda.datalog.expr.RecordExpr
-import org.codesimius.panda.system.Result
+import org.codesimius.panda.system.Artifact
+import org.codesimius.panda.system.Compiler
 
 import static org.codesimius.panda.datalog.Annotation.*
 import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
@@ -27,7 +28,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 
 	String visit(BlockLvl2 p) {
 		createUniqueFile("out_", ".dl")
-		results << new Result(Result.Kind.LOGIC, currentFile)
+		Compiler.artifacts << new Artifact(Artifact.Kind.LOGIC, currentFile)
 
 		// Transform program before visiting nodes
 		def n = p.accept(new PreliminaryValidator())

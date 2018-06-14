@@ -12,7 +12,8 @@ import org.codesimius.panda.datalog.clause.TypeDeclaration
 import org.codesimius.panda.datalog.element.AggregationElement
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
-import org.codesimius.panda.system.Result
+import org.codesimius.panda.system.Artifact
+import org.codesimius.panda.system.Compiler
 
 import static org.codesimius.panda.datalog.Annotation.*
 import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
@@ -25,7 +26,7 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 
 	String visit(BlockLvl2 p) {
 		createUniqueFile("out_", ".logic")
-		results << new Result(Result.Kind.LOGIC, currentFile)
+		Compiler.artifacts << new Artifact(Artifact.Kind.LOGIC, currentFile)
 
 		// Transform program before visiting nodes
 		def n = p.accept(new PreliminaryValidator())

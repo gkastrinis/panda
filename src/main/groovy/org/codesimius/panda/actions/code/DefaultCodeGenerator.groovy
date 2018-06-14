@@ -9,7 +9,6 @@ import org.codesimius.panda.datalog.expr.BinaryExpr
 import org.codesimius.panda.datalog.expr.ConstantExpr
 import org.codesimius.panda.datalog.expr.GroupExpr
 import org.codesimius.panda.datalog.expr.VariableExpr
-import org.codesimius.panda.system.Result
 
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -20,7 +19,6 @@ class DefaultCodeGenerator extends DefaultVisitor<String> {
 
 	SymbolTable symbolTable = new SymbolTable()
 	TypeInferenceTransformer typeInferenceTransformer = new TypeInferenceTransformer(symbolTable)
-	List<Result> results = []
 
 	File outDir
 	private File currentFile

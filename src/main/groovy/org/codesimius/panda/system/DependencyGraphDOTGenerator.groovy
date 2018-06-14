@@ -24,8 +24,7 @@ class DependencyGraphDOTGenerator {
 		def f = Files.createTempFile(Paths.get(outDir.path), "graph_", ".dot").toFile()
 		def fw = new FileWriter(f)
 		def emit = { fw.write "$it\n" }
-
-		log.info(tag(f.canonicalPath, "GRAPH"))
+		Compiler.artifacts << new Artifact(Artifact.Kind.GRAPH, f)
 
 		def edges = []
 		def FONT = "Arial"
