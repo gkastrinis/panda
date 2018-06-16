@@ -28,11 +28,12 @@ class Compiler {
 
 	static List<Artifact> compile(String filename, def codeGenActor) {
 		try {
-			log.info(tag("$filename with ${codeGenActor.class.name}", "COMPILE"))
-			return compile0(new ANTLRFileStream(filename), filename, codeGenActor)
+			log.info(tag("${new File(filename).canonicalPath} with ${codeGenActor.class.simpleName}", "COMPILE"))
+			compile0(new ANTLRFileStream(filename), filename, codeGenActor)
+			artifacts.each { log.info(tag(it.file.canonicalPath, it.kind as String)) }
 		} catch (e) {
 			log.error(tag(e.message, "ERROR"), e)
-			return null
+			null
 		}
 	}
 

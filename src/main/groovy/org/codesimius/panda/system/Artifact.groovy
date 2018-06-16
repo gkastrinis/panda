@@ -1,8 +1,10 @@
 package org.codesimius.panda.system
 
 import groovy.transform.Canonical
+import groovy.transform.ToString
 
 @Canonical
+@ToString(includePackage = false)
 class Artifact {
 
 	enum Kind {
@@ -11,6 +13,4 @@ class Artifact {
 
 	Kind kind
 	File file
-
-	String toString() { "($kind) $file" }
 }

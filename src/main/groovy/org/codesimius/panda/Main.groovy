@@ -11,5 +11,5 @@ root.setLevel(Level.toLevel("INFO", Level.WARN))
 root.addAppender(new DailyRollingFileAppender(new PatternLayout("%d [%t] %-5p %c - %m%n"), "$logDir/panda.log", "'.'yyyy-MM-dd"))
 root.addAppender(new ConsoleAppender(new PatternLayout("%m%n")))
 
-println Compiler.compileToLB3(args[0], "build/out")
-println Compiler.compileToSouffle(args[0], "build/out")
+Compiler.compileToLB3(args[0], "build/out")
+Compiler.compileToSouffle(args[0], "build/out")
