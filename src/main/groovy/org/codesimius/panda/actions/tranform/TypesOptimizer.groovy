@@ -12,6 +12,7 @@ import org.codesimius.panda.datalog.element.ConstructionElement
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.element.relation.Type
+import org.codesimius.panda.datalog.expr.BinaryOp
 import org.codesimius.panda.datalog.expr.IExpr
 import org.codesimius.panda.datalog.expr.VariableExpr
 
@@ -72,6 +73,7 @@ class TypesOptimizer extends DefaultTransformer {
 		m[n.head] = head
 		if (n.body) m[n.body] = body
 		mapExprs = [:]
+
 		super.exit n
 	}
 
@@ -89,8 +91,12 @@ class TypesOptimizer extends DefaultTransformer {
 
 		def baseT = symbolTable.relationInfo.constructorBaseType[n.name]
 		if (baseT in typesToOptimize) {
-			mapExprs << [(n.valueExpr): n.keyExprs.first()]
-			return ComparisonElement.TRIVIALLY_TRUE
+			if (inRuleBody) {
+				return new ComparisonElement(n.valueExpr, BinaryOp.EQ, n.keyExprs.first())
+			} else {
+				mapExprs << [(n.valueExpr): n.keyExprs.first()]
+				return ComparisonElement.TRIVIALLY_TRUE
+			}
 		} else
 			return super.exit(n)
 	}
