@@ -43,6 +43,7 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 				.accept(typeInferenceTransformer)
 				.accept(new SmartLiteralTransformer(symbolTable, typeInferenceTransformer))
 				.accept(new TypesOptimizer(symbolTable))
+				.accept(new SyntaxFlatteningTransformer())
 
 		functionalRelations = n.datalog.relDeclarations
 				.findAll { FUNCTIONAL in it.annotations }

@@ -56,15 +56,6 @@ class AssignTransformer extends DefaultTransformer {
 			replacedVars += assignments.keySet()
 			assignments = [:]
 		}
-
-		// Clean-up
-		def elements = asElements(body)
-		if (elements.any { it == TRIVIALLY_TRUE }) {
-			def newElements = elements.findAll { it != TRIVIALLY_TRUE }
-			if (newElements.size() > 1) body = new LogicalElement((body as LogicalElement).kind, newElements)
-			else if (newElements.size() == 1) body = newElements.first() as IElement
-			else body = null
-		}
 		replacedVars = [] as Set
 		m[n.head] = head
 		m[n.body] = body

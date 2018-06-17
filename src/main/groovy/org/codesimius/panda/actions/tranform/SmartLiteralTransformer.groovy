@@ -31,8 +31,7 @@ class SmartLiteralTransformer extends DefaultTransformer {
 
 	IVisitable exit(Rule n) {
 		def bodyElements = (m[n.body] ? [m[n.body] as IElement] : []) + extraElementsForBody
-		def r = new Rule(m[n.head] as IElement, new LogicalElement(bodyElements), n.annotations)
-		new SyntaxFlatteningTransformer().visit(r)
+		new Rule(m[n.head] as IElement, new LogicalElement(bodyElements), n.annotations)
 	}
 
 	void enter(Constructor n) { parentIsRelation = true }

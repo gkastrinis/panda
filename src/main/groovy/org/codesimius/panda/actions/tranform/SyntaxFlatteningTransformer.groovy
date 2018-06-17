@@ -9,6 +9,8 @@ import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.expr.BinaryExpr
 import org.codesimius.panda.datalog.expr.GroupExpr
 
+import static org.codesimius.panda.datalog.element.ComparisonElement.TRIVIALLY_TRUE
+
 class SyntaxFlatteningTransformer extends DefaultTransformer {
 
 	IVisitable exit(RelDeclaration n) { n }
@@ -31,7 +33,11 @@ class SyntaxFlatteningTransformer extends DefaultTransformer {
 			else
 				newElements << flatE
 		}
-		new LogicalElement(n.kind, newElements)
+		// Remove trivially true elements
+		newElements = newElements.findAll { it != TRIVIALLY_TRUE } as List<IElement>
+		if (newElements.size() > 1) new LogicalElement(n.kind, newElements)
+		else if (newElements.size() == 1) newElements.first() as IElement
+		else null
 	}
 
 	IVisitable exit(Constructor n) { n }
