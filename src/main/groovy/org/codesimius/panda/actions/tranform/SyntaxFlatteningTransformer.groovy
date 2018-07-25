@@ -1,21 +1,23 @@
 package org.codesimius.panda.actions.tranform
 
 import org.codesimius.panda.datalog.IVisitable
-import org.codesimius.panda.datalog.clause.RelDeclaration
-import org.codesimius.panda.datalog.clause.TypeDeclaration
+import org.codesimius.panda.datalog.block.BlockLvl0
+import org.codesimius.panda.datalog.clause.Rule
 import org.codesimius.panda.datalog.element.*
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.expr.BinaryExpr
 import org.codesimius.panda.datalog.expr.GroupExpr
+import org.codesimius.panda.datalog.expr.RecordExpr
 
 import static org.codesimius.panda.datalog.element.ComparisonElement.TRIVIALLY_TRUE
 
 class SyntaxFlatteningTransformer extends DefaultTransformer {
 
-	IVisitable exit(RelDeclaration n) { n }
-
-	IVisitable exit(TypeDeclaration n) { n }
+	IVisitable visit(BlockLvl0 n) {
+		def rs = n.rules.collect { visit it } as Set<Rule>
+		new BlockLvl0(n.relDeclarations, n.typeDeclarations, rs)
+	}
 
 	IVisitable exit(ComparisonElement n) { n }
 
@@ -23,8 +25,8 @@ class SyntaxFlatteningTransformer extends DefaultTransformer {
 
 	IVisitable exit(GroupElement n) { m[n.element] }
 
-	// Flatten LogicalElement "trees"
 	IVisitable exit(LogicalElement n) {
+		// Flatten LogicalElement "trees"
 		def newElements = []
 		n.elements.each {
 			def flatE = m[it] as IElement
@@ -47,4 +49,6 @@ class SyntaxFlatteningTransformer extends DefaultTransformer {
 	IVisitable exit(BinaryExpr n) { n }
 
 	IVisitable exit(GroupExpr n) { n }
+
+	IVisitable visit(RecordExpr n) { n }
 }
