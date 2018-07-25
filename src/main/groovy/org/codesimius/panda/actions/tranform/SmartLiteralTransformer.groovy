@@ -5,12 +5,12 @@ import org.codesimius.panda.actions.symbol.SymbolTable
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.clause.Rule
 import org.codesimius.panda.datalog.element.IElement
-import org.codesimius.panda.datalog.element.LogicalElement
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.expr.*
 import org.codesimius.panda.system.Error
 
+import static org.codesimius.panda.datalog.element.LogicalElement.combineElements
 import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
 import static org.codesimius.panda.system.Error.error
 
@@ -31,7 +31,7 @@ class SmartLiteralTransformer extends DefaultTransformer {
 
 	IVisitable exit(Rule n) {
 		def bodyElements = (m[n.body] ? [m[n.body] as IElement] : []) + extraElementsForBody
-		new Rule(m[n.head] as IElement, new LogicalElement(bodyElements), n.annotations)
+		new Rule(m[n.head] as IElement, combineElements(bodyElements), n.annotations)
 	}
 
 	void enter(Constructor n) { parentIsRelation = true }
@@ -82,6 +82,6 @@ class SmartLiteralTransformer extends DefaultTransformer {
 			extraElementsForBody += elements
 			return clone
 		} else
-			return new LogicalElement(elements << clone)
+			return combineElements(elements << clone)
 	}
 }

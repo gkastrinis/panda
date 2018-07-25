@@ -45,10 +45,8 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 				.accept(typeInferenceTransformer)
 				.accept(new SmartLiteralTransformer(symbolTable, typeInferenceTransformer))
 				.accept(new TypesOptimizer(symbolTable))
-				.accept(new SyntaxFlatteningTransformer())
 				.accept(new ConstructorTransformer(symbolTable, typeInferenceTransformer))
 				.accept(new AssignTransformer(symbolTable))
-				.accept(new SyntaxFlatteningTransformer())
 
 		super.visit(n)
 	}
