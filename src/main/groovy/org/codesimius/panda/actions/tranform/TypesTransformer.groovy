@@ -1,7 +1,6 @@
 package org.codesimius.panda.actions.tranform
 
 import groovy.transform.Canonical
-import org.codesimius.panda.actions.symbol.SymbolTable
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.clause.RelDeclaration
@@ -23,16 +22,17 @@ import static org.codesimius.panda.system.SourceManager.recallStatic as recall
 @Canonical
 class TypesTransformer extends DefaultTransformer {
 
-	SymbolTable symbolTable
+	BlockLvl0 datalog
 
 	IVisitable visit(BlockLvl0 n) {
 		// Add default constructors
-		symbolTable.rootTypes.each { root ->
+		n.rootTypes.each { root ->
 			n.relDeclarations.findAll { it.relation.name == root.defaultConName }
 					.each { error(recall(it), Error.REL_NAME_DEFCONSTR, it.relation.name) }
 
 			extraRelDecls << new RelDeclaration(new Constructor(root.defaultConName, []), [TYPE_STRING, root], [CONSTRUCTOR] as Set)
 		}
+		datalog = n
 		n.typeDeclarations.each { visit it }
 		new BlockLvl0(n.relDeclarations + extraRelDecls, n.typeDeclarations, n.rules + extraRules)
 	}
@@ -40,7 +40,7 @@ class TypesTransformer extends DefaultTransformer {
 	IVisitable exit(TypeDeclaration n) {
 		def ann = n.annotations.find { it == TYPEVALUES }
 		if (ann) {
-			def rootT = symbolTable.typeToRootType[n.type]
+			def rootT = datalog.typeToRootType[n.type]
 			ann.args.each { key, value ->
 				def rel = new Relation("${n.type.name}:$key", [var1()])
 				extraRelDecls << new RelDeclaration(rel, [n.type])

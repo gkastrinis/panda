@@ -30,13 +30,13 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 	private Set<String> tmpDeclaredRelations = [] as Set
 	private Set<String> tmpDeclaredTypes = [] as Set
 	private Map<String, Integer> arities = [:]
-	private BlockLvl0 currDatalog
+	private BlockLvl0 datalog
 	private Set<String> allConstructors
 
 	IVisitable exit(BlockLvl2 n) { n }
 
 	void enter(BlockLvl0 n) {
-		currDatalog = n
+		datalog = n
 		allConstructors = symbolTable.constructorBaseType.keySet()
 	}
 
@@ -49,12 +49,12 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 		checkArity(n.relation.name, n.types.size(), n)
 
 		n.types.findAll { !it.isPrimitive() }
-				.findAll { !(it in symbolTable.allTypes) }
+				.findAll { !(it in datalog.allTypes) }
 				.each { error(recall(it), Error.TYPE_UNKNOWN, it.name) }
 
 		if (CONSTRUCTOR in n.annotations) {
-			def rootT = symbolTable.typeToRootType[n.types.last()]
-			def optimized = currDatalog.typeDeclarations
+			def rootT = datalog.typeToRootType[n.types.last()]
+			def optimized = datalog.typeDeclarations
 					.find { it.type == rootT }
 					.annotations.find { it == TYPE }.args["opt"]
 			if (optimized && rootT.defaultConName != n.relation.name)
@@ -70,8 +70,8 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 		tmpDeclaredTypes << n.type.name
 
 		if (n.annotations.find { it == TYPE }.args["opt"]) {
-			def rootT = symbolTable.typeToRootType[n.type]
-			if (!currDatalog.typeDeclarations.find { it.type == rootT }.annotations.find { it == TYPE }.args["opt"])
+			def rootT = datalog.typeToRootType[n.type]
+			if (!datalog.typeDeclarations.find { it.type == rootT }.annotations.find { it == TYPE }.args["opt"])
 				error(recall(n), Error.TYPE_OPT_ROOT_NONOPT, n.type.name)
 		}
 	}
@@ -99,10 +99,10 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 		def baseType = symbolTable.constructorBaseType[n.constructor.name]
 		if (!baseType)
 			error(recall(n), Error.CONSTR_UNKNOWN, n.constructor.name)
-		if (n.type != baseType && !(baseType in symbolTable.superTypesOrdered[n.type]))
+		if (n.type != baseType && !(baseType in datalog.superTypesOrdered[n.type]))
 			error(recall(n), Error.CONSTR_TYPE_INCOMPAT, n.constructor.name, n.type.name)
 
-		if (!(n.type in symbolTable.allTypes)) error(recall(n), Error.TYPE_UNKNOWN, n.type.name)
+		if (!(n.type in datalog.allTypes)) error(recall(n), Error.TYPE_UNKNOWN, n.type.name)
 	}
 
 	void enter(Constructor n) { if (!inDecl) checkRelation(n) }
@@ -116,7 +116,7 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 
 	def checkRelation(Relation n) {
 		// Type is used in rule head
-		if (inRuleHead && (new Type(n.name) in symbolTable.allTypes))
+		if (inRuleHead && (new Type(n.name) in datalog.allTypes))
 			error(recall(n), Error.TYPE_RULE, n.name)
 
 		if (inRuleBody && !(n.name in symbolTable.declaredRelations))
@@ -126,7 +126,7 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 	}
 
 	def checkArity(String name, int arity, IVisitable n) {
-		if (inRuleBody && symbolTable.allTypes.find { it.name == name } && arity != 1)
+		if (inRuleBody && datalog.allTypes.find { it.name == name } && arity != 1)
 			error(recall(n), Error.REL_ARITY, name)
 
 		def prevArity = arities[name]

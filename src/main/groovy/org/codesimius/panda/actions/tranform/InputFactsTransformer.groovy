@@ -1,7 +1,6 @@
 package org.codesimius.panda.actions.tranform
 
 import groovy.transform.Canonical
-import org.codesimius.panda.actions.symbol.SymbolTable
 import org.codesimius.panda.datalog.Annotation
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl0
@@ -25,9 +24,10 @@ import static org.codesimius.panda.datalog.expr.VariableExpr.genN as varN
 @Canonical
 class InputFactsTransformer extends DefaultTransformer {
 
-	SymbolTable symbolTable
+	BlockLvl0 datalog
 
 	IVisitable visit(BlockLvl0 n) {
+		datalog = n
 		(n.relDeclarations + n.typeDeclarations).each { m[it] = visit it }
 		def relDs = (n.relDeclarations.collect { m[it] as RelDeclaration } + extraRelDecls).grep() as Set
 		new BlockLvl0(relDs, n.typeDeclarations + extraTypeDecls, n.rules + extraRules)
@@ -54,7 +54,7 @@ class InputFactsTransformer extends DefaultTransformer {
 				vars << var1(i)
 				inputTypes << t
 			} else {
-				def rootT = symbolTable.typeToRootType[t]
+				def rootT = datalog.typeToRootType[t]
 				headElements << new ConstructionElement(new Constructor(rootT.defaultConName, [var1(i), var1(N + i)]), t)
 				vars << var1(N + i)
 				inputTypes << TYPE_STRING

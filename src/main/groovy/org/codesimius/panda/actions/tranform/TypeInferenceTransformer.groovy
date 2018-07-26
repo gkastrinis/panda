@@ -25,6 +25,7 @@ import static org.codesimius.panda.system.Error.error
 class TypeInferenceTransformer extends DefaultTransformer {
 
 	SymbolTable symbolTable
+	BlockLvl0 datalog
 
 	// Relation x Types (final)
 	Map<String, List<Type>> inferredTypes = [:].withDefault { [] }
@@ -51,6 +52,8 @@ class TypeInferenceTransformer extends DefaultTransformer {
 	Set<Rule> deltaRules
 
 	IVisitable visit(BlockLvl0 n) {
+		datalog = n
+
 		// Gather explicit types
 		n.relDeclarations.each { visit it }
 		n.typeDeclarations.each { visit it }
@@ -73,7 +76,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 			def inferredTs = inferredTypes[relName]
 			types.eachWithIndex { typeSet, i ->
 				// All types used must be a subtype of the inferred (or declared) type
-				def subtypes = [inferredTs[i]] + symbolTable.subTypes[inferredTs[i]]
+				def subtypes = [inferredTs[i]] + datalog.subTypes[inferredTs[i]]
 				if (typeSet.any { !(it in subtypes) })
 					error(Error.TYPE_INF_INCOMPAT_USE, relName, i, inferredTs[i].name, typeSet.collect { it.name })
 			}
@@ -82,7 +85,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 		// Fill partial declarations and add implicit ones
 		// Ignore relations that derive from types
 		def relDeclarations = inferredTypes
-				.findAll { rel, types -> !symbolTable.allTypes.any { it.name == rel } }
+				.findAll { rel, types -> !datalog.allTypes.any { it.name == rel } }
 				.collect { rel, types ->
 
 			def vars = varN(types.size())
@@ -129,12 +132,12 @@ class TypeInferenceTransformer extends DefaultTransformer {
 		def coalesce = { IExpr expr ->
 			if (!coalescedExprTypes[expr]) {
 				def types = exprTypes[expr]
-				if (types.collect { symbolTable.typeToRootType[it] }.toSet().size() > 1)
+				if (types.collect { datalog.typeToRootType[it] }.toSet().size() > 1)
 					error(Error.TYPE_INF_INCOMPAT_DISJ, types.collect { it.name })
 				if (inDiffBranches(types))
 					error(Error.TYPE_INF_INCOMPAT_BRANCH, types.collect { it.name })
 
-				coalescedExprTypes[expr] = types.find { t -> !symbolTable.subTypes[t].any { it in types } }
+				coalescedExprTypes[expr] = types.find { t -> !datalog.subTypes[t].any { it in types } }
 			}
 			return coalescedExprTypes[expr]
 		}
@@ -146,7 +149,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 
 				if (currCandidate) {
 					if (prevCandidate && prevCandidate != currCandidate) {
-						if (symbolTable.typeToRootType[prevCandidate] != symbolTable.typeToRootType[currCandidate])
+						if (datalog.typeToRootType[prevCandidate] != datalog.typeToRootType[currCandidate])
 							error(Error.TYPE_INF_INCOMPAT_DISJ, [prevCandidate, currCandidate].collect { it.name })
 						// For inferring a type *among* different rules of the same relation, treat it as a disjunction
 						// Therefore, infer the lowest, *higher* common type in the hierarchy
@@ -246,15 +249,15 @@ class TypeInferenceTransformer extends DefaultTransformer {
 
 	Type lowestHigherType(Type t1, Type t2) {
 		// Traverse the type hierarhcy from the top and stop at the first branching point
-		def superTs1 = [t1] + symbolTable.superTypesOrdered[t1]
-		def superTs2 = [t2] + symbolTable.superTypesOrdered[t2]
+		def superTs1 = [t1] + datalog.superTypesOrdered[t1]
+		def superTs2 = [t2] + datalog.superTypesOrdered[t2]
 		def k = superTs1.size() - 1, l = superTs2.size() - 1
 		while (k >= 0 && l >= 0 && superTs1[k--] == superTs2[l--]) assert true
 		superTs1[k + 1]
 	}
 
 	boolean inDiffBranches(Set<Type> types) {
-		def superTs = types.collect { [it] + symbolTable.superTypesOrdered[it] }
+		def superTs = types.collect { [it] + datalog.superTypesOrdered[it] }
 		def indexes = superTs.collect { it.size() - 1 }
 		int counter
 		while ((counter = indexes.withIndex().collect { int index, int i -> index >= 0 ? superTs[i][index] : null }.toSet().grep().size()) == 1)

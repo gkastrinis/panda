@@ -59,9 +59,9 @@ class ConstructorTransformer extends DefaultTransformer {
 	void enter(BlockLvl0 n) {
 		super.enter n
 		// Re: (2)
-		symbolTable.rootTypes.each { root ->
+		n.rootTypes.each { root ->
 			def rootInternalType = new Type("_${root.name}")
-			def types = [root] + symbolTable.subTypes[root]
+			def types = [root] + n.subTypes[root]
 			types.each { typeToCommonType[it] = rootInternalType }
 
 			def recordType = new RecordType([])

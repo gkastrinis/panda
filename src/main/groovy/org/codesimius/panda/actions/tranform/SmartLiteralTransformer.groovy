@@ -3,6 +3,7 @@ package org.codesimius.panda.actions.tranform
 import groovy.transform.Canonical
 import org.codesimius.panda.actions.symbol.SymbolTable
 import org.codesimius.panda.datalog.IVisitable
+import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.clause.Rule
 import org.codesimius.panda.datalog.element.IElement
 import org.codesimius.panda.datalog.element.relation.Constructor
@@ -19,10 +20,13 @@ class SmartLiteralTransformer extends DefaultTransformer {
 
 	SymbolTable symbolTable
 	TypeInferenceTransformer typeInference
+	BlockLvl0 datalog
 
 	List<IElement> extraElementsForBody
 	Set<VariableExpr> currVars
 	boolean parentIsRelation
+
+	void enter(BlockLvl0 n) { datalog = n }
 
 	void enter(Rule n) {
 		extraElementsForBody = []
@@ -62,7 +66,7 @@ class SmartLiteralTransformer extends DefaultTransformer {
 				if (inferredType.primitive)
 					error(Error.SMART_LIT_NON_PRIMITIVE, expr.value, inferredType.name)
 
-				def rootType = symbolTable.typeToRootType[inferredType]
+				def rootType = datalog.typeToRootType[inferredType]
 
 				def j = 0
 				def var = var1(j)

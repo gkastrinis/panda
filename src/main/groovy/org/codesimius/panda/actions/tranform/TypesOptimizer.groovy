@@ -32,12 +32,12 @@ class TypesOptimizer extends DefaultTransformer {
 	void enter(BlockLvl0 n) {
 		n.typeDeclarations
 				.findAll { decl -> decl.annotations.find { it == TYPE }.args["opt"] }
-				.each { decl -> typesToOptimize += ([decl.type] + symbolTable.subTypes[decl.type]) }
+				.each { decl -> typesToOptimize += ([decl.type] + n.subTypes[decl.type]) }
 
 		typesToOptimize.each { t ->
-			symbolTable.superTypesOrdered.remove t
-			symbolTable.subTypes.remove t
-			symbolTable.typeToRootType.remove t
+			n.superTypesOrdered.remove t
+			n.subTypes.remove t
+			n.typeToRootType.remove t
 		}
 	}
 
