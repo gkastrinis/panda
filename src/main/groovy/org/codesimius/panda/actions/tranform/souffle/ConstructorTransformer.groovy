@@ -2,7 +2,6 @@ package org.codesimius.panda.actions.tranform.souffle
 
 import groovy.transform.Canonical
 import org.codesimius.panda.actions.symbol.ConstructionInfoVisitor
-import org.codesimius.panda.actions.symbol.SymbolTable
 import org.codesimius.panda.actions.tranform.DefaultTransformer
 import org.codesimius.panda.actions.tranform.TypeInferenceTransformer
 import org.codesimius.panda.datalog.IVisitable
@@ -38,7 +37,6 @@ import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
 @Canonical
 class ConstructorTransformer extends DefaultTransformer {
 
-	SymbolTable symbolTable
 	TypeInferenceTransformer typeInference
 
 	// Re: 1
@@ -68,7 +66,7 @@ class ConstructorTransformer extends DefaultTransformer {
 			types.each {
 				typeToRecordType[it] = recordType
 				// Re: (1)
-				symbolTable.constructorsPerType[it].each { conDecl ->
+				n.constructorsPerType[it].each { conDecl ->
 					def conT = new Type(conDecl.relation.name)
 					constructorType[conDecl.relation.name] = conT
 					extraTypeDecls << new TypeDeclaration(conT, new RecordType(conDecl.types.dropRight(1)))

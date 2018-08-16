@@ -1,7 +1,6 @@
 package org.codesimius.panda.actions.tranform
 
 import groovy.transform.Canonical
-import org.codesimius.panda.actions.symbol.SymbolTable
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.clause.RelDeclaration
@@ -24,12 +23,14 @@ import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
 @Canonical
 class TypesOptimizer extends DefaultTransformer {
 
-	SymbolTable symbolTable
+	BlockLvl0 datalog
 
 	private Set<Type> typesToOptimize = [] as Set
 	private Map<IExpr, IExpr> mapExprs = [:]
 
 	void enter(BlockLvl0 n) {
+		datalog = n
+
 		n.typeDeclarations
 				.findAll { decl -> decl.annotations.find { it == TYPE }.args["opt"] }
 				.each { decl -> typesToOptimize += ([decl.type] + n.subTypes[decl.type]) }
@@ -89,7 +90,7 @@ class TypesOptimizer extends DefaultTransformer {
 	IVisitable exit(Constructor n) {
 		if (inDecl) return n
 
-		def baseT = symbolTable.relationInfo.constructorBaseType[n.name]
+		def baseT = datalog.constructorToBaseType[n.name]
 		if (baseT in typesToOptimize) {
 			if (inRuleBody) {
 				return new ComparisonElement(n.valueExpr, BinaryOp.EQ, n.keyExprs.first())

@@ -3,7 +3,6 @@ package org.codesimius.panda.actions.validation
 import groovy.transform.Canonical
 import org.codesimius.panda.actions.DefaultVisitor
 import org.codesimius.panda.actions.symbol.ConstructionInfoVisitor
-import org.codesimius.panda.actions.symbol.SymbolTable
 import org.codesimius.panda.datalog.Annotation
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl0
@@ -25,20 +24,14 @@ import static org.codesimius.panda.system.SourceManager.recallStatic as recall
 @Canonical
 class MainValidator extends DefaultVisitor<IVisitable> {
 
-	SymbolTable symbolTable
-
 	private Set<String> tmpDeclaredRelations = [] as Set
 	private Set<String> tmpDeclaredTypes = [] as Set
 	private Map<String, Integer> arities = [:]
 	private BlockLvl0 datalog
-	private Set<String> allConstructors
 
 	IVisitable exit(BlockLvl2 n) { n }
 
-	void enter(BlockLvl0 n) {
-		datalog = n
-		allConstructors = symbolTable.constructorBaseType.keySet()
-	}
+	void enter(BlockLvl0 n) { datalog = n }
 
 	void enter(RelDeclaration n) {
 		if (n.relation.name in tmpDeclaredRelations)
@@ -79,9 +72,9 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 	void enter(Rule n) {
 		checkAnnotations(n.annotations, [PLAN], "Rule")
 
-		def varsInHead = symbolTable.vars[n.head]
-		def varsInBody = symbolTable.vars[n.body]
-		def conVars = symbolTable.constructedVars[n]
+		def varsInHead = datalog.getHeadVars(n)
+		def varsInBody = datalog.getBodyVars(n)
+		def conVars = datalog.getConstructedVars(n)
 		varsInHead.findAll { it.name == "_" }
 				.each { error(recall(n), Error.VAR_UNBOUND_HEAD, null) }
 		varsInHead.findAll { !(it in varsInBody) && !(it in conVars) }
@@ -96,7 +89,7 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 	}
 
 	void enter(ConstructionElement n) {
-		def baseType = symbolTable.constructorBaseType[n.constructor.name]
+		def baseType = datalog.constructorToBaseType[n.constructor.name]
 		if (!baseType)
 			error(recall(n), Error.CONSTR_UNKNOWN, n.constructor.name)
 		if (n.type != baseType && !(baseType in datalog.superTypesOrdered[n.type]))
@@ -110,7 +103,7 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 	void enter(Relation n) {
 		if (!inDecl) checkRelation(n)
 
-		if (n.name in allConstructors)
+		if (n.name in datalog.allConstructors)
 			error(recall(n), Error.CONSTR_AS_REL, n.name)
 	}
 
@@ -119,7 +112,7 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 		if (inRuleHead && (new Type(n.name) in datalog.allTypes))
 			error(recall(n), Error.TYPE_RULE, n.name)
 
-		if (inRuleBody && !(n.name in symbolTable.declaredRelations))
+		if (inRuleBody && !(n.name in datalog.declaredRelations))
 			error(recall(n), Error.REL_NO_DECL, n.name)
 
 		checkArity(n.name, n.arity, n)

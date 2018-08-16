@@ -1,7 +1,6 @@
 package org.codesimius.panda.actions.tranform
 
 import groovy.transform.Canonical
-import org.codesimius.panda.actions.symbol.SymbolTable
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.clause.Rule
@@ -18,7 +17,6 @@ import static org.codesimius.panda.system.Error.error
 @Canonical
 class SmartLiteralTransformer extends DefaultTransformer {
 
-	SymbolTable symbolTable
 	TypeInferenceTransformer typeInference
 	BlockLvl0 datalog
 
@@ -30,7 +28,7 @@ class SmartLiteralTransformer extends DefaultTransformer {
 
 	void enter(Rule n) {
 		extraElementsForBody = []
-		currVars = (symbolTable.vars[n.head] + symbolTable.vars[n.body]).toSet()
+		currVars = datalog.getAllVars(n).toSet()
 	}
 
 	IVisitable exit(Rule n) {

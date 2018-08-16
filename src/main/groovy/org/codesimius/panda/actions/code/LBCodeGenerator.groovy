@@ -36,12 +36,10 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 				.accept(new ComponentFlatteningTransformer())
 				.accept(new TypesTransformer())
 				.accept(new InputFactsTransformer())
-				.accept(symbolTable.relationInfo)
-				.accept(symbolTable.varInfo)
-				.accept(new MainValidator(symbolTable))
+				.accept(new MainValidator())
 				.accept(typeInferenceTransformer)
-				.accept(new SmartLiteralTransformer(symbolTable, typeInferenceTransformer))
-				.accept(new TypesOptimizer(symbolTable))
+				.accept(new SmartLiteralTransformer(typeInferenceTransformer))
+				.accept(new TypesOptimizer())
 				.accept(new SyntaxFlatteningTransformer())
 
 		functionalRelations = n.datalog.relDeclarations

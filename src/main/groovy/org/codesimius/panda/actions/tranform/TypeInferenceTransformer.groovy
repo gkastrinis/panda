@@ -1,7 +1,6 @@
 package org.codesimius.panda.actions.tranform
 
 import groovy.transform.Canonical
-import org.codesimius.panda.actions.symbol.SymbolTable
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.clause.RelDeclaration
@@ -24,7 +23,6 @@ import static org.codesimius.panda.system.Error.error
 @Canonical
 class TypeInferenceTransformer extends DefaultTransformer {
 
-	SymbolTable symbolTable
 	BlockLvl0 datalog
 
 	// Relation x Types (final)
@@ -62,7 +60,8 @@ class TypeInferenceTransformer extends DefaultTransformer {
 		Set<Rule> oldDeltaRules = n.rules
 		while (!oldDeltaRules.isEmpty()) {
 			deltaRules = [] as Set
-			oldDeltaRules.each { visit it }
+			// TODO FIIIXXX
+			oldDeltaRules.grep().each { visit it }
 			if (oldDeltaRules == deltaRules)
 				error(Error.TYPE_INF_FAIL, null)
 			oldDeltaRules = deltaRules
@@ -159,7 +158,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 
 					if (prevCandidate != candidateTypes[relation.name][i]) {
 						// Ignore current rule (in case of recursive relations)
-						deltaRules += symbolTable.relUsedInRules[relation.name] - n
+						deltaRules += datalog.relationUsedInRules[relation.name] - n
 					}
 				}
 				// Still missing type information

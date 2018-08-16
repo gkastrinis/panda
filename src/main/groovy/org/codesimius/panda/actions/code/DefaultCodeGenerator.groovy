@@ -1,7 +1,6 @@
 package org.codesimius.panda.actions.code
 
 import org.codesimius.panda.actions.DefaultVisitor
-import org.codesimius.panda.actions.symbol.SymbolTable
 import org.codesimius.panda.actions.tranform.TypeInferenceTransformer
 import org.codesimius.panda.datalog.block.BlockLvl2
 import org.codesimius.panda.datalog.element.*
@@ -17,8 +16,7 @@ import static org.codesimius.panda.datalog.element.ComparisonElement.TRIVIALLY_T
 
 class DefaultCodeGenerator extends DefaultVisitor<String> {
 
-	SymbolTable symbolTable = new SymbolTable()
-	TypeInferenceTransformer typeInferenceTransformer = new TypeInferenceTransformer(symbolTable)
+	TypeInferenceTransformer typeInferenceTransformer = new TypeInferenceTransformer()
 
 	File outDir
 	private File currentFile

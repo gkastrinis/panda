@@ -1,7 +1,6 @@
 package org.codesimius.panda.actions.tranform.souffle
 
 import groovy.transform.Canonical
-import org.codesimius.panda.actions.symbol.SymbolTable
 import org.codesimius.panda.actions.tranform.DefaultTransformer
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.clause.RelDeclaration
@@ -23,8 +22,6 @@ import static org.codesimius.panda.system.Error.error
 @Canonical
 class AssignTransformer extends DefaultTransformer {
 
-	SymbolTable symbolTable
-
 	// Variables that are assigned some expression in a rule body
 	private Map<VariableExpr, IExpr> assignments = [:]
 	// Variables already replaced by an assignment
@@ -36,12 +33,14 @@ class AssignTransformer extends DefaultTransformer {
 	// For transitive closure
 	private boolean changes
 
+
 	IVisitable visit(Rule n) {
 		if (!n.body) return n
 
 		assignments = [:]
 		replacedVars = [] as Set
-		boundVars = symbolTable.boundVars[n]
+		// TODO FIXXXX
+		boundVars = []//symbolTable.boundVars[n]
 		complexLogic = 0
 		def head = n.head
 		def body = n.body

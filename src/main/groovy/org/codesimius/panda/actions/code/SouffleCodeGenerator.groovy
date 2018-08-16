@@ -3,7 +3,6 @@ package org.codesimius.panda.actions.code
 import groovy.transform.InheritConstructors
 import org.codesimius.panda.actions.graph.DependencyGraphVisitor
 import org.codesimius.panda.actions.tranform.*
-import org.codesimius.panda.actions.tranform.souffle.AssignTransformer
 import org.codesimius.panda.actions.tranform.souffle.ConstructorTransformer
 import org.codesimius.panda.actions.validation.MainValidator
 import org.codesimius.panda.actions.validation.PreliminaryValidator
@@ -38,14 +37,12 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 				.accept(new ComponentFlatteningTransformer())
 				.accept(new TypesTransformer())
 				.accept(new InputFactsTransformer())
-				.accept(symbolTable.relationInfo)
-				.accept(symbolTable.varInfo)
-				.accept(new MainValidator(symbolTable))
+				.accept(new MainValidator())
 				.accept(typeInferenceTransformer)
-				.accept(new SmartLiteralTransformer(symbolTable, typeInferenceTransformer))
-				.accept(new TypesOptimizer(symbolTable))
-				.accept(new ConstructorTransformer(symbolTable, typeInferenceTransformer))
-				.accept(new AssignTransformer(symbolTable))
+				.accept(new SmartLiteralTransformer(typeInferenceTransformer))
+				.accept(new TypesOptimizer())
+				.accept(new ConstructorTransformer(typeInferenceTransformer))
+				//.accept(new AssignTransformer())
 
 		super.visit(n)
 	}
