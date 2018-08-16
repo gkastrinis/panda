@@ -60,8 +60,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 		Set<Rule> oldDeltaRules = n.rules
 		while (!oldDeltaRules.isEmpty()) {
 			deltaRules = [] as Set
-			// TODO FIIIXXX
-			oldDeltaRules.grep().each { visit it }
+			oldDeltaRules.each { visit it }
 			if (oldDeltaRules == deltaRules)
 				error(Error.TYPE_INF_FAIL, null)
 			oldDeltaRules = deltaRules

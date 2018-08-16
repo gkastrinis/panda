@@ -13,6 +13,8 @@ class RelationInfoVisitor extends DefaultVisitor<IVisitable> {
 	Map<String, Set<Rule>> relationUsedInRules = [:].withDefault { [] as Set }
 	Rule currRule
 
+	void enter(Rule n) { currRule = n }
+
 	void enter(Constructor n) { enter(n as Relation) }
 
 	void enter(Relation n) {
