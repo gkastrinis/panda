@@ -1,1 +1,3 @@
 rootProject.name = 'panda'
+
+enableFeaturePreview('STABLE_PUBLISHING')
