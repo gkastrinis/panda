@@ -39,6 +39,7 @@ class BlockLvl0 implements IVisitable {
 	private Map<Rule, Set<VariableExpr>> constructedVars0 = [:]
 	private Map<Rule, List<VariableExpr>> headVars0 = [:]
 	private Map<Rule, List<VariableExpr>> bodyVars0 = [:]
+	private Map<Rule, List<VariableExpr>> boundBodyVars0 = [:]
 
 	Map<Type, List<Type>> getSuperTypesOrdered() {
 		if (!typeInfoCollected) collectTypeInfo()
@@ -160,10 +161,16 @@ class BlockLvl0 implements IVisitable {
 		(headVars0[n] + bodyVars0[n])
 	}
 
+	List<VariableExpr> getBoundBodyVars(Rule n) {
+		if (!boundBodyVars0[n]) collectVarInfo n
+		boundBodyVars0[n]
+	}
+
 	void collectVarInfo(Rule n) {
 		varInfoVisitor.visit n
 		constructedVars0[n] = varInfoVisitor.constructedVars
 		headVars0[n] = varInfoVisitor.headVars
 		bodyVars0[n] = varInfoVisitor.bodyVars
+		boundBodyVars0[n] = varInfoVisitor.boundBodyVars
 	}
 }
