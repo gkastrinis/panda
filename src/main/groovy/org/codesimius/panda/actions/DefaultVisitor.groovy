@@ -91,12 +91,6 @@ class DefaultVisitor<T> {
 		exit n
 	}
 
-	T visit(GroupElement n) {
-		enter n
-		m[n.element] = visit n.element
-		exit n
-	}
-
 	T visit(LogicalElement n) {
 		enter n
 		n.elements.each { m[it] = visit it }
@@ -192,10 +186,6 @@ class DefaultVisitor<T> {
 
 	T exit(ConstructionElement n) { null }
 
-	void enter(GroupElement n) {}
-
-	T exit(GroupElement n) { null }
-
 	void enter(LogicalElement n) {}
 
 	T exit(LogicalElement n) { null }
@@ -231,7 +221,4 @@ class DefaultVisitor<T> {
 	void enter(VariableExpr n) {}
 
 	T exit(VariableExpr n) { null }
-
-
-	static List<IElement> asElements(IElement n) { (n instanceof LogicalElement) ? n.elements : [n] }
 }

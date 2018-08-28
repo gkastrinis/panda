@@ -3,7 +3,10 @@ package org.codesimius.panda.actions.code
 import org.codesimius.panda.actions.DefaultVisitor
 import org.codesimius.panda.actions.tranform.TypeInferenceTransformer
 import org.codesimius.panda.datalog.block.BlockLvl2
-import org.codesimius.panda.datalog.element.*
+import org.codesimius.panda.datalog.element.ComparisonElement
+import org.codesimius.panda.datalog.element.ConstructionElement
+import org.codesimius.panda.datalog.element.LogicalElement
+import org.codesimius.panda.datalog.element.NegationElement
 import org.codesimius.panda.datalog.expr.BinaryExpr
 import org.codesimius.panda.datalog.expr.ConstantExpr
 import org.codesimius.panda.datalog.expr.GroupExpr
@@ -36,8 +39,6 @@ class DefaultCodeGenerator extends DefaultVisitor<String> {
 	String exit(ComparisonElement n) { n == TRIVIALLY_TRUE ? "true" : m[n.expr] }
 
 	String exit(ConstructionElement n) { "${m[n.constructor]}, ${m[n.type]}(${m[n.constructor.valueExpr]})" }
-
-	String exit(GroupElement n) { "(${m[n.element]})" }
 
 	void enter(LogicalElement n) { complexElements << map(n) }
 

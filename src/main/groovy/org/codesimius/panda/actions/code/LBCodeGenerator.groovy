@@ -30,7 +30,6 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 
 		// Transform program before visiting nodes
 		def n = p.accept(new PreliminaryValidator())
-				.accept(new SyntaxFlatteningTransformer())
 				.accept(new ComponentInstantiationTransformer())
 				.accept(new DependencyGraphVisitor(outDir))
 				.accept(new ComponentFlatteningTransformer())
@@ -40,7 +39,6 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 				.accept(typeInferenceTransformer)
 				.accept(new SmartLiteralTransformer(typeInferenceTransformer))
 				.accept(new TypesOptimizer())
-				.accept(new SyntaxFlatteningTransformer())
 
 		functionalRelations = n.datalog.relDeclarations
 				.findAll { FUNCTIONAL in it.annotations }

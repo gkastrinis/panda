@@ -21,6 +21,7 @@ import org.codesimius.panda.system.Error
 import org.codesimius.panda.system.SourceManager
 
 import static org.codesimius.panda.datalog.DatalogParser.*
+import static org.codesimius.panda.datalog.element.LogicalElement.combineElements
 import static org.codesimius.panda.system.Error.warn
 
 class DatalogParserImpl extends DatalogBaseListener {
@@ -224,7 +225,7 @@ class DatalogParserImpl extends DatalogBaseListener {
 
 	void exitHeadList(HeadListContext ctx) {
 		def t = ctx.relation() ? values[ctx.relation()] : values[ctx.construction()]
-		values[ctx] = ctx.headList() ? new LogicalElement([values[ctx.headList()], t] as List<IElement>) : t
+		values[ctx] = ctx.headList() ? combineElements([values[ctx.headList()], t] as List<IElement>) : t
 	}
 
 	void exitBodyList(BodyListContext ctx) {
@@ -237,11 +238,12 @@ class DatalogParserImpl extends DatalogBaseListener {
 		else if (hasToken(ctx, "!"))
 			values[ctx] = new NegationElement(values[ctx.bodyList(0)] as IElement)
 		else if (hasToken(ctx, "("))
-			values[ctx] = new GroupElement(values[ctx.bodyList(0)] as IElement)
+			// Remove group elements and replace them with their contents
+			values[ctx] = values[ctx.bodyList(0)]
 		else {
 			def list = (0..1).collect { values[ctx.bodyList(it)] as IElement }
-			def type = hasToken(ctx, ",") ? LogicalElement.Kind.AND : LogicalElement.Kind.OR
-			values[ctx] = new LogicalElement(type, list)
+			def kind = hasToken(ctx, ",") ? LogicalElement.Kind.AND : LogicalElement.Kind.OR
+			values[ctx] = combineElements(kind, list)
 		}
 	}
 
