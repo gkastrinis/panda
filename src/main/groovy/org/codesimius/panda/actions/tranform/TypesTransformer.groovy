@@ -7,13 +7,13 @@ import org.codesimius.panda.datalog.clause.RelDeclaration
 import org.codesimius.panda.datalog.clause.Rule
 import org.codesimius.panda.datalog.clause.TypeDeclaration
 import org.codesimius.panda.datalog.element.ConstructionElement
-import org.codesimius.panda.datalog.element.LogicalElement
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.datalog.Annotation.CONSTRUCTOR
 import static org.codesimius.panda.datalog.Annotation.TYPEVALUES
+import static org.codesimius.panda.datalog.element.LogicalElement.combineElements
 import static org.codesimius.panda.datalog.element.relation.Type.TYPE_STRING
 import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
 import static org.codesimius.panda.system.Error.error
@@ -45,7 +45,7 @@ class TypesTransformer extends DefaultTransformer {
 				def rel = new Relation("${n.type.name}:$key", [var1()])
 				extraRelDecls << new RelDeclaration(rel, [n.type])
 				def con = new ConstructionElement(new Constructor(rootT.defaultConName, [value, var1()]), n.type)
-				extraRules << new Rule(new LogicalElement([con, rel]))
+				extraRules << new Rule(combineElements([con, rel]))
 			}
 		}
 		return n

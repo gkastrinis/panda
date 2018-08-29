@@ -8,8 +8,6 @@ import org.codesimius.panda.datalog.clause.RelDeclaration
 import org.codesimius.panda.datalog.clause.Rule
 import org.codesimius.panda.datalog.clause.TypeDeclaration
 import org.codesimius.panda.datalog.element.ConstructionElement
-import org.codesimius.panda.datalog.element.IElement
-import org.codesimius.panda.datalog.element.LogicalElement
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.element.relation.Type
@@ -17,6 +15,7 @@ import org.codesimius.panda.datalog.expr.ConstantExpr
 
 import static org.codesimius.panda.datalog.Annotation.INPUT
 import static org.codesimius.panda.datalog.Annotation.TYPE
+import static org.codesimius.panda.datalog.element.LogicalElement.combineElements
 import static org.codesimius.panda.datalog.element.relation.Type.TYPE_STRING
 import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
 import static org.codesimius.panda.datalog.expr.VariableExpr.genN as varN
@@ -70,7 +69,7 @@ class InputFactsTransformer extends DefaultTransformer {
 		if (headElements) {
 			if (!annotations.any { it == TYPE }) headElements << new Relation(name, vars)
 			def inputRel = new Relation("__SYS_IN_$name", varN(N))
-			extraRules << new Rule(headElements.size() > 1 ? new LogicalElement(headElements) : headElements.first() as IElement, inputRel)
+			extraRules << new Rule(combineElements(headElements), inputRel)
 			extraRelDecls << new RelDeclaration(inputRel, inputTypes, [an] as Set)
 		} else if (!types.any { !it.isPrimitive() })
 			annotations << an

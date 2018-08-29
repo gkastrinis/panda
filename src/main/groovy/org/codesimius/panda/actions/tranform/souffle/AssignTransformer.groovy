@@ -50,7 +50,7 @@ class AssignTransformer extends DefaultTransformer {
 		changes = true
 		while (changes) {
 			changes = false
-			body = visit(body) as IElement
+			if (body) body = visit(body) as IElement
 			// Update expressions for assignment as well
 			assignments.each { it.value = visit(it.value) as IExpr }
 			head = visit(head) as IElement

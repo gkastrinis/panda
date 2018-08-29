@@ -14,6 +14,8 @@ import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.element.relation.Type
 import org.codesimius.panda.datalog.expr.*
 
+import static org.codesimius.panda.datalog.element.LogicalElement.combineElements
+
 class DefaultTransformer extends DefaultVisitor<IVisitable> {
 
 	Set<RelDeclaration> extraRelDecls = [] as Set
@@ -60,7 +62,7 @@ class DefaultTransformer extends DefaultVisitor<IVisitable> {
 		new ConstructionElement(m[n.constructor] as Constructor, m[n.type] as Type)
 	}
 
-	IVisitable exit(LogicalElement n) { new LogicalElement(n.kind, n.elements.collect { m[it] as IElement }) }
+	IVisitable exit(LogicalElement n) { combineElements(n.kind, n.elements.collect { m[it] as IElement }) }
 
 	IVisitable exit(NegationElement n) { new NegationElement(m[n.element] as IElement) }
 
