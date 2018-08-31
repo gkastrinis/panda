@@ -29,7 +29,7 @@ p6(t) <- p4(x), p4(t), t = x + 20
 p6(t) <- p4(x), p4(t), t = x * 30
 
 /*
-baz(x) : float
+baz(x) : real
 test9(x) <- baz(x), x > 10.5
 test9(x) <- baz(x), x > .5
 test9(x) <- baz(x), x > 10f

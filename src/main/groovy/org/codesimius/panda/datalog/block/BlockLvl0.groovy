@@ -90,8 +90,8 @@ class BlockLvl0 implements IVisitable {
 
 	void collectTypeInfo() {
 		// Implicit subtyping in primitive types
-		superTypesOrdered0[TYPE_INT] = [TYPE_FLOAT]
-		superTypesOrdered0[TYPE_FLOAT] = []
+		superTypesOrdered0[TYPE_INT] = [TYPE_REAL]
+		superTypesOrdered0[TYPE_REAL] = []
 		superTypesOrdered0[TYPE_BOOLEAN] = []
 		superTypesOrdered0[TYPE_STRING] = []
 
@@ -143,10 +143,10 @@ class BlockLvl0 implements IVisitable {
 	void collectRelationInfo() {
 		// Implicitly, add relations supported in aggregation
 		declaredRelations0 = ["count", "min", "max", "sum"] as Set
-	// Each type introduces an implicit unary relation with the same name
-	//declaredRelations0 += typeDeclarations.collect { declaredRelations0 << it.type.name }
-	// Relations with explicit declarations
-	//declaredRelations0 += relDeclarations.collect { declaredRelations0 << it.relation.name }
+		// Each type introduces an implicit unary relation with the same name
+		//declaredRelations0 += typeDeclarations.collect { declaredRelations0 << it.type.name }
+		// Relations with explicit declarations
+		//declaredRelations0 += relDeclarations.collect { declaredRelations0 << it.relation.name }
 
 		def relInfoVisitor = new RelationInfoVisitor()
 		relInfoVisitor.visit this

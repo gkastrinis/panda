@@ -167,8 +167,8 @@ class TypeInferenceTransformer extends DefaultTransformer {
 	}
 
 	IVisitable exit(BinaryExpr n) {
-		def numericalTypes = [TYPE_INT, TYPE_FLOAT]
-		def ordinalTypes = [TYPE_INT, TYPE_FLOAT, TYPE_STRING]
+		def numericalTypes = [TYPE_INT, TYPE_REAL]
+		def ordinalTypes = [TYPE_INT, TYPE_REAL, TYPE_STRING]
 		def leftType = exprType[n.left], rightType = exprType[n.right]
 		def joinType = join(leftType, rightType)
 		def types = [leftType, rightType].grep()
@@ -203,7 +203,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 
 	void enter(ConstantExpr n) {
 		if (n.kind == INTEGER) exprType[n] = TYPE_INT
-		else if (n.kind == REAL) exprType[n] = TYPE_FLOAT
+		else if (n.kind == REAL) exprType[n] = TYPE_REAL
 		else if (n.kind == BOOLEAN) exprType[n] = TYPE_BOOLEAN
 		else if (n.kind == STRING) exprType[n] = TYPE_STRING
 	}

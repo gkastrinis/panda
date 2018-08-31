@@ -14,10 +14,10 @@ class Type implements IElement {
 
 	boolean isPrimitive() { isPrimitive name }
 
-	static isPrimitive(String t) { t in ["int", "float", "boolean", "string"] }
+	static isPrimitive(String t) { t in ["int", "real", "boolean", "string"] }
 
 	static final TYPE_INT = new Type("int")
-	static final TYPE_FLOAT = new Type("float")
+	static final TYPE_REAL = new Type("real")
 	static final TYPE_BOOLEAN = new Type("boolean")
 	static final TYPE_STRING = new Type("string")
 }
