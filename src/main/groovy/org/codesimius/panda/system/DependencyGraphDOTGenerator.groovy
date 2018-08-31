@@ -11,7 +11,6 @@ import java.nio.file.Paths
 
 import static org.codesimius.panda.actions.graph.DependencyGraphVisitor.GLOBAL as GLOBAL_GRAPH
 import static org.codesimius.panda.actions.graph.DependencyGraphVisitor.INSTANTIATION as INSTANTIATION_GRAPH
-import static org.codesimius.panda.system.Error.tag
 
 @Canonical
 @Log4j

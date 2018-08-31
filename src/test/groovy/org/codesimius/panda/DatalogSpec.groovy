@@ -61,7 +61,7 @@ class DatalogSpec extends Specification {
 		"fail8"  | Error.TYPE_UNKNOWN
 		"fail9"  | Error.CONSTR_UNKNOWN
 		"fail10" | Error.CONSTR_NON_FUNC
-		"fail11" | Error.TYPE_INF_INCOMPAT_DISJ
+		"fail11" | Error.TYPE_INF_INCOMPAT
 		"fail12" | Error.REL_ARITY
 		"fail13" | Error.TYPE_INF_INCOMPAT_USE
 		"fail14" | Error.TYPE_RULE
@@ -75,7 +75,7 @@ class DatalogSpec extends Specification {
 		"fail22" | Error.ANNOTATION_MISTYPED_ARG
 		"fail23" | Error.CONSTR_RULE_CYCLE
 		"fail24" | Error.VAR_MULTIPLE_CONSTR
-		"fail25" | Error.TYPE_INF_INCOMPAT_NUM
+		"fail25" | Error.TYPE_INF_INCOMPAT
 		"fail26" | Error.COMP_DUPLICATE_PARAMS
 		"fail27" | Error.COMP_SUPER_PARAM_MISMATCH
 		"fail28" | Error.COMP_INST_ARITY
@@ -107,8 +107,8 @@ class DatalogSpec extends Specification {
 		"fail54" | Error.SMART_LIT_NON_PRIMITIVE
 		"fail55" | Error.SMART_LIT_NO_DIRECT_REL
 		"fail56" | Error.SMART_LIT_NO_DIRECT_REL
-		"fail57" | Error.TYPE_INF_INCOMPAT_BRANCH
-		"fail58" | Error.TYPE_INF_INCOMPAT_DISJ
+		"fail57" | Error.TYPE_INF_INCOMPAT
+		"fail58" | Error.TYPE_INF_INCOMPAT
 	}
 
 	@Unroll

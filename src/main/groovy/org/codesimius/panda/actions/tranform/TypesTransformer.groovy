@@ -26,7 +26,7 @@ class TypesTransformer extends DefaultTransformer {
 
 	IVisitable visit(BlockLvl0 n) {
 		// Add default constructors
-		n.rootTypes.each { root ->
+		n.rootTypes.findAll { !it.isPrimitive() }.each { root ->
 			n.relDeclarations.findAll { it.relation.name == root.defaultConName }
 					.each { error(recall(it), Error.REL_NAME_DEFCONSTR, it.relation.name) }
 

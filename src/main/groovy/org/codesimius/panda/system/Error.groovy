@@ -54,9 +54,7 @@ enum Error {
 	SMART_LIT_NO_DIRECT_REL,
 
 	TYPE_INF_FAIL,
-	TYPE_INF_INCOMPAT_NUM,
-	TYPE_INF_INCOMPAT_DISJ,
-	TYPE_INF_INCOMPAT_BRANCH,
+	TYPE_INF_INCOMPAT,
 	TYPE_INF_INCOMPAT_USE,
 	TYPE_UNSUPP,
 	TYPE_UNKNOWN,
@@ -112,9 +110,7 @@ enum Error {
 			(SMART_LIT_NO_DIRECT_REL)  : "Smart literals (`{0}`) can only be direct parameters of a relation/constructor",
 
 			(TYPE_INF_FAIL)            : "Type inference was inconclusive: cannot reach fixpoint",
-			(TYPE_INF_INCOMPAT_NUM)    : "Incompatible types for numeric expression ({0})",
-			(TYPE_INF_INCOMPAT_DISJ)   : "Incompatible types in different hierarchies ({0})",
-			(TYPE_INF_INCOMPAT_BRANCH) : "Incompatible types in different branches of the same hierarchy ({0})",
+			(TYPE_INF_INCOMPAT)        : "Incompatible types during type inference ({0})",
 			(TYPE_INF_INCOMPAT_USE)    : "Incompatible types used for relation `{0}` at index {1} (expected `{2}` & used {3})",
 			(TYPE_UNSUPP)              : "Currently unsupported type `{0}`",
 			(TYPE_UNKNOWN)             : "Unknown type `{0}`",

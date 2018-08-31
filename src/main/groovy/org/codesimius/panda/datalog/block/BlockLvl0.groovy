@@ -12,6 +12,7 @@ import org.codesimius.panda.datalog.element.relation.Type
 import org.codesimius.panda.datalog.expr.VariableExpr
 
 import static org.codesimius.panda.datalog.Annotation.CONSTRUCTOR
+import static org.codesimius.panda.datalog.element.relation.Type.*
 
 @Canonical
 @ToString(includePackage = false)
@@ -32,6 +33,7 @@ class BlockLvl0 implements IVisitable {
 
 	private boolean relationInfoCollected
 	private Set<String> declaredRelations0
+	private Map<String, RelDeclaration> relationToDeclaration0
 	private Map<String, Set<Rule>> relationDefinedInRules0
 	private Map<String, Set<Rule>> relationUsedInRule0
 
@@ -49,6 +51,11 @@ class BlockLvl0 implements IVisitable {
 	Map<Type, Set<Type>> getSubTypes() {
 		if (!typeInfoCollected) collectTypeInfo()
 		subTypes0
+	}
+
+	Set<Type> getExtendedSubTypesOf(Type t) {
+		if (!typeInfoCollected) collectTypeInfo()
+		([t] + subTypes0[t]) as Set
 	}
 
 	Map<Type, Type> getTypeToRootType() {
@@ -82,6 +89,12 @@ class BlockLvl0 implements IVisitable {
 	}
 
 	void collectTypeInfo() {
+		// Implicit subtyping in primitive types
+		superTypesOrdered0[TYPE_INT] = [TYPE_FLOAT]
+		superTypesOrdered0[TYPE_FLOAT] = []
+		superTypesOrdered0[TYPE_BOOLEAN] = []
+		superTypesOrdered0[TYPE_STRING] = []
+
 		typeDeclarations.each { d ->
 			superTypesOrdered0[d.type] = []
 			def currDecl = d
@@ -112,6 +125,11 @@ class BlockLvl0 implements IVisitable {
 		declaredRelations0
 	}
 
+	Map<String, RelDeclaration> getRelationToDeclaration() {
+		if (!relationInfoCollected) collectRelationInfo()
+		relationToDeclaration0
+	}
+
 	Map<String, Set<Rule>> getRelationDefinedInRules() {
 		if (!relationInfoCollected) collectRelationInfo()
 		relationDefinedInRules0
@@ -125,14 +143,15 @@ class BlockLvl0 implements IVisitable {
 	void collectRelationInfo() {
 		// Implicitly, add relations supported in aggregation
 		declaredRelations0 = ["count", "min", "max", "sum"] as Set
-		// Each type introduces an implicit unary relation with the same name
-		declaredRelations0 += typeDeclarations.collect { declaredRelations0 << it.type.name }
-		// Relations with explicit declarations
-		declaredRelations0 += relDeclarations.collect { declaredRelations0 << it.relation.name }
+	// Each type introduces an implicit unary relation with the same name
+	//declaredRelations0 += typeDeclarations.collect { declaredRelations0 << it.type.name }
+	// Relations with explicit declarations
+	//declaredRelations0 += relDeclarations.collect { declaredRelations0 << it.relation.name }
 
 		def relInfoVisitor = new RelationInfoVisitor()
 		relInfoVisitor.visit this
-		declaredRelations0 += relInfoVisitor.implicitlyDeclared
+		declaredRelations0 += relInfoVisitor.explicitlyDeclared.keySet() + relInfoVisitor.implicitlyDeclared
+		relationToDeclaration0 = relInfoVisitor.explicitlyDeclared
 		relationDefinedInRules0 = relInfoVisitor.relationDefinedInRules
 		relationUsedInRule0 = relInfoVisitor.relationUsedInRules
 

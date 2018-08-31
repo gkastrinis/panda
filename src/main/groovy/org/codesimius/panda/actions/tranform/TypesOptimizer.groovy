@@ -33,7 +33,7 @@ class TypesOptimizer extends DefaultTransformer {
 
 		n.typeDeclarations
 				.findAll { decl -> decl.annotations.find { it == TYPE }.args["opt"] }
-				.each { decl -> typesToOptimize += ([decl.type] + n.subTypes[decl.type]) }
+				.each { decl -> typesToOptimize += n.getExtendedSubTypesOf(decl.type) }
 
 		typesToOptimize.each { t ->
 			n.superTypesOrdered.remove t

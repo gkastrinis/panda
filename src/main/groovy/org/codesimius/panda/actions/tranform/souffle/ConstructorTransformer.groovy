@@ -59,7 +59,7 @@ class ConstructorTransformer extends DefaultTransformer {
 		// Re: (2)
 		n.rootTypes.each { root ->
 			def rootInternalType = new Type("_${root.name}")
-			def types = [root] + n.subTypes[root]
+			def types = n.getExtendedSubTypesOf(root)
 			types.each { typeToCommonType[it] = rootInternalType }
 
 			def recordType = new RecordType([])

@@ -2,16 +2,28 @@ package org.codesimius.panda.actions.symbol
 
 import org.codesimius.panda.actions.DefaultVisitor
 import org.codesimius.panda.datalog.IVisitable
+import org.codesimius.panda.datalog.clause.RelDeclaration
 import org.codesimius.panda.datalog.clause.Rule
+import org.codesimius.panda.datalog.clause.TypeDeclaration
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
 
 class RelationInfoVisitor extends DefaultVisitor<IVisitable> {
 
+	Map<String, RelDeclaration> explicitlyDeclared = [:]
 	Set<String> implicitlyDeclared = [] as Set
 	Map<String, Set<Rule>> relationDefinedInRules = [:].withDefault { [] as Set }
 	Map<String, Set<Rule>> relationUsedInRules = [:].withDefault { [] as Set }
 	Rule currRule
+
+	void enter(RelDeclaration n) {
+		explicitlyDeclared[n.relation.name] = n
+	}
+
+	void enter(TypeDeclaration n) {
+		// Types can be used as unary relations (with the same type and name)
+		implicitlyDeclared << n.type.name
+	}
 
 	void enter(Rule n) { currRule = n }
 

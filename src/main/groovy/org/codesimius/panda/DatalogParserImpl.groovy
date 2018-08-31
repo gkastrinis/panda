@@ -238,7 +238,7 @@ class DatalogParserImpl extends DatalogBaseListener {
 		else if (hasToken(ctx, "!"))
 			values[ctx] = new NegationElement(values[ctx.bodyList(0)] as IElement)
 		else if (hasToken(ctx, "("))
-			// Remove group elements and replace them with their contents
+		// Remove group elements and replace them with their contents
 			values[ctx] = values[ctx.bodyList(0)]
 		else {
 			def list = (0..1).collect { values[ctx.bodyList(it)] as IElement }
