@@ -1,13 +1,17 @@
 package org.codesimius.panda
 
 import org.antlr.v4.runtime.ANTLRInputStream
+import org.apache.commons.io.FileUtils
 import org.codesimius.panda.actions.code.LBCodeGenerator
 import org.codesimius.panda.actions.code.SouffleCodeGenerator
+import org.codesimius.panda.system.Artifact
 import org.codesimius.panda.system.Compiler
 import org.codesimius.panda.system.Error
 import org.codesimius.panda.system.PandaException
 import spock.lang.Specification
 import spock.lang.Unroll
+
+import static org.codesimius.panda.system.Error.error
 
 class DatalogSpec extends Specification {
 
@@ -144,7 +148,8 @@ class DatalogSpec extends Specification {
 		}
 
 		try {
-			test0(file, SouffleCodeGenerator)
+			def artifacts = test0(file, SouffleCodeGenerator)
+			validateContents(file, "dl", artifacts)
 		}
 		catch (PandaException e) {
 			e2 = e
@@ -152,5 +157,14 @@ class DatalogSpec extends Specification {
 
 		assert e1?.error == e2?.error
 		if (e1) throw e1
+	}
+
+	def validateContents(def file, def ext, List<Artifact> artifacts) {
+		def generatedFile = artifacts.find { it.kind == Artifact.Kind.LOGIC }.file
+		def expectedFileURL = this.class.getResource("/expected/exp-${file}.${ext}")
+		def expectedFile = expectedFileURL ? new File(expectedFileURL.toURI()) : null
+
+		if (expectedFile?.exists() && !FileUtils.contentEquals(generatedFile, expectedFile))
+			error(Error.EXP_CONTENTS_MISMATCH, null)
 	}
 }

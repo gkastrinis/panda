@@ -62,6 +62,8 @@ enum Error {
 	TYPE_OPT_ROOT_NONOPT,
 	TYPE_OPT_CONSTR,
 
+	EXP_CONTENTS_MISMATCH,
+
 	static Map<Error, String> msgMap = [
 			(ANNOTATION_UNKNOWN)       : "Unknown annotation `{0}`",
 			(ANNOTATION_NON_EMPTY)     : "Annotation `{0}` takes no arguments",
@@ -117,6 +119,8 @@ enum Error {
 			(TYPE_RULE)                : "Type `{0}` used as a normal relation in rule head",
 			(TYPE_OPT_ROOT_NONOPT)     : "Root types of a hierarchy must be explicitly marked for optimization (`{0}`) when optimizing types",
 			(TYPE_OPT_CONSTR)          : "Type hierarchies marked for optimization cannot have user defined constructors (`{0}`)",
+
+			(EXP_CONTENTS_MISMATCH)    : "Generated and expected file differ in contents"
 	]
 
 	static void warn(SourceLocation loc = null, Error errorId, Object... values) {
