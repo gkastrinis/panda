@@ -70,7 +70,8 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	}
 
 	String exit(Rule n) {
-		emit "${m[n.head]} :- ${m[n.body] ?: "true"}."
+		def body = m[n.body]
+		emit "${m[n.head]}${body ? ":- $body" : ""}."
 
 		if (PLAN in n.annotations)
 			emit ".plan ${n.annotations.find { it == PLAN }.args["plan"].value}"
