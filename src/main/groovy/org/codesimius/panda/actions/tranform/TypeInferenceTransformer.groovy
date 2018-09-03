@@ -64,10 +64,10 @@ class TypeInferenceTransformer extends DefaultTransformer {
 
 		// Fill partial declarations and add implicit ones
 		// Ignore relations that derive from types
-		def relDeclarations = inferredTypes
-				.findAll { rel, types -> !datalog.allTypes.any { it.name == rel } }
-				.collect { rel, types ->
-
+		def interestingRelationsWithTypes = inferredTypes.findAll { rel, types ->
+			!datalog.allTypes.any { it.name == rel } && !(rel in AggregationElement.SUPPORTED_PREDICATES)
+		}
+		def relDeclarations = interestingRelationsWithTypes.collect { rel, types ->
 			def vars = varN(types.size())
 			def decl = datalog.relationToDeclaration[rel]
 			// Explicit, partial declaration
@@ -143,7 +143,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 	}
 
 	void enter(AggregationElement n) {
-		inferredTypes[n.relation.name] = [TYPE_INT]
+		if (n.relation.name != "count") inferredTypes[n.relation.name] = [TYPE_REAL]
 		exprType[n.var] = meet(exprType[n.var], TYPE_INT)
 	}
 
@@ -214,7 +214,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 	Type meet(Type currType, Type t) {
 		if (currType == t)
 			return currType
-		else if (!currType || t in datalog.subTypes[currType])
+		else if (!currType || t in datalog.getExtendedSubTypesOf(currType))
 			return t
 		else if (!(currType in datalog.subTypes[t]))
 			error(Error.TYPE_INF_INCOMPAT, [currType.name, t.name])

@@ -13,5 +13,5 @@ class AggregationElement implements IElement {
 	Relation relation
 	IElement body
 
-	static final List<String> SUPPORTED_PREDICATES = ["count", "min", "max", "sum"]
+	static final Set<String> SUPPORTED_PREDICATES = ["count", "min", "max", "sum"] as Set
 }

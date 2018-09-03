@@ -8,6 +8,7 @@ import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.clause.RelDeclaration
 import org.codesimius.panda.datalog.clause.Rule
 import org.codesimius.panda.datalog.clause.TypeDeclaration
+import org.codesimius.panda.datalog.element.AggregationElement
 import org.codesimius.panda.datalog.element.relation.Type
 import org.codesimius.panda.datalog.expr.VariableExpr
 
@@ -103,12 +104,14 @@ class BlockLvl0 implements IVisitable {
 				currDecl = typeDeclarations.find { it.type == currDecl.supertype }
 			}
 
-			superTypesOrdered0.each { t, ts ->
-				ts.each { subTypes0[it] << t }
-
-				typeToRootType0[t] = ts ? ts.last() : t
-			}
 		}
+
+		superTypesOrdered0.each { t, ts ->
+			ts.each { subTypes0[it] << t }
+
+			typeToRootType0[t] = ts ? ts.last() : t
+		}
+
 		relDeclarations.each {
 			if (CONSTRUCTOR in it.annotations) {
 				constructorToBaseType0[it.relation.name] = it.types.last()
@@ -142,11 +145,7 @@ class BlockLvl0 implements IVisitable {
 
 	void collectRelationInfo() {
 		// Implicitly, add relations supported in aggregation
-		declaredRelations0 = ["count", "min", "max", "sum"] as Set
-		// Each type introduces an implicit unary relation with the same name
-		//declaredRelations0 += typeDeclarations.collect { declaredRelations0 << it.type.name }
-		// Relations with explicit declarations
-		//declaredRelations0 += relDeclarations.collect { declaredRelations0 << it.relation.name }
+		declaredRelations0 = AggregationElement.SUPPORTED_PREDICATES
 
 		def relInfoVisitor = new RelationInfoVisitor()
 		relInfoVisitor.visit this
