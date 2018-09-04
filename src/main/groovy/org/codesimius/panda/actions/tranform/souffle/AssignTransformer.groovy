@@ -18,6 +18,7 @@ import org.codesimius.panda.datalog.expr.VariableExpr
 import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.datalog.element.ComparisonElement.TRIVIALLY_TRUE
+import static org.codesimius.panda.datalog.element.LogicalElement.combineElements
 import static org.codesimius.panda.system.Error.error
 
 @Canonical
@@ -58,8 +59,8 @@ class AssignTransformer extends DefaultTransformer {
 			assignments = [:]
 		}
 		replacedVars = [] as Set
-		m[n.head] = head
-		m[n.body] = body
+		m[n.head] = combineElements([head])
+		m[n.body] = combineElements([body])
 
 		super.exit n
 	}
