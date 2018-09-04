@@ -57,7 +57,7 @@ class ConstructorTransformer extends DefaultTransformer {
 	void enter(BlockLvl0 n) {
 		super.enter n
 		// Re: (2)
-		n.rootTypes.each { root ->
+		n.rootTypes.findAll { !it.primitive }.each { root ->
 			def rootInternalType = new Type("_${root.name}")
 			def types = n.getExtendedSubTypesOf(root)
 			types.each { typeToCommonType[it] = rootInternalType }
