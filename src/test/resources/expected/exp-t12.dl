@@ -1,0 +1,9 @@
+.decl P(v0:number)
+.decl F2_Q(v0:number)
+.decl F1_Q(v0:number)
+.decl F2_P(v0:number)
+.decl Res(v0:number)
+.decl F1_P(v0:number)
+Res(x):- F2_P(x).
+F2_P(x):- F2_Q(x), F1_P(x).
+F1_P(x):- F1_Q(x), P(x).

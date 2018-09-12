@@ -1,0 +1,20 @@
+.decl t(v0:number, v1:number)
+.output t
+.decl foo(v0:number, v1:number)
+.decl bar(v0:number, v1:number)
+.decl t1(v0:number, v1:number)
+.decl t2(v0:number, v1:number)
+.decl t3(v0:number, v1:number)
+.decl t4(v0:number, v1:number)
+.decl t5(v0:number, v1:number)
+.output t5
+.decl t6(v0:number, v1:number, v2:number)
+foo(1, 2).
+bar(3, 4).
+t1(1, c):- foo(_, _), c = count : { foo(_, _) }.
+t2(2, c):- foo(_, x), bar(x, _), c = count : { foo(_, x), bar(x, _) }.
+t3(3, m):- bar(_, ?y), m = max(?y) : { bar(_, ?y) }.
+t4(4, m):- foo(_, x), m = min(x) : { foo(_, x) }.
+t5(5, c):- foo(x, _), c = sum(x) : { foo(x, _) }.
+t6(6, x, c):- foo(x, _), c = count : { foo(x, _) }.
+t(x, y):- t1(x, y); t2(x, y); t3(x, y); t4(x, y); t5(x, y); t6(x, _, y).

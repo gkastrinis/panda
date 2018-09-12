@@ -1,0 +1,29 @@
+.decl byNum(v0:number, v1:__SYS_TYPE__Animal)
+.decl P1(v0:symbol)
+.input P1(filename="P1.facts", delimeter="\t")
+.decl P2(v0:number)
+.input P2(filename="P2.facts", delimeter="\t")
+.decl P3(v0:symbol, v1:number)
+.input P3(filename="P3.facts", delimeter="\t")
+.decl P4(v0:__SYS_TYPE__Animal, v1:__SYS_TYPE__Animal)
+.decl Animal_byStr(v0:symbol, v1:__SYS_TYPE__Animal)
+.decl Cat_A(v0:__SYS_TYPE__Animal)
+.decl __SYS_IN_P4(v0:symbol, v1:symbol)
+.input __SYS_IN_P4(filename="P4.facts", delimeter="\t")
+.decl __SYS_IN_PersianCat(v0:symbol)
+.input __SYS_IN_PersianCat(filename="PersianCat.facts", delimeter="\t")
+.decl bar(v0:symbol, v1:number)
+.decl Animal(v0:__SYS_TYPE__Animal)
+.decl Cat(v0:__SYS_TYPE__Animal)
+.decl PersianCat(v0:__SYS_TYPE__Animal)
+.type __SYS_TYPE_Animal_byStr = [v0:symbol]
+.type __SYS_TYPE_byNum = [v0:number]
+.type __SYS_TYPE__Animal = [v0:__SYS_TYPE_Animal_byStr, v1:__SYS_TYPE_byNum]
+Animal_byStr("foo", [nil, ["foo"]]), PersianCat([nil, ["foo"]]).
+byNum(42, [nil, [42]]), PersianCat([nil, [42]]).
+bar(x, y):- P1(x), P3(_, y).
+Animal_byStr("A", [nil, ["A"]]), Cat([nil, ["A"]]), Cat_A([nil, ["A"]]).
+Animal_byStr(v0, [nil, [v0]]), Cat([nil, [v0]]), Animal_byStr(v1, [nil, [v1]]), Animal([nil, [v1]]), P4([nil, [v0]], [nil, [v1]]):- __SYS_IN_P4(v0, v1).
+Animal_byStr(v0, [nil, [v0]]), PersianCat([nil, [v0]]):- __SYS_IN_PersianCat(v0).
+Animal(v0):- Cat(v0).
+Cat(v0):- PersianCat(v0).

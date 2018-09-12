@@ -1,0 +1,47 @@
+.decl Foo(v0:number, v1:symbol)
+.output Foo
+.decl FooBar(v0:number, v1:symbol)
+.output FooBar
+.decl P1(v0:symbol)
+.input P1(filename="P1.facts", delimeter="\t")
+.decl P2(v0:number)
+.input P2(filename="P2.facts", delimeter="\t")
+.decl P3(v0:symbol)
+.input P3(filename="P3.facts", delimeter="\t")
+.decl Animal_byStr(v0:symbol, v1:__SYS_TYPE__Animal)
+.decl AP_byStr(v0:symbol, v1:__SYS_TYPE__AP)
+.decl Bar_byStr(v0:symbol, v1:__SYS_TYPE__Bar)
+.decl Baz_byStr(v0:symbol, v1:__SYS_TYPE__Baz)
+.decl Dog1_byStr(v0:symbol, v1:__SYS_TYPE__Dog1)
+.decl Cat1_byStr(v0:symbol, v1:__SYS_TYPE__Cat1)
+.decl Animal(v0:__SYS_TYPE__Animal)
+.output Animal
+.decl AP(v0:__SYS_TYPE__AP)
+.decl Cat(v0:__SYS_TYPE__Animal)
+.decl Dog(v0:__SYS_TYPE__Animal)
+.decl PersianCat(v0:__SYS_TYPE__Animal)
+.decl Bar(v0:__SYS_TYPE__Bar)
+.output Bar
+.decl Baz(v0:__SYS_TYPE__Baz)
+.output Baz
+.decl Dog1(v0:__SYS_TYPE__Dog1)
+.output Dog1
+.decl Cat1(v0:__SYS_TYPE__Cat1)
+.output Cat1
+.type __SYS_TYPE_Animal_byStr = [v0:symbol]
+.type __SYS_TYPE__Animal = [v0:__SYS_TYPE_Animal_byStr]
+.type __SYS_TYPE_AP_byStr = [v0:symbol]
+.type __SYS_TYPE__AP = [v0:__SYS_TYPE_AP_byStr]
+.type __SYS_TYPE_Bar_byStr = [v0:symbol]
+.type __SYS_TYPE__Bar = [v0:__SYS_TYPE_Bar_byStr]
+.type __SYS_TYPE_Baz_byStr = [v0:symbol]
+.type __SYS_TYPE__Baz = [v0:__SYS_TYPE_Baz_byStr]
+.type __SYS_TYPE_Dog1_byStr = [v0:symbol]
+.type __SYS_TYPE__Dog1 = [v0:__SYS_TYPE_Dog1_byStr]
+.type __SYS_TYPE_Cat1_byStr = [v0:symbol]
+.type __SYS_TYPE__Cat1 = [v0:__SYS_TYPE_Cat1_byStr]
+Foo(1, "J").
+FooBar(42, "bla").
+Animal(v0):- Cat(v0).
+Animal(v0):- Dog(v0).
+Cat(v0):- PersianCat(v0).

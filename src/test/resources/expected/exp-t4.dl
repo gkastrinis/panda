@@ -1,0 +1,19 @@
+.decl cons_Shape(v0:symbol, v1:__SYS_TYPE__Shape)
+.decl Shape_byStr(v0:symbol, v1:__SYS_TYPE__Shape)
+.decl PredC(v0:symbol, v1:__SYS_TYPE__Shape)
+.decl PredT(v0:symbol, v1:__SYS_TYPE__Shape)
+.decl Pred(v0:__SYS_TYPE__Shape)
+.decl Shape(v0:__SYS_TYPE__Shape)
+.decl Circle(v0:__SYS_TYPE__Shape)
+.decl Triangle(v0:__SYS_TYPE__Shape)
+.decl RightTriangle(v0:__SYS_TYPE__Shape)
+.type __SYS_TYPE_cons_Shape = [v0:symbol]
+.type __SYS_TYPE_Shape_byStr = [v0:symbol]
+.type __SYS_TYPE__Shape = [v0:__SYS_TYPE_cons_Shape, v1:__SYS_TYPE_Shape_byStr]
+cons_Shape("circle", [nil, ["circle"]]), Circle([nil, ["circle"]]), PredC("circle", [nil, ["circle"]]).
+cons_Shape("triangle", [nil, ["triangle"]]), RightTriangle([nil, ["triangle"]]), PredT("triangle", [nil, ["triangle"]]).
+Pred(x):- PredC(_, x).
+Pred(x):- PredT(_, x).
+Shape(v0):- Circle(v0).
+Shape(v0):- Triangle(v0).
+Triangle(v0):- RightTriangle(v0).

@@ -1,0 +1,6 @@
+.decl C1_Q(v0:number)
+.decl C1_P(v0:number)
+.decl F1_W(v0:number)
+.decl F1_Z(v0:number)
+F1_W(x):- C1_P(x).
+F1_Z(x):- C1_Q(x).

@@ -1,0 +1,15 @@
+.decl Foo(v0:number, v1:__SYS_TYPE__Animal)
+.decl Animal_byStr(v0:symbol, v1:__SYS_TYPE__Animal)
+.decl Shape_byStr(v0:symbol, v1:__SYS_TYPE__Shape)
+.decl Baz(v0:__SYS_TYPE__Shape, v1:number, v2:symbol)
+.decl Bar(v0:number, v1:symbol)
+.decl Animal(v0:__SYS_TYPE__Animal)
+.decl Cat(v0:__SYS_TYPE__Animal)
+.decl Shape(v0:__SYS_TYPE__Shape)
+.type __SYS_TYPE_Animal_byStr = [v0:symbol]
+.type __SYS_TYPE__Animal = [v0:__SYS_TYPE_Animal_byStr]
+.type __SYS_TYPE_Shape_byStr = [v0:symbol]
+.type __SYS_TYPE__Shape = [v0:__SYS_TYPE_Shape_byStr]
+Baz(a, 42, "abc"):- Shape_byStr("123", a).
+Bar(x, y):- Animal_byStr("abc", v0), Foo(x, v0), Shape_byStr("123", v1), Baz(v1, x, y).
+Animal(v0):- Cat(v0).
