@@ -143,8 +143,9 @@ class TypeInferenceTransformer extends DefaultTransformer {
 	}
 
 	void enter(AggregationElement n) {
-		if (n.relation.name != "count") inferredTypes[n.relation.name] = [TYPE_REAL]
-		exprType[n.var] = meet(exprType[n.var], TYPE_INT)
+		def name = n.relation.name
+		inferredTypes[name] = AggregationElement.PREDICATE_TYPES[name]
+		exprType[n.var] = meet(exprType[n.var], AggregationElement.PREDICATE_RET_TYPE[name])
 	}
 
 	void enter(ConstructionElement n) {

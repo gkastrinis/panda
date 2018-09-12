@@ -92,7 +92,7 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 	}
 
 	void enter(AggregationElement n) {
-		arities[n.relation.name] = AggregationElement.PREDICATE_ARITIES[n.relation.name]
+		arities[n.relation.name] = AggregationElement.PREDICATE_TYPES[n.relation.name].size()
 	}
 
 	void enter(ConstructionElement n) {
