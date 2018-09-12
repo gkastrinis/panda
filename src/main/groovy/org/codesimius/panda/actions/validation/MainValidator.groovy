@@ -10,6 +10,7 @@ import org.codesimius.panda.datalog.block.BlockLvl2
 import org.codesimius.panda.datalog.clause.RelDeclaration
 import org.codesimius.panda.datalog.clause.Rule
 import org.codesimius.panda.datalog.clause.TypeDeclaration
+import org.codesimius.panda.datalog.element.AggregationElement
 import org.codesimius.panda.datalog.element.ConstructionElement
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
@@ -39,6 +40,8 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 		tmpDeclaredRelations << n.relation.name
 
 		checkAnnotations(n.annotations, [CONSTRUCTOR, FUNCTIONAL, INPUT, OUTPUT], "Declarations")
+
+		if (!n.types) return
 		checkArity(n.relation.name, n.types.size(), n)
 
 		n.types.findAll { !it.isPrimitive() }
@@ -88,6 +91,10 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 		new ConstructionInfoVisitor().visit n
 	}
 
+	void enter(AggregationElement n) {
+		arities[n.relation.name] = AggregationElement.PREDICATE_ARITIES[n.relation.name]
+	}
+
 	void enter(ConstructionElement n) {
 		def baseType = datalog.constructorToBaseType[n.constructor.name]
 		if (!baseType)
@@ -119,11 +126,13 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 	}
 
 	def checkArity(String name, int arity, IVisitable n) {
-		if (inRuleBody && datalog.allTypes.find { it.name == name } && arity != 1)
+		if (datalog.allTypes.find { it.name == name } && arity != 1)
 			error(recall(n), Error.REL_ARITY, name)
 
 		def prevArity = arities[name]
-		if (prevArity && prevArity != arity) error(recall(n), Error.REL_ARITY, name)
+		// Explicit check with null cause 0 is a valid value
+		if (prevArity != null && prevArity != arity)
+			error(recall(n), Error.REL_ARITY, name)
 		if (!prevArity) arities[name] = arity
 	}
 

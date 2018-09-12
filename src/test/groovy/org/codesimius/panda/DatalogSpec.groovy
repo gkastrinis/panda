@@ -113,6 +113,7 @@ class DatalogSpec extends Specification {
 		"fail56" | Error.SMART_LIT_NO_DIRECT_REL
 		"fail57" | Error.TYPE_INF_INCOMPAT
 		"fail58" | Error.TYPE_INF_INCOMPAT
+		"fail59" | Error.REL_ARITY
 	}
 
 	@Unroll

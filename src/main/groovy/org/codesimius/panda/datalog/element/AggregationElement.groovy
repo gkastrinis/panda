@@ -14,4 +14,5 @@ class AggregationElement implements IElement {
 	IElement body
 
 	static final Set<String> SUPPORTED_PREDICATES = ["count", "min", "max", "sum"] as Set
+	static final Map<String, Integer> PREDICATE_ARITIES = ["count": 0, "min": 1, "max": 1, "sum": 1]
 }
