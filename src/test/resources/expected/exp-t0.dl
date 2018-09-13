@@ -1,17 +1,17 @@
-.decl __f_oo_bar(v0:symbol)
-.decl f_oo_bar2(v0:number, v1:symbol)
-.decl r2(v0:number)
-.decl p1(v0:number)
-.decl p2(v0:number, v1:number)
-.decl p3(v0:number, v1:number)
-.decl p4(v0:number)
-.decl p5(v0:number)
-.decl p6(v0:number)
+.decl __f_oo_bar(v0:symbol) // string
+.decl f_oo_bar2(v0:number, v1:symbol) // int x string
+.decl r2(v0:number) // int
+.decl p1(v0:number) // int
+.decl p2(v0:number, v1:number) // int x int
+.decl p3(v0:number, v1:number) // int x int
+.decl p4(v0:number) // int
+.decl p5(v0:number) // int
+.decl p6(v0:number) // int
 .output p6
-.decl Bar(v0:number)
-.decl p(v0:number)
-.decl r1(v0:number)
-.decl Foo(v0:number)
+.decl Bar(v0:number) // int
+.decl p(v0:number) // int
+.decl r1(v0:number) // int
+.decl Foo(v0:number) // int
 __f_oo_bar("abc").
 f_oo_bar2(2, "bar").
 p(1).

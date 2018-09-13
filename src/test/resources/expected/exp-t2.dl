@@ -1,32 +1,32 @@
-.decl Foo(v0:number, v1:symbol)
+.decl Foo(v0:number, v1:symbol) // int x string
 .output Foo
-.decl FooBar(v0:number, v1:symbol)
+.decl FooBar(v0:number, v1:symbol) // int x string
 .output FooBar
-.decl P1(v0:symbol)
+.decl P1(v0:symbol) // string
 .input P1(filename="P1.facts", delimeter="\t")
-.decl P2(v0:number)
+.decl P2(v0:number) // int
 .input P2(filename="P2.facts", delimeter="\t")
-.decl P3(v0:symbol)
+.decl P3(v0:symbol) // string
 .input P3(filename="P3.facts", delimeter="\t")
-.decl Animal_byStr(v0:symbol, v1:__SYS_TYPE__Animal)
-.decl AP_byStr(v0:symbol, v1:__SYS_TYPE__AP)
-.decl Bar_byStr(v0:symbol, v1:__SYS_TYPE__Bar)
-.decl Baz_byStr(v0:symbol, v1:__SYS_TYPE__Baz)
-.decl Dog1_byStr(v0:symbol, v1:__SYS_TYPE__Dog1)
-.decl Cat1_byStr(v0:symbol, v1:__SYS_TYPE__Cat1)
-.decl Animal(v0:__SYS_TYPE__Animal)
+.decl Animal_byStr(v0:symbol, v1:__SYS_TYPE__Animal) // string x Animal
+.decl AP_byStr(v0:symbol, v1:__SYS_TYPE__AP) // string x AP
+.decl Bar_byStr(v0:symbol, v1:__SYS_TYPE__Bar) // string x Bar
+.decl Baz_byStr(v0:symbol, v1:__SYS_TYPE__Baz) // string x Baz
+.decl Dog1_byStr(v0:symbol, v1:__SYS_TYPE__Dog1) // string x Dog1
+.decl Cat1_byStr(v0:symbol, v1:__SYS_TYPE__Cat1) // string x Cat1
+.decl Animal(v0:__SYS_TYPE__Animal) // Animal
 .output Animal
-.decl AP(v0:__SYS_TYPE__AP)
-.decl Cat(v0:__SYS_TYPE__Animal)
-.decl Dog(v0:__SYS_TYPE__Animal)
-.decl PersianCat(v0:__SYS_TYPE__Animal)
-.decl Bar(v0:__SYS_TYPE__Bar)
+.decl AP(v0:__SYS_TYPE__AP) // AP
+.decl Cat(v0:__SYS_TYPE__Animal) // Cat
+.decl Dog(v0:__SYS_TYPE__Animal) // Dog
+.decl PersianCat(v0:__SYS_TYPE__Animal) // PersianCat
+.decl Bar(v0:__SYS_TYPE__Bar) // Bar
 .output Bar
-.decl Baz(v0:__SYS_TYPE__Baz)
+.decl Baz(v0:__SYS_TYPE__Baz) // Baz
 .output Baz
-.decl Dog1(v0:__SYS_TYPE__Dog1)
+.decl Dog1(v0:__SYS_TYPE__Dog1) // Dog1
 .output Dog1
-.decl Cat1(v0:__SYS_TYPE__Cat1)
+.decl Cat1(v0:__SYS_TYPE__Cat1) // Cat1
 .output Cat1
 .type __SYS_TYPE_Animal_byStr = [v0:symbol]
 .type __SYS_TYPE__Animal = [v0:__SYS_TYPE_Animal_byStr]

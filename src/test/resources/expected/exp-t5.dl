@@ -1,23 +1,23 @@
-.decl byVar(v0:symbol, v1:__SYS_TYPE__AP)
-.decl byFld(v0:symbol, v1:symbol, v2:__SYS_TYPE__AP)
-.decl byLen(v0:number, v1:__SYS_TYPE__Shape)
-.decl byName(v0:symbol, v1:__SYS_TYPE__Shape)
-.decl byPoints(v0:number, v1:number, v2:__SYS_TYPE__Shape)
-.decl AP_byStr(v0:symbol, v1:__SYS_TYPE__AP)
-.decl Shape_byStr(v0:symbol, v1:__SYS_TYPE__Shape)
-.decl Ble(v0:__SYS_TYPE__AP, v1:symbol)
-.decl Foo(v0:__SYS_TYPE__AP, v1:symbol)
-.decl Baz(v0:symbol)
-.decl BarBaz(v0:__SYS_TYPE__AP)
-.decl Foo2(v0:__SYS_TYPE__AP)
-.decl Baz2(v0:symbol, v1:symbol)
-.decl Planned(v0:symbol)
-.decl FooBer(v0:number, v1:__SYS_TYPE__Shape, v2:number, v3:__SYS_TYPE__Shape)
-.decl Pred1(v0:number, v1:number)
-.decl Pred2(v0:number, v1:number, v2:number)
-.decl AP(v0:__SYS_TYPE__AP)
-.decl AP2(v0:__SYS_TYPE__AP)
-.decl Shape(v0:__SYS_TYPE__Shape)
+.decl byVar(v0:symbol, v1:__SYS_TYPE__AP) // string x AP
+.decl byFld(v0:symbol, v1:symbol, v2:__SYS_TYPE__AP) // string x string x AP
+.decl byLen(v0:number, v1:__SYS_TYPE__Shape) // int x Shape
+.decl byName(v0:symbol, v1:__SYS_TYPE__Shape) // string x Shape
+.decl byPoints(v0:number, v1:number, v2:__SYS_TYPE__Shape) // int x int x Shape
+.decl AP_byStr(v0:symbol, v1:__SYS_TYPE__AP) // string x AP
+.decl Shape_byStr(v0:symbol, v1:__SYS_TYPE__Shape) // string x Shape
+.decl Ble(v0:__SYS_TYPE__AP, v1:symbol) // AP x string
+.decl Foo(v0:__SYS_TYPE__AP, v1:symbol) // AP x string
+.decl Baz(v0:symbol) // string
+.decl BarBaz(v0:__SYS_TYPE__AP) // AP
+.decl Foo2(v0:__SYS_TYPE__AP) // AP2
+.decl Baz2(v0:symbol, v1:symbol) // string x string
+.decl Planned(v0:symbol) // string
+.decl FooBer(v0:number, v1:__SYS_TYPE__Shape, v2:number, v3:__SYS_TYPE__Shape) // int x Shape x int x Shape
+.decl Pred1(v0:number, v1:number) // int x int
+.decl Pred2(v0:number, v1:number, v2:number) // int x int x int
+.decl AP(v0:__SYS_TYPE__AP) // AP
+.decl AP2(v0:__SYS_TYPE__AP) // AP2
+.decl Shape(v0:__SYS_TYPE__Shape) // Shape
 .type __SYS_TYPE_byVar = [v0:symbol]
 .type __SYS_TYPE_byFld = [v0:symbol, v1:symbol]
 .type __SYS_TYPE_AP_byStr = [v0:symbol]

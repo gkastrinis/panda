@@ -1,14 +1,14 @@
-.decl t(v0:number, v1:number)
+.decl t(v0:number, v1:number) // int x int
 .output t
-.decl foo(v0:number, v1:number)
-.decl bar(v0:number, v1:number)
-.decl t1(v0:number, v1:number)
-.decl t2(v0:number, v1:number)
-.decl t3(v0:number, v1:number)
-.decl t4(v0:number, v1:number)
-.decl t5(v0:number, v1:number)
+.decl foo(v0:number, v1:number) // int x int
+.decl bar(v0:number, v1:number) // int x int
+.decl t1(v0:number, v1:number) // int x int
+.decl t2(v0:number, v1:number) // int x int
+.decl t3(v0:number, v1:number) // int x int
+.decl t4(v0:number, v1:number) // int x int
+.decl t5(v0:number, v1:number) // int x int
 .output t5
-.decl t6(v0:number, v1:number, v2:number)
+.decl t6(v0:number, v1:number, v2:number) // int x int x int
 foo(1, 2).
 bar(3, 4).
 t1(1, c):- foo(_, _), c = count : { foo(_, _) }.

@@ -1,18 +1,18 @@
-.decl cons_A(v0:symbol, v1:__SYS_TYPE__Animal)
-.decl Foo(v0:__SYS_TYPE__Animal, v1:symbol)
-.decl Animal_byStr(v0:symbol, v1:__SYS_TYPE__Animal)
-.decl Foo2(v0:__SYS_TYPE__Animal, v1:symbol)
-.decl Bar(v0:symbol, v1:__SYS_TYPE__Animal)
-.decl Ble(v0:symbol, v1:__SYS_TYPE__Animal)
-.decl Baz(v0:__SYS_TYPE__Animal)
-.decl FooBar(v0:symbol, v1:__SYS_TYPE__Animal)
-.decl FooBar2(v0:symbol, v1:__SYS_TYPE__Animal)
-.decl Part1(v0:symbol, v1:__SYS_TYPE__Animal)
-.decl Part2(v0:__SYS_TYPE__Animal, v1:symbol)
-.decl BarI(v0:number)
-.decl BarII(v0:number)
-.decl Animal(v0:__SYS_TYPE__Animal)
-.decl Cat(v0:__SYS_TYPE__Animal)
+.decl cons_A(v0:symbol, v1:__SYS_TYPE__Animal) // string x Animal
+.decl Foo(v0:__SYS_TYPE__Animal, v1:symbol) // Animal x string
+.decl Animal_byStr(v0:symbol, v1:__SYS_TYPE__Animal) // string x Animal
+.decl Foo2(v0:__SYS_TYPE__Animal, v1:symbol) // Animal x string
+.decl Bar(v0:symbol, v1:__SYS_TYPE__Animal) // string x Cat
+.decl Ble(v0:symbol, v1:__SYS_TYPE__Animal) // string x Animal
+.decl Baz(v0:__SYS_TYPE__Animal) // Animal
+.decl FooBar(v0:symbol, v1:__SYS_TYPE__Animal) // string x Animal
+.decl FooBar2(v0:symbol, v1:__SYS_TYPE__Animal) // string x Animal
+.decl Part1(v0:symbol, v1:__SYS_TYPE__Animal) // string x Animal
+.decl Part2(v0:__SYS_TYPE__Animal, v1:symbol) // Animal x string
+.decl BarI(v0:number) // int
+.decl BarII(v0:number) // int
+.decl Animal(v0:__SYS_TYPE__Animal) // Animal
+.decl Cat(v0:__SYS_TYPE__Animal) // Cat
 .type __SYS_TYPE_cons_A = [v0:symbol]
 .type __SYS_TYPE_Animal_byStr = [v0:symbol]
 .type __SYS_TYPE__Animal = [v0:__SYS_TYPE_cons_A, v1:__SYS_TYPE_Animal_byStr]

@@ -1,23 +1,23 @@
-.decl con1(v0:symbol, v1:__SYS_TYPE__T1)
-.decl con2(v0:number, v1:__SYS_TYPE__T1)
-.decl con3(v0:symbol, v1:symbol, v2:__SYS_TYPE__T1)
-.decl con4(v0:number, v1:number, v2:__SYS_TYPE__T1)
-.decl con5(v0:number, v1:symbol, v2:symbol, v3:__SYS_TYPE__T1)
-.decl con6(v0:symbol, v1:number, v2:__SYS_TYPE__T1)
-.decl con7(v0:number, v1:__SYS_TYPE__T1)
-.decl concon(v0:__SYS_TYPE__T1, v1:symbol, v2:__SYS_TYPE__F1)
-.decl T1_byStr(v0:symbol, v1:__SYS_TYPE__T1)
-.decl F1_byStr(v0:symbol, v1:__SYS_TYPE__F1)
-.decl Animal_byStr(v0:symbol, v1:__SYS_TYPE__Animal)
-.decl foo(v0:symbol, v1:__SYS_TYPE__T1)
-.decl T1(v0:__SYS_TYPE__T1)
-.decl T2(v0:__SYS_TYPE__T1)
-.decl T3(v0:__SYS_TYPE__T1)
-.decl T4(v0:__SYS_TYPE__T1)
-.decl F1(v0:__SYS_TYPE__F1)
-.decl Animal(v0:__SYS_TYPE__Animal)
-.decl Cat(v0:__SYS_TYPE__Animal)
-.decl Dog(v0:__SYS_TYPE__Animal)
+.decl con1(v0:symbol, v1:__SYS_TYPE__T1) // string x T1
+.decl con2(v0:number, v1:__SYS_TYPE__T1) // int x T1
+.decl con3(v0:symbol, v1:symbol, v2:__SYS_TYPE__T1) // string x string x T2
+.decl con4(v0:number, v1:number, v2:__SYS_TYPE__T1) // int x int x T3
+.decl con5(v0:number, v1:symbol, v2:symbol, v3:__SYS_TYPE__T1) // int x string x string x T3
+.decl con6(v0:symbol, v1:number, v2:__SYS_TYPE__T1) // string x int x T4
+.decl con7(v0:number, v1:__SYS_TYPE__T1) // int x T4
+.decl concon(v0:__SYS_TYPE__T1, v1:symbol, v2:__SYS_TYPE__F1) // T4 x string x F1
+.decl T1_byStr(v0:symbol, v1:__SYS_TYPE__T1) // string x T1
+.decl F1_byStr(v0:symbol, v1:__SYS_TYPE__F1) // string x F1
+.decl Animal_byStr(v0:symbol, v1:__SYS_TYPE__Animal) // string x Animal
+.decl foo(v0:symbol, v1:__SYS_TYPE__T1) // string x T4
+.decl T1(v0:__SYS_TYPE__T1) // T1
+.decl T2(v0:__SYS_TYPE__T1) // T2
+.decl T3(v0:__SYS_TYPE__T1) // T3
+.decl T4(v0:__SYS_TYPE__T1) // T4
+.decl F1(v0:__SYS_TYPE__F1) // F1
+.decl Animal(v0:__SYS_TYPE__Animal) // Animal
+.decl Cat(v0:__SYS_TYPE__Animal) // Cat
+.decl Dog(v0:__SYS_TYPE__Animal) // Dog
 .type __SYS_TYPE_con1 = [v0:symbol]
 .type __SYS_TYPE_con2 = [v0:number]
 .type __SYS_TYPE_T1_byStr = [v0:symbol]

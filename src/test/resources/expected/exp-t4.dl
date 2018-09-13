@@ -1,12 +1,12 @@
-.decl cons_Shape(v0:symbol, v1:__SYS_TYPE__Shape)
-.decl Shape_byStr(v0:symbol, v1:__SYS_TYPE__Shape)
-.decl PredC(v0:symbol, v1:__SYS_TYPE__Shape)
-.decl PredT(v0:symbol, v1:__SYS_TYPE__Shape)
-.decl Pred(v0:__SYS_TYPE__Shape)
-.decl Shape(v0:__SYS_TYPE__Shape)
-.decl Circle(v0:__SYS_TYPE__Shape)
-.decl Triangle(v0:__SYS_TYPE__Shape)
-.decl RightTriangle(v0:__SYS_TYPE__Shape)
+.decl cons_Shape(v0:symbol, v1:__SYS_TYPE__Shape) // string x Shape
+.decl Shape_byStr(v0:symbol, v1:__SYS_TYPE__Shape) // string x Shape
+.decl PredC(v0:symbol, v1:__SYS_TYPE__Shape) // string x Circle
+.decl PredT(v0:symbol, v1:__SYS_TYPE__Shape) // string x RightTriangle
+.decl Pred(v0:__SYS_TYPE__Shape) // Circle
+.decl Shape(v0:__SYS_TYPE__Shape) // Shape
+.decl Circle(v0:__SYS_TYPE__Shape) // Circle
+.decl Triangle(v0:__SYS_TYPE__Shape) // Triangle
+.decl RightTriangle(v0:__SYS_TYPE__Shape) // RightTriangle
 .type __SYS_TYPE_cons_Shape = [v0:symbol]
 .type __SYS_TYPE_Shape_byStr = [v0:symbol]
 .type __SYS_TYPE__Shape = [v0:__SYS_TYPE_cons_Shape, v1:__SYS_TYPE_Shape_byStr]

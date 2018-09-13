@@ -50,7 +50,8 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	String visit(RelDeclaration n) {
 		def relName = fix(n.relation.name)
 		def params = n.types.withIndex().collect { t, int i -> "${var1(i)}:${tr(fix(t.name))}" }
-		emit ".decl $relName(${params.join(", ")})"
+		def meta = n.annotations.find { it == METADATA }?.args["types"]
+		emit ".decl $relName(${params.join(", ")})${meta ? " // $meta" : ""}"
 
 		if (INPUT in n.annotations) {
 			def args = n.annotations.find { it == INPUT }.args

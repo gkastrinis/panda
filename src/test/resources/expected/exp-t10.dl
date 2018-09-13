@@ -1,21 +1,21 @@
-.decl byNum(v0:number, v1:__SYS_TYPE__Animal)
-.decl P1(v0:symbol)
+.decl byNum(v0:number, v1:__SYS_TYPE__Animal) // int x Cat
+.decl P1(v0:symbol) // string
 .input P1(filename="P1.facts", delimeter="\t")
-.decl P2(v0:number)
+.decl P2(v0:number) // int
 .input P2(filename="P2.facts", delimeter="\t")
-.decl P3(v0:symbol, v1:number)
+.decl P3(v0:symbol, v1:number) // string x int
 .input P3(filename="P3.facts", delimeter="\t")
-.decl P4(v0:__SYS_TYPE__Animal, v1:__SYS_TYPE__Animal)
-.decl Animal_byStr(v0:symbol, v1:__SYS_TYPE__Animal)
-.decl Cat_A(v0:__SYS_TYPE__Animal)
-.decl __SYS_IN_P4(v0:symbol, v1:symbol)
+.decl P4(v0:__SYS_TYPE__Animal, v1:__SYS_TYPE__Animal) // Cat x Animal
+.decl Animal_byStr(v0:symbol, v1:__SYS_TYPE__Animal) // string x Animal
+.decl Cat_A(v0:__SYS_TYPE__Animal) // Cat
+.decl __SYS_IN_P4(v0:symbol, v1:symbol) // string x string
 .input __SYS_IN_P4(filename="P4.facts", delimeter="\t")
-.decl __SYS_IN_PersianCat(v0:symbol)
+.decl __SYS_IN_PersianCat(v0:symbol) // string
 .input __SYS_IN_PersianCat(filename="PersianCat.facts", delimeter="\t")
-.decl bar(v0:symbol, v1:number)
-.decl Animal(v0:__SYS_TYPE__Animal)
-.decl Cat(v0:__SYS_TYPE__Animal)
-.decl PersianCat(v0:__SYS_TYPE__Animal)
+.decl bar(v0:symbol, v1:number) // string x int
+.decl Animal(v0:__SYS_TYPE__Animal) // Animal
+.decl Cat(v0:__SYS_TYPE__Animal) // Cat
+.decl PersianCat(v0:__SYS_TYPE__Animal) // PersianCat
 .type __SYS_TYPE_Animal_byStr = [v0:symbol]
 .type __SYS_TYPE_byNum = [v0:number]
 .type __SYS_TYPE__Animal = [v0:__SYS_TYPE_Animal_byStr, v1:__SYS_TYPE_byNum]

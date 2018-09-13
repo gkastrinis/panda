@@ -1,12 +1,12 @@
-.decl baz(v0:number)
-.decl bar(v0:__SYS_TYPE__Animal)
-.decl q(v0:number)
-.decl foobaz(v0:symbol)
-.decl Animal_byStr(v0:symbol, v1:__SYS_TYPE__Animal)
-.decl foo(v0:number)
-.decl p(v0:number)
-.decl Shape(v0:symbol)
-.decl Animal(v0:__SYS_TYPE__Animal)
+.decl baz(v0:number) // int
+.decl bar(v0:__SYS_TYPE__Animal) // Animal
+.decl q(v0:number) // int
+.decl foobaz(v0:symbol) // string
+.decl Animal_byStr(v0:symbol, v1:__SYS_TYPE__Animal) // string x Animal
+.decl foo(v0:number) // int
+.decl p(v0:number) // int
+.decl Shape(v0:symbol) // string
+.decl Animal(v0:__SYS_TYPE__Animal) // Animal
 .type __SYS_TYPE_Animal_byStr = [v0:symbol]
 .type __SYS_TYPE__Animal = [v0:__SYS_TYPE_Animal_byStr]
 bar(v0), foo(x):- baz(x), Animal_byStr("abc", v0).
