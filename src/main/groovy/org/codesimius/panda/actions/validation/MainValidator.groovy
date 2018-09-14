@@ -35,7 +35,8 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 	void enter(BlockLvl0 n) { datalog = n }
 
 	void enter(RelDeclaration n) {
-		if (n.relation.name in tmpDeclaredRelations)
+		def alternativeName = n.relation.name.replace ":", "_"
+		if (n.relation.name in tmpDeclaredRelations || alternativeName in tmpDeclaredRelations)
 			error(recall(n), Error.DECL_MULTIPLE, n.relation.name)
 		tmpDeclaredRelations << n.relation.name
 

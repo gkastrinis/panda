@@ -115,6 +115,7 @@ class DatalogSpec extends Specification {
 		"fail58" | Error.TYPE_INF_INCOMPAT
 		"fail59" | Error.REL_ARITY
 		"fail60" | Error.TYPE_INF_INCOMPAT
+		"fail61" | Error.DECL_MULTIPLE
 	}
 
 	@Unroll

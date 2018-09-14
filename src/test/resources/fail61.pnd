@@ -1,0 +1,3 @@
+@type Animal
+@type Cat : Animal with A("A")
+Cat_A(x) : int
