@@ -32,7 +32,7 @@ class Compiler {
 			compile0(new ANTLRFileStream(filename), filename, codeGenActor)
 			artifacts.each { log.info(tag(it.file.canonicalPath, it.kind as String)) }
 		} catch (e) {
-			log.error(tag(e.message, "ERROR"), e)
+			(e instanceof PandaException) ? log.error(tag(e.message, "ERROR")) : log.error(e.message, e)
 			null
 		}
 	}
