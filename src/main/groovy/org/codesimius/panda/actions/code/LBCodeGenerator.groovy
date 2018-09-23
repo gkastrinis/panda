@@ -61,7 +61,7 @@ class LBCodeGenerator extends DefaultCodeGenerator {
 		def name = n.type.name
 		emit "lang:entity(`$name)."
 		emit """lang:physical:storageModel[`$name] = "ScalableSparse"."""
-		def cap = n.annotations.find { it == TYPE }.args["capacity"]
+		def cap = n.annotations[TYPE]["capacity"]
 		if (cap) emit "lang:physical:capacity[`$name] = $cap."
 		if (n.supertype) emit "$name(${var1()}) -> ${n.supertype.name}(${var1()})."
 		null

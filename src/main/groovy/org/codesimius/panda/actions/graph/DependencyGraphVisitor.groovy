@@ -17,7 +17,6 @@ import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.datalog.Annotation.CONSTRUCTOR
 import static org.codesimius.panda.system.Error.error
-import static org.codesimius.panda.system.SourceManager.recallStatic as recall
 
 @Canonical
 class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
@@ -63,7 +62,7 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 			def (String name, String parameter) = complexName.split("@")
 			def graphName = parameter == "_" ? GLOBAL : parameter
 			if (!graphs[graphName].nodes.values().any { it.title == name })
-				error(recall(n), Error.REL_EXT_NO_DECL, name)
+				error(Error.REL_EXT_NO_DECL, name)
 			def paramNode = graphs[graphName].touch(name, Node.Kind.RELATION)
 			relNode.connectTo(paramNode, Edge.Kind.INDIRECT_PARAM)
 		}

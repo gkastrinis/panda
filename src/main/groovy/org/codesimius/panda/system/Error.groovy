@@ -123,13 +123,13 @@ enum Error {
 			(EXP_CONTENTS_MISMATCH)    : "Generated and expected file differ in contents"
 	]
 
-	static void warn(SourceLocation loc = null, Error errorId, Object... values) {
+	static void warn(def loc = null, Error errorId, Object... values) {
 		def msg = "${MessageFormat.format(msgMap.get(errorId), values)} -- [$errorId]"
 		if (loc) msg = "$msg\n$loc"
 		log.warn(tag(msg, "WARNING"))
 	}
 
-	static void error(SourceLocation loc = null, Error errorId, Object... values) {
+	static void error(def loc = null, Error errorId, Object... values) {
 		def msg = "${MessageFormat.format(msgMap.get(errorId), values)} -- [$errorId]"
 		if (loc) msg = "$msg\n$loc"
 		throw new PandaException(msg, errorId)

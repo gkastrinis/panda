@@ -113,7 +113,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 				if (relation.name in explicitRelations) {
 					assert currType
 					if (!(currType in datalog.getExtendedSubTypesOf(prevType)))
-						error(Error.TYPE_INF_INCOMPAT_USE, relation.name, i, prevType, currType)
+						error(n.loc(), Error.TYPE_INF_INCOMPAT_USE, relation.name, i, prevType, currType)
 				}
 				// Still missing type information
 				else if (!currType) {
@@ -135,7 +135,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 				def currType = exprType[expr]
 				// Type information is present and is new
 				if (prevType && currType && !(currType in datalog.getExtendedSubTypesOf(prevType)))
-					error(Error.TYPE_INF_INCOMPAT_USE, relation.name, i, prevType, currType)
+					error(n.loc(), Error.TYPE_INF_INCOMPAT_USE, relation.name, i, prevType, currType)
 			}
 		}
 
@@ -187,7 +187,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 			case GT:
 			case GEQ:
 				if (!types.every { it in ordinalTypes })
-					error(Error.TYPE_INF_INCOMPAT, [leftType, rightType])
+					error(findParentLoc(), Error.TYPE_INF_INCOMPAT, [leftType, rightType])
 				exprType[n] = TYPE_BOOLEAN
 				break
 			case PLUS:
@@ -195,7 +195,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 			case MULT:
 			case DIV:
 				if (!types.every { it in numericalTypes })
-					error(Error.TYPE_INF_INCOMPAT, [leftType, rightType])
+					error(findParentLoc(), Error.TYPE_INF_INCOMPAT, [leftType, rightType])
 				exprType[n] = joinType
 				break
 		}
@@ -218,7 +218,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 		else if (!currType || t in datalog.getExtendedSubTypesOf(currType))
 			return t
 		else if (!(currType in datalog.subTypes[t]))
-			error(Error.TYPE_INF_INCOMPAT, [currType.name, t.name])
+			error(findParentLoc(), Error.TYPE_INF_INCOMPAT, [currType.name, t.name])
 
 		return currType
 	}
@@ -231,7 +231,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 		if (!t2) return t1
 
 		if (datalog.typeToRootType[t1] != datalog.typeToRootType[t2])
-			error(Error.TYPE_INF_INCOMPAT, [t1.name, t2.name])
+			error(findParentLoc(), Error.TYPE_INF_INCOMPAT, [t1.name, t2.name])
 
 		def superTs1 = [t1] + datalog.superTypesOrdered[t1]
 		def superTs2 = [t2] + datalog.superTypesOrdered[t2]

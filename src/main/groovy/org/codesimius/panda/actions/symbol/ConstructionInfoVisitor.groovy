@@ -7,7 +7,6 @@ import org.codesimius.panda.datalog.element.ConstructionElement
 import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.system.Error.error
-import static org.codesimius.panda.system.SourceManager.recallStatic as recall
 
 class ConstructionInfoVisitor extends DefaultVisitor<IVisitable> {
 
@@ -17,6 +16,7 @@ class ConstructionInfoVisitor extends DefaultVisitor<IVisitable> {
 	private Rule currRule
 
 	IVisitable visit(Rule n) {
+		parentAnnotations = n.annotations
 		currRule = n
 		visit n.head
 		null
@@ -35,7 +35,7 @@ class ConstructionInfoVisitor extends DefaultVisitor<IVisitable> {
 		// `maxBefore` should be strictly before `minAfter`
 		maxBefore = (maxBefore != -1 ? maxBefore : -2)
 		minAfter = (minAfter != null ? minAfter : -1)
-		if (maxBefore >= minAfter) error(recall(n), Error.CONSTR_RULE_CYCLE, n.constructor.name)
+		if (maxBefore >= minAfter) error(findParentLoc(), Error.CONSTR_RULE_CYCLE, n.constructor.name)
 
 		constructionsOrderedPerRule[currRule].add(maxBefore >= 0 ? maxBefore : 0, n)
 	}

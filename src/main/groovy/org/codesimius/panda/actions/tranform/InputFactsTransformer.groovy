@@ -1,7 +1,7 @@
 package org.codesimius.panda.actions.tranform
 
 import groovy.transform.Canonical
-import org.codesimius.panda.datalog.Annotation
+import org.codesimius.panda.datalog.AnnotationSet
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.clause.RelDeclaration
@@ -42,7 +42,7 @@ class InputFactsTransformer extends DefaultTransformer {
 		return n
 	}
 
-	def genInput(String name, List<Type> types, Set<Annotation> annotations) {
+	def genInput(String name, List<Type> types, AnnotationSet annotations) {
 		def N = types.size()
 		def headElements = []
 		def vars = []
@@ -60,20 +60,20 @@ class InputFactsTransformer extends DefaultTransformer {
 			}
 		}
 
-		def origAn = annotations.find { it == INPUT }
-		def an = new Annotation("INPUT", [
-				filename : origAn.args["filename"] ?: new ConstantExpr("${name.replace ":", "_"}.facts"),
-				delimeter: origAn.args["delimeter"] ?: new ConstantExpr("\\t")])
-		annotations.remove INPUT
+		def origAn = annotations[INPUT]
+		def newAn = INPUT.template([
+				filename : origAn["filename"] ?: new ConstantExpr("${name.replace ":", "_"}.facts"),
+				delimeter: origAn["delimeter"] ?: new ConstantExpr("\\t")])
+		annotations -= INPUT
 
 		if (headElements) {
-			if (!annotations.any { it == TYPE }) headElements << new Relation(name, vars)
+			if (!annotations[TYPE]) headElements << new Relation(name, vars)
 			def inputRel = new Relation("__SYS_IN_$name", varN(N))
 			extraRules << new Rule(combineElements(headElements), inputRel)
-			extraRelDecls << new RelDeclaration(inputRel, inputTypes, [an] as Set)
+			extraRelDecls << new RelDeclaration(inputRel, inputTypes, new AnnotationSet(newAn))
 		} else if (!types.any { !it.isPrimitive() })
-			annotations << an
+			annotations << newAn
 		else
-			extraRelDecls << new RelDeclaration(new Relation(name, varN(N)), inputTypes, [an] as Set)
+			extraRelDecls << new RelDeclaration(new Relation(name, varN(N)), inputTypes, new AnnotationSet(newAn))
 	}
 }

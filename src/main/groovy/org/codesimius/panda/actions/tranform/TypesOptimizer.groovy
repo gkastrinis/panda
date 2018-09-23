@@ -32,8 +32,8 @@ class TypesOptimizer extends DefaultTransformer {
 		datalog = n
 
 		n.typeDeclarations
-				.findAll { decl -> decl.annotations.find { it == TYPE }.args["opt"] }
-				.each { decl -> typesToOptimize += n.getExtendedSubTypesOf(decl.type) }
+				.findAll { it.annotations[TYPE]["opt"] }
+				.each { typesToOptimize += n.getExtendedSubTypesOf(it.type) }
 
 		typesToOptimize.each { t ->
 			n.superTypesOrdered.remove t
@@ -57,6 +57,7 @@ class TypesOptimizer extends DefaultTransformer {
 	}
 
 	IVisitable visit(Rule n) {
+		parentAnnotations = n.annotations
 		mapExprs = [:]
 		def head = n.head
 		def body = n.body

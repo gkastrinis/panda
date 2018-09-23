@@ -4,6 +4,7 @@ import groovy.transform.Canonical
 import org.codesimius.panda.actions.DefaultVisitor
 import org.codesimius.panda.actions.symbol.ConstructionInfoVisitor
 import org.codesimius.panda.datalog.Annotation
+import org.codesimius.panda.datalog.AnnotationSet
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.block.BlockLvl2
@@ -16,11 +17,11 @@ import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.element.relation.Type
 import org.codesimius.panda.system.Error
+import org.codesimius.panda.system.SourceManager
 
 import static org.codesimius.panda.datalog.Annotation.*
 import static org.codesimius.panda.system.Error.error
 import static org.codesimius.panda.system.Error.warn
-import static org.codesimius.panda.system.SourceManager.recallStatic as recall
 
 @Canonical
 class MainValidator extends DefaultVisitor<IVisitable> {
@@ -37,25 +38,23 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 	void enter(RelDeclaration n) {
 		def alternativeName = n.relation.name.replace ":", "_"
 		if (n.relation.name in tmpDeclaredRelations || alternativeName in tmpDeclaredRelations)
-			error(recall(n), Error.DECL_MULTIPLE, n.relation.name)
+			error(n.loc(), Error.DECL_MULTIPLE, n.relation.name)
 		tmpDeclaredRelations << n.relation.name
 
-		checkAnnotations(n.annotations, [CONSTRUCTOR, FUNCTIONAL, INPUT, OUTPUT], "Declarations")
+		checkAnnotations(n.annotations, [CONSTRUCTOR, FUNCTIONAL, INPUT, OUTPUT, METADATA], "Declarations")
 
 		if (!n.types) return
-		checkArity(n.relation.name, n.types.size(), n)
+		checkArity(n.relation.name, n.types.size())
 
 		n.types.findAll { !it.isPrimitive() }
 				.findAll { !(it in datalog.allTypes) }
-				.each { error(recall(it), Error.TYPE_UNKNOWN, it.name) }
+				.each { error(n.loc(), Error.TYPE_UNKNOWN, it.name) }
 
 		if (CONSTRUCTOR in n.annotations) {
 			def rootT = datalog.typeToRootType[n.types.last()]
-			def optimized = datalog.typeDeclarations
-					.find { it.type == rootT }
-					.annotations.find { it == TYPE }.args["opt"]
+			def optimized = datalog.typeDeclarations.find { it.type == rootT }.annotations[TYPE]["opt"]
 			if (optimized && rootT.defaultConName != n.relation.name)
-				error(recall(n), Error.TYPE_OPT_CONSTR, n.relation.name)
+				error(n.loc(), Error.TYPE_OPT_CONSTR, n.relation.name)
 		}
 	}
 
@@ -63,13 +62,13 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 		checkAnnotations(n.annotations, [INPUT, OUTPUT, TYPE, TYPEVALUES], "Type")
 
 		if (n.type.name in tmpDeclaredTypes)
-			error(recall(n), Error.DECL_MULTIPLE, n.type.name)
+			error(n.loc(), Error.DECL_MULTIPLE, n.type.name)
 		tmpDeclaredTypes << n.type.name
 
-		if (n.annotations.find { it == TYPE }.args["opt"]) {
+		if (n.annotations[TYPE]["opt"]) {
 			def rootT = datalog.typeToRootType[n.type]
-			if (!datalog.typeDeclarations.find { it.type == rootT }.annotations.find { it == TYPE }.args["opt"])
-				error(recall(n), Error.TYPE_OPT_ROOT_NONOPT, n.type.name)
+			if (!datalog.typeDeclarations.find { it.type == rootT }.annotations[TYPE]["opt"])
+				error(n.loc(), Error.TYPE_OPT_ROOT_NONOPT, n.type.name)
 		}
 	}
 
@@ -80,13 +79,13 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 		def varsInBody = datalog.getBodyVars(n)
 		def conVars = datalog.getConstructedVars(n)
 		varsInHead.findAll { it.name == "_" }
-				.each { error(recall(n), Error.VAR_UNBOUND_HEAD, null) }
+				.each { error(n.loc(), Error.VAR_UNBOUND_HEAD, null) }
 		varsInHead.findAll { !(it in varsInBody) && !(it in conVars) }
-				.each { error(recall(n), Error.VAR_UNKNOWN, it.name) }
+				.each { error(n.loc(), Error.VAR_UNKNOWN, it.name) }
 		varsInBody.findAll { it in conVars }
-				.each { error(recall(n), Error.VAR_CONSTR_BODY, it.name) }
+				.each { error(n.loc(), Error.VAR_CONSTR_BODY, it.name) }
 		varsInBody.findAll { it.name != "_" && !(it in varsInHead) && (varsInBody.count(it) == 1) }
-				.each { warn(recall(n), Error.VAR_UNUSED, it.name) }
+				.each { warn(n.loc(), Error.VAR_UNUSED, it.name) }
 
 		// Visit the rule for error checking reasons
 		new ConstructionInfoVisitor().visit n
@@ -99,11 +98,11 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 	void enter(ConstructionElement n) {
 		def baseType = datalog.constructorToBaseType[n.constructor.name]
 		if (!baseType)
-			error(recall(n), Error.CONSTR_UNKNOWN, n.constructor.name)
+			error(findParentLoc(), Error.CONSTR_UNKNOWN, n.constructor.name)
 		if (n.type != baseType && !(baseType in datalog.superTypesOrdered[n.type]))
-			error(recall(n), Error.CONSTR_TYPE_INCOMPAT, n.constructor.name, n.type.name)
+			error(findParentLoc(), Error.CONSTR_TYPE_INCOMPAT, n.constructor.name, n.type.name)
 
-		if (!(n.type in datalog.allTypes)) error(recall(n), Error.TYPE_UNKNOWN, n.type.name)
+		if (!(n.type in datalog.allTypes)) error(findParentLoc(), Error.TYPE_UNKNOWN, n.type.name)
 	}
 
 	void enter(Constructor n) { if (!inDecl) checkRelation(n) }
@@ -112,35 +111,35 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 		if (!inDecl) checkRelation(n)
 
 		if (n.name in datalog.allConstructors)
-			error(recall(n), Error.CONSTR_AS_REL, n.name)
+			error(findParentLoc(), Error.CONSTR_AS_REL, n.name)
 	}
 
 	def checkRelation(Relation n) {
 		// Type is used in rule head
 		if (inRuleHead && (new Type(n.name) in datalog.allTypes))
-			error(recall(n), Error.TYPE_RULE, n.name)
+			error(findParentLoc(), Error.TYPE_RULE, n.name)
 
 		if (inRuleBody && !(n.name in datalog.declaredRelations))
-			error(recall(n), Error.REL_NO_DECL, n.name)
+			error(findParentLoc(), Error.REL_NO_DECL, n.name)
 
-		checkArity(n.name, n.arity, n)
+		checkArity(n.name, n.arity)
 	}
 
-	def checkArity(String name, int arity, IVisitable n) {
+	def checkArity(String name, int arity) {
 		if (datalog.allTypes.find { it.name == name } && arity != 1)
-			error(recall(n), Error.REL_ARITY, name)
+			error(findParentLoc(), Error.REL_ARITY, name)
 
 		def prevArity = arities[name]
 		// Explicit check with null cause 0 is a valid value
 		if (prevArity != null && prevArity != arity)
-			error(recall(n), Error.REL_ARITY, name)
+			error(findParentLoc(), Error.REL_ARITY, name)
 		if (!prevArity) arities[name] = arity
 	}
 
-	static def checkAnnotations(Set<Annotation> annotations, List<Annotation> allowedAnnotations, String kind) {
-		annotations
-				.findAll { !(it in allowedAnnotations) }
-				.each { error(recall(it), Error.ANNOTATION_INVALID, it, kind) }
-		annotations.each { it.validate() }
+	static def checkAnnotations(AnnotationSet annotations, List<Annotation> allowedAnnotations, String kind) {
+		annotations.rawAnnotations
+				.findAll { !(it in allowedAnnotations) && !it.isInternal }
+				.each { error(SourceManager.loc(it), Error.ANNOTATION_INVALID, it, kind) }
+		annotations.rawAnnotations.each { it.validate() }
 	}
 }

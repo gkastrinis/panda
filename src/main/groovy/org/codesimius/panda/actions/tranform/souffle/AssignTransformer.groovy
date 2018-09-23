@@ -39,6 +39,7 @@ class AssignTransformer extends DefaultTransformer {
 	void enter(BlockLvl0 n) { datalog = n }
 
 	IVisitable visit(Rule n) {
+		parentAnnotations = n.annotations
 		if (!n.body) return n
 
 		assignments = [:]

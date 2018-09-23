@@ -4,6 +4,7 @@ import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.ErrorNode
 import org.antlr.v4.runtime.tree.TerminalNode
 import org.codesimius.panda.datalog.Annotation
+import org.codesimius.panda.datalog.AnnotationSet
 import org.codesimius.panda.datalog.DatalogBaseListener
 import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.block.BlockLvl1
@@ -17,34 +18,26 @@ import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.element.relation.Type
 import org.codesimius.panda.datalog.expr.*
-import org.codesimius.panda.system.Error
 import org.codesimius.panda.system.SourceManager
+import org.codesimius.panda.system.SourceManager.Location
 
+import static org.codesimius.panda.datalog.Annotation.*
 import static org.codesimius.panda.datalog.DatalogParser.*
 import static org.codesimius.panda.datalog.element.LogicalElement.combineElements
-import static org.codesimius.panda.system.Error.warn
 
 class DatalogParserImpl extends DatalogBaseListener {
 
-	BlockLvl2 program
-	BlockLvl0 currDatalog
+	BlockLvl2 program = new BlockLvl2()
+	BlockLvl0 currDatalog = program.datalog
 	// Relation Name x Annotations
-	Map<String, Set<Annotation>> globalPendingAnnotations
-	Map<String, Set<Annotation>> currPendingAnnotations
+	Map<String, AnnotationSet> globalPendingAnnotations = [:].withDefault { new AnnotationSet() }
+	Map<String, AnnotationSet> currPendingAnnotations = globalPendingAnnotations
 	// Extra annotations from annotation blocks
-	Stack<Set<Annotation>> extraAnnotationsStack = []
+	Stack<AnnotationSet> extraAnnotationsStack = []
 	Stack<String> activeNamespaces = []
 	def values = [:]
 
-	DatalogParserImpl(String filename) {
-		SourceManager.instance.outputFile = new File(filename).absolutePath
-	}
-
-	void enterProgram(ProgramContext ctx) {
-		program = new BlockLvl2()
-		currDatalog = program.datalog
-		currPendingAnnotations = globalPendingAnnotations = [:].withDefault { [] as Set }
-	}
+	DatalogParserImpl(String filename) { SourceManager.instance.outputFile = new File(filename).absolutePath }
 
 	void exitProgram(ProgramContext ctx) {
 		currPendingAnnotations.each { addAnnotationsToRelDecl(it.key, it.value) }
@@ -52,7 +45,7 @@ class DatalogParserImpl extends DatalogBaseListener {
 
 	void enterComponent(ComponentContext ctx) {
 		currDatalog = new BlockLvl0()
-		currPendingAnnotations = [:].withDefault { [] as Set }
+		currPendingAnnotations = [:].withDefault { new AnnotationSet() }
 	}
 
 	void exitComponent(ComponentContext ctx) {
@@ -61,11 +54,12 @@ class DatalogParserImpl extends DatalogBaseListener {
 		def parameters = values[ctx.parameterList()] as List ?: []
 		def superParameters = ctx.superComponent()?.parameterList() ? values[ctx.superComponent().parameterList()] as List : []
 
-		program.components << new BlockLvl1(name, superName, parameters, superParameters, currDatalog)
-		values[ctx.identifierList()].each { String id -> program.instantiations << new Instantiation(name, id, []) }
+		program.components << rec(new BlockLvl1(name, superName, parameters, superParameters, currDatalog), ctx)
+		values[ctx.identifierList()].each { String id ->
+			program.instantiations << rec(new Instantiation(name, id, []), ctx.identifierList())
+		}
 
 		currPendingAnnotations.each { addAnnotationsToRelDecl(it.key, it.value) }
-
 		currPendingAnnotations = globalPendingAnnotations
 		currDatalog = program.datalog
 	}
@@ -73,42 +67,37 @@ class DatalogParserImpl extends DatalogBaseListener {
 	void exitInstantiation(InstantiationContext ctx) {
 		def parameters = values[ctx.parameterList()] as List ?: []
 		values[ctx.identifierList()].each { String id ->
-			program.instantiations << new Instantiation(ctx.IDENTIFIER().text, id, parameters)
+			program.instantiations << rec(new Instantiation(ctx.IDENTIFIER().text, id, parameters), ctx.identifierList())
 		}
 	}
 
 	void enterAnnotationBlock(AnnotationBlockContext ctx) {
-		def annotations = gatherAnnotations(ctx.annotationList())
-		if (Annotation.NAMESPACE in annotations) {
-			activeNamespaces.push(annotations.find { it == Annotation.NAMESPACE }.args["v"] as String)
-			annotations.remove Annotation.NAMESPACE
+		def annotations = gatherAnnotations(ctx.annotationList()) << locAnnotation(ctx)
+		if (NAMESPACE in annotations) {
+			activeNamespaces.push(annotations[NAMESPACE]["v"] as String)
+			annotations -= NAMESPACE
 		}
 		extraAnnotationsStack.push annotations
 	}
 
 	void exitAnnotationBlock(AnnotationBlockContext ctx) {
-		if (Annotation.NAMESPACE in extraAnnotationsStack.peek()) activeNamespaces.pop()
+		if (NAMESPACE in extraAnnotationsStack.peek()) activeNamespaces.pop()
 		extraAnnotationsStack.pop()
 	}
 
 	void exitDeclaration(DeclarationContext ctx) {
-		def loc = rec(null, ctx)
-		def annotations = gatherAnnotations(ctx.annotationList())
-		def extraAnnotations = extraAnnotationsStack.flatten() as Set<Annotation>
-		annotations.findAll { it in extraAnnotations }.each { warn(loc, Error.ANNOTATION_MULTIPLE, it) }
-		annotations += extraAnnotations
+		def annotations = gatherAnnotations(ctx.annotationList()) << locAnnotation(ctx)
+		extraAnnotationsStack.each { set -> annotations += set }
 
 		// Type declaration
-		if (ctx.IDENTIFIER(0) && Annotation.TYPE in annotations) {
+		if (ctx.IDENTIFIER(0) && TYPE in annotations) {
 			def type = new Type(suffix(ctx.IDENTIFIER(0).text))
 			def supertype = ctx.IDENTIFIER(1) ? new Type(suffix(ctx.IDENTIFIER(1).text)) : null
 			// Initial values are of the form `key(value)`. E.g., PUBLIC('public')
 			// Keys are used to generate singleton relations. E.g., Modifier:PUBLIC(x)
 			if (ctx.initValueList())
-				annotations << new Annotation("TYPEVALUES", values[ctx.initValueList()] as Map)
-			def d = new TypeDeclaration(type, supertype, annotations)
-			currDatalog.typeDeclarations << d
-			rec(d, ctx)
+				annotations << TYPEVALUES.template(values[ctx.initValueList()] as Map)
+			currDatalog.typeDeclarations << new TypeDeclaration(type, supertype, annotations)
 		}
 		// Incomplete declaration of the form: `@output Foo`
 		// i.e. binds annotations with a relation name without \providing any details
@@ -119,23 +108,21 @@ class DatalogParserImpl extends DatalogBaseListener {
 		else {
 			def rel = ctx.relation() ? values[ctx.relation()] as Relation : values[ctx.constructor()] as Constructor
 			def types = values[ctx.identifierList()].collect { new Type(suffix(it as String)) }
-			def d = new RelDeclaration(rel, types, annotations)
-			currDatalog.relDeclarations << d
-			rec(d, ctx)
+			currDatalog.relDeclarations << new RelDeclaration(rel, types, annotations)
 		}
 	}
 
 	void exitRule_(Rule_Context ctx) {
-		Rule r
+		def locAnnotation = locAnnotation(ctx)
 		if (ctx.headList()) {
-			def annotations = gatherAnnotations(ctx.annotationList())
-			r = new Rule(values[ctx.headList()] as IElement, values[ctx.bodyList()] as IElement, annotations)
+			def annotations = gatherAnnotations(ctx.annotationList()) << locAnnotation
+			currDatalog.rules << new Rule(values[ctx.headList()] as IElement, values[ctx.bodyList()] as IElement, annotations)
 		}
 		// Aggregation
-		else
-			r = new Rule(values[ctx.relation()] as Relation, values[ctx.aggregation()] as AggregationElement)
-		currDatalog.rules << r
-		rec(r, ctx)
+		else {
+			def annotations = new AnnotationSet(locAnnotation)
+			currDatalog.rules << new Rule(values[ctx.relation()] as Relation, values[ctx.aggregation()] as AggregationElement, annotations)
+		}
 	}
 
 	void exitRelation(RelationContext ctx) {
@@ -143,14 +130,12 @@ class DatalogParserImpl extends DatalogBaseListener {
 		def at = ctx.IDENTIFIER(1) ? "@${ctx.IDENTIFIER(1).text}" : ""
 		def exprs = ctx.exprList() ? values[ctx.exprList()] as List : []
 		values[ctx] = new Relation("$name$at", exprs)
-		rec(values[ctx], ctx)
 	}
 
 	void exitConstructor(ConstructorContext ctx) {
 		def name = suffix(ctx.IDENTIFIER().text)
 		def exprs = (ctx.exprList() ? values[ctx.exprList()] as List : []) << (values[ctx.expr()] as IExpr)
 		values[ctx] = new Constructor(name, exprs)
-		rec(values[ctx], ctx)
 	}
 
 	void exitConstruction(ConstructionContext ctx) {
@@ -163,7 +148,6 @@ class DatalogParserImpl extends DatalogBaseListener {
 				new VariableExpr(ctx.IDENTIFIER().text),
 				values[ctx.relation()] as Relation,
 				values[ctx.bodyList()] as IElement)
-		rec(values[ctx], ctx)
 	}
 
 	void exitConstant(ConstantContext ctx) {
@@ -237,8 +221,8 @@ class DatalogParserImpl extends DatalogBaseListener {
 			values[ctx] = values[ctx.comparison()]
 		else if (hasToken(ctx, "!"))
 			values[ctx] = new NegationElement(values[ctx.bodyList(0)] as IElement)
-		else if (hasToken(ctx, "("))
 		// Remove group elements and replace them with their contents
+		else if (hasToken(ctx, "("))
 			values[ctx] = values[ctx.bodyList(0)]
 		else {
 			def list = (0..1).collect { values[ctx.bodyList(it)] as IElement }
@@ -248,13 +232,12 @@ class DatalogParserImpl extends DatalogBaseListener {
 	}
 
 	// Special handling (instead of using "exit")
-	private Set<Annotation> gatherAnnotations(AnnotationListContext ctx) {
-		if (!ctx) return [] as Set
+	private AnnotationSet gatherAnnotations(AnnotationListContext ctx) {
+		if (!ctx) return new AnnotationSet()
 		def valueMap = gatherValues(ctx.annotation().valueList())
-		def annotation = new Annotation(ctx.annotation().IDENTIFIER().text, valueMap)
-		def set = gatherAnnotations(ctx.annotationList())
-		if (annotation in set) warn(rec(annotation, ctx), Error.ANNOTATION_MULTIPLE, annotation.kind)
-		return set << annotation
+		def annotation = rec(new Annotation(ctx.annotation().IDENTIFIER().text, valueMap), ctx) as Annotation
+		annotation.validate()
+		gatherAnnotations(ctx.annotationList()) << annotation
 	}
 
 	void exitInitValueList(InitValueListContext ctx) {
@@ -315,17 +298,24 @@ class DatalogParserImpl extends DatalogBaseListener {
 		activeNamespaces ? "${activeNamespaces.join(":")}:$name" : name
 	}
 
-	def addAnnotationsToRelDecl(String relName, Set<Annotation> annotations) {
+	def addAnnotationsToRelDecl(String relName, AnnotationSet annotations) {
 		def rd = currDatalog.relDeclarations.find { it.relation.name == relName }
-		if (rd)
-			rd.annotations += annotations
-		else
-			currDatalog.relDeclarations << new RelDeclaration(new Relation(relName), [], annotations)
+		if (rd) rd.annotations += annotations
+		else currDatalog.relDeclarations << new RelDeclaration(new Relation(relName), [], annotations)
 	}
 
 	static def hasToken(ParserRuleContext ctx, String token) {
 		ctx.children.any { it instanceof TerminalNode && it.text == token }
 	}
 
-	static def rec(def o, ParserRuleContext ctx) { SourceManager.instance.record(o, ctx.start.getLine()) }
+	static Location findLoc(ParserRuleContext ctx) { SourceManager.instance.locate(ctx.start.line) }
+
+	static def locAnnotation(ParserRuleContext ctx) {
+		METADATA.template([loc: new ConstantExpr(findLoc(ctx) as String)])
+	}
+
+	static def rec(def o, ParserRuleContext ctx) {
+		SourceManager.rec(o, findLoc(ctx))
+		return o
+	}
 }

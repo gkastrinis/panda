@@ -13,7 +13,6 @@ import org.codesimius.panda.datalog.expr.VariableExpr
 import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.system.Error.error
-import static org.codesimius.panda.system.SourceManager.recallStatic as recall
 
 class VarInfoVisitor extends DefaultVisitor<IVisitable> {
 
@@ -28,6 +27,7 @@ class VarInfoVisitor extends DefaultVisitor<IVisitable> {
 	boolean inRelation
 
 	IVisitable visit(Rule n) {
+		parentAnnotations = n.annotations
 		constructedVars = [] as Set
 		currRule = n
 
@@ -50,7 +50,7 @@ class VarInfoVisitor extends DefaultVisitor<IVisitable> {
 
 		def conVar = n.constructor.valueExpr as VariableExpr
 		if (conVar in constructedVars)
-			error(recall(n), Error.VAR_MULTIPLE_CONSTR, conVar)
+			error(findParentLoc(), Error.VAR_MULTIPLE_CONSTR, conVar)
 		constructedVars << conVar
 	}
 

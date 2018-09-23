@@ -50,13 +50,13 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	String visit(RelDeclaration n) {
 		def relName = fix(n.relation.name)
 		def params = n.types.withIndex().collect { t, int i -> "${var1(i)}:${tr(fix(t.name))}" }
-		def meta = n.annotations.find { it == METADATA }?.args["types"]
+		def meta = n.annotations[METADATA]?.args["types"]
 		emit ".decl $relName(${params.join(", ")})${meta ? " // $meta" : ""}"
 
 		if (INPUT in n.annotations) {
-			def args = n.annotations.find { it == INPUT }.args
-			def filename = args["filename"] ?: "${n.relation.name}.facts"
-			def delimeter = args["delimeter"] ?: "\\t"
+			def an = n.annotations[INPUT]
+			def filename = an["filename"] ?: "${n.relation.name}.facts"
+			def delimeter = an["delimeter"] ?: "\\t"
 			emit """.input $relName(filename="$filename", delimeter="$delimeter")"""
 		}
 		if (OUTPUT in n.annotations)
@@ -75,7 +75,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		emit "${m[n.head]}${body ? ":- $body" : ""}."
 
 		if (PLAN in n.annotations)
-			emit ".plan ${n.annotations.find { it == PLAN }.args["plan"].value}"
+			emit ".plan ${n.annotations[PLAN]["plan"].value}"
 		null
 	}
 

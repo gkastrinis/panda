@@ -4,7 +4,6 @@ import groovy.transform.Canonical
 import org.codesimius.panda.actions.symbol.ConstructionInfoVisitor
 import org.codesimius.panda.actions.tranform.DefaultTransformer
 import org.codesimius.panda.actions.tranform.TypeInferenceTransformer
-import org.codesimius.panda.datalog.Annotation
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.clause.RelDeclaration
@@ -20,6 +19,7 @@ import org.codesimius.panda.datalog.expr.IExpr
 import org.codesimius.panda.datalog.expr.RecordExpr
 import org.codesimius.panda.datalog.expr.VariableExpr
 
+import static org.codesimius.panda.datalog.Annotation.METADATA
 import static org.codesimius.panda.datalog.expr.ConstantExpr.NIL
 import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
 
@@ -81,14 +81,14 @@ class ConstructorTransformer extends DefaultTransformer {
 
 	IVisitable exit(RelDeclaration n) {
 		// Re: (1)
-		def metadata = new Annotation("METADATA", [types: new ConstantExpr(n.types.collect { it.name }.join(" x "))])
-		new RelDeclaration(n.relation, n.types.collect { map(it) }, n.annotations + metadata)
+		def metadata = METADATA.template([types: new ConstantExpr(n.types.collect { it.name }.join(" x "))])
+		new RelDeclaration(n.relation, n.types.collect { map(it) }, n.annotations << metadata)
 	}
 
 	IVisitable exit(TypeDeclaration n) {
 		// Re: 3
-		def metadata = new Annotation("METADATA", [types: new ConstantExpr(n.type.name)])
-		extraRelDecls << new RelDeclaration(new Relation(n.type.name), [map(n.type)], n.annotations + metadata)
+		def metadata = METADATA.template([types: new ConstantExpr(n.type.name)])
+		extraRelDecls << new RelDeclaration(new Relation(n.type.name), [map(n.type)], n.annotations << metadata)
 		// Re: 4
 		if (n.supertype)
 			extraRules << new Rule(new Relation(n.supertype.name, [var1()]), new Relation(n.type.name, [var1()]))
@@ -96,6 +96,7 @@ class ConstructorTransformer extends DefaultTransformer {
 	}
 
 	IVisitable visit(Rule n) {
+		parentAnnotations = n.annotations
 		inRuleHead = true
 		def head = n.head
 		new ConstructionInfoVisitor().with {

@@ -48,7 +48,7 @@ class SmartLiteralTransformer extends DefaultTransformer {
 
 	void enter(ConstantExpr n) {
 		if (n.kind == ConstantExpr.Kind.SMART_LIT && !parentIsRelation)
-			error(Error.SMART_LIT_NO_DIRECT_REL, n.value)
+			error(findParentLoc(), Error.SMART_LIT_NO_DIRECT_REL, n.value)
 	}
 
 	void enter(GroupExpr n) { parentIsRelation = false }
@@ -62,7 +62,7 @@ class SmartLiteralTransformer extends DefaultTransformer {
 			if (expr instanceof ConstantExpr && expr.kind == ConstantExpr.Kind.SMART_LIT) {
 				def inferredType = typeInference.inferredTypes[n.name][i]
 				if (inferredType.primitive)
-					error(Error.SMART_LIT_NON_PRIMITIVE, expr.value, inferredType.name)
+					error(findParentLoc(), Error.SMART_LIT_NON_PRIMITIVE, expr.value, inferredType.name)
 
 				def rootType = datalog.typeToRootType[inferredType]
 

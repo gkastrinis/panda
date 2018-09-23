@@ -1,5 +1,6 @@
 package org.codesimius.panda.actions
 
+import org.codesimius.panda.datalog.AnnotationSet
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.block.BlockLvl1
@@ -15,6 +16,8 @@ import org.codesimius.panda.datalog.expr.*
 
 class DefaultVisitor<T> {
 
+	// The annotation set of a declaration / rule for usage in its children
+	AnnotationSet parentAnnotations
 	Map<IVisitable, T> m = [:]
 	boolean inDecl
 	boolean inRuleHead
@@ -40,6 +43,7 @@ class DefaultVisitor<T> {
 	}
 
 	T visit(RelDeclaration n) {
+		parentAnnotations = n.annotations
 		enter n
 		inDecl = true
 		m[n.relation] = visit n.relation
@@ -49,6 +53,7 @@ class DefaultVisitor<T> {
 	}
 
 	T visit(TypeDeclaration n) {
+		parentAnnotations = n.annotations
 		enter n
 		inDecl = true
 		m[n.type] = visit n.type
@@ -58,6 +63,7 @@ class DefaultVisitor<T> {
 	}
 
 	T visit(Rule n) {
+		parentAnnotations = n.annotations
 		enter n
 		inRuleHead = true
 		m[n.head] = visit n.head
@@ -221,4 +227,6 @@ class DefaultVisitor<T> {
 	void enter(VariableExpr n) {}
 
 	T exit(VariableExpr n) { null }
+
+	def findParentLoc() { parentAnnotations?.findLoc() }
 }
