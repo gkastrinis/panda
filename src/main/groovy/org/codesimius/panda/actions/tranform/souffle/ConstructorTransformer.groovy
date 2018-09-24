@@ -81,7 +81,7 @@ class ConstructorTransformer extends DefaultTransformer {
 
 	IVisitable exit(RelDeclaration n) {
 		// Re: (1)
-		def metadata = METADATA.template([types: new ConstantExpr(n.types.collect { it.name }.join(" x "))])
+		def metadata = METADATA.template([types: new ConstantExpr(n.types*.name.join(" x "))])
 		new RelDeclaration(n.relation, n.types.collect { map(it) }, n.annotations << metadata)
 	}
 

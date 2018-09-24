@@ -27,7 +27,7 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 	private List<String> ids
 
 	void enter(BlockLvl2 n) {
-		ids = n.components.collect { it.name } + n.instantiations.collect { it.id }
+		ids = n.components*.name + n.instantiations*.id
 		ids.findAll { ids.count(it) > 1 }.each { id ->
 			def candidates = (n.components.findAll { it.name == id } + n.instantiations.findAll { it.id == id })
 			def loc = candidates.collect { SourceManager.loc(it) }.first()
