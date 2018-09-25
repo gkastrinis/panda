@@ -41,6 +41,7 @@ class DatalogSpec extends Specification {
 		"t13" | _
 		"t14" | _
 		"t15" | _
+		"t16" | _
 	}
 
 	@Unroll
@@ -116,6 +117,14 @@ class DatalogSpec extends Specification {
 		"fail59" | Error.REL_ARITY
 		"fail60" | Error.TYPE_INF_INCOMPAT
 		"fail61" | Error.DECL_MULTIPLE
+		"fail62" | Error.TEXT_MALFORMED_HEAD
+		"fail63" | Error.TEXT_MALFORMED_BODY
+		"fail64" | Error.TEXT_MALFORMED_BODY
+		"fail65" | Error.TEXT_HEAD_NON_VAR
+		"fail66" | Error.TEXT_BODY_NON_VAR
+		"fail67" | Error.TEXT_MULTIPLE_RELS
+		"fail68" | Error.TEXT_UNKNOWN
+		"fail69" | Error.TEXT_LIT_N_VAR
 	}
 
 	@Unroll

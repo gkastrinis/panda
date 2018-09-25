@@ -1,0 +1,25 @@
+Var:Type(t, v) : string, string
+@text
+Var:Type(t, v) <- var v has type t
+
+baz(t) <- var _ has type t
+
+foo("abc")
+bar("new A")
+
+foobar(?v, hctx) <-
+	foo(?v),
+	var ?v and _ pointsTo "a" and hctx,
+	bar(hctx)
+
+@text
+VarPointsTo(v, h, ctx, hctx) <-
+	var v and ctx pointsTo h and hctx
+
+VarPointsTo(a,b,c,d) : string, string, string, string
+
+
+Foo(t) : string
+@text Foo(t) <- foo type t
+
+Bar(type) <- foo type type

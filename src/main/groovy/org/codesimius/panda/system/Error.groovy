@@ -62,6 +62,15 @@ enum Error {
 	TYPE_OPT_ROOT_NONOPT,
 	TYPE_OPT_CONSTR,
 
+	TEXT_MALFORMED_HEAD,
+	TEXT_HEAD_NON_VAR,
+	TEXT_MALFORMED_BODY,
+	TEXT_BODY_NON_VAR,
+	TEXT_LIT_N_VAR,
+	TEXT_MULTIPLE_RELS,
+	TEXT_UNKNOWN,
+	TEXT_VAR_MATCHES_LIT,
+
 	EXP_CONTENTS_MISMATCH,
 
 	static Map<Error, String> msgMap = [
@@ -119,6 +128,15 @@ enum Error {
 			(TYPE_RULE)                : "Type `{0}` used as a normal relation in rule head",
 			(TYPE_OPT_ROOT_NONOPT)     : "Root types of a hierarchy must be explicitly marked for optimization (`{0}`) when optimizing types",
 			(TYPE_OPT_CONSTR)          : "Type hierarchies marked for optimization cannot have user defined constructors (`{0}`)",
+
+			(TEXT_MALFORMED_HEAD)      : "Declaration for text representation of relation is malformed (head must be a single relation)",
+			(TEXT_HEAD_NON_VAR)        : "Declaration for text representation of relation is malformed (head relation must contain only variables)",
+			(TEXT_MALFORMED_BODY)      : "Declaration for text representation of relation is malformed (body must be a single text representation)",
+			(TEXT_BODY_NON_VAR)        : "Declaration for text representation of relation is malformed (body must contain only text and variables)",
+			(TEXT_LIT_N_VAR)           : "Conflict in text representations between literals ({0}) and parameter `{1}`",
+			(TEXT_MULTIPLE_RELS)       : "Same text representation cannot be used for multiple relations ({0})",
+			(TEXT_UNKNOWN)             : "Unknown text representation ({0})",
+			(TEXT_VAR_MATCHES_LIT)     : "Parameter `{0}` also matches text literals in `{1}`",
 
 			(EXP_CONTENTS_MISMATCH)    : "Generated and expected file differ in contents"
 	]

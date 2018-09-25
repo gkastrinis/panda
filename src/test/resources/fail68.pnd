@@ -1,0 +1,3 @@
+@text foo(x) <- foo x is ok
+foo(x) : string
+bar(x) <- foo x isOK

@@ -31,7 +31,8 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		Compiler.artifacts << new Artifact(Artifact.Kind.LOGIC, currentFile)
 
 		// Transform program before visiting nodes
-		def n = p.accept(new PreliminaryValidator())
+		def n = p.accept(new NormalizingTransformer())
+				.accept(new PreliminaryValidator())
 				.accept(new ComponentInstantiationTransformer())
 				.accept(new DependencyGraphVisitor(outDir))
 				.accept(new ComponentFlatteningTransformer())

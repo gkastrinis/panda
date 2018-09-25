@@ -71,13 +71,12 @@ class Annotation {
 				MANDATORY_VALIDATOR.call(a, [plan: STRING])
 				OPTIONAL_VALIDATOR.call(a, [plan: STRING])
 			},
+			"TEXT"       : NO_ARGS_VALIDATOR,
 			"TYPE"       : { Annotation a ->
 				OPTIONAL_VALIDATOR.call(a, [capacity: INTEGER, opt: BOOLEAN])
 			},
 			"TYPEVALUES" : {},
-			"METADATA"   : { Annotation a ->
-				OPTIONAL_VALIDATOR.call(a, [types: STRING, loc: STRING])
-			},
+			"METADATA"   : {}
 	]
 
 	static final CONSTRUCTOR = new Annotation("CONSTRUCTOR")
@@ -86,6 +85,7 @@ class Annotation {
 	static final NAMESPACE = new Annotation("NAMESPACE")
 	static final OUTPUT = new Annotation("OUTPUT")
 	static final PLAN = new Annotation("PLAN")
+	static final TEXT = new Annotation("TEXT")
 	static final TYPE = new Annotation("TYPE")
 	static final TYPEVALUES = new Annotation("TYPEVALUES")
 	static final METADATA = new Annotation("METADATA", [:], true)

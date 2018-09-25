@@ -16,6 +16,7 @@ import org.codesimius.panda.datalog.clause.TypeDeclaration
 import org.codesimius.panda.datalog.element.*
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
+import org.codesimius.panda.datalog.element.relation.RelationText
 import org.codesimius.panda.datalog.element.relation.Type
 import org.codesimius.panda.datalog.expr.*
 import org.codesimius.panda.system.SourceManager
@@ -125,6 +126,10 @@ class DatalogParserImpl extends DatalogBaseListener {
 		}
 	}
 
+	void exitRelationText(RelationTextContext ctx) {
+		values[ctx] = new RelationText(ctx.children.collect { (it instanceof TerminalNode) ? it.text : values[it] })
+	}
+
 	void exitRelation(RelationContext ctx) {
 		def name = suffix(ctx.IDENTIFIER(0).text)
 		def at = ctx.IDENTIFIER(1) ? "@${ctx.IDENTIFIER(1).text}" : ""
@@ -213,7 +218,9 @@ class DatalogParserImpl extends DatalogBaseListener {
 	}
 
 	void exitBodyList(BodyListContext ctx) {
-		if (ctx.relation())
+		if (ctx.relationText())
+			values[ctx] = values[ctx.relationText()]
+		else if (ctx.relation())
 			values[ctx] = values[ctx.relation()]
 		else if (ctx.constructor())
 			values[ctx] = values[ctx.constructor()]

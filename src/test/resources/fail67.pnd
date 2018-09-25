@@ -1,0 +1,2 @@
+@text Foo(x) <- foo x is ok
+@text Bar(y) <- foo y is ok

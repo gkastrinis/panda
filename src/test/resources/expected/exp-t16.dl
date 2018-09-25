@@ -1,0 +1,13 @@
+.decl Var_Type(v0:symbol, v1:symbol) // string x string
+.decl VarPointsTo(v0:symbol, v1:symbol, v2:symbol, v3:symbol) // string x string x string x string
+.decl Foo(v0:symbol) // string
+.decl baz(v0:symbol) // string
+.decl foo(v0:symbol) // string
+.decl bar(v0:symbol) // string
+.decl foobar(v0:symbol, v1:symbol) // string x string
+.decl Bar(v0:symbol) // string
+baz(t):- Var_Type(t, _).
+foo("abc").
+bar("new A").
+foobar(?v, hctx):- foo(?v), VarPointsTo(?v, "a", _, hctx), bar(hctx).
+Bar(type):- Foo(type).

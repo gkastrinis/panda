@@ -38,6 +38,9 @@ rule_
 relation
 	: IDENTIFIER ('@' IDENTIFIER)? '(' exprList? ')' ;
 
+relationText
+	: (IDENTIFIER | constant)+ ;
+
 constructor
 	: IDENTIFIER '[' exprList? ']' '=' expr ;
 
@@ -79,7 +82,8 @@ headList
 	;
 
 bodyList
-	: relation
+	: relationText
+	| relation
 	| constructor
 	| comparison
 	| '!' bodyList

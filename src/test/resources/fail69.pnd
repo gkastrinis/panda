@@ -1,0 +1,4 @@
+Foo(x) : string
+@text Foo(x) <- foo x ok
+Bar(x) : string
+@text Bar(y) <- foo x notOk y
