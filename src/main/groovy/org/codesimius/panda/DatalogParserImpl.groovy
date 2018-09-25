@@ -213,8 +213,14 @@ class DatalogParserImpl extends DatalogBaseListener {
 	}
 
 	void exitHeadList(HeadListContext ctx) {
-		def t = ctx.relation() ? values[ctx.relation()] : values[ctx.construction()]
-		values[ctx] = ctx.headList() ? combineElements([values[ctx.headList()], t] as List<IElement>) : t
+		if (ctx.relation())
+			values[ctx] = values[ctx.relation()]
+		else if (ctx.construction())
+			values[ctx] = values[ctx.construction()]
+		else {
+			def list = (0..1).collect { values[ctx.headList(it)] as IElement }
+			values[ctx] = combineElements(list)
+		}
 	}
 
 	void exitBodyList(BodyListContext ctx) {

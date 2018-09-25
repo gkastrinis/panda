@@ -77,8 +77,9 @@ comparison
 	: expr ('=' | '<' | '<=' | '>' | '>=' | '!=') expr ;
 
 headList
-	: (relation | construction)
-	| headList ',' (relation | construction)
+	: relation
+	| construction
+	| headList ',' headList
 	;
 
 bodyList
