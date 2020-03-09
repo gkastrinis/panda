@@ -1,26 +1,21 @@
 plugins {
-	id 'antlr'
-	id 'application'
-	id 'groovy'
-	id 'maven-publish'
+	id "antlr"
+	id "application"
+	id "groovy"
+	id "maven-publish"
 	//see https://github.com/researchgate/gradle-release
-	id 'net.researchgate.release' version '2.6.0'
+	id "net.researchgate.release" version "2.6.0"
 }
 
 group = "org.codesimius"
-
 mainClassName = "org.codesimius.panda.Main"
 
-task wrapper(type: Wrapper) {
-	gradleVersion = "4.9"
-}
+wrapper() { gradleVersion = "6.2" }
 
-repositories {
-	mavenCentral()
-}
+repositories { mavenCentral() }
 
 dependencies {
-	compile "org.codehaus.groovy:groovy-all:2.4.7",
+	compile "org.codehaus.groovy:groovy-all:3.0.2",
 			"commons-io:commons-io:2.6",
 	        "commons-logging:commons-logging:1.1",
 	        "log4j:log4j:1.2.14",
@@ -39,9 +34,7 @@ run {
 }
 
 test {
-	testLogging {
-		exceptionFormat = "full"
-	}
+	testLogging { exceptionFormat = "full" }
 }
 
 

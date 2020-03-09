@@ -71,7 +71,7 @@ enum Error {
 	TEXT_UNKNOWN,
 	TEXT_VAR_MATCHES_LIT,
 
-	EXP_CONTENTS_MISMATCH,
+	EXP_CONTENTS_MISMATCH
 
 	static Map<Error, String> msgMap = [
 			(ANNOTATION_UNKNOWN)       : "Unknown annotation `{0}`",
