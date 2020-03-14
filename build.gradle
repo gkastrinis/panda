@@ -2,9 +2,6 @@ plugins {
 	id "antlr"
 	id "application"
 	id "groovy"
-	id "maven-publish"
-	//see https://github.com/researchgate/gradle-release
-	id "net.researchgate.release" version "2.6.0"
 }
 
 group = "org.codesimius"
@@ -17,11 +14,11 @@ repositories { mavenCentral() }
 dependencies {
 	compile "org.codehaus.groovy:groovy-all:3.0.2",
 			"commons-io:commons-io:2.6",
-	        "commons-logging:commons-logging:1.1",
-	        "log4j:log4j:1.2.14",
-	        "org.antlr:antlr4-runtime:4.5.1-1"
+			"commons-logging:commons-logging:1.1",
+			"log4j:log4j:1.2.14",
+			"org.antlr:antlr4-runtime:4.5.1-1"
 	antlr   "org.antlr:antlr4:4.5.1-1"
-	testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
+	testCompile "org.spockframework:spock-core:2.0-M2-groovy-3.0"
 }
 
 applicationDistribution.from(projectDir) {
@@ -35,33 +32,4 @@ run {
 
 test {
 	testLogging { exceptionFormat = "full" }
-}
-
-
-if (project.hasProperty('artifactory_user')) {
-	publishing {
-		publications {
-			mavenJava(MavenPublication) {
-				from components.java
-			}
-		}
-
-		repositories {
-			maven {
-				credentials {
-					username artifactory_user
-					password artifactory_password
-				}
-				url "$artifactory_contextUrl/libs-public-release-local"
-			}
-		}
-	}
-
-	release {
-		git {
-			commitVersionFileOnly = true
-		}
-	}
-
-	afterReleaseBuild.dependsOn publish
 }
