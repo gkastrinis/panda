@@ -1,35 +1,35 @@
 plugins {
-	id "antlr"
-	id "application"
-	id "groovy"
+    id "antlr"
+    id "application"
+    id "groovy"
 }
 
 group = "org.codesimius"
 mainClassName = "org.codesimius.panda.Main"
 
-wrapper() { gradleVersion = "6.2" }
+wrapper() { gradleVersion = "6.3" }
 
 repositories { mavenCentral() }
 
 dependencies {
-	compile "org.codehaus.groovy:groovy-all:3.0.2",
-			"commons-io:commons-io:2.6",
-			"commons-logging:commons-logging:1.1",
-			"log4j:log4j:1.2.14",
-			"org.antlr:antlr4-runtime:4.5.1-1"
-	antlr   "org.antlr:antlr4:4.5.1-1"
-	testCompile "org.spockframework:spock-core:2.0-M2-groovy-3.0"
+    implementation "org.codehaus.groovy:groovy-all:3.0.2",
+            "commons-io:commons-io:2.6",
+            "commons-logging:commons-logging:1.1",
+            "log4j:log4j:1.2.14",
+            "org.antlr:antlr4-runtime:4.5.1-1"
+    antlr "org.antlr:antlr4:4.5.1-1"
+    testImplementation "org.spockframework:spock-core:2.0-M2-groovy-3.0"
 }
 
 applicationDistribution.from(projectDir) {
-	include "LICENSE.txt", "README.md", "panda.png"
+    include "LICENSE.txt", "README.md", "panda.png"
 }
 
 run {
-	enableAssertions = true
-	if (project.hasProperty("args")) args project.property("args").split()
+    enableAssertions = true
+    if (project.hasProperty("args")) args project.property("args").split()
 }
 
 test {
-	testLogging { exceptionFormat = "full" }
+    testLogging { exceptionFormat = "full" }
 }
