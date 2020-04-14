@@ -7,14 +7,18 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
 
     - name: Run Spock Tests
-      run: gradle clean test
+    - uses: eskatos/gradle-command-action@v1
+      with:
+        arguments: clean test
+        gradle-version: 6.3
