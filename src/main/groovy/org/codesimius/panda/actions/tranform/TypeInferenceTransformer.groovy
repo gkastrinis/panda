@@ -65,7 +65,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 		// Fill partial declarations and add implicit ones
 		// Ignore relations that derive from types
 		def interestingRelationsWithTypes = inferredTypes.findAll { rel, types ->
-			!datalog.allTypes.any { it.name == rel } && (rel! in AggregationElement.SUPPORTED_PREDICATES)
+			!datalog.allTypes.any { it.name == rel } && (rel !in AggregationElement.SUPPORTED_PREDICATES)
 		}
 		def relDeclarations = interestingRelationsWithTypes.collect { rel, types ->
 			def vars = varN(types.size())
@@ -112,7 +112,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 				// currType must be a subtype of the explicit type
 				if (relation.name in explicitRelations) {
 					assert currType
-					if (currType! in datalog.getExtendedSubTypesOf(prevType))
+					if (currType !in datalog.getExtendedSubTypesOf(prevType))
 						error(n.loc(), Error.TYPE_INF_INCOMPAT_USE, relation.name, i, prevType, currType)
 				}
 				// Still missing type information
@@ -134,7 +134,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 				def prevType = inferredTypes[relation.name][i]
 				def currType = exprType[expr]
 				// Type information is present and is new
-				if (prevType && currType && (currType! in datalog.getExtendedSubTypesOf(prevType)))
+				if (prevType && currType && (currType !in datalog.getExtendedSubTypesOf(prevType)))
 					error(n.loc(), Error.TYPE_INF_INCOMPAT_USE, relation.name, i, prevType, currType)
 			}
 		}
@@ -217,7 +217,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 			return currType
 		else if (!currType || t in datalog.getExtendedSubTypesOf(currType))
 			return t
-		else if (currType! in datalog.subTypes[t])
+		else if (currType !in datalog.subTypes[t])
 			error(findParentLoc(), Error.TYPE_INF_INCOMPAT, [currType.name, t.name])
 
 		return currType

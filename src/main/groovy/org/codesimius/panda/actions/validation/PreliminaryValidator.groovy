@@ -60,7 +60,7 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 		def loc = SourceManager.loc(n)
 		if (n.parameters.size() != n.parameters.toSet().size())
 			error(loc, Error.COMP_DUPLICATE_PARAMS, n.parameters, n.name)
-		if (n.superParameters.any { it! in n.parameters })
+		if (n.superParameters.any { it !in n.parameters })
 			error(loc, Error.COMP_SUPER_PARAM_MISMATCH, n.superParameters, n.parameters, n.superComponent)
 		if (n.name.contains(":"))
 			error(loc, Error.COMP_NAME_LIMITS, n.name)
@@ -85,12 +85,12 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 		}
 		if (CONSTRUCTOR in n.annotations && n.relation !instanceof Constructor)
 			error(n.loc(), Error.CONSTR_NON_FUNC, n.relation.name)
-		if (n.relation instanceof Constructor && CONSTRUCTOR! in n.annotations)
+		if (n.relation instanceof Constructor && CONSTRUCTOR !in n.annotations)
 			error(n.loc(), Error.FUNC_NON_CONSTR, n.relation.name)
 	}
 
 	void enter(AggregationElement n) {
-		if (n.relation.name! in AggregationElement.SUPPORTED_PREDICATES)
+		if (n.relation.name !in AggregationElement.SUPPORTED_PREDICATES)
 			error(findParentLoc(), Error.AGGR_UNSUPPORTED_REL, n.relation.name)
 	}
 

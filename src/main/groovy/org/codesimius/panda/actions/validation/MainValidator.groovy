@@ -47,7 +47,7 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 		checkArity(n.relation.name, n.types.size())
 
 		n.types.findAll { !it.primitive }
-				.findAll { it! in datalog.allTypes }
+				.findAll { it !in datalog.allTypes }
 				.each { error(n.loc(), Error.TYPE_UNKNOWN, it.name) }
 
 		if (CONSTRUCTOR in n.annotations) {
@@ -80,11 +80,11 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 		def conVars = datalog.getConstructedVars(n)
 		varsInHead.findAll { it.name == "_" }
 				.each { error(n.loc(), Error.VAR_UNBOUND_HEAD, null) }
-		varsInHead.findAll { (it! in varsInBody) && (it! in conVars) }
+		varsInHead.findAll { (it !in varsInBody) && (it !in conVars) }
 				.each { error(n.loc(), Error.VAR_UNKNOWN, it.name) }
 		varsInBody.findAll { it in conVars }
 				.each { error(n.loc(), Error.VAR_CONSTR_BODY, it.name) }
-		varsInBody.findAll { it.name != "_" && (it! in varsInHead) && (varsInBody.count(it) == 1) }
+		varsInBody.findAll { it.name != "_" && (it !in varsInHead) && (varsInBody.count(it) == 1) }
 				.each { warn(n.loc(), Error.VAR_UNUSED, it.name) }
 
 		// Visit the rule for error checking reasons
@@ -99,10 +99,10 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 		def baseType = datalog.constructorToBaseType[n.constructor.name]
 		if (!baseType)
 			error(findParentLoc(), Error.CONSTR_UNKNOWN, n.constructor.name)
-		if (n.type != baseType && (baseType! in datalog.superTypesOrdered[n.type]))
+		if (n.type != baseType && (baseType !in datalog.superTypesOrdered[n.type]))
 			error(findParentLoc(), Error.CONSTR_TYPE_INCOMPAT, n.constructor.name, n.type.name)
 
-		if (n.type! in datalog.allTypes) error(findParentLoc(), Error.TYPE_UNKNOWN, n.type.name)
+		if (n.type !in datalog.allTypes) error(findParentLoc(), Error.TYPE_UNKNOWN, n.type.name)
 	}
 
 	void enter(Constructor n) { if (!inDecl) checkRelation(n) }
@@ -119,7 +119,7 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 		if (inRuleHead && (new Type(n.name) in datalog.allTypes))
 			error(findParentLoc(), Error.TYPE_RULE, n.name)
 
-		if (inRuleBody && (n.name! in datalog.declaredRelations))
+		if (inRuleBody && (n.name !in datalog.declaredRelations))
 			error(findParentLoc(), Error.REL_NO_DECL, n.name)
 
 		checkArity(n.name, n.arity)
@@ -138,7 +138,7 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 
 	static def checkAnnotations(AnnotationSet annotations, List<Annotation> allowedAnnotations, String kind) {
 		annotations.rawAnnotations
-				.findAll { (it! in allowedAnnotations) && !it.isInternal }
+				.findAll { (it !in allowedAnnotations) && !it.isInternal }
 				.each { error(SourceManager.loc(it), Error.ANNOTATION_INVALID, it, kind) }
 		annotations.rawAnnotations.each { it.validate() }
 	}
