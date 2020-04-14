@@ -137,9 +137,9 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 	}
 
 	static def checkAnnotations(AnnotationSet annotations, List<Annotation> allowedAnnotations, String kind) {
-		annotations.rawAnnotations
+		annotations
 				.findAll { (it !in allowedAnnotations) && !it.isInternal }
 				.each { error(SourceManager.loc(it), Error.ANNOTATION_INVALID, it, kind) }
-		annotations.rawAnnotations.each { it.validate() }
+		annotations.each { it.validate() }
 	}
 }

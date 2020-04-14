@@ -1,33 +1,35 @@
 package org.codesimius.panda.datalog
 
 import groovy.transform.Canonical
+import groovy.transform.InheritConstructors
 import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.datalog.Annotation.METADATA
 import static org.codesimius.panda.system.Error.warn
 
 @Canonical
-class AnnotationSet {
+@InheritConstructors
+class AnnotationSet extends LinkedHashSet<Annotation> {
 
-	// TODO why not extend set?
-	Set<Annotation> rawAnnotations
+	//AnnotationSet(Set<Annotation> rawAnnotations = [] as Set) { this.rawAnnotations = rawAnnotations }
 
-	AnnotationSet(Set<Annotation> rawAnnotations = [] as Set) { this.rawAnnotations = rawAnnotations }
+	AnnotationSet(Annotation annotation) { this << annotation }
 
-	AnnotationSet(Annotation rawAnnotation) { this([rawAnnotation] as Set) }
+	Annotation getAt(Annotation annotation) { find { it == annotation } }
 
-	boolean isCase(annotation) { annotation in rawAnnotations }
-
-	Annotation getAt(Annotation annotation) { rawAnnotations.find { it == annotation } }
-
-	AnnotationSet plus(AnnotationSet others) {
-		others.rawAnnotations.each { this << it }
+	AnnotationSet plus(Collection<? extends Annotation> others) {
+		others.each { this << it }
 		this
 	}
 
-	AnnotationSet minus(AnnotationSet others) {
-		rawAnnotations -= others.rawAnnotations
-		this
+	boolean addAll(Collection<? extends Annotation> others) {
+		others.each { this << it }
+		true
+	}
+
+	boolean add(Annotation annotation) {
+		this << annotation
+		true
 	}
 
 	AnnotationSet leftShift(Annotation annotation) {
@@ -36,16 +38,9 @@ class AnnotationSet {
 		else if (annotation in this)
 			warn(findLoc(), Error.ANNOTATION_MULTIPLE, annotation)
 		else
-			rawAnnotations << annotation
-		this
-	}
-
-	AnnotationSet minus(Annotation annotation) {
-		rawAnnotations.remove annotation
+			super.add annotation
 		this
 	}
 
 	def findLoc() { this[METADATA]?.args?.loc }
-
-	String toString() { rawAnnotations as String }
 }
