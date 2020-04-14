@@ -1,9 +1,9 @@
-component Foo {
+template Foo {
 	P(x) : string
 }
 as S1
 
-component Bar {
+template Bar {
 	R(x) : int
 }
 as S2

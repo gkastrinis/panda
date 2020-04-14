@@ -1,4 +1,4 @@
-component Foo<G> {
+template Foo<G> {
 	P(x) <- Q@X(x)
 }
 

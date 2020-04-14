@@ -1,9 +1,9 @@
-component First {
+template First {
 	P(42)
 }
 as S1
 
-component Second {
+template Second {
 	Q(42)
 	Q(x), P@ext(x) <- W(x)
 }

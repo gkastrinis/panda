@@ -37,12 +37,11 @@ class DatalogSpec extends Specification {
 		"t-smartLiterals" | _
 		"t-typesOpt"      | _
 		"t-freeText"      | _
-//		"t6"  | _
-//		"t7"  | _
-//		"t8"  | _
-//		"t11" | _
-//		"t12" | _
-//		"t13" | _
+		"t-templates1"    | _
+		"t-templates2"    | _
+		"t-templates3"    | _
+		"t-templates4"    | _
+		"t-templates5"    | _
 	}
 
 	@Unroll
@@ -152,17 +151,23 @@ class DatalogSpec extends Specification {
 	}
 
 	def test(String file) {
-//		PandaException e1 = null, e2 = null
-
+//		PandaException e1 = null
 //		try {
 //			test0(file, LBCodeGenerator)
 //		} catch (PandaException e) {
 //			e1 = e
 //		}
 
+//		PandaException e2 = null
 //		try {
 		def artifacts = test0(file, SouffleCodeGenerator)
-		validateContents(file, "dl", artifacts)
+		// Validate Contents
+		def generatedFile = artifacts.find { it.kind == Artifact.Kind.LOGIC }.file
+		def expectedFileURL = this.class.getResource("/expected/exp-${file}.dl")
+		def expectedFile = expectedFileURL ? new File(expectedFileURL.toURI()) : null
+
+		if (expectedFile?.exists() && !FileUtils.contentEquals(generatedFile, expectedFile))
+			error(Error.EXP_CONTENTS_MISMATCH, null)
 //		}
 //		catch (PandaException e) {
 //			e2 = e
@@ -170,14 +175,5 @@ class DatalogSpec extends Specification {
 
 //		assert e1?.error == e2?.error
 //		if (e1) throw e1
-	}
-
-	def validateContents(def file, def ext, List<Artifact> artifacts) {
-		def generatedFile = artifacts.find { it.kind == Artifact.Kind.LOGIC }.file
-		def expectedFileURL = this.class.getResource("/expected/exp-${file}.${ext}")
-		def expectedFile = expectedFileURL ? new File(expectedFileURL.toURI()) : null
-
-		if (expectedFile?.exists() && !FileUtils.contentEquals(generatedFile, expectedFile))
-			error(Error.EXP_CONTENTS_MISMATCH, null)
 	}
 }

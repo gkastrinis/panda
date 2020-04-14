@@ -1,10 +1,10 @@
 P(42)
 
-component Foo <X>{
+template Foo <X>{
 	Q(x) <- P@X(x)
 }
 
-component Bar <A, B> : Foo<A> {
+template Bar <A, B> : Foo<A> {
 	W(x) <- P@A(x)
 }
 as B1

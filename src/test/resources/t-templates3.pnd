@@ -1,4 +1,4 @@
-component Foo {
+template Foo {
 	P(x) <- x = 10
 	R(x) <- P(x)
 	W(x) : string
@@ -12,7 +12,7 @@ component Foo {
 }
 as S1
 
-component Bar <G> {
+template Bar <G> {
 	R(x) <- Q@G(x)
 }
 Bar<_> as S2

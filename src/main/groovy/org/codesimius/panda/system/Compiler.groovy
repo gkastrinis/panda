@@ -7,6 +7,7 @@ import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTreeWalker
 import org.codesimius.panda.DatalogParserImpl
 import org.codesimius.panda.actions.code.DefaultCodeGenerator
+import org.codesimius.panda.actions.graph.DependencyGraphVisitor
 import org.codesimius.panda.actions.tranform.*
 import org.codesimius.panda.actions.validation.MainValidator
 import org.codesimius.panda.actions.validation.PreliminaryValidator
@@ -40,9 +41,9 @@ class Compiler {
 		def n = listener.program
 				.accept(new FreeTextTransformer())
 				.accept(new PreliminaryValidator())
-//				.accept(new ComponentInstantiationTransformer())
-//				.accept(new DependencyGraphVisitor(codeGenerator.outDir))
-//				.accept(new ComponentFlatteningTransformer())
+				.accept(new TemplateInstantiationTransformer())
+				.accept(new DependencyGraphVisitor(codeGenerator.outDir))
+				.accept(new TemplateFlatteningTransformer())
 				.accept(new TypesTransformer())
 				.accept(new InputFactsTransformer()) // TODO Souffle Specific?
 				.accept(new MainValidator())

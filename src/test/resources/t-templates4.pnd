@@ -1,6 +1,6 @@
 P(x) : int
 
-component Foo<X> {
+template Foo<X> {
     Q(x) : int
     P(x) <- Q(x), P@X(x)
 }

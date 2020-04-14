@@ -9,7 +9,7 @@ import org.codesimius.panda.datalog.IVisitable
 class BlockLvl1 implements IVisitable {
 
 	String name
-	String superComponent
+	String superTemplate
 	List<String> parameters = []
 	List<String> superParameters = []
 	BlockLvl0 datalog = new BlockLvl0()

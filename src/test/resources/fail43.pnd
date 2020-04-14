@@ -1,7 +1,7 @@
-component Foo<X> {
+template Foo<X> {
     P(x) <- Q@X(x)
 }
-component Bar<Y> {
+template Bar<Y> {
     Q(x) <- P@Y(x)
 }
 

@@ -7,7 +7,7 @@ import groovy.transform.ToString
 @ToString(includePackage = false)
 class Instantiation {
 
-	String component
+	String template
 	String id
 	List<String> parameters = []
 }

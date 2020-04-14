@@ -1,4 +1,4 @@
-component Foo<T, G> {
+template Foo<T, G> {
 	P(x) <- Q@G(x)
 	Bar(x) <- P(x), Bar@T(x)
 	Bar(x) : int

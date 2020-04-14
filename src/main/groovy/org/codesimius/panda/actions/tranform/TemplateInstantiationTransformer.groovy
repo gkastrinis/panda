@@ -11,7 +11,7 @@ import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.expr.BinaryExpr
 import org.codesimius.panda.datalog.expr.GroupExpr
 
-class ComponentInstantiationTransformer extends DefaultTransformer {
+class TemplateInstantiationTransformer extends DefaultTransformer {
 
 	// Current component being instantiated
 	private BlockLvl1 currComp
@@ -30,7 +30,7 @@ class ComponentInstantiationTransformer extends DefaultTransformer {
 		def newComponents = n.instantiations.collect { inst ->
 			newCurrComp = new BlockLvl1(inst.id)
 
-			currComp = n.components.find { it.name == inst.component }
+			currComp = n.templates.find { it.name == inst.template }
 			// A list of indexes of super parameters in the original parameter list
 			// e.g. in `component A <X,Y,Z> : B <Z, X>`, we get [2, 0] (initially it is [0, 1, 2])
 			def indexes = (0..<inst.parameters.size())
@@ -40,11 +40,11 @@ class ComponentInstantiationTransformer extends DefaultTransformer {
 			computeMappings()
 			visit currComp
 
-			while (currComp.superComponent) {
-				extraComponents << new BlockLvl1(currComp.name, currComp.superComponent)
+			while (currComp.superTemplate) {
+				extraComponents << new BlockLvl1(currComp.name, currComp.superTemplate)
 
 				indexes = currComp.superParameters.collect { indexes[currComp.parameters.indexOf(it)] }
-				currComp = n.components.find { it.name == currComp.superComponent }
+				currComp = n.templates.find { it.name == currComp.superTemplate }
 				computeMappings()
 				visit currComp
 			}

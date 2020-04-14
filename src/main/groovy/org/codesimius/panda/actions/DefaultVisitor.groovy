@@ -26,7 +26,7 @@ class DefaultVisitor<T> {
 	T visit(BlockLvl2 n) {
 		enter n
 		m[n.datalog] = visit n.datalog
-		n.components.each { m[it] = visit it }
+		n.templates.each { m[it] = visit it }
 		exit n
 	}
 

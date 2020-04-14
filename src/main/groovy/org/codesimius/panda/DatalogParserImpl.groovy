@@ -44,18 +44,18 @@ class DatalogParserImpl extends DatalogBaseListener {
 		currPendingAnnotations.each { addAnnotationsToRelDecl(it.key, it.value) }
 	}
 
-	void enterComponent(ComponentContext ctx) {
+	void enterTemplate(TemplateContext ctx) {
 		currDatalog = new BlockLvl0()
 		currPendingAnnotations = [:].withDefault { new AnnotationSet() }
 	}
 
-	void exitComponent(ComponentContext ctx) {
+	void exitTemplate(TemplateContext ctx) {
 		def name = ctx.IDENTIFIER().text
-		def superName = ctx.superComponent()?.IDENTIFIER()?.text
+		def superName = ctx.superTemplate()?.IDENTIFIER()?.text
 		def parameters = values[ctx.parameterList()] as List ?: []
-		def superParameters = ctx.superComponent()?.parameterList() ? values[ctx.superComponent().parameterList()] as List : []
+		def superParameters = ctx.superTemplate()?.parameterList() ? values[ctx.superTemplate().parameterList()] as List : []
 
-		program.components << rec(new BlockLvl1(name, superName, parameters, superParameters, currDatalog), ctx)
+		program.templates << rec(new BlockLvl1(name, superName, parameters, superParameters, currDatalog), ctx)
 		values[ctx.identifierList()].each { String id ->
 			program.instantiations << rec(new Instantiation(name, id, []), ctx.identifierList())
 		}

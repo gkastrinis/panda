@@ -1,4 +1,4 @@
-component Foo:Bar {
+template Foo:Bar {
     P(x) : int
 }
 as F1

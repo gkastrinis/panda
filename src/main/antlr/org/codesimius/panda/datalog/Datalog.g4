@@ -5,12 +5,12 @@ package org.codesimius.panda.datalog;
 }
 
 program
-	: (component | instantiation | datalog)* ;
+	: (template | instantiation | datalog)* ;
 
-component
-	: 'component' IDENTIFIER parameterList? (':' superComponent)? '{' datalog* '}' ('as' identifierList)? ;
+template
+	: 'template' IDENTIFIER parameterList? (':' superTemplate)? '{' datalog* '}' ('as' identifierList)? ;
 
-superComponent
+superTemplate
 	: IDENTIFIER parameterList? ;
 
 instantiation

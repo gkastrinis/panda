@@ -14,7 +14,7 @@ import org.codesimius.panda.datalog.element.relation.Type
 import org.codesimius.panda.datalog.expr.BinaryExpr
 import org.codesimius.panda.datalog.expr.GroupExpr
 
-class ComponentFlatteningTransformer extends DefaultTransformer {
+class TemplateFlatteningTransformer extends DefaultTransformer {
 
 	// Program after instantiation (only a global component)
 	private BlockLvl2 instantiatedP

@@ -43,13 +43,13 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 	}
 
 	IVisitable exit(BlockLvl2 n) {
-		n.components.findAll { comp -> !n.instantiations.any { it.id == comp.name } }.each { comp ->
+		n.templates.findAll { comp -> !n.instantiations.any { it.id == comp.name } }.each { comp ->
 			def baseNode = graphs[INSTANTIATION].touch(comp.name, Node.Kind.TEMPLATE)
-			def superNode = graphs[INSTANTIATION].touch(comp.superComponent, Node.Kind.TEMPLATE)
+			def superNode = graphs[INSTANTIATION].touch(comp.superTemplate, Node.Kind.TEMPLATE)
 			baseNode.connectTo(superNode, Edge.Kind.INHERITANCE)
 		}
 		n.instantiations.each { inst ->
-			def templateNode = graphs[INSTANTIATION].touch(inst.component, Node.Kind.TEMPLATE)
+			def templateNode = graphs[INSTANTIATION].touch(inst.template, Node.Kind.TEMPLATE)
 			def instanceNode = graphs[INSTANTIATION].touch(inst.id, Node.Kind.INSTANCE)
 			instanceNode.connectTo(templateNode, Edge.Kind.INSTANCE)
 

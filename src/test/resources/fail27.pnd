@@ -1,9 +1,9 @@
 P(42)
 
-component Foo <X>{
+template Foo <X>{
 	Q(x) <- P@X(x)
 }
 
-component Bar <A, B> : Foo<X> {
+template Bar <A, B> : Foo<X> {
 	W(x) <- P@A(x)
 }

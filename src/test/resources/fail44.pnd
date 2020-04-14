@@ -1,11 +1,11 @@
 P(x) : int
 
-component Base<A, B> {
+template Base<A, B> {
     AA(x) <- P@A(x)
     BB(x) <- P@B(x)
 }
 
-component Foo<T> : Base<T, T> {
+template Foo<T> : Base<T, T> {
     P(x) <- P@T(x)
 }
 
@@ -13,7 +13,7 @@ Foo<_> as F1
 
 P(x) <- P@F1(x)
 
-component Bar {
+template Bar {
     Q(x) <- P(x), x > 10
     P(x) <- Q(x), x < 100
 }

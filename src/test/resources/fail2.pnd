@@ -1,7 +1,7 @@
-component Foo {
+template Foo {
 	P(x) : string
 }
 
-component Foo {
+template Foo {
 	R(x) : int
 }

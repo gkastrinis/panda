@@ -1,10 +1,10 @@
-component Base {
+template Base {
     P1(x) : int
 }
-component Core : Base {
+template Core : Base {
     Q(x) : int
 } as C1
-component Foo<X> {
+template Foo<X> {
     W(x) <- P@X(x)
     Z(x) <- Q@X(x)
 }

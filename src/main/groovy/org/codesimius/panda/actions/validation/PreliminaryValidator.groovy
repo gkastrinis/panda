@@ -27,13 +27,13 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 	private List<String> ids
 
 	void enter(BlockLvl2 n) {
-		ids = n.components*.name + n.instantiations*.id
+		ids = n.templates*.name + n.instantiations*.id
 		ids.findAll { ids.count(it) > 1 }.each { id ->
-			def candidates = (n.components.findAll { it.name == id } + n.instantiations.findAll { it.id == id })
+			def candidates = (n.templates.findAll { it.name == id } + n.instantiations.findAll { it.id == id })
 			def loc = candidates.collect { SourceManager.loc(it) }.first()
 			error(loc, Error.ID_IN_USE, id)
 		}
-		n.components = n.components.toSet()
+		n.templates = n.templates.toSet()
 		n.instantiations = n.instantiations.toSet()
 
 		n.instantiations.each { inst ->
@@ -41,11 +41,11 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 			if (inst.id.contains(":"))
 				error(loc, Error.COMP_NAME_LIMITS, inst.id)
 
-			def currComp = n.components.find { it.name == inst.component }
+			def currComp = n.templates.find { it.name == inst.template }
 			if (!currComp)
-				error(loc, Error.COMP_UNKNOWN, inst.component)
+				error(loc, Error.COMP_UNKNOWN, inst.template)
 			if (currComp.parameters.size() != inst.parameters.size())
-				error(loc, Error.COMP_INST_ARITY, inst.parameters, inst.component, inst.id)
+				error(loc, Error.COMP_INST_ARITY, inst.parameters, inst.template, inst.id)
 			inst.parameters.findAll { param -> param != "_" && !n.instantiations.any { it.id == param } }.each {
 				error(loc, Error.COMP_UNKNOWN_PARAM, it)
 			}
@@ -61,7 +61,7 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 		if (n.parameters.size() != n.parameters.toSet().size())
 			error(loc, Error.COMP_DUPLICATE_PARAMS, n.parameters, n.name)
 		if (n.superParameters.any { it !in n.parameters })
-			error(loc, Error.COMP_SUPER_PARAM_MISMATCH, n.superParameters, n.parameters, n.superComponent)
+			error(loc, Error.COMP_SUPER_PARAM_MISMATCH, n.superParameters, n.parameters, n.superTemplate)
 		if (n.name.contains(":"))
 			error(loc, Error.COMP_NAME_LIMITS, n.name)
 

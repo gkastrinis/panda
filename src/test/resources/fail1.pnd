@@ -1,11 +1,11 @@
 P(x) : string
 
-component Foo {
+template Foo {
 	P1(x) <- P(x)
 }
 as S1
 
-component Bar {
+template Bar {
 	P2(x) <- x = 10
 }
 as S2, S1

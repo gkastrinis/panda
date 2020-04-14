@@ -23,11 +23,11 @@ class DefaultTransformer extends DefaultVisitor<IVisitable> {
 	Set<Rule> extraRules = [] as Set
 
 	IVisitable exit(BlockLvl2 n) {
-		new BlockLvl2(m[n.datalog] as BlockLvl0, n.components.collect { m[it] as BlockLvl1 } as Set, n.instantiations)
+		new BlockLvl2(m[n.datalog] as BlockLvl0, n.templates.collect { m[it] as BlockLvl1 } as Set, n.instantiations)
 	}
 
 	IVisitable exit(BlockLvl1 n) {
-		new BlockLvl1(n.name, n.superComponent, n.parameters, n.superParameters, m[n.datalog] as BlockLvl0)
+		new BlockLvl1(n.name, n.superTemplate, n.parameters, n.superParameters, m[n.datalog] as BlockLvl0)
 	}
 
 	void enter(BlockLvl0 n) {
