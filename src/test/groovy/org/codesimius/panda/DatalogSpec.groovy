@@ -152,7 +152,7 @@ class DatalogSpec extends Specification {
 	}
 
 	def test(String file) {
-		PandaException e1 = null, e2 = null
+//		PandaException e1 = null, e2 = null
 
 //		try {
 //			test0(file, LBCodeGenerator)
@@ -160,16 +160,16 @@ class DatalogSpec extends Specification {
 //			e1 = e
 //		}
 
-		try {
-			def artifacts = test0(file, SouffleCodeGenerator)
-			validateContents(file, "dl", artifacts)
-		}
-		catch (PandaException e) {
-			e2 = e
-		}
+//		try {
+		def artifacts = test0(file, SouffleCodeGenerator)
+		validateContents(file, "dl", artifacts)
+//		}
+//		catch (PandaException e) {
+//			e2 = e
+//		}
 
 //		assert e1?.error == e2?.error
-		if (e1) throw e1
+//		if (e1) throw e1
 	}
 
 	def validateContents(def file, def ext, List<Artifact> artifacts) {

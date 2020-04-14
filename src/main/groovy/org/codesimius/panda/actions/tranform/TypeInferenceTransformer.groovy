@@ -65,7 +65,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 		// Fill partial declarations and add implicit ones
 		// Ignore relations that derive from types
 		def interestingRelationsWithTypes = inferredTypes.findAll { rel, types ->
-			!datalog.allTypes.any { it.name == rel } && (rel.toLowerCase()! in AggregationElement.SUPPORTED_PREDICATES)
+			!datalog.allTypes.any { it.name == rel } && (rel! in AggregationElement.SUPPORTED_PREDICATES)
 		}
 		def relDeclarations = interestingRelationsWithTypes.collect { rel, types ->
 			def vars = varN(types.size())
@@ -112,7 +112,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 				// currType must be a subtype of the explicit type
 				if (relation.name in explicitRelations) {
 					assert currType
-					if (!(currType in datalog.getExtendedSubTypesOf(prevType)))
+					if (currType! in datalog.getExtendedSubTypesOf(prevType))
 						error(n.loc(), Error.TYPE_INF_INCOMPAT_USE, relation.name, i, prevType, currType)
 				}
 				// Still missing type information
@@ -134,7 +134,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 				def prevType = inferredTypes[relation.name][i]
 				def currType = exprType[expr]
 				// Type information is present and is new
-				if (prevType && currType && !(currType in datalog.getExtendedSubTypesOf(prevType)))
+				if (prevType && currType && (currType! in datalog.getExtendedSubTypesOf(prevType)))
 					error(n.loc(), Error.TYPE_INF_INCOMPAT_USE, relation.name, i, prevType, currType)
 			}
 		}
@@ -143,7 +143,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 	}
 
 	void enter(AggregationElement n) {
-		def name = n.relation.name.toLowerCase()
+		def name = n.relation.name
 		inferredTypes[name] = AggregationElement.PREDICATE_TYPES[name]
 		exprType[n.var] = meet(exprType[n.var], AggregationElement.PREDICATE_RET_TYPE[name])
 	}
@@ -186,7 +186,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 			case LEQ:
 			case GT:
 			case GEQ:
-				if (!types.every { it in ordinalTypes })
+				if (!types.every { it in ordinalTypes }) // TODO Change with 'any'?
 					error(findParentLoc(), Error.TYPE_INF_INCOMPAT, [leftType, rightType])
 				exprType[n] = TYPE_BOOLEAN
 				break
@@ -194,7 +194,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 			case MINUS:
 			case MULT:
 			case DIV:
-				if (!types.every { it in numericalTypes })
+				if (!types.every { it in numericalTypes }) // TODO Change with 'any'?
 					error(findParentLoc(), Error.TYPE_INF_INCOMPAT, [leftType, rightType])
 				exprType[n] = joinType
 				break

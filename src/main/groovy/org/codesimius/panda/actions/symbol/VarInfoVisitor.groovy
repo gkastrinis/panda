@@ -46,7 +46,7 @@ class VarInfoVisitor extends DefaultVisitor<IVisitable> {
 	}
 
 	void enter(ConstructionElement n) {
-		if (!(n.constructor.valueExpr instanceof VariableExpr)) return
+		if (n.constructor.valueExpr !instanceof VariableExpr) return
 
 		def conVar = n.constructor.valueExpr as VariableExpr
 		if (conVar in constructedVars)

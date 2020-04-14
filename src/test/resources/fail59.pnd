@@ -1,2 +1,2 @@
 foo(1,2)
-t1(x, c) <- agg<<c = count( x)>> foo(x,_)
+t1(x, c) <- c = count(x) { foo(x,_) }

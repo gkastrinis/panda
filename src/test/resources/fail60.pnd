@@ -1,2 +1,2 @@
 foo(1,"a")
-t3(3, m) <- agg<<m = max( ?y)>> foo(_, ?y)
+t3(3, m) <- m = max(?y) { foo(_, ?y) }

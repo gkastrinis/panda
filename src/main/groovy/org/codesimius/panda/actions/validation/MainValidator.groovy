@@ -47,7 +47,7 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 		checkArity(n.relation.name, n.types.size())
 
 		n.types.findAll { !it.primitive }
-				.findAll { !(it in datalog.allTypes) }
+				.findAll { it! in datalog.allTypes }
 				.each { error(n.loc(), Error.TYPE_UNKNOWN, it.name) }
 
 		if (CONSTRUCTOR in n.annotations) {
@@ -102,7 +102,7 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 		if (n.type != baseType && (baseType! in datalog.superTypesOrdered[n.type]))
 			error(findParentLoc(), Error.CONSTR_TYPE_INCOMPAT, n.constructor.name, n.type.name)
 
-		if (!(n.type in datalog.allTypes)) error(findParentLoc(), Error.TYPE_UNKNOWN, n.type.name)
+		if (n.type! in datalog.allTypes) error(findParentLoc(), Error.TYPE_UNKNOWN, n.type.name)
 	}
 
 	void enter(Constructor n) { if (!inDecl) checkRelation(n) }

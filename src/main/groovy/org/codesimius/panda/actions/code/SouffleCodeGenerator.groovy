@@ -64,7 +64,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	}
 
 	String exit(AggregationElement n) {
-		def pred = n.relation.name.toLowerCase()
+		def pred = n.relation.name
 		def soufflePred = n.relation.exprs ? "$pred(${m[n.relation.exprs.first()]})" : pred
 		"${m[n.body]}, ${m[n.var]} = $soufflePred : { ${m[n.body]} }"
 	}

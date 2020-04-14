@@ -73,7 +73,7 @@ class AssignTransformer extends DefaultTransformer {
 	IVisitable exit(ComparisonElement n) {
 		if (n.expr.op == BinaryOp.EQ && n.expr.left instanceof VariableExpr) {
 			def var = n.expr.left as VariableExpr
-			if (!(var in boundVars)) {
+			if (var! in boundVars) {
 				if (complexLogic > 1) error(Error.VAR_ASGN_COMPLEX, var)
 				changes = true
 				assignments[var] = n.expr.right
