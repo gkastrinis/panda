@@ -19,10 +19,10 @@ import static org.codesimius.panda.datalog.element.ComparisonElement.TRIVIALLY_T
 
 class DefaultCodeGenerator extends DefaultVisitor<String> {
 
-	TypeInferenceTransformer typeInferenceTransformer = new TypeInferenceTransformer()
+	def typeInferenceTransformer = new TypeInferenceTransformer()
 
 	File outDir
-	private File currentFile
+	File currentFile
 	private FileWriter fw
 	// Keep track of active logical and negation elements in order to group them correctly
 	private List<Integer> complexElements = []
@@ -63,15 +63,13 @@ class DefaultCodeGenerator extends DefaultVisitor<String> {
 
 	String exit(VariableExpr n) { n.name }
 
-	void createUniqueFile(String prefix, String suffix) {
+	def createUniqueFile(String prefix, String suffix) {
 		currentFile = Files.createTempFile(Paths.get(outDir.path), prefix, suffix).toFile()
 		if (fw) fw.close()
 		fw = new FileWriter(currentFile)
 	}
 
-	File getCurrentFile() { currentFile }
-
-	void emit(String data) { fw.write "$data\n" }
+	def emit(String data) { fw.write "$data\n" }
 
 	private static int map(LogicalElement n) { n.kind == LogicalElement.Kind.AND ? 0 : 1 }
 

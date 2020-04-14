@@ -1,0 +1,7 @@
+parent("Alice", "Bob")
+parent("Bob", "Eve")
+
+ancestor(x, y) <- parent(x, y)
+ancestor(x, y) <- parent(x, z), ancestor(z, y)
+
+@output ancestor

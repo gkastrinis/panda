@@ -1,8 +1,8 @@
 package org.codesimius.panda
 
+import org.codesimius.panda.actions.code.SouffleCodeGenerator
 import org.codesimius.panda.system.Compiler
 import org.codesimius.panda.system.Error
 
 Error.initializeLogging()
-Compiler.compileToLB3(args[0], "build/out_logic")
-Compiler.compileToSouffle(args[0], "build/out_dl")
+Compiler.compile(args[0], new SouffleCodeGenerator("build/out_dl"))

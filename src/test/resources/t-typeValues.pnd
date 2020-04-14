@@ -1,0 +1,7 @@
+@type Animal
+@type Cat : Animal with A("A"), B("B")
+@constructor byNum[x] = y : int, Cat
+@type PersianCat : Cat
+
+Animal:byStr["foo"] = x new PersianCat
+byNum[42] = x new PersianCat

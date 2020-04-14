@@ -28,8 +28,8 @@ class InputFactsTransformer extends DefaultTransformer {
 	IVisitable visit(BlockLvl0 n) {
 		datalog = n
 		(n.relDeclarations + n.typeDeclarations).each { m[it] = visit it }
-		def relDs = (n.relDeclarations.collect { m[it] as RelDeclaration } + extraRelDecls).grep() as Set
-		new BlockLvl0(relDs, n.typeDeclarations + extraTypeDecls, n.rules + extraRules)
+		def newRelDecls = (n.relDeclarations.collect { m[it] as RelDeclaration } + extraRelDecls).grep() as Set
+		new BlockLvl0(newRelDecls, n.typeDeclarations + extraTypeDecls, n.rules + extraRules)
 	}
 
 	IVisitable exit(RelDeclaration n) {
@@ -49,7 +49,7 @@ class InputFactsTransformer extends DefaultTransformer {
 		def inputTypes = []
 
 		types.eachWithIndex { Type t, int i ->
-			if (t.isPrimitive()) {
+			if (t.primitive) {
 				vars << var1(i)
 				inputTypes << t
 			} else {

@@ -9,6 +9,7 @@ import static org.codesimius.panda.system.Error.warn
 @Canonical
 class AnnotationSet {
 
+	// TODO why not extend set?
 	Set<Annotation> rawAnnotations
 
 	AnnotationSet(Set<Annotation> rawAnnotations = [] as Set) { this.rawAnnotations = rawAnnotations }

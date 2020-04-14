@@ -4,7 +4,6 @@ plugins {
     id "groovy"
 }
 
-group = "org.codesimius"
 mainClassName = "org.codesimius.panda.Main"
 
 wrapper() { gradleVersion = "6.3" }

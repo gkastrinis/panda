@@ -2,7 +2,6 @@ package org.codesimius.panda
 
 import org.antlr.v4.runtime.ANTLRInputStream
 import org.apache.commons.io.FileUtils
-import org.codesimius.panda.actions.code.LBCodeGenerator
 import org.codesimius.panda.actions.code.SouffleCodeGenerator
 import org.codesimius.panda.system.Artifact
 import org.codesimius.panda.system.Compiler
@@ -24,24 +23,26 @@ class DatalogSpec extends Specification {
 		notThrown(PandaException)
 
 		where:
-		file  | _
-		"t0"  | _
-		"t1"  | _
-		"t2"  | _
-		"t3"  | _
-		"t4"  | _
-		"t5"  | _
-		"t6"  | _
-		"t7"  | _
-		"t8"  | _
-		"t9"  | _
-		"t10" | _
-		"t11" | _
-		"t12" | _
-		"t13" | _
-		"t14" | _
-		"t15" | _
-		"t16" | _
+		file              | _
+		"t-basics"        | _
+		"t-primitives"    | _
+		"t-aggregations"  | _
+		"t-types"         | _
+		"t-typeValues"    | _
+		"t-inference"     | _
+		"t-inputs"        | _
+		"t-constr1"       | _
+		"t-constr2"       | _
+		"t-constr3"       | _
+		"t-smartLiterals" | _
+		"t-typesOpt"      | _
+		"t-freeText"      | _
+//		"t6"  | _
+//		"t7"  | _
+//		"t8"  | _
+//		"t11" | _
+//		"t12" | _
+//		"t13" | _
 	}
 
 	@Unroll
@@ -153,11 +154,11 @@ class DatalogSpec extends Specification {
 	def test(String file) {
 		PandaException e1 = null, e2 = null
 
-		try {
-			test0(file, LBCodeGenerator)
-		} catch (PandaException e) {
-			e1 = e
-		}
+//		try {
+//			test0(file, LBCodeGenerator)
+//		} catch (PandaException e) {
+//			e1 = e
+//		}
 
 		try {
 			def artifacts = test0(file, SouffleCodeGenerator)
@@ -167,7 +168,7 @@ class DatalogSpec extends Specification {
 			e2 = e
 		}
 
-		assert e1?.error == e2?.error
+//		assert e1?.error == e2?.error
 		if (e1) throw e1
 	}
 

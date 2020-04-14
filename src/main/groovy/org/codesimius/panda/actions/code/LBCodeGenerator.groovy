@@ -1,92 +1,77 @@
 package org.codesimius.panda.actions.code
 
 import groovy.transform.InheritConstructors
-import org.codesimius.panda.actions.graph.DependencyGraphVisitor
-import org.codesimius.panda.actions.tranform.*
-import org.codesimius.panda.actions.validation.MainValidator
-import org.codesimius.panda.actions.validation.PreliminaryValidator
 import org.codesimius.panda.datalog.block.BlockLvl2
-import org.codesimius.panda.datalog.clause.RelDeclaration
-import org.codesimius.panda.datalog.clause.Rule
-import org.codesimius.panda.datalog.clause.TypeDeclaration
-import org.codesimius.panda.datalog.element.AggregationElement
-import org.codesimius.panda.datalog.element.relation.Constructor
-import org.codesimius.panda.datalog.element.relation.Relation
-import org.codesimius.panda.system.Artifact
-import org.codesimius.panda.system.Compiler
 
-import static org.codesimius.panda.datalog.Annotation.*
-import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
-import static org.codesimius.panda.datalog.expr.VariableExpr.genN as varN
-
+@Deprecated
 @InheritConstructors
 class LBCodeGenerator extends DefaultCodeGenerator {
 
 	Set<String> functionalRelations
 
 	String visit(BlockLvl2 p) {
-		createUniqueFile("out_", ".logic")
-		Compiler.artifacts << new Artifact(Artifact.Kind.LOGIC, currentFile)
-
-		// Transform program before visiting nodes
-		def n = p.accept(new NormalizingTransformer())
-				.accept(new PreliminaryValidator())
-				.accept(new ComponentInstantiationTransformer())
-				.accept(new DependencyGraphVisitor(outDir))
-				.accept(new ComponentFlatteningTransformer())
-				.accept(new TypesTransformer())
-				.accept(new InputFactsTransformer())
-				.accept(new MainValidator())
-				.accept(typeInferenceTransformer)
-				.accept(new SmartLiteralTransformer(typeInferenceTransformer))
-				.accept(new TypesOptimizer())
-
-		functionalRelations = n.datalog.relDeclarations
-				.findAll { FUNCTIONAL in it.annotations }
-				.collect { it.relation.name } as Set
+//		createUniqueFile("out_", ".logic")
+//		Compiler.artifacts << new Artifact(Artifact.Kind.LOGIC, currentFile)
+//
+//		// Transform program before visiting nodes
+//		def n = p.accept(new FreeTextTransformer())
+//				.accept(new PreliminaryValidator())
+//				.accept(new ComponentInstantiationTransformer())
+//				.accept(new DependencyGraphVisitor(outDir))
+//				.accept(new ComponentFlatteningTransformer())
+//				.accept(new TypesTransformer())
+//				.accept(new InputFactsTransformer())
+//				.accept(new MainValidator())
+//				.accept(typeInferenceTransformer)
+//				.accept(new SmartLiteralTransformer(typeInferenceTransformer))
+//				.accept(new TypesOptimizer())
+//
+//		functionalRelations = n.datalog.relDeclarations
+//				.findAll { FUNCTIONAL in it.annotations }
+//				.collect { it.relation.name } as Set
 
 		super.visit(n)
 	}
 
-	String visit(RelDeclaration n) {
-		def name = n.relation.name
-		def types = n.types.withIndex().collect { t, int i -> "${t.name == "int" ? "int[64]" : t.name}(${var1(i)})" }
-		n.relation.exprs = varN(n.types.size())
-		emit "${handleRelation(n.relation)} -> ${types.join(", ")}."
-
-		if (CONSTRUCTOR in n.annotations) emit "lang:constructor(`$name)."
-		null
-	}
-
-	String visit(TypeDeclaration n) {
-		def name = n.type.name
-		emit "lang:entity(`$name)."
-		emit """lang:physical:storageModel[`$name] = "ScalableSparse"."""
-		def cap = n.annotations[TYPE]["capacity"]
-		if (cap) emit "lang:physical:capacity[`$name] = $cap."
-		if (n.supertype) emit "$name(${var1()}) -> ${n.supertype.name}(${var1()})."
-		null
-	}
-
-	String exit(Rule n) { emit "${m[n.head]}${n.body ? " <- ${m[n.body]}" : ""}." }
-
-	String exit(AggregationElement n) {
-		def pred = n.relation.name
-		def params = n.relation.exprs ? "${m[n.relation.exprs.first()]}" : ""
-		def lbPred = "${pred.replaceFirst("sum", "total")}($params)"
-		"agg<<${m[n.var]} = $lbPred>> ${m[n.body]}"
-	}
-
-	String exit(Constructor n) { handleRelation n }
-
-	String exit(Relation n) { handleRelation n }
-
-	def handleRelation(Relation n) {
-		if (n instanceof Constructor || n.name in functionalRelations)
-			"${n.name}[${n.exprs.dropRight(1).collect { m[it] }.join(", ")}] = ${m[n.exprs.last()]}"
-		else
-			"${n.name}(${n.exprs.collect { m[it] }.join(", ")})"
-	}
+//	String visit(RelDeclaration n) {
+//		def name = n.relation.name
+//		def types = n.types.withIndex().collect { t, int i -> "${t.name == "int" ? "int[64]" : t.name}(${var1(i)})" }
+//		n.relation.exprs = varN(n.types.size())
+//		emit "${handleRelation(n.relation)} -> ${types.join(", ")}."
+//
+//		if (CONSTRUCTOR in n.annotations) emit "lang:constructor(`$name)."
+//		null
+//	}
+//
+//	String visit(TypeDeclaration n) {
+//		def name = n.type.name
+//		emit "lang:entity(`$name)."
+//		emit """lang:physical:storageModel[`$name] = "ScalableSparse"."""
+//		def cap = n.annotations[TYPE]["capacity"]
+//		if (cap) emit "lang:physical:capacity[`$name] = $cap."
+//		if (n.supertype) emit "$name(${var1()}) -> ${n.supertype.name}(${var1()})."
+//		null
+//	}
+//
+//	String exit(Rule n) { emit "${m[n.head]}${n.body ? " <- ${m[n.body]}" : ""}." }
+//
+//	String exit(AggregationElement n) {
+//		def pred = n.relation.name
+//		def params = n.relation.exprs ? "${m[n.relation.exprs.first()]}" : ""
+//		def lbPred = "${pred.replaceFirst("sum", "total")}($params)"
+//		"agg<<${m[n.var]} = $lbPred>> ${m[n.body]}"
+//	}
+//
+//	String exit(Constructor n) { handleRelation n }
+//
+//	String exit(Relation n) { handleRelation n }
+//
+//	def handleRelation(Relation n) {
+//		if (n instanceof Constructor || n.name in functionalRelations)
+//			"${n.name}[${n.exprs.dropRight(1).collect { m[it] }.join(", ")}] = ${m[n.exprs.last()]}"
+//		else
+//			"${n.name}(${n.exprs.collect { m[it] }.join(", ")})"
+//	}
 
 	/*void emit(Program n, Map m, Set<DependencyGraph.Node> nodes) {
 		latestFile = createUniqueFile("out_", ".logic")

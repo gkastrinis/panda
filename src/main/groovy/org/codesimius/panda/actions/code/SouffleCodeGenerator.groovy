@@ -1,12 +1,8 @@
 package org.codesimius.panda.actions.code
 
 import groovy.transform.InheritConstructors
-import org.codesimius.panda.actions.graph.DependencyGraphVisitor
-import org.codesimius.panda.actions.tranform.*
 import org.codesimius.panda.actions.tranform.souffle.AssignTransformer
 import org.codesimius.panda.actions.tranform.souffle.ConstructorTransformer
-import org.codesimius.panda.actions.validation.MainValidator
-import org.codesimius.panda.actions.validation.PreliminaryValidator
 import org.codesimius.panda.datalog.block.BlockLvl2
 import org.codesimius.panda.datalog.clause.RelDeclaration
 import org.codesimius.panda.datalog.clause.Rule
@@ -30,19 +26,8 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		createUniqueFile("out_", ".dl")
 		Compiler.artifacts << new Artifact(Artifact.Kind.LOGIC, currentFile)
 
-		// Transform program before visiting nodes
-		def n = p.accept(new NormalizingTransformer())
-				.accept(new PreliminaryValidator())
-				.accept(new ComponentInstantiationTransformer())
-				.accept(new DependencyGraphVisitor(outDir))
-				.accept(new ComponentFlatteningTransformer())
-				.accept(new TypesTransformer())
-				.accept(new InputFactsTransformer())
-				.accept(new MainValidator())
-				.accept(typeInferenceTransformer)
-				.accept(new SmartLiteralTransformer(typeInferenceTransformer))
-				.accept(new TypesOptimizer())
-				.accept(new ConstructorTransformer(typeInferenceTransformer))
+		// Souffle specific code transformations
+		def n = p.accept(new ConstructorTransformer(typeInferenceTransformer))
 				.accept(new AssignTransformer())
 
 		super.visit(n)
@@ -51,7 +36,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	String visit(RelDeclaration n) {
 		def relName = fix(n.relation.name)
 		def params = n.types.withIndex().collect { t, int i -> "${var1(i)}:${tr(fix(t.name))}" }
-		def meta = n.annotations[METADATA]?.args["types"]
+		def meta = n.annotations[METADATA]?.args?.get("types")
 		emit ".decl $relName(${params.join(", ")})${meta ? " // $meta" : ""}"
 
 		if (INPUT in n.annotations) {
@@ -73,15 +58,13 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 
 	String exit(Rule n) {
 		def body = m[n.body]
-		emit "${m[n.head]}${body ? ":- $body" : ""}."
-
-		if (PLAN in n.annotations)
-			emit ".plan ${n.annotations[PLAN]["plan"].value}"
+		emit "${m[n.head]}${body ? " :- $body" : ""}."
+		if (PLAN in n.annotations) emit ".plan ${n.annotations[PLAN]["plan"].value}"
 		null
 	}
 
 	String exit(AggregationElement n) {
-		def pred = n.relation.name
+		def pred = n.relation.name.toLowerCase()
 		def soufflePred = n.relation.exprs ? "$pred(${m[n.relation.exprs.first()]})" : pred
 		"${m[n.body]}, ${m[n.var]} = $soufflePred : { ${m[n.body]} }"
 	}

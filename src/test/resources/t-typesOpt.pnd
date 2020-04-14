@@ -1,0 +1,11 @@
+num(x) : int
+
+@type Animal
+A(x) : Animal
+A(@"abc")
+P(x) <- (A(@"123") ; A(@"abc")), num(x)
+
+@type(opt=true) Shape
+Q(x) : Shape
+Q(@"def")
+Q(@"567") <- num(42)

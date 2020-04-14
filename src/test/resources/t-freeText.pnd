@@ -1,0 +1,25 @@
+@text
+Var:Type(t, v) <- var v has type t
+
+Var:Type("Object", "o1")
+//var "str" has type "String" //TODO fix in head ?
+
+@output types
+types(?t) <- var _ has type ?t
+
+
+VarPointsTo(v, h, ctx, hctx) : string, string, string, string
+
+@text
+VarPointsTo(v, h, ctx, hctx) <-
+    var v and ctx points to h and hctx
+
+
+foo("abc")
+bar("new A")
+
+@output foobar
+foobar(?v, ?hctx) <-
+    foo(?v),
+    var ?v and _ points to "o1" and ?hctx,
+    bar(?hctx)

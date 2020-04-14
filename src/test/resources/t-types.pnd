@@ -1,0 +1,9 @@
+@Output @Type Animal
+@Type Cat : Animal
+@Type Dog : Animal
+@Type PersianCat : Cat
+
+@Output @Type {
+	@Output Apple
+	Panda
+}

@@ -6,8 +6,10 @@ import org.antlr.v4.runtime.ANTLRInputStream
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTreeWalker
 import org.codesimius.panda.DatalogParserImpl
-import org.codesimius.panda.actions.code.LBCodeGenerator
-import org.codesimius.panda.actions.code.SouffleCodeGenerator
+import org.codesimius.panda.actions.code.DefaultCodeGenerator
+import org.codesimius.panda.actions.tranform.*
+import org.codesimius.panda.actions.validation.MainValidator
+import org.codesimius.panda.actions.validation.PreliminaryValidator
 import org.codesimius.panda.datalog.DatalogLexer
 import org.codesimius.panda.datalog.DatalogParser
 
@@ -18,32 +20,37 @@ class Compiler {
 
 	static List<Artifact> artifacts
 
-	static List<Artifact> compileToLB3(String filename, String outDir) {
-		compile(filename, new LBCodeGenerator(outDir))
-	}
-
-	static List<Artifact> compileToSouffle(String filename, String outDir) {
-		compile(filename, new SouffleCodeGenerator(outDir))
-	}
-
-	static List<Artifact> compile(String filename, def codeGenActor) {
+	static void compile(String filename, DefaultCodeGenerator codeGenerator) {
 		try {
-			log.info(tag("${new File(filename).canonicalPath} with ${codeGenActor.class.simpleName}", "COMPILE"))
-			compile0(new ANTLRFileStream(filename), filename, codeGenActor)
+			log.info(tag("${new File(filename).canonicalPath} with ${codeGenerator.class.simpleName}", "COMPILE"))
+			compile0(new ANTLRFileStream(filename), filename, codeGenerator)
 			artifacts.each { log.info(tag(it.file.canonicalPath, it.kind as String)) }
 		} catch (e) {
 			(e instanceof PandaException) ? log.error(tag(e.message, "ERROR")) : log.error(e.message, e)
-			null
 		}
 	}
 
-	static List<Artifact> compile0(ANTLRInputStream inputStream, String filename, def codeGen) {
-		def parser = new DatalogParser(new CommonTokenStream(new DatalogLexer(inputStream)))
+	static def compile0(ANTLRInputStream inputStream, String filename, def codeGenerator) {
+		artifacts = []
 		def listener = new DatalogParserImpl(filename)
+		def parser = new DatalogParser(new CommonTokenStream(new DatalogLexer(inputStream)))
 		ParseTreeWalker.DEFAULT.walk(listener, parser.program())
 
-		artifacts = []
-		codeGen.visit(listener.program)
+		// Apply common code trasformation steps before passing to a specific code generator
+		def n = listener.program
+				.accept(new FreeTextTransformer())
+				.accept(new PreliminaryValidator())
+//				.accept(new ComponentInstantiationTransformer())
+//				.accept(new DependencyGraphVisitor(codeGenerator.outDir))
+//				.accept(new ComponentFlatteningTransformer())
+				.accept(new TypesTransformer())
+				.accept(new InputFactsTransformer()) // TODO Souffle Specific?
+				.accept(new MainValidator())
+				.accept(codeGenerator.typeInferenceTransformer)
+				.accept(new SmartLiteralTransformer(codeGenerator.typeInferenceTransformer))
+				.accept(new TypesOptimizer()) // TODO keep original type as metadata0
+
+		codeGenerator.visit(n)
 		artifacts
 	}
 }

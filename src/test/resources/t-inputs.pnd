@@ -1,0 +1,13 @@
+@Input {
+	P1(x) : string
+	P2(x) : int
+	P3(x) : string
+}
+
+@output p
+p(x) <- P1(x) ; P3(x)
+
+@type Animal
+@type @input Cat : Animal
+
+@input P4(x,y) : int, Cat

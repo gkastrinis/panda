@@ -5,16 +5,13 @@ package org.codesimius.panda.datalog;
 }
 
 program
-	: (component | cmd | instantiation | datalog)* ;
+	: (component | instantiation | datalog)* ;
 
 component
 	: 'component' IDENTIFIER parameterList? (':' superComponent)? '{' datalog* '}' ('as' identifierList)? ;
 
 superComponent
 	: IDENTIFIER parameterList? ;
-
-cmd
-	: 'cmd' IDENTIFIER '{' datalog* '}' ('as' identifierList)? ;
 
 instantiation
 	: IDENTIFIER parameterList? 'as' identifierList ;
@@ -48,7 +45,7 @@ construction
 	: constructor 'new' IDENTIFIER ;
 
 aggregation
-	: 'agg' '<<' IDENTIFIER '=' relation '>>' bodyList ;
+	: IDENTIFIER '=' relation '{' bodyList '}' ;
 
 value
 	: IDENTIFIER '=' constant ;
@@ -120,6 +117,7 @@ exprList
 parameterList
 	: '<' identifierList '>' ;
 
+// TODO remove
 lineMarker
 	: '#' INTEGER STRING INTEGER* ;
 

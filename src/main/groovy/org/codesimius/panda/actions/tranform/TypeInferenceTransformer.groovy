@@ -54,7 +54,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 
 		// Gather candidate types for relations, until fix-point
 		Set<Rule> oldDeltaRules = n.rules
-		while (!oldDeltaRules.isEmpty()) {
+		while (!oldDeltaRules.empty) {
 			deltaRules = [] as Set
 			oldDeltaRules.each { visit it }
 			if (oldDeltaRules == deltaRules)
@@ -65,7 +65,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 		// Fill partial declarations and add implicit ones
 		// Ignore relations that derive from types
 		def interestingRelationsWithTypes = inferredTypes.findAll { rel, types ->
-			!datalog.allTypes.any { it.name == rel } && !(rel in AggregationElement.SUPPORTED_PREDICATES)
+			!datalog.allTypes.any { it.name == rel } && (rel.toLowerCase()! in AggregationElement.SUPPORTED_PREDICATES)
 		}
 		def relDeclarations = interestingRelationsWithTypes.collect { rel, types ->
 			def vars = varN(types.size())
@@ -143,7 +143,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 	}
 
 	void enter(AggregationElement n) {
-		def name = n.relation.name
+		def name = n.relation.name.toLowerCase()
 		inferredTypes[name] = AggregationElement.PREDICATE_TYPES[name]
 		exprType[n.var] = meet(exprType[n.var], AggregationElement.PREDICATE_RET_TYPE[name])
 	}
@@ -217,7 +217,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 			return currType
 		else if (!currType || t in datalog.getExtendedSubTypesOf(currType))
 			return t
-		else if (!(currType in datalog.subTypes[t]))
+		else if (currType! in datalog.subTypes[t])
 			error(findParentLoc(), Error.TYPE_INF_INCOMPAT, [currType.name, t.name])
 
 		return currType

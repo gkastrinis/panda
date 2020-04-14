@@ -15,7 +15,7 @@ import static org.codesimius.panda.datalog.Annotation.TEXT
 import static org.codesimius.panda.system.Error.error
 
 @Canonical
-class NormalizingTransformer extends DefaultTransformer {
+class FreeTextTransformer extends DefaultTransformer {
 
 	BlockLvl0 datalog
 	Trie trie
@@ -23,16 +23,16 @@ class NormalizingTransformer extends DefaultTransformer {
 	IVisitable visit(BlockLvl0 n) {
 		datalog = n
 		trie = new Trie()
-		def textRules = n.rules.findAll { TEXT in it.annotations }
-		textRules.each {
+		def freeTextRules = n.rules.findAll { TEXT in it.annotations }
+		freeTextRules.each {
 			def loc = it.loc()
 
-			if (!(it.head instanceof Relation)) error(loc, Error.TEXT_MALFORMED_HEAD, null)
+			if (it.head !instanceof Relation) error(loc, Error.TEXT_MALFORMED_HEAD, null)
 			def relation = it.head as Relation
 			def relationParams = relation.exprs
-			relationParams.findAll { !(it instanceof VariableExpr) }.each { error(loc, Error.TEXT_HEAD_NON_VAR) }
+			relationParams.findAll { it !instanceof VariableExpr }.each { error(loc, Error.TEXT_HEAD_NON_VAR) }
 
-			if (!(it.body instanceof RelationText)) error(loc, Error.TEXT_MALFORMED_BODY, null)
+			if (it.body !instanceof RelationText) error(loc, Error.TEXT_MALFORMED_BODY, null)
 			def tokens = (it.body as RelationText).tokens.collect { token ->
 				if (token instanceof ConstantExpr) error(loc, Error.TEXT_BODY_NON_VAR)
 				def index = relationParams.findIndexOf { (it as VariableExpr).name == token }
@@ -40,10 +40,10 @@ class NormalizingTransformer extends DefaultTransformer {
 			}
 			trie.insert(tokens, relation, loc)
 		}
-		n.rules -= textRules
+		n.rules -= freeTextRules
 
-		def rules = n.rules.collect { visit it } as Set<Rule>
-		new BlockLvl0(n.relDeclarations, n.typeDeclarations, rules)
+		def newRules = n.rules.collect { visit it } as Set<Rule>
+		new BlockLvl0(n.relDeclarations, n.typeDeclarations, newRules)
 	}
 
 	IVisitable visit(RelationText n) { trie.find(n.tokens, findParentLoc()) }

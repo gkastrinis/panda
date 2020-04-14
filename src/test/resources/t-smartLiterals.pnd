@@ -1,0 +1,5 @@
+@type Animal
+@type Cat : Animal
+Foo(x, y) : int, Cat
+Baz(a, b, c) <- Animal:byStr["Alice"] = a, b = 42, c = "abc"
+Bar(x, y) <- Foo(x, @"Eve"), Baz(@"Alice", x, y)
