@@ -1,6 +1,7 @@
 package org.codesimius.panda.actions.tranform
 
 import groovy.transform.Canonical
+import org.codesimius.panda.datalog.AnnotationSet
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.clause.RelDeclaration
@@ -12,11 +13,11 @@ import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.element.relation.Type
 import org.codesimius.panda.datalog.expr.BinaryOp
+import org.codesimius.panda.datalog.expr.ConstantExpr
 import org.codesimius.panda.datalog.expr.IExpr
 import org.codesimius.panda.datalog.expr.VariableExpr
 
-import static org.codesimius.panda.datalog.Annotation.CONSTRUCTOR
-import static org.codesimius.panda.datalog.Annotation.TYPE
+import static org.codesimius.panda.datalog.Annotation.*
 import static org.codesimius.panda.datalog.element.relation.Type.TYPE_STRING
 import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
 
@@ -43,17 +44,23 @@ class TypesOptimizer extends DefaultTransformer {
 	}
 
 	IVisitable exit(RelDeclaration n) {
-		(CONSTRUCTOR in n.annotations && n.types.last() in typesToOptimize) ? null : super.exit(n)
+		// Remove constructor declarations for optimized types
+		if (CONSTRUCTOR in n.annotations && n.types.last() in typesToOptimize) return null
+
+		def metadata = METADATA.template([types: new ConstantExpr(n.types*.name.join(" x "))])
+		new RelDeclaration(m[n.relation] as Relation, n.types.collect { m[it] as Type }, n.annotations << metadata)
 	}
 
 	IVisitable exit(TypeDeclaration n) {
+		def metadata = METADATA.template([types: new ConstantExpr(n.type.name)])
+
 		if (n.type in typesToOptimize) {
-			extraRelDecls << new RelDeclaration(new Relation(n.type.name), [TYPE_STRING])
+			extraRelDecls << new RelDeclaration(new Relation(n.type.name), [TYPE_STRING], new AnnotationSet(metadata))
 			if (n.supertype)
 				extraRules << new Rule(new Relation(n.supertype.name, [var1()]), new Relation(n.type.name, [var1()]))
 			return null
 		} else
-			return n
+			return new TypeDeclaration(m[n.type] as Type, m[n.supertype] as Type, n.annotations << metadata)
 	}
 
 	IVisitable visit(Rule n) {

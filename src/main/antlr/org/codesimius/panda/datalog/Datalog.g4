@@ -117,7 +117,6 @@ exprList
 parameterList
 	: '<' identifierList '>' ;
 
-// TODO remove
 lineMarker
 	: '#' INTEGER STRING INTEGER* ;
 

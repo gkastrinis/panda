@@ -48,7 +48,7 @@ class Compiler {
 				.accept(new MainValidator())
 				.accept(codeGenerator.typeInferenceTransformer)
 				.accept(new SmartLiteralTransformer(codeGenerator.typeInferenceTransformer))
-				.accept(new TypesOptimizer()) // TODO keep original type as metadata0
+				.accept(new TypesOptimizer())
 
 		codeGenerator.visit(n)
 		artifacts

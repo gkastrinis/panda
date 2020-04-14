@@ -14,12 +14,10 @@ import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.RecordType
 import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.element.relation.Type
-import org.codesimius.panda.datalog.expr.ConstantExpr
 import org.codesimius.panda.datalog.expr.IExpr
 import org.codesimius.panda.datalog.expr.RecordExpr
 import org.codesimius.panda.datalog.expr.VariableExpr
 
-import static org.codesimius.panda.datalog.Annotation.METADATA
 import static org.codesimius.panda.datalog.expr.ConstantExpr.NIL
 import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
 
@@ -81,14 +79,12 @@ class ConstructorTransformer extends DefaultTransformer {
 
 	IVisitable exit(RelDeclaration n) {
 		// Re: (1)
-		def metadata = METADATA.template([types: new ConstantExpr(n.types*.name.join(" x "))])
-		new RelDeclaration(n.relation, n.types.collect { map(it) }, n.annotations << metadata)
+		new RelDeclaration(n.relation, n.types.collect { map(it) }, n.annotations)
 	}
 
 	IVisitable exit(TypeDeclaration n) {
 		// Re: 3
-		def metadata = METADATA.template([types: new ConstantExpr(n.type.name)])
-		extraRelDecls << new RelDeclaration(new Relation(n.type.name), [map(n.type)], n.annotations << metadata)
+		extraRelDecls << new RelDeclaration(new Relation(n.type.name), [map(n.type)], n.annotations)
 		// Re: 4
 		if (n.supertype)
 			extraRules << new Rule(new Relation(n.supertype.name, [var1()]), new Relation(n.type.name, [var1()]))

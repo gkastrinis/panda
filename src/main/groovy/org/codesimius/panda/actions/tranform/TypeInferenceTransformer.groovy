@@ -186,7 +186,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 			case LEQ:
 			case GT:
 			case GEQ:
-				if (!types.every { it in ordinalTypes }) // TODO Change with 'any'?
+				if (types.any { it !in ordinalTypes })
 					error(findParentLoc(), Error.TYPE_INF_INCOMPAT, [leftType, rightType])
 				exprType[n] = TYPE_BOOLEAN
 				break
@@ -194,7 +194,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 			case MINUS:
 			case MULT:
 			case DIV:
-				if (!types.every { it in numericalTypes }) // TODO Change with 'any'?
+				if (types.any { it !in numericalTypes })
 					error(findParentLoc(), Error.TYPE_INF_INCOMPAT, [leftType, rightType])
 				exprType[n] = joinType
 				break
