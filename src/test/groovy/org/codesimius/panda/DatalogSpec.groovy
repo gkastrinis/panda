@@ -23,25 +23,25 @@ class DatalogSpec extends Specification {
 		notThrown(PandaException)
 
 		where:
-		file              | _
-		"t-basics"        | _
-		"t-primitives"    | _
-		"t-aggregations"  | _
-		"t-types"         | _
-		"t-typeValues"    | _
-		"t-inference"     | _
-		"t-inputs"        | _
-		"t-constr1"       | _
-		"t-constr2"       | _
-		"t-constr3"       | _
-		"t-smartLiterals" | _
-		"t-typesOpt"      | _
-		"t-freeText"      | _
-		"t-templates1"    | _
-		"t-templates2"    | _
-		"t-templates3"    | _
-		"t-templates4"    | _
-		"t-templates5"    | _
+		file                | _
+		"t0-basics"         | _
+		"t1-primitives"     | _
+		"t2-aggregations"   | _
+		"t3-types"          | _
+		"t4-typeValues"     | _
+		"t5-inference"      | _
+		"t6-inputs"         | _
+		"t7-constr1"        | _
+		"t8-constr2"        | _
+		"t9-constr3"        | _
+		"t10-smartLiterals" | _
+		"t11-typesOpt"      | _
+		"t12-freeText"      | _
+		"t13-templates1"    | _
+		"t14-templates2"    | _
+		"t15-templates3"    | _
+		"t16-templates4"    | _
+		"t17-templates5"    | _
 	}
 
 	@Unroll
