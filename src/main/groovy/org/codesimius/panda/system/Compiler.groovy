@@ -7,10 +7,6 @@ import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTreeWalker
 import org.codesimius.panda.DatalogParserImpl
 import org.codesimius.panda.actions.code.DefaultCodeGenerator
-import org.codesimius.panda.actions.graph.DependencyGraphVisitor
-import org.codesimius.panda.actions.tranform.*
-import org.codesimius.panda.actions.validation.MainValidator
-import org.codesimius.panda.actions.validation.PreliminaryValidator
 import org.codesimius.panda.datalog.DatalogLexer
 import org.codesimius.panda.datalog.DatalogParser
 
@@ -37,21 +33,7 @@ class Compiler {
 		def parser = new DatalogParser(new CommonTokenStream(new DatalogLexer(inputStream)))
 		ParseTreeWalker.DEFAULT.walk(listener, parser.program())
 
-		// Apply common code trasformation steps before passing to a specific code generator
-		def n = listener.program
-				.accept(new FreeTextTransformer())
-				.accept(new PreliminaryValidator())
-				.accept(new TemplateInstantiationTransformer())
-				.accept(new DependencyGraphVisitor(codeGenerator.outDir))
-				.accept(new TemplateFlatteningTransformer())
-				.accept(new TypesTransformer())
-				.accept(new InputFactsTransformer()) // TODO Souffle Specific?
-				.accept(new MainValidator())
-				.accept(codeGenerator.typeInferenceTransformer)
-				.accept(new SmartLiteralTransformer(codeGenerator.typeInferenceTransformer))
-				.accept(new TypesOptimizer())
-
-		codeGenerator.visit(n)
+		codeGenerator.visit(listener.program)
 		artifacts
 	}
 }

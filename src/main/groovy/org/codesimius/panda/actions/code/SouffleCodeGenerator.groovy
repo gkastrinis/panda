@@ -26,8 +26,9 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		createUniqueFile("out_", ".dl")
 		Compiler.artifacts << new Artifact(Artifact.Kind.LOGIC, currentFile)
 
-		// Souffle specific code transformations
-		def n = p.accept(new ConstructorTransformer(typeInferenceTransformer))
+		def n = transform(p)
+				// Souffle specific code transformations
+				.accept(new ConstructorTransformer(typeInferenceTransformer))
 				.accept(new AssignTransformer())
 
 		super.visit(n)

@@ -1,7 +1,10 @@
 package org.codesimius.panda.actions.code
 
 import org.codesimius.panda.actions.DefaultVisitor
-import org.codesimius.panda.actions.tranform.TypeInferenceTransformer
+import org.codesimius.panda.actions.graph.DependencyGraphVisitor
+import org.codesimius.panda.actions.tranform.*
+import org.codesimius.panda.actions.validation.MainValidator
+import org.codesimius.panda.actions.validation.PreliminaryValidator
 import org.codesimius.panda.datalog.block.BlockLvl2
 import org.codesimius.panda.datalog.element.ComparisonElement
 import org.codesimius.panda.datalog.element.ConstructionElement
@@ -33,6 +36,22 @@ class DefaultCodeGenerator extends DefaultVisitor<String> {
 	}
 
 	DefaultCodeGenerator(String outDir) { this(new File(outDir)) }
+
+	// Apply common code trasformation steps before any specific code generation
+	BlockLvl2 transform(BlockLvl2 p) {
+		return p
+				.accept(new FreeTextTransformer())
+				.accept(new PreliminaryValidator())
+				.accept(new TemplateInstantiationTransformer())
+				.accept(new DependencyGraphVisitor(outDir))
+				.accept(new TemplateFlatteningTransformer())
+				.accept(new TypesTransformer())
+				.accept(new InputFactsTransformer()) // TODO Souffle Specific?
+				.accept(new MainValidator())
+				.accept(typeInferenceTransformer)
+				.accept(new SmartLiteralTransformer(typeInferenceTransformer))
+				.accept(new TypesOptimizer())
+	}
 
 	String exit(BlockLvl2 n) { fw.close(); null }
 
