@@ -26,11 +26,8 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		createUniqueFile("out_", ".dl")
 		Compiler.artifacts << new Artifact(Artifact.Kind.LOGIC, currentFile)
 
-		def n = transform(p)
-				// Souffle specific code transformations
-				.accept(new ConstructorTransformer(typeInferenceTransformer))
-				.accept(new AssignTransformer())
-
+		def steps = transformations + [new ConstructorTransformer(typeInferenceTransformer), new AssignTransformer()]
+		def n = steps.inject(p) { prog, step -> prog.accept(step) }
 		super.visit(n)
 	}
 

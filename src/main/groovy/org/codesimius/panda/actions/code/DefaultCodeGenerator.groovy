@@ -30,28 +30,26 @@ class DefaultCodeGenerator extends DefaultVisitor<String> {
 	// Keep track of active logical and negation elements in order to group them correctly
 	private List<Integer> complexElements = []
 
+	def transformations = [
+			new FreeTextTransformer(),
+			new PreliminaryValidator(),
+			new TemplateInstantiationTransformer(),
+			new DependencyGraphVisitor(outDir),
+			new TemplateFlatteningTransformer(),
+			new TypesTransformer(),
+			new InputFactsTransformer(),
+			new MainValidator(),
+			typeInferenceTransformer,
+			new SmartLiteralTransformer(typeInferenceTransformer),
+			new TypesOptimizer()
+	]
+
 	DefaultCodeGenerator(File outDir) {
 		this.outDir = outDir
 		outDir.mkdirs()
 	}
 
 	DefaultCodeGenerator(String outDir) { this(new File(outDir)) }
-
-	// Apply common code trasformation steps before any specific code generation
-	BlockLvl2 transform(BlockLvl2 p) {
-		return p
-				.accept(new FreeTextTransformer())
-				.accept(new PreliminaryValidator())
-				.accept(new TemplateInstantiationTransformer())
-				.accept(new DependencyGraphVisitor(outDir))
-				.accept(new TemplateFlatteningTransformer())
-				.accept(new TypesTransformer())
-				.accept(new InputFactsTransformer()) // TODO Souffle Specific?
-				.accept(new MainValidator())
-				.accept(typeInferenceTransformer)
-				.accept(new SmartLiteralTransformer(typeInferenceTransformer))
-				.accept(new TypesOptimizer())
-	}
 
 	String exit(BlockLvl2 n) { fw.close(); null }
 
