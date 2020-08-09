@@ -2,6 +2,7 @@ package org.codesimius.panda
 
 import org.antlr.v4.runtime.ANTLRInputStream
 import org.apache.commons.io.FileUtils
+import org.codesimius.panda.actions.code.DefaultCodeGenerator
 import org.codesimius.panda.actions.code.SouffleCodeGenerator
 import org.codesimius.panda.system.Artifact
 import org.codesimius.panda.system.Compiler
@@ -142,23 +143,7 @@ class DatalogSpec extends Specification {
 		"fail-S1" | Error.VAR_ASGN_COMPLEX
 	}
 
-	def test0(String file, Class codeGen) {
-		def resourcePath = "/${file}.pnd"
-		def inputStream = new ANTLRInputStream(this.class.getResourceAsStream(resourcePath))
-		def resource = this.class.getResource(resourcePath).file
-		Compiler.compile0(inputStream, resource, codeGen.newInstance("build/out"))
-	}
-
 	def test(String file) {
-//		PandaException e1 = null
-//		try {
-//			test0(file, LBCodeGenerator)
-//		} catch (PandaException e) {
-//			e1 = e
-//		}
-
-//		PandaException e2 = null
-//		try {
 		def artifacts = test0(file, SouffleCodeGenerator)
 		// Validate Contents
 		def generatedFile = artifacts.find { it.kind == Artifact.Kind.LOGIC }.file
@@ -167,12 +152,14 @@ class DatalogSpec extends Specification {
 
 		if (expectedFile?.exists() && !FileUtils.contentEquals(generatedFile, expectedFile))
 			error(Error.EXP_CONTENTS_MISMATCH, null)
-//		}
-//		catch (PandaException e) {
-//			e2 = e
-//		}
+	}
 
-//		assert e1?.error == e2?.error
-//		if (e1) throw e1
+	def test0(String file, Class codeGen) {
+		def resourcePath = "/${file}.pnd"
+		def inputStream = new ANTLRInputStream(this.class.getResourceAsStream(resourcePath))
+		def resource = this.class.getResource(resourcePath).file
+		def codeGenerator = codeGen.newInstance("build/out") as DefaultCodeGenerator
+		Compiler.run(inputStream, resource, codeGenerator)
+		return codeGenerator.artifacts
 	}
 }

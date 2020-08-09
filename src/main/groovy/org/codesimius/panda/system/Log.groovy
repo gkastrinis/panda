@@ -10,19 +10,22 @@ class Log {
 
 	static {
 		LOG_FILE.parentFile.mkdirs()
+		LOG_FILE.text = ''
 	}
+
+	static void disableFileLog() { LOG_FILE = null }
 
 	static void info(def tag = null, def msg) {
 		msg = "${DATE_FORMAT.format(new Date())} $tag: $msg"
 		System.out.println msg
-		LOG_FILE.append msg
+		if (LOG_FILE) LOG_FILE.append "$msg\n"
 	}
 
 	private static def prob(def tag, def loc = null, Error errorId, Object... values) {
 		def rawMsg = "${MessageFormat.format(Error.msgMap[errorId], values)} -- [$errorId]"
 		def msg = "${DATE_FORMAT.format(new Date())} $tag: $rawMsg${loc ? "\n$loc" : ""}"
 		System.err.println msg
-		LOG_FILE.append msg
+		if (LOG_FILE) LOG_FILE.append "$msg\n"
 		return rawMsg
 	}
 
@@ -38,7 +41,6 @@ class Log {
 	static void error(Exception e) {
 		def msg = e.message
 		System.err.println msg
-		LOG_FILE.append msg
-		throw e
+		if (LOG_FILE) LOG_FILE.append "$msg\n"
 	}
 }

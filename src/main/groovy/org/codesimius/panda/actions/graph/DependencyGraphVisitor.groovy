@@ -2,6 +2,7 @@ package org.codesimius.panda.actions.graph
 
 import groovy.transform.Canonical
 import org.codesimius.panda.actions.DefaultVisitor
+import org.codesimius.panda.actions.code.DefaultCodeGenerator
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl1
 import org.codesimius.panda.datalog.block.BlockLvl2
@@ -22,6 +23,7 @@ import static org.codesimius.panda.system.Log.error
 class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 
 	File outDir
+	DefaultCodeGenerator codeGenerator
 	// Each subgraph represents a different component
 	Map<String, Graph> graphs = [:].withDefault { new Graph(it) }
 
@@ -73,7 +75,7 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 			//topologicalSort()
 		}
 
-		new DependencyGraphDOTGenerator(outDir, this).gen()
+		codeGenerator.artifacts += new DependencyGraphDOTGenerator(outDir, this).gen()
 
 		return n
 	}

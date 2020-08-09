@@ -17,11 +17,11 @@ class DependencyGraphDOTGenerator {
 	File outDir
 	DependencyGraphVisitor dependencyGraph
 
-	void gen() {
+	List<Artifact> gen() {
 		def f = Files.createTempFile(Paths.get(outDir.path), "graph_", ".dot").toFile()
 		def fw = new FileWriter(f)
 		def emit = { fw.write "$it\n" }
-		Compiler.artifacts << new Artifact(Artifact.Kind.GRAPH, f)
+		def artifacts = [new Artifact(Artifact.Kind.GRAPH, f)]
 
 		def edges = []
 		def FONT = "Arial"
@@ -96,5 +96,6 @@ class DependencyGraphDOTGenerator {
 		edges.each { emit it }
 		emit "}"
 		fw.close()
+		return artifacts
 	}
 }

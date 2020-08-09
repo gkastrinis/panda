@@ -14,6 +14,7 @@ import org.codesimius.panda.datalog.expr.BinaryExpr
 import org.codesimius.panda.datalog.expr.ConstantExpr
 import org.codesimius.panda.datalog.expr.GroupExpr
 import org.codesimius.panda.datalog.expr.VariableExpr
+import org.codesimius.panda.system.Artifact
 
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -21,6 +22,8 @@ import java.nio.file.Paths
 import static org.codesimius.panda.datalog.element.ComparisonElement.TRIVIALLY_TRUE
 
 class DefaultCodeGenerator extends DefaultVisitor<String> {
+
+	public List<Artifact> artifacts = []
 
 	def typeInferenceTransformer = new TypeInferenceTransformer()
 
@@ -34,7 +37,7 @@ class DefaultCodeGenerator extends DefaultVisitor<String> {
 			new FreeTextTransformer(),
 			new PreliminaryValidator(),
 			new TemplateInstantiationTransformer(),
-			new DependencyGraphVisitor(outDir),
+			new DependencyGraphVisitor(outDir, this),
 			new TemplateFlatteningTransformer(),
 			new TypesTransformer(),
 			new InputFactsTransformer(),

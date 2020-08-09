@@ -14,25 +14,21 @@ import static org.codesimius.panda.system.Log.info
 
 class Compiler {
 
-	static List<Artifact> artifacts
-
-	static void compile(String filename, DefaultCodeGenerator codeGenerator) {
+	static void run(String filename, DefaultCodeGenerator codeGenerator) {
 		try {
 			info("COMPILE", "${new File(filename).canonicalPath} with ${codeGenerator.class.simpleName}")
-			compile0(new ANTLRFileStream(filename), filename, codeGenerator)
-			artifacts.each { info(it.kind as String, it.file.canonicalPath) }
+			run(new ANTLRFileStream(filename), filename, codeGenerator)
+			codeGenerator.artifacts.each { info(it.kind as String, it.file.canonicalPath) }
 		} catch (e) {
 			error e
 		}
 	}
 
-	static def compile0(ANTLRInputStream inputStream, String filename, def codeGenerator) {
-		artifacts = []
+	static def run(ANTLRInputStream inputStream, String filename, def codeGenerator) {
 		def listener = new DatalogParserImpl(filename)
 		def parser = new DatalogParser(new CommonTokenStream(new DatalogLexer(inputStream)))
 		ParseTreeWalker.DEFAULT.walk(listener, parser.program())
 
 		codeGenerator.visit(listener.program)
-		artifacts
 	}
 }

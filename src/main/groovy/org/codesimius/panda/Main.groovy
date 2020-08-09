@@ -2,7 +2,7 @@ package org.codesimius.panda
 
 import org.codesimius.panda.actions.code.SouffleCodeGenerator
 import org.codesimius.panda.system.Compiler
-//import org.codesimius.panda.system.Error
+import org.codesimius.panda.system.Log
 
-//Error.initializeLogging()
-Compiler.compile(args[0], new SouffleCodeGenerator("build/out_dl"))
+Log.disableFileLog()
+Compiler.run(args[0], new SouffleCodeGenerator("build/out_dl"))
