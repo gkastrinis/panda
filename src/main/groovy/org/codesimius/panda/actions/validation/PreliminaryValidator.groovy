@@ -17,7 +17,7 @@ import org.codesimius.panda.system.SourceManager
 import static org.codesimius.panda.datalog.Annotation.CONSTRUCTOR
 import static org.codesimius.panda.datalog.expr.ConstantExpr.Kind.BOOLEAN
 import static org.codesimius.panda.datalog.expr.ConstantExpr.Kind.REAL
-import static org.codesimius.panda.system.Error.error
+import static org.codesimius.panda.system.Log.error
 
 @Canonical
 class PreliminaryValidator extends DefaultVisitor<IVisitable> {

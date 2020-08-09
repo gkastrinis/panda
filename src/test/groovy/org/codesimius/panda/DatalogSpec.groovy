@@ -10,7 +10,7 @@ import org.codesimius.panda.system.PandaException
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import static org.codesimius.panda.system.Error.error
+import static org.codesimius.panda.system.Log.error
 
 class DatalogSpec extends Specification {
 
@@ -146,7 +146,6 @@ class DatalogSpec extends Specification {
 		def resourcePath = "/${file}.pnd"
 		def inputStream = new ANTLRInputStream(this.class.getResourceAsStream(resourcePath))
 		def resource = this.class.getResource(resourcePath).file
-		Error.initializeLogging()
 		Compiler.compile0(inputStream, resource, codeGen.newInstance("build/out"))
 	}
 

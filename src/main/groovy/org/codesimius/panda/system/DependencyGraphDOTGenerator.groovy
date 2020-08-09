@@ -1,7 +1,6 @@
 package org.codesimius.panda.system
 
 import groovy.transform.Canonical
-import groovy.util.logging.Log4j
 import org.codesimius.panda.actions.graph.DependencyGraphVisitor
 import org.codesimius.panda.actions.graph.Edge
 import org.codesimius.panda.actions.graph.Node
@@ -13,7 +12,6 @@ import static org.codesimius.panda.actions.graph.DependencyGraphVisitor.GLOBAL a
 import static org.codesimius.panda.actions.graph.DependencyGraphVisitor.INSTANTIATION as INSTANTIATION_GRAPH
 
 @Canonical
-@Log4j
 class DependencyGraphDOTGenerator {
 
 	File outDir

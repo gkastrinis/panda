@@ -12,7 +12,7 @@ import org.codesimius.panda.datalog.expr.RecordExpr
 import org.codesimius.panda.datalog.expr.VariableExpr
 import org.codesimius.panda.system.Error
 
-import static org.codesimius.panda.system.Error.error
+import static org.codesimius.panda.system.Log.error
 
 class VarInfoVisitor extends DefaultVisitor<IVisitable> {
 

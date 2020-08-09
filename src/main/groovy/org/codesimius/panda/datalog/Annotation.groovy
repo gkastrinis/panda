@@ -6,7 +6,7 @@ import org.codesimius.panda.datalog.expr.ConstantExpr
 import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.datalog.expr.ConstantExpr.Kind.*
-import static org.codesimius.panda.system.Error.error
+import static org.codesimius.panda.system.Log.error
 import static org.codesimius.panda.system.SourceManager.loc
 
 @EqualsAndHashCode(includes = "kind")

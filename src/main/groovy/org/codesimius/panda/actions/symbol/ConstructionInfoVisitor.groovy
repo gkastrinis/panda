@@ -6,7 +6,7 @@ import org.codesimius.panda.datalog.clause.Rule
 import org.codesimius.panda.datalog.element.ConstructionElement
 import org.codesimius.panda.system.Error
 
-import static org.codesimius.panda.system.Error.error
+import static org.codesimius.panda.system.Log.error
 
 class ConstructionInfoVisitor extends DefaultVisitor<IVisitable> {
 

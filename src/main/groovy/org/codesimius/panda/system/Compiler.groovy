@@ -1,6 +1,5 @@
 package org.codesimius.panda.system
 
-import groovy.util.logging.Log4j
 import org.antlr.v4.runtime.ANTLRFileStream
 import org.antlr.v4.runtime.ANTLRInputStream
 import org.antlr.v4.runtime.CommonTokenStream
@@ -10,20 +9,20 @@ import org.codesimius.panda.actions.code.DefaultCodeGenerator
 import org.codesimius.panda.datalog.DatalogLexer
 import org.codesimius.panda.datalog.DatalogParser
 
-import static org.codesimius.panda.system.Error.tag
+import static org.codesimius.panda.system.Log.error
+import static org.codesimius.panda.system.Log.info
 
-@Log4j
 class Compiler {
 
 	static List<Artifact> artifacts
 
 	static void compile(String filename, DefaultCodeGenerator codeGenerator) {
 		try {
-			log.info(tag("${new File(filename).canonicalPath} with ${codeGenerator.class.simpleName}", "COMPILE"))
+			info("COMPILE", "${new File(filename).canonicalPath} with ${codeGenerator.class.simpleName}")
 			compile0(new ANTLRFileStream(filename), filename, codeGenerator)
-			artifacts.each { log.info(tag(it.file.canonicalPath, it.kind as String)) }
+			artifacts.each { info(it.kind as String, it.file.canonicalPath) }
 		} catch (e) {
-			(e instanceof PandaException) ? log.error(tag(e.message, "ERROR")) : log.error(e.message, e)
+			error e
 		}
 	}
 

@@ -21,7 +21,7 @@ import static org.codesimius.panda.datalog.element.relation.Type.*
 import static org.codesimius.panda.datalog.expr.BinaryOp.*
 import static org.codesimius.panda.datalog.expr.ConstantExpr.Kind.*
 import static org.codesimius.panda.datalog.expr.VariableExpr.genN as varN
-import static org.codesimius.panda.system.Error.error
+import static org.codesimius.panda.system.Log.error
 
 @Canonical
 class TypeInferenceTransformer extends DefaultTransformer {

@@ -16,7 +16,7 @@ import org.codesimius.panda.system.DependencyGraphDOTGenerator
 import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.datalog.Annotation.CONSTRUCTOR
-import static org.codesimius.panda.system.Error.error
+import static org.codesimius.panda.system.Log.error
 
 @Canonical
 class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {

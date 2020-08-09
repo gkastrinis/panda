@@ -19,7 +19,7 @@ import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.datalog.element.ComparisonElement.TRIVIALLY_TRUE
 import static org.codesimius.panda.datalog.element.LogicalElement.combineElements
-import static org.codesimius.panda.system.Error.error
+import static org.codesimius.panda.system.Log.error
 
 @Canonical
 class AssignTransformer extends DefaultTransformer {

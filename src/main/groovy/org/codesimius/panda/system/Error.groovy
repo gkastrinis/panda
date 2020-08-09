@@ -1,11 +1,5 @@
 package org.codesimius.panda.system
 
-import groovy.util.logging.Log4j
-import org.apache.log4j.*
-
-import java.text.MessageFormat
-
-@Log4j
 enum Error {
 	ANNOTATION_UNKNOWN,
 	ANNOTATION_NON_EMPTY,
@@ -140,34 +134,4 @@ enum Error {
 
 			(EXP_CONTENTS_MISMATCH)    : "Generated and expected file differ in contents"
 	]
-
-	static void warn(def loc = null, Error errorId, Object... values) {
-		def msg = "${MessageFormat.format(msgMap.get(errorId), values)} -- [$errorId]"
-		if (loc) msg = "$msg\n$loc"
-		log.warn(tag(msg, "WARNING"))
-	}
-
-	static void error(def loc = null, Error errorId, Object... values) {
-		def msg = "${MessageFormat.format(msgMap.get(errorId), values)} -- [$errorId]"
-		if (loc) msg = "$msg\n$loc"
-		throw new PandaException(msg, errorId)
-	}
-
-	static String tag(String msg, String tag) { "[paNda] $tag: $msg" }
-
-	static boolean loggingInitialized
-
-	static initializeLogging() {
-		if (!loggingInitialized) {
-			def logDir = new File("build/logs")
-			if (!logDir) logDir.mkdir()
-
-			def root = Logger.rootLogger
-			root.setLevel(Level.toLevel("INFO", Level.WARN))
-			root.addAppender(new DailyRollingFileAppender(new PatternLayout("%d [%t] %-5p %c - %m%n"), "$logDir/panda.log", "'.'yyyy-MM-dd"))
-			root.addAppender(new ConsoleAppender(new PatternLayout("%m%n")))
-
-			loggingInitialized = true
-		}
-	}
 }

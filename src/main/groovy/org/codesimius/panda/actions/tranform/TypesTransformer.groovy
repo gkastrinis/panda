@@ -16,7 +16,7 @@ import static org.codesimius.panda.datalog.Annotation.*
 import static org.codesimius.panda.datalog.element.LogicalElement.combineElements
 import static org.codesimius.panda.datalog.element.relation.Type.TYPE_STRING
 import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
-import static org.codesimius.panda.system.Error.error
+import static org.codesimius.panda.system.Log.error
 
 @Canonical
 class TypesTransformer extends DefaultTransformer {

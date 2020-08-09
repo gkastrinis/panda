@@ -12,7 +12,7 @@ import org.codesimius.panda.datalog.expr.VariableExpr
 import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.datalog.Annotation.TEXT
-import static org.codesimius.panda.system.Error.error
+import static org.codesimius.panda.system.Log.error
 
 @Canonical
 class FreeTextTransformer extends DefaultTransformer {

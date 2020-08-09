@@ -5,7 +5,7 @@ import groovy.transform.InheritConstructors
 import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.datalog.Annotation.METADATA
-import static org.codesimius.panda.system.Error.warn
+import static org.codesimius.panda.system.Log.warn
 
 @Canonical
 @InheritConstructors

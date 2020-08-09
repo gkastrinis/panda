@@ -6,8 +6,8 @@ import org.codesimius.panda.datalog.expr.IExpr
 import org.codesimius.panda.datalog.expr.VariableExpr
 import org.codesimius.panda.system.Error
 
-import static org.codesimius.panda.system.Error.error
-import static org.codesimius.panda.system.Error.warn
+import static org.codesimius.panda.system.Log.error
+import static org.codesimius.panda.system.Log.warn
 
 class Trie {
 

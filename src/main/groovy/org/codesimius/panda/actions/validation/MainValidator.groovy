@@ -20,8 +20,8 @@ import org.codesimius.panda.system.Error
 import org.codesimius.panda.system.SourceManager
 
 import static org.codesimius.panda.datalog.Annotation.*
-import static org.codesimius.panda.system.Error.error
-import static org.codesimius.panda.system.Error.warn
+import static org.codesimius.panda.system.Log.error
+import static org.codesimius.panda.system.Log.warn
 
 @Canonical
 class MainValidator extends DefaultVisitor<IVisitable> {

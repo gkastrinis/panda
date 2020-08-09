@@ -4,7 +4,7 @@ import groovy.transform.Canonical
 import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.actions.graph.DependencyGraphVisitor.INSTANTIATION
-import static org.codesimius.panda.system.Error.error
+import static org.codesimius.panda.system.Log.error
 
 @Canonical
 class CycleDetector {
