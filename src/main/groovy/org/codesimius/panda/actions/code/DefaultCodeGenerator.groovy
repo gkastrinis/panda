@@ -25,13 +25,13 @@ class DefaultCodeGenerator extends DefaultVisitor<String> {
 
 	public List<Artifact> artifacts = []
 
-	def typeInferenceTransformer = new TypeInferenceTransformer()
-
 	File outDir
 	File currentFile
 	private FileWriter fw
 	// Keep track of active logical and negation elements in order to group them correctly
 	private List<Integer> complexElements = []
+
+	def typeInferenceTransformer = new TypeInferenceTransformer()
 
 	def transformations = [
 			new FreeTextTransformer(),
