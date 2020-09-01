@@ -5,5 +5,5 @@
 
 @Output @Type {
 	@Output Apple
-	Panda
+	Panda.
 }

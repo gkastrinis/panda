@@ -213,7 +213,9 @@ class DatalogParserImpl extends DatalogBaseListener {
 	}
 
 	void exitHeadList(HeadListContext ctx) {
-		if (ctx.relation())
+		if (ctx.relationText())
+			values[ctx] = values[ctx.relationText()]
+		else if (ctx.relation())
 			values[ctx] = values[ctx.relation()]
 		else if (ctx.construction())
 			values[ctx] = values[ctx.construction()]

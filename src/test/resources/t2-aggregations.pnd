@@ -2,7 +2,7 @@ foo(1,2)
 bar(3,4)
 baz(x) <- foo(x, _) ; foo(_, x) ; bar(x, _) ; bar(_, x)
 
-@output { t1 t2 t3 t4 t5 t6 t }
+@output { t1. t2. t3. t4. t5. t6. t. }
 
 t1(1, c) <- c = count() { foo(_,_) }
 t2(2, c) <- c = count() { foo(_, x), bar(x, _) }

@@ -23,7 +23,8 @@ annotationBlock
 	: annotationList '{' datalog* '}' ;
 
 declaration
-	: annotationList? IDENTIFIER (':' IDENTIFIER)? ('with' initValueList)?
+	: annotationList IDENTIFIER (':' IDENTIFIER)? ('with' initValueList)?
+	| IDENTIFIER '.' // Note: Specificaly due to annotation blocks
 	| annotationList? (relation | constructor) ':' identifierList
 	;
 
@@ -74,7 +75,8 @@ comparison
 	: expr ('=' | '<' | '<=' | '>' | '>=' | '!=') expr ;
 
 headList
-	: relation
+	: relationText
+	| relation
 	| construction
 	| headList ',' headList
 	;

@@ -2,7 +2,7 @@
 Var:Type(t, v) <- var v has type t
 
 Var:Type("Object", "o1")
-//var "str" has type "String" //TODO fix in head ?
+var "str" has type "String"
 
 @output types
 types(?t) <- var _ has type ?t
