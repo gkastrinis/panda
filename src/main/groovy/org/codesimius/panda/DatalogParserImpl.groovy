@@ -1,11 +1,12 @@
 package org.codesimius.panda
 
+import org.antlr.v4.runtime.ANTLRFileStream
+import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.ErrorNode
+import org.antlr.v4.runtime.tree.ParseTreeWalker
 import org.antlr.v4.runtime.tree.TerminalNode
-import org.codesimius.panda.datalog.Annotation
-import org.codesimius.panda.datalog.AnnotationSet
-import org.codesimius.panda.datalog.DatalogBaseListener
+import org.codesimius.panda.datalog.*
 import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.block.BlockLvl1
 import org.codesimius.panda.datalog.block.BlockLvl2
@@ -20,7 +21,6 @@ import org.codesimius.panda.datalog.element.relation.RelationText
 import org.codesimius.panda.datalog.element.relation.Type
 import org.codesimius.panda.datalog.expr.*
 import org.codesimius.panda.system.SourceManager
-import org.codesimius.panda.system.SourceManager.Location
 
 import static org.codesimius.panda.datalog.Annotation.*
 import static org.codesimius.panda.datalog.DatalogParser.*
@@ -38,11 +38,23 @@ class DatalogParserImpl extends DatalogBaseListener {
 	Stack<String> activeNamespaces = []
 	def values = [:]
 
-	DatalogParserImpl(String filename) { SourceManager.instance.outputFile = new File(filename).absolutePath }
+	DatalogParserImpl(String filename) {
+		SourceManager.mainFile(new File(filename).absoluteFile)
+		SourceManager.instance.outputFile = new File(filename).absolutePath
+	}
 
 	void exitProgram(ProgramContext ctx) {
 		currPendingAnnotations.each { addAnnotationsToRelDecl(it.key, it.value) }
 	}
+
+	void enterInclude(IncludeContext ctx) {
+		def toFile = new File((SourceManager.files.last() as File).parentFile, ctx.STRING().text[1..-2])
+		def parser = new DatalogParser(new CommonTokenStream(new DatalogLexer(new ANTLRFileStream(toFile.absolutePath))))
+		SourceManager.enterInclude(toFile, ctx.start.line)
+		ParseTreeWalker.DEFAULT.walk(this, parser.program())
+	}
+
+	void exitInclude(IncludeContext ctx) { SourceManager.exitInclude() }
 
 	void enterTemplate(TemplateContext ctx) {
 		currDatalog = new BlockLvl0()
@@ -323,10 +335,10 @@ class DatalogParserImpl extends DatalogBaseListener {
 		ctx.children.any { it instanceof TerminalNode && it.text == token }
 	}
 
-	static Location findLoc(ParserRuleContext ctx) { SourceManager.instance.locate(ctx.start.line) }
+	static String findLoc(ParserRuleContext ctx) { SourceManager.locate(ctx.start.line) }
 
 	static def locAnnotation(ParserRuleContext ctx) {
-		METADATA.template([loc: new ConstantExpr(findLoc(ctx) as String)])
+		METADATA.template([loc: new ConstantExpr(findLoc(ctx))])
 	}
 
 	static def rec(def o, ParserRuleContext ctx) {

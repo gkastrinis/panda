@@ -5,7 +5,10 @@ package org.codesimius.panda.datalog;
 }
 
 program
-	: (template | instantiation | datalog)* ;
+	: (include | template | instantiation | datalog)* ;
+
+include
+	: 'include' STRING ;
 
 template
 	: 'template' IDENTIFIER parameterList? (':' superTemplate)? '{' datalog* '}' ('as' identifierList)? ;
@@ -24,7 +27,7 @@ annotationBlock
 
 declaration
 	: annotationList IDENTIFIER (':' IDENTIFIER)? ('with' initValueList)?
-	| IDENTIFIER '.' // Note: Specificaly due to annotation blocks
+	| IDENTIFIER '.' // Note: Specifically due to annotation blocks
 	| annotationList? (relation | constructor) ':' identifierList
 	;
 

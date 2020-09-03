@@ -5,8 +5,35 @@ import groovy.transform.Canonical
 @Singleton
 class SourceManager {
 
+	// Stack of active files under process (due to include)
+	static Stack<File> files = []
+	// A list of include locations up to the current point
+	static List<String> lines = []
+
+	static void mainFile(File file) { files.push file }
+
+	static void enterInclude(File toFile, int fromLine) {
+		lines.push "${files.last()} : $fromLine}" as String
+		files.push toFile
+	}
+
+	static void exitInclude() {
+		lines.pop()
+		files.pop()
+	}
+
+	static Map<Object, String> locations = [:]
+
+	static String locate(int line) { (lines + ["${files.last()} : $line"]).collect { it -> "\tat $it" }.join("\n") }
+
+	static void rec(Object o, String loc) { SourceManager.locations[o] = loc }
+
+	static String loc(Object o) { SourceManager.locations[o] }
+
+
 	// A C-Preprocessor line marker
 	@Canonical
+	@Deprecated
 	static class LineMarker {
 		int line       // the line that the last marker reports
 		int actualLine // the line that the last marker is in the output file
@@ -16,6 +43,7 @@ class SourceManager {
 	// A sequence of source lines (due to #include)
 	// The first element is the "oldest" include, and so on.
 	@Canonical
+	@Deprecated
 	static class Location {
 		List<String> lines = []
 
@@ -28,7 +56,7 @@ class SourceManager {
 
 	Stack<LineMarker> markers = []
 	String outputFile
-	Map<Object, Location> locations = [:]
+	Map<Object, Location> locationsOLD = [:]
 
 	void lineMarkerStart(int markerLine, int markerActualLine, String sourceFile) {
 		markers.push(new LineMarker(markerLine, markerActualLine, sourceFile))
@@ -36,11 +64,11 @@ class SourceManager {
 
 	void lineMarkerEnd() { markers.pop() }
 
-	static void rec(Object o, Location loc) { SourceManager.instance.locations[o] = loc }
+	static void recOLD(Object o, Location loc) { SourceManager.instance.locationsOLD[o] = loc }
 
-	static Location loc(Object o) { SourceManager.instance.locations[o] }
+	static Location locOLD(Object o) { SourceManager.instance.locationsOLD[o] }
 
-	Location locate(int outputLine) {
+	Location locateOLD(int outputLine) {
 		def loc = new Location()
 		if (markers.empty()) {
 			loc.add(outputFile, outputLine)

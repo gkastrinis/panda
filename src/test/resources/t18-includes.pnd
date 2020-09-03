@@ -1,0 +1,6 @@
+Foo123(1, 2)
+Bar123("abc")
+
+include "includes/t18-inner.pnd"
+
+A(x) <- BarFoo(x, _)

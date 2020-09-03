@@ -1,0 +1,5 @@
+FooBar(x, z, y) <- Foo123(x, y), Bar123(z)
+
+include "../t1-primitives.pnd"
+
+BarFoo(x, z) <- FooBar(x, z, _), Foo(x)

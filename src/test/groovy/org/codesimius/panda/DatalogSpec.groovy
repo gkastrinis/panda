@@ -43,6 +43,7 @@ class DatalogSpec extends Specification {
 		"t15-templates3"    | _
 		"t16-templates4"    | _
 		"t17-templates5"    | _
+		"t18-includes"      | _
 	}
 
 	@Unroll
