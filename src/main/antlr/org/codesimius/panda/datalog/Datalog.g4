@@ -20,7 +20,7 @@ instantiation
 	: IDENTIFIER parameterList? 'as' identifierList ;
 
 datalog
-	: annotationBlock | declaration | rule_ | lineMarker ;
+	: annotationBlock | declaration | rule_ ;
 
 annotationBlock
 	: annotationList '{' datalog* '}' ;
@@ -121,9 +121,6 @@ exprList
 
 parameterList
 	: '<' identifierList '>' ;
-
-lineMarker
-	: '#' INTEGER STRING INTEGER* ;
 
 
 // Lexer

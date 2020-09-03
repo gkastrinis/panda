@@ -38,10 +38,7 @@ class DatalogParserImpl extends DatalogBaseListener {
 	Stack<String> activeNamespaces = []
 	def values = [:]
 
-	DatalogParserImpl(String filename) {
-		SourceManager.mainFile(new File(filename).absoluteFile)
-		SourceManager.instance.outputFile = new File(filename).absolutePath
-	}
+	DatalogParserImpl(String filename) { SourceManager.mainFile(new File(filename).absoluteFile) }
 
 	void exitProgram(ProgramContext ctx) {
 		currPendingAnnotations.each { addAnnotationsToRelDecl(it.key, it.value) }
@@ -290,34 +287,6 @@ class DatalogParserImpl extends DatalogBaseListener {
 
 	void exitParameterList(ParameterListContext ctx) { values[ctx] = values[ctx.identifierList()] }
 
-	void enterLineMarker(LineMarkerContext ctx) {
-		// Line number of the original file (emitted by C-Preprocessor)
-		def markerLine = Integer.parseInt(ctx.INTEGER(0).text)
-		// Actual line in the output file for this line marker
-		def markerActualLine = ctx.start.getLine()
-		// Name of the original file (emitted by C-Preprocessor)
-		def sourceFile = ctx.STRING().text
-		// Remove quotes from file values
-		sourceFile = sourceFile[1..-2]
-
-		// Ignore first line of output. It reports the values of the C-Preprocessed file
-		if (markerActualLine == 1) return
-		// Ignore lines for system info (e.g. <built-in> or /usr/include/stdc-predef.h)
-		if (sourceFile.startsWith("<") || sourceFile.startsWith("/usr/include")) return
-
-		def t = (ctx.INTEGER(1) != null ? Integer.parseInt(ctx.INTEGER(1).text) : 0)
-		// 1 - Start of a new file
-		if (t == 0 || t == 1)
-			SourceManager.instance.lineMarkerStart(markerLine, markerActualLine, sourceFile)
-		// 2 - Returning to previous file
-		else if (t == 2)
-			SourceManager.instance.lineMarkerEnd()
-		// 3 - Following text comes from a system header file (#include <> vs #include "")
-		// 4 - Following text should be treated as being wrapped in an implicit extern "C" block.
-		else
-			println "*** Weird line marker flag: $t ***"
-	}
-
 	void visitErrorNode(ErrorNode node) { throw new RuntimeException("Parsing error") }
 
 	def suffix(String name) {
@@ -337,9 +306,7 @@ class DatalogParserImpl extends DatalogBaseListener {
 
 	static String findLoc(ParserRuleContext ctx) { SourceManager.locate(ctx.start.line) }
 
-	static def locAnnotation(ParserRuleContext ctx) {
-		METADATA.template([loc: new ConstantExpr(findLoc(ctx))])
-	}
+	static def locAnnotation(ParserRuleContext ctx) { METADATA.template([loc: new ConstantExpr(findLoc(ctx))]) }
 
 	static def rec(def o, ParserRuleContext ctx) {
 		SourceManager.rec(o, findLoc(ctx))
