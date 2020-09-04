@@ -6,7 +6,7 @@ baz(x) <- foo(x, _) ; foo(_, x) ; bar(x, _) ; bar(_, x)
 
 t1(1, c) <- c = count() { foo(_,_) }
 t2(2, c) <- c = count() { foo(_, x), bar(x, _) }
-t1(3, m) <- m = max(y) { bar(_, y) }
+t3(3, m) <- m = max(y) { bar(_, y) }
 t4(4, m) <- m = min(x) { baz(x) }
 t5(5, s) <- s = sum(x) { foo(x, _) }
 t6(6, x, c) <- c = count() { foo(_, x) }

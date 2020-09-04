@@ -163,7 +163,10 @@ class TypeInferenceTransformer extends DefaultTransformer {
 		else if (inRuleBody) {
 			forBodyValidation << n
 			def types = inferredTypes[n.name]
-			if (types) n.exprs.eachWithIndex { expr, i -> exprType[expr] = meet(exprType[expr], types[i]) }
+			if (types) n.exprs.eachWithIndex { expr, i ->
+				if (expr instanceof VariableExpr && expr.name == '_') return
+				exprType[expr] = meet(exprType[expr], types[i])
+			}
 		}
 	}
 
