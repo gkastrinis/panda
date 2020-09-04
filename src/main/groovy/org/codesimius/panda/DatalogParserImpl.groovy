@@ -41,7 +41,10 @@ class DatalogParserImpl extends DatalogBaseListener {
 	DatalogParserImpl(String filename) { SourceManager.mainFile(new File(filename).absoluteFile) }
 
 	void exitProgram(ProgramContext ctx) {
-		currPendingAnnotations.each { addAnnotationsToRelDecl(it.key, it.value) }
+		// Do so only at the end of all code parsing.
+		// ExitProgram will also be called at the end of each included file.
+		if (SourceManager.files.size() == 1)
+			currPendingAnnotations.each { addAnnotationsToRelDecl(it.key, it.value) }
 	}
 
 	void enterInclude(IncludeContext ctx) {

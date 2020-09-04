@@ -11,8 +11,6 @@ import static org.codesimius.panda.system.Log.warn
 @InheritConstructors
 class AnnotationSet extends LinkedHashSet<Annotation> {
 
-	//AnnotationSet(Set<Annotation> rawAnnotations = [] as Set) { this.rawAnnotations = rawAnnotations }
-
 	AnnotationSet(Annotation annotation) { this << annotation }
 
 	Annotation getAt(Annotation annotation) { find { it == annotation } }
