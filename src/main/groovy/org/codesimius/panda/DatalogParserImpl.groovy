@@ -35,7 +35,6 @@ class DatalogParserImpl extends DatalogBaseListener {
 	Map<String, AnnotationSet> currPendingAnnotations = globalPendingAnnotations
 	// Extra annotations from annotation blocks
 	Stack<AnnotationSet> extraAnnotationsStack = []
-	Stack<String> activeNamespaces = []
 	def values = [:]
 
 	DatalogParserImpl(String filename) { SourceManager.mainFile(new File(filename).absoluteFile) }
@@ -85,16 +84,10 @@ class DatalogParserImpl extends DatalogBaseListener {
 	}
 
 	void enterAnnotationBlock(AnnotationBlockContext ctx) {
-		def annotations = gatherAnnotations(ctx.annotationList()) << locAnnotation(ctx)
-		if (NAMESPACE in annotations) {
-			activeNamespaces.push(annotations[NAMESPACE]["v"] as String)
-			annotations -= NAMESPACE
-		}
-		extraAnnotationsStack.push annotations
+		extraAnnotationsStack.push(gatherAnnotations(ctx.annotationList()) << locAnnotation(ctx))
 	}
 
 	void exitAnnotationBlock(AnnotationBlockContext ctx) {
-		if (NAMESPACE in extraAnnotationsStack.peek()) activeNamespaces.pop()
 		extraAnnotationsStack.pop()
 	}
 
@@ -104,8 +97,8 @@ class DatalogParserImpl extends DatalogBaseListener {
 
 		// Type declaration
 		if (ctx.IDENTIFIER(0) && TYPE in annotations) {
-			def type = new Type(suffix(ctx.IDENTIFIER(0).text))
-			def supertype = ctx.IDENTIFIER(1) ? new Type(suffix(ctx.IDENTIFIER(1).text)) : null
+			def type = new Type(ctx.IDENTIFIER(0).text)
+			def supertype = ctx.IDENTIFIER(1) ? new Type(ctx.IDENTIFIER(1).text) : null
 			// Initial values are of the form `key(value)`. E.g., PUBLIC('public')
 			// Keys are used to generate singleton relations. E.g., Modifier:PUBLIC(x)
 			if (ctx.initValueList())
@@ -113,14 +106,14 @@ class DatalogParserImpl extends DatalogBaseListener {
 			currDatalog.typeDeclarations << new TypeDeclaration(type, supertype, annotations)
 		}
 		// Incomplete declaration of the form: `@output Foo`
-		// i.e. binds annotations with a relation name without \providing any details
+		// i.e. binds annotations with a relation name without providing any details
 		else if (ctx.IDENTIFIER(0)) {
 			currPendingAnnotations[ctx.IDENTIFIER(0).text] += annotations
 		}
 		// Full declaration of a relation
 		else {
 			def rel = ctx.relation() ? values[ctx.relation()] as Relation : values[ctx.constructor()] as Constructor
-			def types = values[ctx.identifierList()].collect { new Type(suffix(it as String)) }
+			def types = values[ctx.identifierList()].collect { new Type(it as String) }
 			currDatalog.relDeclarations << new RelDeclaration(rel, types, annotations)
 		}
 	}
@@ -143,14 +136,14 @@ class DatalogParserImpl extends DatalogBaseListener {
 	}
 
 	void exitRelation(RelationContext ctx) {
-		def name = suffix(ctx.IDENTIFIER(0).text)
+		def name = ctx.IDENTIFIER(0).text
 		def at = ctx.IDENTIFIER(1) ? "@${ctx.IDENTIFIER(1).text}" : ""
 		def exprs = ctx.exprList() ? values[ctx.exprList()] as List : []
 		values[ctx] = new Relation("$name$at", exprs)
 	}
 
 	void exitConstructor(ConstructorContext ctx) {
-		def name = suffix(ctx.IDENTIFIER().text)
+		def name = ctx.IDENTIFIER().text
 		def exprs = (ctx.exprList() ? values[ctx.exprList()] as List : []) << (values[ctx.expr()] as IExpr)
 		values[ctx] = new Constructor(name, exprs)
 	}
@@ -291,11 +284,6 @@ class DatalogParserImpl extends DatalogBaseListener {
 	void exitParameterList(ParameterListContext ctx) { values[ctx] = values[ctx.identifierList()] }
 
 	void visitErrorNode(ErrorNode node) { throw new RuntimeException("Parsing error") }
-
-	def suffix(String name) {
-		if (Type.isPrimitive(name)) return name
-		activeNamespaces ? "${activeNamespaces.join(":")}:$name" : name
-	}
 
 	def addAnnotationsToRelDecl(String relName, AnnotationSet annotations) {
 		def rd = currDatalog.relDeclarations.find { it.relation.name == relName }
