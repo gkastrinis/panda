@@ -29,6 +29,7 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 
 	private Graph currGraph
 	private boolean inNegation
+	private boolean inAggregation
 	private Set<RelInfo> headRelations
 	private Set<RelInfo> bodyRelations
 	private BlockLvl2 origP
@@ -112,29 +113,30 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 			def headRelNode = currGraph.touch(headRel.name, headRel.isConstructor ? Node.Kind.CONSTRUCTOR : Node.Kind.RELATION)
 			bodyRelations.each { bodyRel ->
 				def relNode = currGraph.touch(bodyRel.name, bodyRel.isConstructor ? Node.Kind.CONSTRUCTOR : Node.Kind.RELATION)
-				headRelNode.connectTo(relNode, bodyRel.isNegated ? Edge.Kind.NEGATION : Edge.Kind.RELATION)
+				def edge = bodyRel.isNegated ? Edge.Kind.NEGATION : (bodyRel.isAggregated ? Edge.Kind.AGGREGATION : Edge.Kind.RELATION)
+				headRelNode.connectTo(relNode, edge)
 			}
 		}
 		null
 	}
 
 	IVisitable visit(AggregationElement n) {
+		inAggregation = true
 		m[n.body] = visit n.body
+		inAggregation = false
 		null
 	}
 
-	void enter(NegationElement n) {
+	IVisitable visit(NegationElement n) {
 		inNegation = true
-	}
-
-	IVisitable exit(NegationElement n) {
+		m[n.element] = visit n.element
 		inNegation = false
 		null
 	}
 
 	void enter(Constructor n) {
-		if (inRuleHead) headRelations << new RelInfo(n.name, true, false)
-		else if (inRuleBody) bodyRelations << new RelInfo(n.name, true, inNegation)
+		if (inRuleHead) headRelations << new RelInfo(n.name, true)
+		else if (inRuleBody) bodyRelations << new RelInfo(n.name, true, inNegation, inAggregation)
 	}
 
 	void enter(Relation n) {
@@ -143,8 +145,8 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 		if (n.name.contains("@"))
 			pendingIndirectEdges[currGraph.touch(n.name, Node.Kind.PARAMETER)] = n.name
 
-		if (inRuleHead) headRelations << new RelInfo(n.name, false, false)
-		else if (inRuleBody) bodyRelations << new RelInfo(n.name, false, inNegation)
+		if (inRuleHead) headRelations << new RelInfo(n.name)
+		else if (inRuleBody) bodyRelations << new RelInfo(n.name, false, inNegation, inAggregation)
 	}
 
 
@@ -153,5 +155,6 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 		String name
 		boolean isConstructor
 		boolean isNegated
+		boolean isAggregated
 	}
 }

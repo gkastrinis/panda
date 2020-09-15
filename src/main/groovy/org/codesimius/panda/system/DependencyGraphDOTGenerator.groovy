@@ -82,6 +82,9 @@ class DependencyGraphDOTGenerator {
 						case Edge.Kind.NEGATION:
 							edges << """"${node.id}" -> "$toId" [color="red"];"""
 							break
+						case Edge.Kind.AGGREGATION:
+							edges << """"${node.id}" -> "$toId" [color="purple"];"""
+							break
 						case Edge.Kind.RELATION:
 							edges << """"${node.id}" -> "$toId" """
 							break
