@@ -1,0 +1,7 @@
+.decl parent(v0: symbol, v1: symbol) // string x string
+.decl ancestor(v0: symbol, v1: symbol) // string x string
+.output ancestor
+parent("Alice", "Bob").
+parent("Bob", "Eve").
+ancestor(x, y) :- parent(x, y).
+ancestor(x, y) :- parent(x, z), ancestor(z, y).

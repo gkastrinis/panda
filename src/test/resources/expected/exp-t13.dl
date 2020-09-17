@@ -1,8 +1,0 @@
-.decl B1_Q(v0:number) // int
-.decl B2_R(v0:number) // int
-.decl FFFF_P3(v0:number) // int
-.decl FFFF_P2(v0:number) // int
-.decl FFFF_P1(v0:number) // int
-FFFF_P3(x):- B1_Q(x), B2_R(x).
-FFFF_P2(x):- B1_Q(x), B2_R(x).
-FFFF_P1(x):- B1_Q(x), B2_R(x).

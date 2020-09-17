@@ -1,0 +1,13 @@
+.decl num(v0: number) // int
+.decl A(v0: __SYS_TYPE__Animal) // Animal
+.decl Q(v0: symbol) // Shape
+.decl Animal_byStr(v0: symbol, v1: __SYS_TYPE__Animal) // string x Animal
+.decl P(v0: number) // int
+.decl Shape(v0: symbol) // Shape
+.decl Animal(v0: __SYS_TYPE__Animal) // Animal
+.type __SYS_TYPE_Animal_byStr = [v0: symbol]
+.type __SYS_TYPE__Animal = [v0: __SYS_TYPE_Animal_byStr]
+A(v0) :- Animal_byStr("abc", v0).
+P(x) :- ((Animal_byStr("123", v0), A(v0)); (Animal_byStr("abc", v1), A(v1))), num(x).
+Q("def").
+Q("567") :- num(42).

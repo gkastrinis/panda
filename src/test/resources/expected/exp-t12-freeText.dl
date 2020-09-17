@@ -1,0 +1,14 @@
+.decl VarPointsTo(v0: symbol, v1: symbol, v2: symbol, v3: symbol) // string x string x string x string
+.decl Var_Type(v0: symbol, v1: symbol) // string x string
+.decl types(v0: symbol) // string
+.output types
+.decl foo(v0: symbol) // string
+.decl bar(v0: symbol) // string
+.decl foobar(v0: symbol, v1: symbol) // string x string
+.output foobar
+Var_Type("Object", "o1").
+Var_Type("String", "str").
+types(?t) :- Var_Type(?t, _).
+foo("abc").
+bar("new A").
+foobar(?v, ?hctx) :- foo(?v), VarPointsTo(?v, "o1", _, ?hctx), bar(?hctx).

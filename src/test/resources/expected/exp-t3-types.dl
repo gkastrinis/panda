@@ -1,0 +1,21 @@
+.decl Animal_byStr(v0: symbol, v1: __SYS_TYPE__Animal) // string x Animal
+.decl Apple_byStr(v0: symbol, v1: __SYS_TYPE__Apple) // string x Apple
+.decl Panda_byStr(v0: symbol, v1: __SYS_TYPE__Panda) // string x Panda
+.decl Animal(v0: __SYS_TYPE__Animal) // Animal
+.output Animal
+.decl Cat(v0: __SYS_TYPE__Animal) // Cat
+.decl Dog(v0: __SYS_TYPE__Animal) // Dog
+.decl PersianCat(v0: __SYS_TYPE__Animal) // PersianCat
+.decl Apple(v0: __SYS_TYPE__Apple) // Apple
+.output Apple
+.decl Panda(v0: __SYS_TYPE__Panda) // Panda
+.output Panda
+.type __SYS_TYPE_Animal_byStr = [v0: symbol]
+.type __SYS_TYPE__Animal = [v0: __SYS_TYPE_Animal_byStr]
+.type __SYS_TYPE_Apple_byStr = [v0: symbol]
+.type __SYS_TYPE__Apple = [v0: __SYS_TYPE_Apple_byStr]
+.type __SYS_TYPE_Panda_byStr = [v0: symbol]
+.type __SYS_TYPE__Panda = [v0: __SYS_TYPE_Panda_byStr]
+Animal(v0) :- Cat(v0).
+Animal(v0) :- Dog(v0).
+Cat(v0) :- PersianCat(v0).

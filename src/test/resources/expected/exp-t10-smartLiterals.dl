@@ -1,0 +1,11 @@
+.decl Foo(v0: number, v1: __SYS_TYPE__Animal) // int x Cat
+.decl Animal_byStr(v0: symbol, v1: __SYS_TYPE__Animal) // string x Animal
+.decl Baz(v0: __SYS_TYPE__Animal, v1: number, v2: symbol) // Animal x int x string
+.decl Bar(v0: number, v1: symbol) // int x string
+.decl Animal(v0: __SYS_TYPE__Animal) // Animal
+.decl Cat(v0: __SYS_TYPE__Animal) // Cat
+.type __SYS_TYPE_Animal_byStr = [v0: symbol]
+.type __SYS_TYPE__Animal = [v0: __SYS_TYPE_Animal_byStr]
+Baz(a, 42, "abc") :- Animal_byStr("Alice", a).
+Bar(x, y) :- Animal_byStr("Eve", v0), Foo(x, v0), Animal_byStr("Alice", v1), Baz(v1, x, y).
+Animal(v0) :- Cat(v0).
