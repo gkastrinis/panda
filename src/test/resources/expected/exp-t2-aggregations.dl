@@ -1,0 +1,27 @@
+.decl foo(v0: number, v1: number) // int x int
+.decl bar(v0: number, v1: number) // int x int
+.decl baz(v0: number) // int
+.decl t1(v0: number, v1: number) // int x int
+.output t1
+.decl t2(v0: number, v1: number) // int x int
+.output t2
+.decl t3(v0: number, v1: number) // int x int
+.output t3
+.decl t4(v0: number, v1: number) // int x int
+.output t4
+.decl t5(v0: number, v1: number) // int x int
+.output t5
+.decl t6(v0: number, v1: number, v2: number) // int x int x int
+.output t6
+.decl t(v0: number, v1: number) // int x int
+.output t
+foo(1, 2).
+bar(3, 4).
+baz(x) :- foo(x, _); foo(_, x); bar(x, _); bar(_, x).
+t1(1, c) :- c = count : { foo(_, _) }.
+t2(2, c) :- c = count : { foo(_, x), bar(x, _) }.
+t3(3, m) :- m = max(y) : { bar(_, y) }.
+t4(4, m) :- m = min(x) : { baz(x) }.
+t5(5, s) :- s = sum(x) : { foo(x, _) }.
+t6(6, x, c) :- foo(_, x), c = count : { foo(_, x) }.
+t(x, y) :- t1(x, y); t2(x, y); t3(x, y); t4(x, y); t5(x, y); t6(x, _, y).
