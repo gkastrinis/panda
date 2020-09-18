@@ -3,6 +3,7 @@ package org.codesimius.panda.actions.code
 import groovy.transform.InheritConstructors
 import org.codesimius.panda.actions.tranform.souffle.AssignTransformer
 import org.codesimius.panda.actions.tranform.souffle.ConstructorTransformer
+import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.block.BlockLvl2
 import org.codesimius.panda.datalog.clause.RelDeclaration
 import org.codesimius.panda.datalog.clause.Rule
@@ -21,14 +22,23 @@ import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
 @InheritConstructors
 class SouffleCodeGenerator extends DefaultCodeGenerator {
 
+	BlockLvl0 datalog
+	Rule rule
+
 	String visit(BlockLvl2 p) {
 		createUniqueFile("out_", ".dl")
 		artifacts << new Artifact(Artifact.Kind.LOGIC, currentFile)
 
-		def steps = transformations + [new ConstructorTransformer(typeInferenceTransformer), new AssignTransformer()]
+		def steps = transformations + [
+				new ConstructorTransformer(typeInferenceTransformer),
+				new AssignTransformer()
+		]
+
 		def n = steps.inject(p) { prog, step -> prog.accept(step) }
 		super.visit(n)
 	}
+
+	void enter(BlockLvl0 n) { datalog = n }
 
 	String visit(RelDeclaration n) {
 		def relName = fix(n.relation.name)
@@ -40,7 +50,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 			def an = n.annotations[INPUT]
 			def filename = an["filename"] ?: "${n.relation.name}.facts"
 			def delimeter = an["delimeter"] ?: "\\t"
-			emit """.input $relName(filename="$filename", delimeter="$delimeter")"""
+			emit """.input $relName(filσename="$filename", delimeter="$delimeter")"""
 		}
 		if (OUTPUT in n.annotations)
 			emit ".output $relName"
@@ -53,6 +63,8 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		null
 	}
 
+	void enter(Rule n) { rule = n }
+
 	String exit(Rule n) {
 		def body = m[n.body]
 		emit "${m[n.head]}${body ? " :- $body" : ""}."
@@ -63,7 +75,9 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	String exit(AggregationElement n) {
 		def pred = n.relation.name
 		def soufflePred = n.relation.exprs ? "$pred(${m[n.relation.exprs.first()]})" : pred
-		"${m[n.body]}, ${m[n.var]} = $soufflePred : { ${m[n.body]} }"
+		def headVars = datalog.getHeadVars(rule)
+		def extraBody = datalog.getBoundBodyVars(rule).any { it in headVars } ? "${m[n.body]}, " : ""
+		"${extraBody}${m[n.var]} = $soufflePred : { ${m[n.body]} }"
 	}
 
 	String exit(Constructor n) { exit(n as Relation) }
