@@ -11,6 +11,7 @@ import static org.codesimius.panda.system.Log.info
 
 class Compiler {
 	static def run(ANTLRInputStream inputStream, String filename, def codeGenerator) {
+		SourceManager.init()
 		info("COMPILE", "${new File(filename).canonicalPath} with ${codeGenerator.class.simpleName}")
 		def listener = new DatalogParserImpl(filename)
 		def parser = new DatalogParser(new CommonTokenStream(new DatalogLexer(inputStream)))

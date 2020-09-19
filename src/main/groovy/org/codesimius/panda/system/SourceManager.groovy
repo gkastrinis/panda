@@ -1,11 +1,20 @@
 package org.codesimius.panda.system
 
-@Singleton
 class SourceManager {
 	// Stack of active files under process (due to include)
-	static Stack<File> files = []
+	static Stack<File> files
 	// A list of include locations up to the current point
-	static List<String> lines = []
+	static List<String> lines
+	// Map each object of interest to a location in the compiled file(s)
+	static Map<Object, String> locations
+
+	// Note: Hack for multiple compilations
+	// TODO: Find a better approach
+	static void init() {
+		files = []
+		lines = []
+		locations = [:]
+	}
 
 	static void mainFile(File file) { files.push file }
 
@@ -19,11 +28,9 @@ class SourceManager {
 		files.pop()
 	}
 
-	static Map<Object, String> locations = [:]
-
 	static String locate(int line) { (lines + ["${files.last()} : $line"]).collect { it -> "\tat $it" }.join("\n") }
 
-	static void rec(Object o, String loc) { SourceManager.locations[o] = loc }
+	static void rec(Object o, String loc) { locations[o] = loc }
 
-	static String loc(Object o) { SourceManager.locations[o] }
+	static String loc(Object o) { locations[o] }
 }
