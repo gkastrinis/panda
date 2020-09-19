@@ -1,5 +1,5 @@
-.decl parent(v0: symbol, v1: symbol) // string x string
-.decl ancestor(v0: symbol, v1: symbol) // string x string
+.decl parent(v0:symbol, v1:symbol) // string x string
+.decl ancestor(v0:symbol, v1:symbol) // string x string
 .output ancestor
 parent("Alice", "Bob").
 parent("Bob", "Eve").

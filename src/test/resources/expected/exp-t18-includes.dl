@@ -1,21 +1,21 @@
-.decl __f_oo_bar(v0: symbol) // string
-.decl f_oo_bar2(v0: number, v1: symbol) // int x string
+.decl __f_oo_bar(v0:symbol) // string
+.decl f_oo_bar2(v0:number, v1:symbol) // int x string
 .output f_oo_bar2
-.decl p1(v0: number) // int
-.decl p2(v0: number, v1: number) // int x int
-.decl p3(v0: number, v1: number) // int x int
-.decl p4(v0: number) // int
-.decl p5(v0: number) // int
-.decl p6(v0: number) // int
+.decl p1(v0:number) // int
+.decl p2(v0:number, v1:number) // int x int
+.decl p3(v0:number, v1:number) // int x int
+.decl p4(v0:number) // int
+.decl p5(v0:number) // int
+.decl p6(v0:number) // int
 .output p6
-.decl Foo123(v0: number, v1: number) // int x int
-.decl Bar123(v0: symbol) // string
-.decl FooBar(v0: number, v1: symbol, v2: number) // int x string x int
-.decl p(v0: number) // int
-.decl Bar(v0: number) // int
-.decl Foo(v0: number) // int
-.decl BarFoo(v0: number, v1: symbol) // int x string
-.decl A(v0: number) // int
+.decl Foo123(v0:number, v1:number) // int x int
+.decl Bar123(v0:symbol) // string
+.decl FooBar(v0:number, v1:symbol, v2:number) // int x string x int
+.decl p(v0:number) // int
+.decl Bar(v0:number) // int
+.decl Foo(v0:number) // int
+.decl BarFoo(v0:number, v1:symbol) // int x string
+.decl A(v0:number) // int
 Foo123(1, 2).
 Bar123("abc").
 FooBar(x, z, y) :- Foo123(x, y), Bar123(z).

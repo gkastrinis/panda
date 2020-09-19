@@ -1,22 +1,22 @@
-.decl S4_P1(v0: symbol) // string
-.decl S5_P1(v0: symbol) // string
-.decl S3_Z(v0: number) // int
-.decl S3_P11(v0: symbol) // string
-.decl B1_P1(v0: symbol) // string
-.decl S1_Z(v0: number) // int
-.decl S1_P11(v0: symbol) // string
-.decl S2_P1(v0: symbol) // string
-.decl P(v0: symbol) // string
-.decl Q(v0: symbol, v1: number) // string x int
-.decl S4_P2(v0: symbol) // string
-.decl S4_P3(v0: number) // int
-.decl S4_W(v0: number) // int
-.decl S4_M(v0: number) // int
-.decl S5_ABC(v0: symbol) // string
-.decl S5_P2(v0: symbol) // string
-.decl S5_P3(v0: number) // int
-.decl S5_W(v0: number) // int
-.decl S5_M(v0: number) // int
+.decl S4_P1(v0:symbol) // string
+.decl S5_P1(v0:symbol) // string
+.decl S3_Z(v0:number) // int
+.decl S3_P11(v0:symbol) // string
+.decl B1_P1(v0:symbol) // string
+.decl S1_Z(v0:number) // int
+.decl S1_P11(v0:symbol) // string
+.decl S2_P1(v0:symbol) // string
+.decl P(v0:symbol) // string
+.decl Q(v0:symbol, v1:number) // string x int
+.decl S4_P2(v0:symbol) // string
+.decl S4_P3(v0:number) // int
+.decl S4_W(v0:number) // int
+.decl S4_M(v0:number) // int
+.decl S5_ABC(v0:symbol) // string
+.decl S5_P2(v0:symbol) // string
+.decl S5_P3(v0:number) // int
+.decl S5_W(v0:number) // int
+.decl S5_M(v0:number) // int
 P("hello").
 Q(x, 42) :- P(x).
 S4_P2(x) :- Q(x, _).
