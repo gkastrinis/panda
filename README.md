@@ -1,5 +1,9 @@
-[![License MIT][badge-license]](LICENSE.txt) ![Travis CI](https://travis-ci.org/gkastrinis/panda.svg?branch=master) ![CI](https://github.com/gkastrinis/panda/workflows/CI/badge.svg) [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/paNda-datalog/Lobby)
-
+[![License MIT][badge-license]](LICENSE.txt)
+![Travis CI w/ Logo](https://img.shields.io/travis/gkastrinis/panda/master.svg?logo=travis)
+![CI](https://github.com/gkastrinis/panda/workflows/CI/badge.svg)
+[![Discord Chat](https://img.shields.io/discord/758049851660304387)](https://discord.gg/)
+[![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/paNda-datalog/Lobby)
+[![Open Source](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://opensource.org/)
 
 ![PANDA](/panda.png)
 =============================
