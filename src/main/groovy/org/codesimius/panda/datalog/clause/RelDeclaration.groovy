@@ -2,7 +2,7 @@ package org.codesimius.panda.datalog.clause
 
 import groovy.transform.Canonical
 import groovy.transform.ToString
-import org.codesimius.panda.datalog.AnnotationSet
+import org.codesimius.panda.datalog.Annotation
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.element.relation.Type
@@ -13,8 +13,5 @@ class RelDeclaration implements IVisitable {
 
 	Relation relation
 	List<Type> types
-	AnnotationSet annotations = new AnnotationSet()
-
-	@Deprecated
-	def loc() { annotations.findLoc() }
+	Set<Annotation> annotations = [] as Set
 }

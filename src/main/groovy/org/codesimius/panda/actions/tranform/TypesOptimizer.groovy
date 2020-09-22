@@ -1,7 +1,6 @@
 package org.codesimius.panda.actions.tranform
 
 import groovy.transform.Canonical
-import org.codesimius.panda.datalog.AnnotationSet
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.clause.RelDeclaration
@@ -55,7 +54,7 @@ class TypesOptimizer extends DefaultTransformer {
 		def metadata = METADATA.template([types: new ConstantExpr(n.type.name)])
 
 		if (n.type in typesToOptimize) {
-			extraRelDecls << new RelDeclaration(new Relation(n.type.name), [TYPE_STRING], new AnnotationSet(metadata))
+			extraRelDecls << new RelDeclaration(new Relation(n.type.name), [TYPE_STRING], [metadata] as Set)
 			if (n.supertype)
 				extraRules << new Rule(new Relation(n.supertype.name, [var1()]), new Relation(n.type.name, [var1()]))
 			return null

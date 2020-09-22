@@ -1,6 +1,6 @@
 package org.codesimius.panda.actions
 
-import org.codesimius.panda.datalog.AnnotationSet
+import org.codesimius.panda.datalog.Annotation
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.block.BlockLvl1
@@ -19,7 +19,7 @@ import static org.codesimius.panda.datalog.Annotation.METADATA
 class DefaultVisitor<T> {
 
 	// The annotation set of a declaration / rule for usage in its children
-	AnnotationSet parentAnnotations
+	Set<Annotation> parentAnnotations
 	Map<IVisitable, T> m = [:]
 	boolean inDecl
 	boolean inRuleHead

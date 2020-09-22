@@ -25,7 +25,7 @@ class FreeTextTransformer extends DefaultTransformer {
 		trie = new Trie(compiler)
 		def freeTextRules = n.rules.findAll { TEXT in it.annotations }
 		freeTextRules.each {
-			def loc = it.loc()
+			def loc = loc(it)
 
 			if (it.head !instanceof Relation) error(loc, Error.TEXT_MALFORMED_HEAD, null)
 			def relation = it.head as Relation

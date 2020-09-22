@@ -1,7 +1,6 @@
 package org.codesimius.panda.actions.tranform
 
 import groovy.transform.Canonical
-import org.codesimius.panda.datalog.AnnotationSet
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.clause.RelDeclaration
@@ -30,9 +29,9 @@ class TypesTransformer extends DefaultTransformer {
 		n.rootTypes.findAll { !it.primitive }.each { root ->
 			n.relDeclarations
 					.findAll { it.relation.name == root.defaultConName }
-					.each { error(it.loc(), Error.REL_NAME_DEFCONSTR, it.relation.name) }
+					.each { error(loc(it), Error.REL_NAME_DEFCONSTR, it.relation.name) }
 
-			extraRelDecls << new RelDeclaration(new Constructor(root.defaultConName, []), [TYPE_STRING, root], new AnnotationSet(CONSTRUCTOR))
+			extraRelDecls << new RelDeclaration(new Constructor(root.defaultConName, []), [TYPE_STRING, root], [CONSTRUCTOR] as Set)
 		}
 		datalog = n
 		n.typeDeclarations.each { visit it }
@@ -44,7 +43,7 @@ class TypesTransformer extends DefaultTransformer {
 			def rootT = datalog.typeToRootType[n.type]
 			n.annotations[TYPEVALUES].args.each { key, value ->
 				def rel = new Relation("${n.type.name}:$key", [var1()])
-				extraRelDecls << new RelDeclaration(rel, [n.type], new AnnotationSet(n.annotations[METADATA]))
+				extraRelDecls << new RelDeclaration(rel, [n.type], [n.annotations[METADATA]] as Set)
 				def con = new ConstructionElement(new Constructor(rootT.defaultConName, [value, var1()]), n.type)
 				extraRules << new Rule(combineElements([con, rel]))
 			}

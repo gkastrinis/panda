@@ -4,7 +4,6 @@ import groovy.transform.Canonical
 import org.codesimius.panda.actions.DefaultVisitor
 import org.codesimius.panda.actions.symbol.ConstructionInfoVisitor
 import org.codesimius.panda.datalog.Annotation
-import org.codesimius.panda.datalog.AnnotationSet
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.block.BlockLvl2
@@ -136,7 +135,7 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 		if (!prevArity) arities[name] = arity
 	}
 
-	def checkAnnotations(AnnotationSet annotations, List<Annotation> allowedAnnotations, String kind) {
+	def checkAnnotations(Set<Annotation> annotations, List<Annotation> allowedAnnotations, String kind) {
 		annotations
 				.findAll { (it !in allowedAnnotations) && !it.isInternal }
 				.each { error(loc(it), Error.ANNOTATION_INVALID, it, kind) }

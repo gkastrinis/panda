@@ -5,6 +5,7 @@ import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTreeWalker
 import org.codesimius.panda.DatalogParserImpl
 import org.codesimius.panda.actions.code.DefaultCodeGenerator
+import org.codesimius.panda.datalog.Annotation
 import org.codesimius.panda.datalog.DatalogLexer
 import org.codesimius.panda.datalog.DatalogParser
 import org.codesimius.panda.datalog.clause.RelDeclaration
@@ -24,6 +25,18 @@ class Compiler {
 		log = new Log(logFilename)
 		sourceManager = new SourceManager(mainFile)
 		codeGenerator = codeGenClass.newInstance(this, outDir) as DefaultCodeGenerator
+
+		// Add a getAt method to the Set class to allow for search as in a map (i.e., set[element])
+		Set.metaClass.getAt = { element -> delegate.find { it == element} }
+
+		// Add a leftShift method to the Set class to allow for additional checks
+		Set.metaClass.leftShift = { element ->
+			if (element instanceof Annotation && element in delegate && element.isInternal)
+				delegate[element].args += element.args
+			else
+				delegate.add element
+			return delegate
+		}
 	}
 
 	def run(ANTLRInputStream inputStream) {

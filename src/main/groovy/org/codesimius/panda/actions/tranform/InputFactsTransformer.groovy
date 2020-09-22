@@ -1,7 +1,7 @@
 package org.codesimius.panda.actions.tranform
 
 import groovy.transform.Canonical
-import org.codesimius.panda.datalog.AnnotationSet
+import org.codesimius.panda.datalog.Annotation
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.clause.RelDeclaration
@@ -42,7 +42,7 @@ class InputFactsTransformer extends DefaultTransformer {
 		return n
 	}
 
-	def genInput(String name, List<Type> types, AnnotationSet annotations) {
+	def genInput(String name, List<Type> types, Set<Annotation> annotations) {
 		def N = types.size()
 		def headElements = []
 		def vars = []
@@ -70,10 +70,10 @@ class InputFactsTransformer extends DefaultTransformer {
 			if (!annotations[TYPE]) headElements << new Relation(name, vars)
 			def inputRel = new Relation("__SYS_IN_$name", varN(N))
 			extraRules << new Rule(combineElements(headElements), inputRel)
-			extraRelDecls << new RelDeclaration(inputRel, inputTypes, new AnnotationSet(newAn))
+			extraRelDecls << new RelDeclaration(inputRel, inputTypes, [newAn] as Set)
 		} else if (!types.any { !it.isPrimitive() })
 			annotations << newAn
 		else
-			extraRelDecls << new RelDeclaration(new Relation(name, varN(N)), inputTypes, new AnnotationSet(newAn))
+			extraRelDecls << new RelDeclaration(new Relation(name, varN(N)), inputTypes, [newAn] as Set)
 	}
 }

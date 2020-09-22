@@ -77,7 +77,7 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 		n.typeDeclarations
 				.findAll { it.supertype }
 				.findAll { decl -> !n.typeDeclarations.any { it.type == decl.supertype } }
-				.each { error(it.loc(), Error.TYPE_UNKNOWN, it.supertype.name) }
+				.each { error(loc(it), Error.TYPE_UNKNOWN, it.supertype.name) }
 	}
 
 	void enter(RelDeclaration n) {

@@ -6,7 +6,10 @@ import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.ErrorNode
 import org.antlr.v4.runtime.tree.ParseTreeWalker
 import org.antlr.v4.runtime.tree.TerminalNode
-import org.codesimius.panda.datalog.*
+import org.codesimius.panda.datalog.Annotation
+import org.codesimius.panda.datalog.DatalogBaseListener
+import org.codesimius.panda.datalog.DatalogLexer
+import org.codesimius.panda.datalog.DatalogParser
 import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.block.BlockLvl1
 import org.codesimius.panda.datalog.block.BlockLvl2
@@ -34,10 +37,10 @@ class DatalogParserImpl extends DatalogBaseListener {
 	BlockLvl2 program = new BlockLvl2()
 	BlockLvl0 currDatalog = program.datalog
 	// Relation Name x Annotations
-	Map<String, AnnotationSet> globalPendingAnnotations = [:].withDefault { new AnnotationSet() }
-	Map<String, AnnotationSet> currPendingAnnotations = globalPendingAnnotations
+	Map<String, Set<Annotation>> globalPendingAnnotations = [:].withDefault { [] as Set }
+	Map<String, Set<Annotation>> currPendingAnnotations = globalPendingAnnotations
 	// Extra annotations from annotation blocks
-	Stack<AnnotationSet> extraAnnotationsStack = []
+	Stack<Set<Annotation>> extraAnnotationsStack = []
 	def values = [:]
 
 	DatalogParserImpl(Compiler compiler) { this.compiler = compiler }
@@ -60,7 +63,7 @@ class DatalogParserImpl extends DatalogBaseListener {
 
 	void enterTemplate(TemplateContext ctx) {
 		currDatalog = new BlockLvl0()
-		currPendingAnnotations = [:].withDefault { new AnnotationSet() }
+		currPendingAnnotations = [:].withDefault { [] as Set }
 	}
 
 	void exitTemplate(TemplateContext ctx) {
@@ -129,7 +132,7 @@ class DatalogParserImpl extends DatalogBaseListener {
 		}
 		// Aggregation
 		else {
-			def annotations = new AnnotationSet(locAnnotation)
+			def annotations = [locAnnotation] as Set
 			currDatalog.rules << new Rule(values[ctx.relation()] as Relation, values[ctx.aggregation()] as AggregationElement, annotations)
 		}
 	}
@@ -255,8 +258,8 @@ class DatalogParserImpl extends DatalogBaseListener {
 	}
 
 	// Special handling (instead of using "exit")
-	AnnotationSet gatherAnnotations(AnnotationListContext ctx) {
-		if (!ctx) return new AnnotationSet()
+	Set<Annotation> gatherAnnotations(AnnotationListContext ctx) {
+		if (!ctx) return [] as Set
 		def valueMap = gatherValues(ctx.annotation().valueList())
 		def annotation = rec(new Annotation(ctx.annotation().IDENTIFIER().text, valueMap), ctx) as Annotation
 		annotation.validate(compiler)
@@ -289,7 +292,7 @@ class DatalogParserImpl extends DatalogBaseListener {
 	void visitErrorNode(ErrorNode node) { throw new RuntimeException("Parsing error") }
 
 
-	def addAnnotationsToRelDecl(String relName, AnnotationSet annotations) {
+	def addAnnotationsToRelDecl(String relName, Set<Annotation> annotations) {
 		def rd = currDatalog.relDeclarations.find { it.relation.name == relName } as RelDeclaration
 		if (rd) mergeAnnotations(rd.annotations, annotations)
 		else currDatalog.relDeclarations << new RelDeclaration(new Relation(relName), [], annotations)
@@ -307,17 +310,15 @@ class DatalogParserImpl extends DatalogBaseListener {
 		return annotation
 	}
 
-	AnnotationSet mergeAnnotations(AnnotationSet set, Annotation annotation) {
-		if (annotation in set && annotation.isInternal)
-			set[annotation].args += annotation.args
-		else if (annotation in set)
+	Set<Annotation> mergeAnnotations(Set<Annotation> set, Annotation annotation) {
+		if (annotation in set && !annotation.isInternal)
 			compiler.warn(compiler.loc(annotation), Error.ANNOTATION_MULTIPLE, annotation)
 		else
 			set << annotation
 		return set
 	}
 
-	AnnotationSet mergeAnnotations(AnnotationSet set1, AnnotationSet set2) {
+	Set<Annotation> mergeAnnotations(Set<Annotation> set1, Set<Annotation> set2) {
 		set2.each { mergeAnnotations(set1, it) }
 		return set1
 	}
