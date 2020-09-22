@@ -47,8 +47,8 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		if (INPUT in n.annotations) {
 			def an = n.annotations[INPUT]
 			def filename = an["filename"] ?: "${n.relation.name}.facts"
-			def delimeter = an["delimeter"] ?: "\\t"
-			emit """.input $relName(filσename="$filename", delimeter="$delimeter")"""
+			def delimiter = an["delimiter"] ?: "\\t"
+			emit """.input $relName(filσename="$filename", delimiter="$delimiter")"""
 		}
 		if (OUTPUT in n.annotations)
 			emit ".output $relName"

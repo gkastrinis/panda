@@ -63,7 +63,7 @@ class InputFactsTransformer extends DefaultTransformer {
 		def origAn = annotations[INPUT]
 		def newAn = INPUT.template([
 				filename : origAn["filename"] ?: new ConstantExpr("${name.replace ":", "_"}.facts"),
-				delimeter: origAn["delimeter"] ?: new ConstantExpr("\\t")])
+				delimiter: origAn["delimiter"] ?: new ConstantExpr("\\t")])
 		annotations -= INPUT
 
 		if (headElements) {

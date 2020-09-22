@@ -60,7 +60,7 @@ class Annotation {
 			"CONSTRUCTOR": NO_ARGS_VALIDATOR,
 			"FUNCTIONAL" : NO_ARGS_VALIDATOR,
 			"INPUT"      : { Compiler compiler, Annotation a ->
-				OPTIONAL_VALIDATOR.call(compiler, a, [filename: STRING, delimeter: STRING])
+				OPTIONAL_VALIDATOR.call(compiler, a, [filename: STRING, delimiter: STRING])
 			},
 			"OUTPUT"     : NO_ARGS_VALIDATOR,
 			"PLAN"       : { Compiler compiler, Annotation a ->
