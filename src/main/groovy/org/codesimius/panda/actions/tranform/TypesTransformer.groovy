@@ -10,18 +10,20 @@ import org.codesimius.panda.datalog.clause.TypeDeclaration
 import org.codesimius.panda.datalog.element.ConstructionElement
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
+import org.codesimius.panda.system.Compiler
 import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.datalog.Annotation.*
 import static org.codesimius.panda.datalog.element.LogicalElement.combineElements
 import static org.codesimius.panda.datalog.element.relation.Type.TYPE_STRING
 import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
-import static org.codesimius.panda.system.Log.error
 
 @Canonical
 class TypesTransformer extends DefaultTransformer {
 
-	BlockLvl0 datalog
+	@Delegate
+	Compiler compiler
+	private BlockLvl0 datalog
 
 	IVisitable visit(BlockLvl0 n) {
 		// Add default constructors

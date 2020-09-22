@@ -15,5 +15,6 @@ class RelDeclaration implements IVisitable {
 	List<Type> types
 	AnnotationSet annotations = new AnnotationSet()
 
+	@Deprecated
 	def loc() { annotations.findLoc() }
 }

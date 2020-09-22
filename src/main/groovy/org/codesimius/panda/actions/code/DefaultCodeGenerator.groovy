@@ -15,6 +15,7 @@ import org.codesimius.panda.datalog.expr.ConstantExpr
 import org.codesimius.panda.datalog.expr.GroupExpr
 import org.codesimius.panda.datalog.expr.VariableExpr
 import org.codesimius.panda.system.Artifact
+import org.codesimius.panda.system.Compiler
 
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -25,34 +26,37 @@ class DefaultCodeGenerator extends DefaultVisitor<String> {
 
 	public List<Artifact> artifacts = []
 
+	Compiler compiler
 	File outDir
+
+	def typeInferenceTransformer = new TypeInferenceTransformer(compiler)
+
+	def transformations = [
+			new FreeTextTransformer(compiler),
+			new PreliminaryValidator(compiler),
+			new TemplateInstantiationTransformer(),
+			new DependencyGraphVisitor(compiler, outDir),
+			new TemplateFlatteningTransformer(),
+			new TypesTransformer(compiler),
+			new InputFactsTransformer(),
+			new MainValidator(compiler),
+			typeInferenceTransformer,
+			new SmartLiteralTransformer(compiler, typeInferenceTransformer),
+			new TypesOptimizer()
+	]
+
 	File currentFile
 	private FileWriter fw
 	// Keep track of active logical and negation elements in order to group them correctly
 	private List<Integer> complexElements = []
 
-	def typeInferenceTransformer = new TypeInferenceTransformer()
-
-	def transformations = [
-			new FreeTextTransformer(),
-			new PreliminaryValidator(),
-			new TemplateInstantiationTransformer(),
-			new DependencyGraphVisitor(outDir, this),
-			new TemplateFlatteningTransformer(),
-			new TypesTransformer(),
-			new InputFactsTransformer(),
-			new MainValidator(),
-			typeInferenceTransformer,
-			new SmartLiteralTransformer(typeInferenceTransformer),
-			new TypesOptimizer()
-	]
-
-	DefaultCodeGenerator(File outDir) {
+	DefaultCodeGenerator(Compiler compiler, File outDir) {
+		this.compiler = compiler
 		this.outDir = outDir
 		outDir.mkdirs()
 	}
 
-	DefaultCodeGenerator(String outDir) { this(new File(outDir)) }
+	DefaultCodeGenerator(Compiler compiler, String outDir) { this(compiler, new File(outDir)) }
 
 	String exit(BlockLvl2 n) { fw.close(); null }
 

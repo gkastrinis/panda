@@ -1,15 +1,18 @@
 package org.codesimius.panda.actions.symbol
 
+import groovy.transform.Canonical
 import org.codesimius.panda.actions.DefaultVisitor
 import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.clause.Rule
 import org.codesimius.panda.datalog.element.ConstructionElement
+import org.codesimius.panda.system.Compiler
 import org.codesimius.panda.system.Error
 
-import static org.codesimius.panda.system.Log.error
-
+@Canonical
 class ConstructionInfoVisitor extends DefaultVisitor<IVisitable> {
 
+	@Delegate
+	Compiler compiler
 	// Order constructors appearing in a rule head based on their dependencies
 	// If C2 needs a variable constructed by C1, it will be after C1
 	Map<Rule, List<ConstructionElement>> constructionsOrderedPerRule = [:].withDefault { [] }

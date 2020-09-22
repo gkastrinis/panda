@@ -1,15 +1,18 @@
 package org.codesimius.panda.actions.graph
 
+import groovy.transform.Canonical
 import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.expr.ConstantExpr
 import org.codesimius.panda.datalog.expr.IExpr
 import org.codesimius.panda.datalog.expr.VariableExpr
+import org.codesimius.panda.system.Compiler
 import org.codesimius.panda.system.Error
 
-import static org.codesimius.panda.system.Log.error
-import static org.codesimius.panda.system.Log.warn
-
+@Canonical
 class Trie {
+
+	@Delegate
+	Compiler compiler
 
 	static class Node {
 		// Either represents a literal, or a relation name (for leaf nodes)

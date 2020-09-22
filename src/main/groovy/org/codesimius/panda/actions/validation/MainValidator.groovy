@@ -16,16 +16,16 @@ import org.codesimius.panda.datalog.element.ConstructionElement
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.element.relation.Type
+import org.codesimius.panda.system.Compiler
 import org.codesimius.panda.system.Error
-import org.codesimius.panda.system.SourceManager
 
 import static org.codesimius.panda.datalog.Annotation.*
-import static org.codesimius.panda.system.Log.error
-import static org.codesimius.panda.system.Log.warn
 
 @Canonical
 class MainValidator extends DefaultVisitor<IVisitable> {
 
+	@Delegate
+	Compiler compiler
 	private Set<String> tmpDeclaredRelations = [] as Set
 	private Set<String> tmpDeclaredTypes = [] as Set
 	private Map<String, Integer> arities = [:]
@@ -38,7 +38,7 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 	void enter(RelDeclaration n) {
 		def alternativeName = n.relation.name.replace ":", "_"
 		if (n.relation.name in tmpDeclaredRelations || alternativeName in tmpDeclaredRelations)
-			error(n.loc(), Error.DECL_MULTIPLE, n.relation.name)
+			error(loc(n), Error.DECL_MULTIPLE, n.relation.name)
 		tmpDeclaredRelations << n.relation.name
 
 		checkAnnotations(n.annotations, [CONSTRUCTOR, FUNCTIONAL, INPUT, OUTPUT, METADATA], "Declarations")
@@ -48,13 +48,13 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 
 		n.types.findAll { !it.primitive }
 				.findAll { it !in datalog.allTypes }
-				.each { error(n.loc(), Error.TYPE_UNKNOWN, it.name) }
+				.each { error(loc(n), Error.TYPE_UNKNOWN, it.name) }
 
 		if (CONSTRUCTOR in n.annotations) {
 			def rootT = datalog.typeToRootType[n.types.last()]
 			def optimized = datalog.typeDeclarations.find { it.type == rootT }.annotations[TYPE]["opt"]
 			if (optimized && rootT.defaultConName != n.relation.name)
-				error(n.loc(), Error.TYPE_OPT_CONSTR, n.relation.name)
+				error(loc(n), Error.TYPE_OPT_CONSTR, n.relation.name)
 		}
 	}
 
@@ -62,13 +62,13 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 		checkAnnotations(n.annotations, [INPUT, OUTPUT, TYPE, TYPEVALUES], "Type")
 
 		if (n.type.name in tmpDeclaredTypes)
-			error(n.loc(), Error.DECL_MULTIPLE, n.type.name)
+			error(loc(n), Error.DECL_MULTIPLE, n.type.name)
 		tmpDeclaredTypes << n.type.name
 
 		if (n.annotations[TYPE]["opt"]) {
 			def rootT = datalog.typeToRootType[n.type]
 			if (!datalog.typeDeclarations.find { it.type == rootT }.annotations[TYPE]["opt"])
-				error(n.loc(), Error.TYPE_OPT_ROOT_NONOPT, n.type.name)
+				error(loc(n), Error.TYPE_OPT_ROOT_NONOPT, n.type.name)
 		}
 	}
 
@@ -79,16 +79,16 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 		def varsInBody = datalog.getBodyVars(n)
 		def conVars = datalog.getConstructedVars(n)
 		varsInHead.findAll { it.name == "_" }
-				.each { error(n.loc(), Error.VAR_UNBOUND_HEAD, null) }
+				.each { error(loc(n), Error.VAR_UNBOUND_HEAD, null) }
 		varsInHead.findAll { (it !in varsInBody) && (it !in conVars) }
-				.each { error(n.loc(), Error.VAR_UNKNOWN, it.name) }
+				.each { error(loc(n), Error.VAR_UNKNOWN, it.name) }
 		varsInBody.findAll { it in conVars }
-				.each { error(n.loc(), Error.VAR_CONSTR_BODY, it.name) }
+				.each { error(loc(n), Error.VAR_CONSTR_BODY, it.name) }
 		varsInBody.findAll { it.name != "_" && (it !in varsInHead) && (varsInBody.count(it) == 1) }
-				.each { warn(n.loc(), Error.VAR_UNUSED, it.name) }
+				.each { warn(loc(n), Error.VAR_UNUSED, it.name) }
 
 		// Visit the rule for error checking reasons
-		new ConstructionInfoVisitor().visit n
+		new ConstructionInfoVisitor(compiler).visit n
 	}
 
 	void enter(AggregationElement n) {
@@ -136,10 +136,10 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 		if (!prevArity) arities[name] = arity
 	}
 
-	static def checkAnnotations(AnnotationSet annotations, List<Annotation> allowedAnnotations, String kind) {
+	def checkAnnotations(AnnotationSet annotations, List<Annotation> allowedAnnotations, String kind) {
 		annotations
 				.findAll { (it !in allowedAnnotations) && !it.isInternal }
-				.each { error(SourceManager.loc(it), Error.ANNOTATION_INVALID, it, kind) }
-		annotations.each { it.validate() }
+				.each { error(loc(it), Error.ANNOTATION_INVALID, it, kind) }
+		annotations.each { it.validate(compiler) }
 	}
 }

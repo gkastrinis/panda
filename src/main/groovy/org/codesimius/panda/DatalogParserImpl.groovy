@@ -20,13 +20,16 @@ import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.element.relation.RelationText
 import org.codesimius.panda.datalog.element.relation.Type
 import org.codesimius.panda.datalog.expr.*
-import org.codesimius.panda.system.SourceManager
+import org.codesimius.panda.system.Compiler
+import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.datalog.Annotation.*
 import static org.codesimius.panda.datalog.DatalogParser.*
 import static org.codesimius.panda.datalog.element.LogicalElement.combineElements
 
 class DatalogParserImpl extends DatalogBaseListener {
+
+	Compiler compiler
 
 	BlockLvl2 program = new BlockLvl2()
 	BlockLvl0 currDatalog = program.datalog
@@ -37,23 +40,23 @@ class DatalogParserImpl extends DatalogBaseListener {
 	Stack<AnnotationSet> extraAnnotationsStack = []
 	def values = [:]
 
-	DatalogParserImpl(String filename) { SourceManager.mainFile(new File(filename).absoluteFile) }
+	DatalogParserImpl(Compiler compiler) { this.compiler = compiler }
 
 	void exitProgram(ProgramContext ctx) {
-		// Do so only at the end of all code parsing.
-		// ExitProgram will also be called at the end of each included file.
-		if (SourceManager.files.size() == 1)
+		// Do so only at the end of all code parsing, because
+		// exitProgram will also be called at the end of each included file.
+		if (compiler.activeFiles.size() == 1)
 			currPendingAnnotations.each { addAnnotationsToRelDecl(it.key, it.value) }
 	}
 
 	void enterInclude(IncludeContext ctx) {
-		def toFile = new File((SourceManager.files.last() as File).parentFile, ctx.STRING().text[1..-2])
+		def toFile = new File(compiler.activeFiles.last().parentFile, ctx.STRING().text[1..-2])
 		def parser = new DatalogParser(new CommonTokenStream(new DatalogLexer(new ANTLRFileStream(toFile.absolutePath))))
-		SourceManager.enterInclude(toFile, ctx.start.line)
+		compiler.enterInclude(toFile, ctx.start.line)
 		ParseTreeWalker.DEFAULT.walk(this, parser.program())
 	}
 
-	void exitInclude(IncludeContext ctx) { SourceManager.exitInclude() }
+	void exitInclude(IncludeContext ctx) { compiler.exitInclude() }
 
 	void enterTemplate(TemplateContext ctx) {
 		currDatalog = new BlockLvl0()
@@ -84,7 +87,7 @@ class DatalogParserImpl extends DatalogBaseListener {
 	}
 
 	void enterAnnotationBlock(AnnotationBlockContext ctx) {
-		extraAnnotationsStack.push(gatherAnnotations(ctx.annotationList()) << locAnnotation(ctx))
+		extraAnnotationsStack.push(gatherAnnotations(ctx.annotationList()) << annotateLocation(ctx))
 	}
 
 	void exitAnnotationBlock(AnnotationBlockContext ctx) {
@@ -92,8 +95,8 @@ class DatalogParserImpl extends DatalogBaseListener {
 	}
 
 	void exitDeclaration(DeclarationContext ctx) {
-		def annotations = gatherAnnotations(ctx.annotationList()) << locAnnotation(ctx)
-		extraAnnotationsStack.each { set -> annotations += set }
+		def annotations = mergeAnnotations(gatherAnnotations(ctx.annotationList()), annotateLocation(ctx))
+		extraAnnotationsStack.each { set -> mergeAnnotations(annotations, set) }
 
 		// Type declaration
 		if (ctx.IDENTIFIER(0) && TYPE in annotations) {
@@ -108,7 +111,7 @@ class DatalogParserImpl extends DatalogBaseListener {
 		// Incomplete declaration of the form: `@output Foo`
 		// i.e. binds annotations with a relation name without providing any details
 		else if (ctx.IDENTIFIER(0)) {
-			currPendingAnnotations[ctx.IDENTIFIER(0).text] += annotations
+			mergeAnnotations(currPendingAnnotations[ctx.IDENTIFIER(0).text], annotations)
 		}
 		// Full declaration of a relation
 		else {
@@ -119,7 +122,7 @@ class DatalogParserImpl extends DatalogBaseListener {
 	}
 
 	void exitRule_(Rule_Context ctx) {
-		def locAnnotation = locAnnotation(ctx)
+		def locAnnotation = annotateLocation(ctx)
 		if (ctx.headList()) {
 			def annotations = gatherAnnotations(ctx.annotationList()) << locAnnotation
 			currDatalog.rules << new Rule(values[ctx.headList()] as IElement, values[ctx.bodyList()] as IElement, annotations)
@@ -252,12 +255,12 @@ class DatalogParserImpl extends DatalogBaseListener {
 	}
 
 	// Special handling (instead of using "exit")
-	private AnnotationSet gatherAnnotations(AnnotationListContext ctx) {
+	AnnotationSet gatherAnnotations(AnnotationListContext ctx) {
 		if (!ctx) return new AnnotationSet()
 		def valueMap = gatherValues(ctx.annotation().valueList())
 		def annotation = rec(new Annotation(ctx.annotation().IDENTIFIER().text, valueMap), ctx) as Annotation
-		annotation.validate()
-		gatherAnnotations(ctx.annotationList()) << annotation
+		annotation.validate(compiler)
+		mergeAnnotations(gatherAnnotations(ctx.annotationList()), annotation)
 	}
 
 	void exitInitValueList(InitValueListContext ctx) {
@@ -269,7 +272,7 @@ class DatalogParserImpl extends DatalogBaseListener {
 	}
 
 	// Special handling (instead of using "exit")
-	private Map<String, ConstantExpr> gatherValues(ValueListContext ctx) {
+	Map<String, ConstantExpr> gatherValues(ValueListContext ctx) {
 		if (!ctx) return [:]
 		exitConstant(ctx.value().constant())
 		def constant = values[ctx.value().constant()] as ConstantExpr
@@ -285,22 +288,41 @@ class DatalogParserImpl extends DatalogBaseListener {
 
 	void visitErrorNode(ErrorNode node) { throw new RuntimeException("Parsing error") }
 
+
 	def addAnnotationsToRelDecl(String relName, AnnotationSet annotations) {
-		def rd = currDatalog.relDeclarations.find { it.relation.name == relName }
-		if (rd) rd.annotations += annotations
+		def rd = currDatalog.relDeclarations.find { it.relation.name == relName } as RelDeclaration
+		if (rd) mergeAnnotations(rd.annotations, annotations)
 		else currDatalog.relDeclarations << new RelDeclaration(new Relation(relName), [], annotations)
+	}
+
+	def rec(def o, ParserRuleContext ctx) {
+		compiler.rec(o, ctx.start.line)
+		return o
+	}
+
+	def annotateLocation(ParserRuleContext ctx) {
+		def annotation = METADATA.template([loc: null])
+		def locExpr = new ConstantExpr(compiler.rec(annotation, ctx.start.line))
+		annotation.args["loc"] = locExpr
+		return annotation
+	}
+
+	AnnotationSet mergeAnnotations(AnnotationSet set, Annotation annotation) {
+		if (annotation in set && annotation.isInternal)
+			set[annotation].args += annotation.args
+		else if (annotation in set)
+			compiler.warn(compiler.loc(annotation), Error.ANNOTATION_MULTIPLE, annotation)
+		else
+			set << annotation
+		return set
+	}
+
+	AnnotationSet mergeAnnotations(AnnotationSet set1, AnnotationSet set2) {
+		set2.each { mergeAnnotations(set1, it) }
+		return set1
 	}
 
 	static def hasToken(ParserRuleContext ctx, String token) {
 		ctx.children.any { it instanceof TerminalNode && it.text == token }
-	}
-
-	static String findLoc(ParserRuleContext ctx) { SourceManager.locate(ctx.start.line) }
-
-	static def locAnnotation(ParserRuleContext ctx) { METADATA.template([loc: new ConstantExpr(findLoc(ctx))]) }
-
-	static def rec(def o, ParserRuleContext ctx) {
-		SourceManager.rec(o, findLoc(ctx))
-		return o
 	}
 }

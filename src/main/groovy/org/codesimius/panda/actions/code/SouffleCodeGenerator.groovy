@@ -30,8 +30,8 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		artifacts << new Artifact(Artifact.Kind.LOGIC, currentFile)
 
 		def steps = transformations + [
-				new ConstructorTransformer(typeInferenceTransformer),
-				new AssignTransformer()
+				new ConstructorTransformer(compiler, typeInferenceTransformer),
+				new AssignTransformer(compiler)
 		]
 
 		def n = steps.inject(p) { prog, step -> prog.accept(step) }

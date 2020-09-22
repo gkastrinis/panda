@@ -4,13 +4,13 @@ import org.antlr.v4.runtime.ANTLRFileStream
 import org.codesimius.panda.actions.code.SouffleCodeGenerator
 import org.codesimius.panda.system.Artifact
 import org.codesimius.panda.system.Compiler
-import org.codesimius.panda.system.Log
 
-Log.disableFileLog()
+def compiler = new Compiler(new File(args[0]).canonicalFile, SouffleCodeGenerator, "build/out_dl")
 try {
-	def gen = new SouffleCodeGenerator("build/out_dl")
-	Compiler.run(new ANTLRFileStream(args[0]), args[0], gen)
-	gen.artifacts.findAll { it.kind == Artifact.Kind.LOGIC }.each { println it.file.text }
+	compiler.run(new ANTLRFileStream(args[0]))
+	compiler.codeGenerator.artifacts
+			.findAll { it.kind == Artifact.Kind.LOGIC }
+			.each { println it.file.text }
 } catch (e) {
-	Log.error e
+	compiler.error e
 }

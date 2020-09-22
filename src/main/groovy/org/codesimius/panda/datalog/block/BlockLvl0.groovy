@@ -39,7 +39,7 @@ class BlockLvl0 implements IVisitable {
 	private Map<String, Set<Rule>> relationUsedInRule0
 
 	private VarInfoVisitor varInfoVisitor = new VarInfoVisitor()
-	private Map<Rule, Set<VariableExpr>> constructedVars0 = [:]
+	private Map<Rule, List<VariableExpr>> constructedVars0 = [:]
 	private Map<Rule, List<VariableExpr>> headVars0 = [:]
 	private Map<Rule, List<VariableExpr>> bodyVars0 = [:]
 	private Map<Rule, List<VariableExpr>> boundBodyVars0 = [:]
@@ -159,7 +159,7 @@ class BlockLvl0 implements IVisitable {
 
 	// ---- //
 
-	Set<VariableExpr> getConstructedVars(Rule n) {
+	List<VariableExpr> getConstructedVars(Rule n) {
 		if (!constructedVars0[n]) collectVarInfo n
 		constructedVars0[n]
 	}

@@ -1,14 +1,16 @@
 package org.codesimius.panda.actions.graph
 
 import groovy.transform.Canonical
+import org.codesimius.panda.system.Compiler
 import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.actions.graph.DependencyGraphVisitor.INSTANTIATION
-import static org.codesimius.panda.system.Log.error
 
 @Canonical
 class CycleDetector {
 
+	@Delegate
+	Compiler compiler
 	Map<String, Graph> graphs
 
 	void checkInstantiations() {

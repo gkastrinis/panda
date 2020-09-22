@@ -2,7 +2,6 @@ package org.codesimius.panda
 
 import org.antlr.v4.runtime.ANTLRInputStream
 import org.apache.commons.io.FileUtils
-import org.codesimius.panda.actions.code.DefaultCodeGenerator
 import org.codesimius.panda.actions.code.SouffleCodeGenerator
 import org.codesimius.panda.system.Artifact
 import org.codesimius.panda.system.Compiler
@@ -11,14 +10,12 @@ import org.codesimius.panda.system.PandaException
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import static org.codesimius.panda.system.Log.error
-
 class DatalogSpec extends Specification {
 
 	@Unroll
 	def "Passing tests"() {
 		when:
-		test(file)
+		testAndCompare(file)
 
 		then:
 		notThrown(PandaException)
@@ -49,7 +46,7 @@ class DatalogSpec extends Specification {
 	@Unroll
 	def "Failing tests"() {
 		when:
-		test(file)
+		testAndCompare(file)
 
 		then:
 		def e = thrown(PandaException)
@@ -132,7 +129,7 @@ class DatalogSpec extends Specification {
 	@Unroll
 	def "Souffle failing tests"() {
 		when:
-		test0(file, SouffleCodeGenerator)
+		test(file, SouffleCodeGenerator)
 
 		then:
 		def e = thrown(PandaException)
@@ -144,23 +141,24 @@ class DatalogSpec extends Specification {
 		"fail-S1" | Error.VAR_ASGN_COMPLEX
 	}
 
-	def test(String file) {
-		def artifacts = test0(file, SouffleCodeGenerator)
-		// Validate Contents
-		def generatedFile = artifacts.find { it.kind == Artifact.Kind.LOGIC }.file
+	def testAndCompare(String file) {
+		def compiler = test(file, SouffleCodeGenerator)
+		// Compare contents
+		def generatedFile = compiler.codeGenerator.artifacts.find { it.kind == Artifact.Kind.LOGIC }.file
 		def expectedFileURL = this.class.getResource("/expected/exp-${file}.dl")
 		def expectedFile = expectedFileURL ? new File(expectedFileURL.toURI()) : null
 
 		if (expectedFile?.exists() && !FileUtils.contentEquals(generatedFile, expectedFile))
-			error(Error.EXP_CONTENTS_MISMATCH, null)
+			compiler.error(Error.EXP_CONTENTS_MISMATCH, null)
 	}
 
-	def test0(String file, Class codeGen) {
+	def test(String file, Class codeGen) {
 		def resourcePath = "/${file}.pnd"
 		def inputStream = new ANTLRInputStream(this.class.getResourceAsStream(resourcePath))
-		def resource = this.class.getResource(resourcePath).file
-		def codeGenerator = codeGen.newInstance("build/out") as DefaultCodeGenerator
-		Compiler.run(inputStream, resource, codeGenerator)
-		return codeGenerator.artifacts
+		def inputFile = new File(this.class.getResource(resourcePath).file)
+
+		def compiler = new Compiler("build/logs/panda.log", inputFile, codeGen, "build/out")
+		compiler.run(inputStream)
+		return compiler
 	}
 }

@@ -14,6 +14,8 @@ import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.element.relation.Type
 import org.codesimius.panda.datalog.expr.*
 
+import static org.codesimius.panda.datalog.Annotation.METADATA
+
 class DefaultVisitor<T> {
 
 	// The annotation set of a declaration / rule for usage in its children
@@ -228,5 +230,5 @@ class DefaultVisitor<T> {
 
 	T exit(VariableExpr n) { null }
 
-	def findParentLoc() { parentAnnotations?.findLoc() }
+	def findParentLoc() { if(parentAnnotations) parentAnnotations[METADATA]?.args?.loc }
 }

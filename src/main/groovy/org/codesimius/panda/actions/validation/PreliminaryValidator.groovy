@@ -7,37 +7,39 @@ import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.block.BlockLvl1
 import org.codesimius.panda.datalog.block.BlockLvl2
 import org.codesimius.panda.datalog.clause.RelDeclaration
+import org.codesimius.panda.datalog.clause.Rule
 import org.codesimius.panda.datalog.element.AggregationElement
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.expr.ConstantExpr
+import org.codesimius.panda.system.Compiler
 import org.codesimius.panda.system.Error
-import org.codesimius.panda.system.SourceManager
 
 import static org.codesimius.panda.datalog.Annotation.CONSTRUCTOR
 import static org.codesimius.panda.datalog.expr.ConstantExpr.Kind.BOOLEAN
 import static org.codesimius.panda.datalog.expr.ConstantExpr.Kind.REAL
-import static org.codesimius.panda.system.Log.error
 
 @Canonical
 class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 
+	@Delegate
+	Compiler compiler
 	private BlockLvl2 prog
 	private BlockLvl1 currComp
+	private BlockLvl0 datalog
 	private List<String> ids
 
 	void enter(BlockLvl2 n) {
 		ids = n.templates*.name + n.instantiations*.id
 		ids.findAll { ids.count(it) > 1 }.each { id ->
 			def candidates = (n.templates.findAll { it.name == id } + n.instantiations.findAll { it.id == id })
-			def loc = candidates.collect { SourceManager.loc(it) }.first()
-			error(loc, Error.ID_IN_USE, id)
+			error(candidates.collect { loc(it) }.first(), Error.ID_IN_USE, id)
 		}
 		n.templates = n.templates.toSet()
 		n.instantiations = n.instantiations.toSet()
 
 		n.instantiations.each { inst ->
-			def loc = SourceManager.loc(inst)
+			def loc = loc(inst)
 			if (inst.id.contains(":"))
 				error(loc, Error.COMP_NAME_LIMITS, inst.id)
 
@@ -57,7 +59,7 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 	IVisitable exit(BlockLvl2 n) { n }
 
 	void enter(BlockLvl1 n) {
-		def loc = SourceManager.loc(n)
+		def loc = loc(n)
 		if (n.parameters.size() != n.parameters.toSet().size())
 			error(loc, Error.COMP_DUPLICATE_PARAMS, n.parameters, n.name)
 		if (n.superParameters.any { it !in n.parameters })
@@ -71,6 +73,7 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 	IVisitable exit(BlockLvl1 n) { currComp = null }
 
 	void enter(BlockLvl0 n) {
+		datalog = n
 		n.typeDeclarations
 				.findAll { it.supertype }
 				.findAll { decl -> !n.typeDeclarations.any { it.type == decl.supertype } }
@@ -79,14 +82,20 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 
 	void enter(RelDeclaration n) {
 		if (n.relation.exprs.size() != n.types.size())
-			error(n.loc(), Error.DECL_MALFORMED, null)
+			error(loc(n), Error.DECL_MALFORMED, null)
 		n.relation.exprs.findAll { n.relation.exprs.count(it) > 1 }.each {
-			error(n.loc(), Error.DECL_SAME_VAR, it)
+			error(loc(n), Error.DECL_SAME_VAR, it)
 		}
 		if (CONSTRUCTOR in n.annotations && n.relation !instanceof Constructor)
-			error(n.loc(), Error.CONSTR_NON_FUNC, n.relation.name)
+			error(loc(n), Error.CONSTR_NON_FUNC, n.relation.name)
 		if (n.relation instanceof Constructor && CONSTRUCTOR !in n.annotations)
-			error(n.loc(), Error.FUNC_NON_CONSTR, n.relation.name)
+			error(loc(n), Error.FUNC_NON_CONSTR, n.relation.name)
+	}
+
+	void enter(Rule n) {
+		def conVars = datalog.getConstructedVars(n)
+		def duplicateVar = conVars.find { conVars.count(it) > 1 }
+		if (duplicateVar) error(loc(n), Error.VAR_MULTIPLE_CONSTR, duplicateVar)
 	}
 
 	void enter(AggregationElement n) {

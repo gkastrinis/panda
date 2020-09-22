@@ -17,6 +17,7 @@ import org.codesimius.panda.datalog.element.relation.Type
 import org.codesimius.panda.datalog.expr.IExpr
 import org.codesimius.panda.datalog.expr.RecordExpr
 import org.codesimius.panda.datalog.expr.VariableExpr
+import org.codesimius.panda.system.Compiler
 
 import static org.codesimius.panda.datalog.expr.ConstantExpr.NIL
 import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
@@ -37,6 +38,8 @@ import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
 @Canonical
 class ConstructorTransformer extends DefaultTransformer {
 
+	@Delegate
+	Compiler compiler
 	TypeInferenceTransformer typeInference
 
 	// Re: 1
@@ -95,7 +98,7 @@ class ConstructorTransformer extends DefaultTransformer {
 		parentAnnotations = n.annotations
 		inRuleHead = true
 		def head = n.head
-		new ConstructionInfoVisitor().with {
+		new ConstructionInfoVisitor(compiler).with {
 			visit n
 			constructionsOrderedPerRule[n].each {
 				// Map to the updated (from a previous iteration) version of the constructor, if any

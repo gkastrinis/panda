@@ -14,5 +14,6 @@ class Rule implements IVisitable {
 	IElement body
 	AnnotationSet annotations = new AnnotationSet()
 
+	@Deprecated
 	def loc() { annotations.findLoc() }
 }

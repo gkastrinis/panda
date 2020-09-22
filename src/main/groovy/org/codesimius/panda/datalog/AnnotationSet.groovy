@@ -2,13 +2,12 @@ package org.codesimius.panda.datalog
 
 import groovy.transform.Canonical
 import groovy.transform.InheritConstructors
-import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.datalog.Annotation.METADATA
-import static org.codesimius.panda.system.Log.warn
 
 @Canonical
 @InheritConstructors
+@Deprecated
 class AnnotationSet extends LinkedHashSet<Annotation> {
 
 	AnnotationSet(Annotation annotation) { this << annotation }
@@ -33,8 +32,6 @@ class AnnotationSet extends LinkedHashSet<Annotation> {
 	AnnotationSet leftShift(Annotation annotation) {
 		if (annotation in this && annotation.isInternal)
 			this[annotation].args += annotation.args
-		else if (annotation in this)
-			warn(findLoc(), Error.ANNOTATION_MULTIPLE, annotation)
 		else
 			super.add annotation
 		this

@@ -10,13 +10,10 @@ import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.expr.RecordExpr
 import org.codesimius.panda.datalog.expr.VariableExpr
-import org.codesimius.panda.system.Error
-
-import static org.codesimius.panda.system.Log.error
 
 class VarInfoVisitor extends DefaultVisitor<IVisitable> {
 
-	Set<VariableExpr> constructedVars
+	List<VariableExpr> constructedVars
 	// Lists instead of sets to count occurrences (for validation)
 	List<VariableExpr> headVars
 	List<VariableExpr> bodyVars
@@ -28,7 +25,7 @@ class VarInfoVisitor extends DefaultVisitor<IVisitable> {
 
 	IVisitable visit(Rule n) {
 		parentAnnotations = n.annotations
-		constructedVars = [] as Set
+		constructedVars = []
 		currRule = n
 
 		headVars = []
@@ -47,11 +44,7 @@ class VarInfoVisitor extends DefaultVisitor<IVisitable> {
 
 	void enter(ConstructionElement n) {
 		if (n.constructor.valueExpr !instanceof VariableExpr) return
-
-		def conVar = n.constructor.valueExpr as VariableExpr
-		if (conVar in constructedVars)
-			error(findParentLoc(), Error.VAR_MULTIPLE_CONSTR, conVar)
-		constructedVars << conVar
+		constructedVars << (n.constructor.valueExpr as VariableExpr)
 	}
 
 	IVisitable visit(LogicalElement n) {

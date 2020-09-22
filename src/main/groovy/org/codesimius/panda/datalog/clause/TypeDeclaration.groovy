@@ -14,5 +14,6 @@ class TypeDeclaration implements IVisitable {
 	Type supertype = null
 	AnnotationSet annotations = new AnnotationSet()
 
+	@Deprecated
 	def loc() { annotations.findLoc() }
 }

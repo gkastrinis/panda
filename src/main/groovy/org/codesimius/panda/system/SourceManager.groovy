@@ -2,35 +2,29 @@ package org.codesimius.panda.system
 
 class SourceManager {
 	// Stack of active files under process (due to include)
-	static Stack<File> files
+	Stack<File> activeFiles = []
 	// A list of include locations up to the current point
-	static List<String> lines
+	List<String> includeLines = []
 	// Map each object of interest to a location in the compiled file(s)
-	static Map<Object, String> locations
+	Map<Object, String> locations = [:]
 
-	// Note: Hack for multiple compilations
-	// TODO: Find a better approach
-	static void init() {
-		files = []
-		lines = []
-		locations = [:]
+	SourceManager(File mainFile) { activeFiles.push mainFile }
+
+	void enterInclude(File toFile, int fromLine) {
+		includeLines.push "${activeFiles.last()} : $fromLine}" as String
+		activeFiles.push toFile
 	}
 
-	static void mainFile(File file) { files.push file }
-
-	static void enterInclude(File toFile, int fromLine) {
-		lines.push "${files.last()} : $fromLine}" as String
-		files.push toFile
+	void exitInclude() {
+		includeLines.pop()
+		activeFiles.pop()
 	}
 
-	static void exitInclude() {
-		lines.pop()
-		files.pop()
+	String rec(Object o, int line) {
+		def location = (includeLines + ["${activeFiles.last()} : $line"]).collect { it -> "\tat $it" }.join("\n")
+		locations[o] = location
+		return location
 	}
 
-	static String locate(int line) { (lines + ["${files.last()} : $line"]).collect { it -> "\tat $it" }.join("\n") }
-
-	static void rec(Object o, String loc) { locations[o] = loc }
-
-	static String loc(Object o) { locations[o] }
+	String loc(Object o) { locations[o] }
 }

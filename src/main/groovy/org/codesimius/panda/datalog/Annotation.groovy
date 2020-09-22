@@ -3,11 +3,10 @@ package org.codesimius.panda.datalog
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 import org.codesimius.panda.datalog.expr.ConstantExpr
+import org.codesimius.panda.system.Compiler
 import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.datalog.expr.ConstantExpr.Kind.*
-import static org.codesimius.panda.system.Log.error
-import static org.codesimius.panda.system.SourceManager.loc
 
 @EqualsAndHashCode(includes = "kind")
 @ToString(includePackage = false)
@@ -27,53 +26,53 @@ class Annotation {
 
 	ConstantExpr getAt(String key) { args[key] }
 
-	void validate() {
+	void validate(Compiler compiler) {
 		if (!VALIDATORS.containsKey(kind))
-			error(loc(this), Error.ANNOTATION_UNKNOWN, kind)
-		VALIDATORS[kind]?.call(this)
+			compiler.error(compiler.loc(this), Error.ANNOTATION_UNKNOWN, kind)
+		VALIDATORS[kind]?.call(compiler, this)
 	}
 
 	String toString() { "@$kind${args ? "$args " : ""}" }
 
-	static def NO_ARGS_VALIDATOR = { Annotation a ->
-		if (!a.args.isEmpty()) error(loc(a), Error.ANNOTATION_NON_EMPTY, a.kind)
+	static def NO_ARGS_VALIDATOR = { Compiler compiler, Annotation a ->
+		if (!a.args.isEmpty()) compiler.error(compiler.loc(a), Error.ANNOTATION_NON_EMPTY, a.kind)
 	}
 
-	static def MANDATORY_VALIDATOR = { Annotation a, Map<String, ConstantExpr.Kind> mandatory ->
+	static def MANDATORY_VALIDATOR = { Compiler compiler, Annotation a, Map<String, ConstantExpr.Kind> mandatory ->
 		mandatory.findAll { argName, type -> !a.args[argName] }.each {
-			error(loc(a), Error.ANNOTATION_MISSING_ARG, it, a.kind)
+			compiler.error(compiler.loc(a), Error.ANNOTATION_MISSING_ARG, it, a.kind)
 		}
 		mandatory.findAll { argName, type -> a.args[argName].kind != type }.each { argName, type ->
-			error(loc(a), Error.ANNOTATION_MISTYPED_ARG, a.args[argName].kind, type, argName, a.kind)
+			compiler.error(compiler.loc(a), Error.ANNOTATION_MISTYPED_ARG, a.args[argName].kind, type, argName, a.kind)
 		}
 	}
 
-	static def OPTIONAL_VALIDATOR = { Annotation a, Map<String, ConstantExpr.Kind> optional ->
+	static def OPTIONAL_VALIDATOR = { Compiler compiler, Annotation a, Map<String, ConstantExpr.Kind> optional ->
 		a.args.findAll { argName, value -> !optional[argName] }.each {
-			error(loc(a), Error.ANNOTATION_INVALID_ARG, it.key, a.kind)
+			compiler.error(compiler.loc(a), Error.ANNOTATION_INVALID_ARG, it.key, a.kind)
 		}
 		a.args.findAll { argName, value -> optional[argName] != value.kind }.each { argName, value ->
-			error(loc(a), Error.ANNOTATION_MISTYPED_ARG, a.args[argName].kind, optional[argName], argName, a.kind)
+			compiler.error(compiler.loc(a), Error.ANNOTATION_MISTYPED_ARG, a.args[argName].kind, optional[argName], argName, a.kind)
 		}
 	}
 
 	static Map<String, Closure> VALIDATORS = [
 			"CONSTRUCTOR": NO_ARGS_VALIDATOR,
 			"FUNCTIONAL" : NO_ARGS_VALIDATOR,
-			"INPUT"      : { Annotation a ->
-				OPTIONAL_VALIDATOR.call(a, [filename: STRING, delimeter: STRING])
+			"INPUT"      : { Compiler compiler, Annotation a ->
+				OPTIONAL_VALIDATOR.call(compiler, a, [filename: STRING, delimeter: STRING])
 			},
 			"OUTPUT"     : NO_ARGS_VALIDATOR,
-			"PLAN"       : { Annotation a ->
-				MANDATORY_VALIDATOR.call(a, [plan: STRING])
-				OPTIONAL_VALIDATOR.call(a, [plan: STRING])
+			"PLAN"       : { Compiler compiler, Annotation a ->
+				MANDATORY_VALIDATOR.call(compiler, a, [plan: STRING])
+				OPTIONAL_VALIDATOR.call(compiler, a, [plan: STRING])
 			},
 			"TEXT"       : NO_ARGS_VALIDATOR,
-			"TYPE"       : { Annotation a ->
-				OPTIONAL_VALIDATOR.call(a, [capacity: INTEGER, opt: BOOLEAN])
+			"TYPE"       : { Compiler compiler, Annotation a ->
+				OPTIONAL_VALIDATOR.call(compiler, a, [capacity: INTEGER, opt: BOOLEAN])
 			},
-			"TYPEVALUES" : {},
-			"METADATA"   : {}
+			"TYPEVALUES" : null,
+			"METADATA"   : null
 	]
 
 	static final CONSTRUCTOR = new Annotation("CONSTRUCTOR")

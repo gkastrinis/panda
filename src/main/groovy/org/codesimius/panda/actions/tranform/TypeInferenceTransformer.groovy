@@ -15,16 +15,19 @@ import org.codesimius.panda.datalog.expr.BinaryExpr
 import org.codesimius.panda.datalog.expr.ConstantExpr
 import org.codesimius.panda.datalog.expr.IExpr
 import org.codesimius.panda.datalog.expr.VariableExpr
+import org.codesimius.panda.system.Compiler
 import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.datalog.element.relation.Type.*
 import static org.codesimius.panda.datalog.expr.BinaryOp.*
 import static org.codesimius.panda.datalog.expr.ConstantExpr.Kind.*
 import static org.codesimius.panda.datalog.expr.VariableExpr.genN as varN
-import static org.codesimius.panda.system.Log.error
 
 @Canonical
 class TypeInferenceTransformer extends DefaultTransformer {
+
+	@Delegate
+	Compiler compiler
 
 	Map<String, List<Type>> inferredTypes = [:].withDefault { [] }
 
@@ -113,7 +116,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 				if (relation.name in explicitRelations) {
 					assert currType
 					if (currType !in datalog.getExtendedSubTypesOf(prevType))
-						error(n.loc(), Error.TYPE_INF_INCOMPAT_USE, relation.name, i, prevType, currType)
+						error(loc(n), Error.TYPE_INF_INCOMPAT_USE, relation.name, i, prevType, currType)
 				}
 				// Still missing type information
 				else if (!currType) {
@@ -135,7 +138,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 				def currType = exprType[expr]
 				// Type information is present and is new
 				if (prevType && currType && (currType !in datalog.getExtendedSubTypesOf(prevType)))
-					error(n.loc(), Error.TYPE_INF_INCOMPAT_USE, relation.name, i, prevType, currType)
+					error(loc(n), Error.TYPE_INF_INCOMPAT_USE, relation.name, i, prevType, currType)
 			}
 		}
 

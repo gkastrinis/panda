@@ -1,5 +1,6 @@
 package org.codesimius.panda.actions.tranform.souffle
 
+
 import groovy.transform.Canonical
 import org.codesimius.panda.actions.tranform.DefaultTransformer
 import org.codesimius.panda.datalog.IVisitable
@@ -15,15 +16,17 @@ import org.codesimius.panda.datalog.expr.BinaryOp
 import org.codesimius.panda.datalog.expr.IExpr
 import org.codesimius.panda.datalog.expr.RecordExpr
 import org.codesimius.panda.datalog.expr.VariableExpr
+import org.codesimius.panda.system.Compiler
 import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.datalog.element.ComparisonElement.TRIVIALLY_TRUE
 import static org.codesimius.panda.datalog.element.LogicalElement.combineElements
-import static org.codesimius.panda.system.Log.error
 
 @Canonical
 class AssignTransformer extends DefaultTransformer {
 
+	@Delegate
+	Compiler compiler
 	// Variables that are assigned some expression in a rule body
 	private Map<VariableExpr, IExpr> assignments = [:]
 	// Variables already replaced by an assignment

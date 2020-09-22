@@ -9,20 +9,20 @@ import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.element.relation.RelationText
 import org.codesimius.panda.datalog.expr.ConstantExpr
 import org.codesimius.panda.datalog.expr.VariableExpr
+import org.codesimius.panda.system.Compiler
 import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.datalog.Annotation.TEXT
-import static org.codesimius.panda.system.Log.error
 
 @Canonical
 class FreeTextTransformer extends DefaultTransformer {
 
-	BlockLvl0 datalog
-	Trie trie
+	@Delegate
+	Compiler compiler
+	private Trie trie
 
 	IVisitable visit(BlockLvl0 n) {
-		datalog = n
-		trie = new Trie()
+		trie = new Trie(compiler)
 		def freeTextRules = n.rules.findAll { TEXT in it.annotations }
 		freeTextRules.each {
 			def loc = it.loc()
@@ -30,7 +30,9 @@ class FreeTextTransformer extends DefaultTransformer {
 			if (it.head !instanceof Relation) error(loc, Error.TEXT_MALFORMED_HEAD, null)
 			def relation = it.head as Relation
 			def relationParams = relation.exprs
-			relationParams.findAll { it !instanceof VariableExpr }.each { error(loc, Error.TEXT_HEAD_NON_VAR) }
+			relationParams
+					.findAll { it !instanceof VariableExpr }
+					.each { error(loc, Error.TEXT_HEAD_NON_VAR) }
 
 			if (it.body !instanceof RelationText) error(loc, Error.TEXT_MALFORMED_BODY, null)
 			def tokens = (it.body as RelationText).tokens.collect { token ->
