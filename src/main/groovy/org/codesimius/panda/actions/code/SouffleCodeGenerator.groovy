@@ -21,8 +21,8 @@ import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
 @InheritConstructors
 class SouffleCodeGenerator extends DefaultCodeGenerator {
 
-	BlockLvl0 datalog
-	Rule rule
+	private BlockLvl0 currDatalog
+	private Rule currRule
 
 	String visit(BlockLvl2 p) {
 		createUniqueFile("out_", ".dl")
@@ -36,7 +36,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		super.visit(n)
 	}
 
-	void enter(BlockLvl0 n) { datalog = n }
+	void enter(BlockLvl0 n) { currDatalog = n }
 
 	String visit(RelDeclaration n) {
 		def relName = fix(n.relation.name)
@@ -61,7 +61,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		null
 	}
 
-	void enter(Rule n) { rule = n }
+	void enter(Rule n) { currRule = n }
 
 	String exit(Rule n) {
 		def body = m[n.body]
@@ -73,8 +73,8 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	String exit(AggregationElement n) {
 		def pred = n.relation.name
 		def soufflePred = n.relation.exprs ? "$pred(${m[n.relation.exprs.first()]})" : pred
-		def headVars = datalog.getHeadVars(rule)
-		def extraBody = datalog.getBoundBodyVars(rule).any { it in headVars } ? "${m[n.body]}, " : ""
+		def headVars = currDatalog.getHeadVars(currRule)
+		def extraBody = currDatalog.getBoundBodyVars(currRule).any { it in headVars } ? "${m[n.body]}, " : ""
 		"${extraBody}${m[n.var]} = $soufflePred : { ${m[n.body]} }"
 	}
 

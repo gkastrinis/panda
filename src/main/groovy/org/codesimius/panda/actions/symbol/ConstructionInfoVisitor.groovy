@@ -13,9 +13,11 @@ class ConstructionInfoVisitor extends DefaultVisitor<IVisitable> {
 
 	@Delegate
 	Compiler compiler
+
 	// Order constructors appearing in a rule head based on their dependencies
 	// If C2 needs a variable constructed by C1, it will be after C1
 	Map<Rule, List<ConstructionElement>> constructionsOrderedPerRule = [:].withDefault { [] }
+
 	private Rule currRule
 
 	IVisitable visit(Rule n) {
@@ -34,7 +36,7 @@ class ConstructionInfoVisitor extends DefaultVisitor<IVisitable> {
 		def minAfter = constructionsOrderedPerRule[currRule].findIndexValues {
 			n.constructor.valueExpr in it.constructor.keyExprs
 		}
-		.min()
+				.min()
 		// `maxBefore` should be strictly before `minAfter`
 		maxBefore = (maxBefore != -1 ? maxBefore : -2)
 		minAfter = (minAfter != null ? minAfter : -1)

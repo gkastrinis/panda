@@ -20,17 +20,17 @@ class SmartLiteralTransformer extends DefaultTransformer {
 	@Delegate
 	Compiler compiler
 	TypeInferenceTransformer typeInference
-	BlockLvl0 datalog
 
-	List<IElement> extraElementsForBody
-	Set<VariableExpr> currVars
-	boolean parentIsRelation
+	private BlockLvl0 currDatalog
+	private List<IElement> extraElementsForBody
+	private Set<VariableExpr> currVars
+	private boolean parentIsRelation
 
-	void enter(BlockLvl0 n) { datalog = n }
+	void enter(BlockLvl0 n) { currDatalog = n }
 
 	void enter(Rule n) {
 		extraElementsForBody = []
-		currVars = datalog.getAllVars(n).toSet()
+		currVars = currDatalog.getAllVars(n).toSet()
 	}
 
 	IVisitable exit(Rule n) {
@@ -66,7 +66,7 @@ class SmartLiteralTransformer extends DefaultTransformer {
 				if (inferredType.primitive)
 					error(findParentLoc(), Error.SMART_LIT_NON_PRIMITIVE, expr.value, inferredType.name)
 
-				def rootType = datalog.typeToRootType[inferredType]
+				def rootType = currDatalog.typeToRootType[inferredType]
 
 				def j = 0
 				def var = var1(j)

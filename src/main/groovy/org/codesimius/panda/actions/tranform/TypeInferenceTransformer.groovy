@@ -32,23 +32,23 @@ class TypeInferenceTransformer extends DefaultTransformer {
 	Map<String, List<Type>> inferredTypes = [:].withDefault { [] }
 
 	// Relations with apriori known types
-	Set<String> explicitRelations
+	private Set<String> explicitRelations
 	// Expression x Type (for current rule)
-	Map<IExpr, Type> exprType
+	private Map<IExpr, Type> exprType
 
 	// Relations found in the current rule head that will have types inferred
-	Set<Relation> forHeadInference
+	private Set<Relation> forHeadInference
 	// Relations found in the current rule (head/body) that will have types validated
 	// For those found in the head, this is because there is an explicit declaration
-	Set<Relation> forBodyValidation
+	private Set<Relation> forBodyValidation
 
 	// Implementing fix-point computation
-	Set<Rule> deltaRules
+	private Set<Rule> deltaRules
 
-	BlockLvl0 datalog
+	private BlockLvl0 currDatalog
 
 	IVisitable visit(BlockLvl0 n) {
-		datalog = n
+		currDatalog = n
 
 		// Gather explicit and known relation types
 		n.relDeclarations.each { visit it }
@@ -68,11 +68,11 @@ class TypeInferenceTransformer extends DefaultTransformer {
 		// Fill partial declarations and add implicit ones
 		// Ignore relations that derive from types
 		def interestingRelationsWithTypes = inferredTypes.findAll { rel, types ->
-			!datalog.allTypes.any { it.name == rel } && (rel !in AggregationElement.SUPPORTED_PREDICATES)
+			!currDatalog.allTypes.any { it.name == rel } && (rel !in AggregationElement.SUPPORTED_PREDICATES)
 		}
 		def relDeclarations = interestingRelationsWithTypes.collect { rel, types ->
 			def vars = varN(types.size())
-			def decl = datalog.relationToDeclaration[rel]
+			def decl = currDatalog.relationToDeclaration[rel]
 			// Explicit, partial declaration
 			if (decl && !decl.types) {
 				decl.relation.exprs = vars
@@ -115,7 +115,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 				// currType must be a subtype of the explicit type
 				if (relation.name in explicitRelations) {
 					assert currType
-					if (currType !in datalog.getExtendedSubTypesOf(prevType))
+					if (currType! in currDatalog.getExtendedSubTypesOf(prevType))
 						error(loc(n), Error.TYPE_INF_INCOMPAT_USE, relation.name, i, prevType, currType)
 				}
 				// Still missing type information
@@ -127,7 +127,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 					inferredTypes[relation.name][i] = currType
 					// Affected rules must be revisited
 					// Ignore current rule (in case of recursive relations)
-					deltaRules += datalog.relationUsedInRules[relation.name] - n
+					deltaRules += currDatalog.relationUsedInRules[relation.name] - n
 				}
 			}
 		}
@@ -137,7 +137,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 				def prevType = inferredTypes[relation.name][i]
 				def currType = exprType[expr]
 				// Type information is present and is new
-				if (prevType && currType && (currType !in datalog.getExtendedSubTypesOf(prevType)))
+				if (prevType && currType && (currType !in currDatalog.getExtendedSubTypesOf(prevType)))
 					error(loc(n), Error.TYPE_INF_INCOMPAT_USE, relation.name, i, prevType, currType)
 			}
 		}
@@ -221,9 +221,9 @@ class TypeInferenceTransformer extends DefaultTransformer {
 	Type meet(Type currType, Type t) {
 		if (currType == t)
 			return currType
-		else if (!currType || t in datalog.getExtendedSubTypesOf(currType))
+		else if (!currType || t in currDatalog.getExtendedSubTypesOf(currType))
 			return t
-		else if (currType !in datalog.subTypes[t])
+		else if (currType !in currDatalog.subTypes[t])
 			error(findParentLoc(), Error.TYPE_INF_INCOMPAT, [currType.name, t.name])
 
 		return currType
@@ -236,11 +236,11 @@ class TypeInferenceTransformer extends DefaultTransformer {
 		if (!t1) return t2
 		if (!t2) return t1
 
-		if (datalog.typeToRootType[t1] != datalog.typeToRootType[t2])
+		if (currDatalog.typeToRootType[t1] != currDatalog.typeToRootType[t2])
 			error(findParentLoc(), Error.TYPE_INF_INCOMPAT, [t1.name, t2.name])
 
-		def superTs1 = [t1] + datalog.superTypesOrdered[t1]
-		def superTs2 = [t2] + datalog.superTypesOrdered[t2]
+		def superTs1 = [t1] + currDatalog.superTypesOrdered[t1]
+		def superTs2 = [t2] + currDatalog.superTypesOrdered[t2]
 		def k = superTs1.size() - 1, l = superTs2.size() - 1
 		while (k >= 0 && l >= 0 && superTs1[k--] == superTs2[l--]) assert true
 		superTs1[k + 1]

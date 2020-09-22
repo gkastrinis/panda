@@ -14,7 +14,8 @@ class RelationInfoVisitor extends DefaultVisitor<IVisitable> {
 	Set<String> implicitlyDeclared = [] as Set
 	Map<String, Set<Rule>> relationDefinedInRules = [:].withDefault { [] as Set }
 	Map<String, Set<Rule>> relationUsedInRules = [:].withDefault { [] as Set }
-	Rule currRule
+
+	private Rule currRule
 
 	void enter(RelDeclaration n) {
 		explicitlyDeclared[n.relation.name] = n

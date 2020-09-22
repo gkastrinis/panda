@@ -24,6 +24,7 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 	@Delegate
 	Compiler compiler
 	File outDir
+
 	// Each subgraph represents a different component
 	Map<String, Graph> graphs = [:].withDefault { new Graph(it) }
 

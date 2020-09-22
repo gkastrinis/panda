@@ -22,7 +22,7 @@ class TypesTransformer extends DefaultTransformer {
 
 	@Delegate
 	Compiler compiler
-	private BlockLvl0 datalog
+	private BlockLvl0 currDatalog
 
 	IVisitable visit(BlockLvl0 n) {
 		// Add default constructors
@@ -33,14 +33,14 @@ class TypesTransformer extends DefaultTransformer {
 
 			extraRelDecls << new RelDeclaration(new Constructor(root.defaultConName, []), [TYPE_STRING, root], [CONSTRUCTOR] as Set)
 		}
-		datalog = n
+		currDatalog = n
 		n.typeDeclarations.each { visit it }
 		new BlockLvl0(n.relDeclarations + extraRelDecls, n.typeDeclarations, n.rules + extraRules)
 	}
 
 	IVisitable exit(TypeDeclaration n) {
 		if (n.annotations[TYPEVALUES]) {
-			def rootT = datalog.typeToRootType[n.type]
+			def rootT = currDatalog.typeToRootType[n.type]
 			n.annotations[TYPEVALUES].args.each { key, value ->
 				def rel = new Relation("${n.type.name}:$key", [var1()])
 				extraRelDecls << new RelDeclaration(rel, [n.type], [n.annotations[METADATA]] as Set)

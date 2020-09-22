@@ -19,9 +19,10 @@ class VarInfoVisitor extends DefaultVisitor<IVisitable> {
 	List<VariableExpr> bodyVars
 	// Vars bound (positively) by relations in a rule body
 	List<VariableExpr> boundBodyVars
-	Rule currRule
-	int negationLevels
-	boolean inRelation
+	
+	private Rule currRule
+	private int negationLevels
+	private boolean inRelation
 
 	IVisitable visit(Rule n) {
 		parentAnnotations = n.annotations

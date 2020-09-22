@@ -26,7 +26,7 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 	Compiler compiler
 	private BlockLvl2 prog
 	private BlockLvl1 currComp
-	private BlockLvl0 datalog
+	private BlockLvl0 currDatalog
 	private List<String> ids
 
 	void enter(BlockLvl2 n) {
@@ -73,7 +73,7 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 	IVisitable exit(BlockLvl1 n) { currComp = null }
 
 	void enter(BlockLvl0 n) {
-		datalog = n
+		currDatalog = n
 		n.typeDeclarations
 				.findAll { it.supertype }
 				.findAll { decl -> !n.typeDeclarations.any { it.type == decl.supertype } }
@@ -93,7 +93,7 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 	}
 
 	void enter(Rule n) {
-		def conVars = datalog.getConstructedVars(n)
+		def conVars = currDatalog.getConstructedVars(n)
 		def duplicateVar = conVars.find { conVars.count(it) > 1 }
 		if (duplicateVar) error(loc(n), Error.VAR_MULTIPLE_CONSTR, duplicateVar)
 	}

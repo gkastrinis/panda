@@ -23,13 +23,12 @@ import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
 @Canonical
 class TypesOptimizer extends DefaultTransformer {
 
-	BlockLvl0 datalog
-
+	private BlockLvl0 currDatalog
 	private Set<Type> typesToOptimize = [] as Set
 	private Map<IExpr, IExpr> mapExprs = [:]
 
 	void enter(BlockLvl0 n) {
-		datalog = n
+		currDatalog = n
 
 		n.typeDeclarations
 				.findAll { it.annotations[TYPE]["opt"] }
@@ -97,7 +96,7 @@ class TypesOptimizer extends DefaultTransformer {
 	IVisitable exit(Constructor n) {
 		if (inDecl) return n
 
-		def baseT = datalog.constructorToBaseType[n.name]
+		def baseT = currDatalog.constructorToBaseType[n.name]
 		if (baseT in typesToOptimize) {
 			if (inRuleBody) {
 				return new ComparisonElement(n.valueExpr, BinaryOp.EQ, n.keyExprs.first())
