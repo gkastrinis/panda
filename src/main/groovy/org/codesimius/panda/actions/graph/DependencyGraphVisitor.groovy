@@ -76,7 +76,7 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 			//topologicalSort()
 		}
 
-		codeGenerator.artifacts += new DependencyGraphDOTGenerator(outDir, this).gen()
+		codeGenerator.artifacts << DependencyGraphDOTGenerator.gen(outDir, this)
 
 		return n
 	}

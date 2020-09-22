@@ -1,6 +1,6 @@
 package org.codesimius.panda.system
 
-import groovy.transform.Canonical
+
 import org.codesimius.panda.actions.graph.DependencyGraphVisitor
 import org.codesimius.panda.actions.graph.Edge
 import org.codesimius.panda.actions.graph.Node
@@ -8,13 +8,9 @@ import org.codesimius.panda.actions.graph.Node
 import static org.codesimius.panda.actions.graph.DependencyGraphVisitor.GLOBAL as GLOBAL_GRAPH
 import static org.codesimius.panda.actions.graph.DependencyGraphVisitor.INSTANTIATION as INSTANTIATION_GRAPH
 
-@Canonical
 class DependencyGraphDOTGenerator {
 
-	File outDir
-	DependencyGraphVisitor dependencyGraph
-
-	List<Compiler.Artifact> gen() {
+	static Compiler.Artifact gen(File outDir, DependencyGraphVisitor dependencyGraph) {
 		def f = Compiler.GraphFile.createUniqueFile("graph_", ".dot", outDir)
 		def fw = new FileWriter(f)
 		def emit = { fw.write "$it\n" }
@@ -95,6 +91,6 @@ class DependencyGraphDOTGenerator {
 		edges.each { emit it }
 		emit "}"
 		fw.close()
-		return [f]
+		return f
 	}
 }
