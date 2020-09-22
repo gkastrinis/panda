@@ -9,6 +9,8 @@ import org.codesimius.panda.datalog.clause.RelDeclaration
 import org.codesimius.panda.datalog.clause.Rule
 import org.codesimius.panda.datalog.clause.TypeDeclaration
 import org.codesimius.panda.datalog.element.AggregationElement
+import org.codesimius.panda.datalog.element.ConstructionElement
+import org.codesimius.panda.datalog.element.LogicalElement
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.RecordType
 import org.codesimius.panda.datalog.element.relation.Relation
@@ -48,7 +50,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 			def an = n.annotations[INPUT]
 			def filename = an["filename"] ?: "${n.relation.name}.facts"
 			def delimiter = an["delimiter"] ?: "\\t"
-			emit """.input $relName(filσename="$filename", delimiter="$delimiter")"""
+			emit """.input $relName(filename="$filename", delimiter="$delimiter")"""
 		}
 		if (OUTPUT in n.annotations)
 			emit ".output $relName"
@@ -64,8 +66,15 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	void enter(Rule n) { currRule = n }
 
 	String exit(Rule n) {
+		def head = m[n.head]
 		def body = m[n.body]
-		emit "${m[n.head]}${body ? " :- $body" : ""}."
+		if (!body && (n.head instanceof LogicalElement || n.head instanceof ConstructionElement))
+			emit "$head :- 1=1."
+		else if (!body)
+			emit "$head."
+		else
+			emit "$head :- $body."
+
 		if (PLAN in n.annotations) emit ".plan ${n.annotations[PLAN]["plan"].value}"
 		null
 	}

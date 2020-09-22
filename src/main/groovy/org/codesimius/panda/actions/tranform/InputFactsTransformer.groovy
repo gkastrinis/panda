@@ -64,14 +64,15 @@ class InputFactsTransformer extends DefaultTransformer {
 		def newAn = INPUT.template([
 				filename : origAn["filename"] ?: new ConstantExpr("${name.replace ":", "_"}.facts"),
 				delimiter: origAn["delimiter"] ?: new ConstantExpr("\\t")])
-		annotations -= INPUT
+		annotations.remove(INPUT)
 
 		if (headElements) {
 			if (!annotations[TYPE]) headElements << new Relation(name, vars)
 			def inputRel = new Relation("__SYS_IN_$name", varN(N))
 			extraRules << new Rule(combineElements(headElements), inputRel)
 			extraRelDecls << new RelDeclaration(inputRel, inputTypes, [newAn] as Set)
-		} else if (!types.any { !it.isPrimitive() })
+		}
+		else if (!types.any { !it.isPrimitive() })
 			annotations << newAn
 		else
 			extraRelDecls << new RelDeclaration(new Relation(name, varN(N)), inputTypes, [newAn] as Set)

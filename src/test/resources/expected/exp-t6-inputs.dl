@@ -1,0 +1,22 @@
+.decl P1(v0:symbol) // string
+.input P1(filename="P1.facts", delimiter="\t")
+.decl P2(v0:number) // int
+.input P2(filename="P2.facts", delimiter="\t")
+.decl P3(v0:symbol) // string
+.input P3(filename="P3.facts", delimiter="\t")
+.decl P4(v0:number, v1:__SYS_TYPE__Animal) // int x Cat
+.decl Animal_byStr(v0:symbol, v1:__SYS_TYPE__Animal) // string x Animal
+.decl __SYS_IN_P4(v0:number, v1:symbol) // int x string
+.input __SYS_IN_P4(filename="P4.facts", delimiter="\t")
+.decl __SYS_IN_Cat(v0:symbol) // string
+.input __SYS_IN_Cat(filename="Cat.facts", delimiter="\t")
+.decl p(v0:symbol) // string
+.output p
+.decl Animal(v0:__SYS_TYPE__Animal) // Animal
+.decl Cat(v0:__SYS_TYPE__Animal) // Cat
+.type __SYS_TYPE_Animal_byStr = [v0:symbol]
+.type __SYS_TYPE__Animal = [v0:__SYS_TYPE_Animal_byStr]
+p(x) :- P1(x); P3(x).
+Animal_byStr(v1, [[v1]]), Cat([[v1]]), P4(v0, [[v1]]) :- __SYS_IN_P4(v0, v1).
+Animal_byStr(v0, [[v0]]), Cat([[v0]]) :- __SYS_IN_Cat(v0).
+Animal(v0) :- Cat(v0).

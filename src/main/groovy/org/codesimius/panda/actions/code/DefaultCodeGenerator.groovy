@@ -41,7 +41,7 @@ class DefaultCodeGenerator extends DefaultVisitor<String> {
 			new TypesOptimizer()
 	]
 
-	File currentFile
+	Compiler.Artifact currentFile
 	private FileWriter fw
 	// Keep track of active logical and negation elements in order to group them correctly
 	private List<Integer> complexElements = []
