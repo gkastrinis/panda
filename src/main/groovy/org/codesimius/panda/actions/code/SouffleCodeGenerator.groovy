@@ -14,7 +14,6 @@ import org.codesimius.panda.datalog.element.relation.RecordType
 import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.element.relation.Type
 import org.codesimius.panda.datalog.expr.RecordExpr
-import org.codesimius.panda.system.Artifact
 
 import static org.codesimius.panda.datalog.Annotation.*
 import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
@@ -27,7 +26,6 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 
 	String visit(BlockLvl2 p) {
 		createUniqueFile("out_", ".dl")
-		artifacts << new Artifact(Artifact.Kind.LOGIC, currentFile)
 
 		def steps = transformations + [
 				new ConstructorTransformer(compiler, typeInferenceTransformer),

@@ -1,5 +1,6 @@
 package org.codesimius.panda.system
 
+import groovy.transform.InheritConstructors
 import org.antlr.v4.runtime.ANTLRInputStream
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTreeWalker
@@ -47,7 +48,7 @@ class Compiler {
 		ParseTreeWalker.DEFAULT.walk(listener, parser.program())
 
 		codeGenerator.visit(listener.program)
-		codeGenerator.artifacts.each { info(it.kind as String, it.file.canonicalPath) }
+		codeGenerator.artifacts.each { info(it.kind, it.canonicalPath) }
 	}
 
 	// Manually simulate what the delegate annotation would do, because recursive delegation does not
@@ -74,4 +75,32 @@ class Compiler {
 	static String loc(Rule n) { n.annotations[METADATA]?.args?.loc }
 
 	String loc(Object o) { sourceManager.loc(o) }
+
+
+	@InheritConstructors
+	abstract static class Artifact extends File {
+		static Artifact createUniqueFile(String prefix, String suffix, File parent) { null }
+
+		abstract String getKind()
+	}
+
+	@InheritConstructors
+	static class LogicFile extends Artifact {
+		static Artifact createUniqueFile(String prefix, String suffix, File parent) {
+			def raw = createTempFile(prefix, suffix, parent)
+			new LogicFile(raw.canonicalPath)
+		}
+
+		String getKind() { "LOGIC" }
+	}
+
+	@InheritConstructors
+	static class GraphFile extends Artifact {
+		static Artifact createUniqueFile(String prefix, String suffix, File parent) {
+			def raw = createTempFile(prefix, suffix, parent)
+			new GraphFile(raw.canonicalPath)
+		}
+
+		String getKind() { "GRAPH" }
+	}
 }

@@ -5,9 +5,6 @@ import org.codesimius.panda.actions.graph.DependencyGraphVisitor
 import org.codesimius.panda.actions.graph.Edge
 import org.codesimius.panda.actions.graph.Node
 
-import java.nio.file.Files
-import java.nio.file.Paths
-
 import static org.codesimius.panda.actions.graph.DependencyGraphVisitor.GLOBAL as GLOBAL_GRAPH
 import static org.codesimius.panda.actions.graph.DependencyGraphVisitor.INSTANTIATION as INSTANTIATION_GRAPH
 
@@ -17,11 +14,10 @@ class DependencyGraphDOTGenerator {
 	File outDir
 	DependencyGraphVisitor dependencyGraph
 
-	List<Artifact> gen() {
-		def f = Files.createTempFile(Paths.get(outDir.path), "graph_", ".dot").toFile()
+	List<Compiler.Artifact> gen() {
+		def f = Compiler.GraphFile.createUniqueFile("graph_", ".dot", outDir)
 		def fw = new FileWriter(f)
 		def emit = { fw.write "$it\n" }
-		def artifacts = [new Artifact(Artifact.Kind.GRAPH, f)]
 
 		def edges = []
 		def FONT = "Arial"
@@ -99,6 +95,6 @@ class DependencyGraphDOTGenerator {
 		edges.each { emit it }
 		emit "}"
 		fw.close()
-		return artifacts
+		return [f]
 	}
 }

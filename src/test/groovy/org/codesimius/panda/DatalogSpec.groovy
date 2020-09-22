@@ -3,7 +3,6 @@ package org.codesimius.panda
 import org.antlr.v4.runtime.ANTLRInputStream
 import org.apache.commons.io.FileUtils
 import org.codesimius.panda.actions.code.SouffleCodeGenerator
-import org.codesimius.panda.system.Artifact
 import org.codesimius.panda.system.Compiler
 import org.codesimius.panda.system.Error
 import org.codesimius.panda.system.PandaException
@@ -144,7 +143,7 @@ class DatalogSpec extends Specification {
 	def testAndCompare(String file) {
 		def compiler = test(file, SouffleCodeGenerator)
 		// Compare contents
-		def generatedFile = compiler.codeGenerator.artifacts.find { it.kind == Artifact.Kind.LOGIC }.file
+		def generatedFile = compiler.codeGenerator.artifacts.find { it instanceof Compiler.LogicFile }
 		def expectedFileURL = this.class.getResource("/expected/exp-${file}.dl")
 		def expectedFile = expectedFileURL ? new File(expectedFileURL.toURI()) : null
 

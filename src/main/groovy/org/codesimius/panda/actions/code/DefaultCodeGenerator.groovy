@@ -14,17 +14,13 @@ import org.codesimius.panda.datalog.expr.BinaryExpr
 import org.codesimius.panda.datalog.expr.ConstantExpr
 import org.codesimius.panda.datalog.expr.GroupExpr
 import org.codesimius.panda.datalog.expr.VariableExpr
-import org.codesimius.panda.system.Artifact
 import org.codesimius.panda.system.Compiler
-
-import java.nio.file.Files
-import java.nio.file.Paths
 
 import static org.codesimius.panda.datalog.element.ComparisonElement.TRIVIALLY_TRUE
 
 class DefaultCodeGenerator extends DefaultVisitor<String> {
 
-	public List<Artifact> artifacts = []
+	List<Compiler.Artifact> artifacts = []
 
 	Compiler compiler
 	File outDir
@@ -88,8 +84,9 @@ class DefaultCodeGenerator extends DefaultVisitor<String> {
 	String exit(VariableExpr n) { n.name }
 
 	def createUniqueFile(String prefix, String suffix) {
-		currentFile = Files.createTempFile(Paths.get(outDir.path), prefix, suffix).toFile()
-		if (fw) fw.close()
+		currentFile = Compiler.LogicFile.createUniqueFile(prefix, suffix, outDir) as Compiler.Artifact
+		artifacts << currentFile
+		fw?.close()
 		fw = new FileWriter(currentFile)
 	}
 
