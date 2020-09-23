@@ -16,9 +16,9 @@
 .type __SYS_TYPE_cons_A = [v0:symbol]
 .type __SYS_TYPE_Animal_byStr = [v0:symbol]
 .type __SYS_TYPE__Animal = [v0:__SYS_TYPE_cons_A, v1:__SYS_TYPE_Animal_byStr]
-cons_A("bird", [nil, ["bird"]]), Animal([nil, ["bird"]]), Foo([nil, ["bird"]], "bird") :- 1=1.
-cons_A("bird", [nil, ["bird"]]), Animal([nil, ["bird"]]), Foo2([nil, ["bird"]], "bird") :- 1=1.
-cons_A("kitty", [nil, ["kitty"]]), Cat([nil, ["kitty"]]), Bar("kitty", [nil, ["kitty"]]) :- 1=1.
+cons_A("bird", [["bird"], nil]), Animal([["bird"], nil]), Foo([["bird"], nil], "bird") :- 1=1.
+cons_A("bird", [["bird"], nil]), Animal([["bird"], nil]), Foo2([["bird"], nil], "bird") :- 1=1.
+cons_A("kitty", [["kitty"], nil]), Cat([["kitty"], nil]), Bar("kitty", [["kitty"], nil]) :- 1=1.
 Ble(a, b) :- cons_A(a, b).
 FooBar(y, z) :- Ble(y, z), Baz(z).
 FooBar2(x, y) :- Bar(x, y).

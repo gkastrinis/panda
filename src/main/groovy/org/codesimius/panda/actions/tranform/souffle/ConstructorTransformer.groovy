@@ -57,6 +57,8 @@ class ConstructorTransformer extends DefaultTransformer {
 	// The internal record representing the constructed value
 	private RecordExpr tmpConRecord
 
+	private Map<IVisitable, IVisitable> oldMap
+
 	void enter(BlockLvl0 n) {
 		super.enter n
 		// Re: (2)
@@ -96,19 +98,21 @@ class ConstructorTransformer extends DefaultTransformer {
 	}
 
 	IVisitable visit(Rule n) {
+		oldMap = m
+		m = [:]
+
 		parentAnnotations = n.annotations
 		inRuleHead = true
 		def head = n.head
-		new ConstructionInfoVisitor(compiler).with {
-			visit n
-			constructionsOrderedPerRule[n].each {
-				// Map to the updated (from a previous iteration) version of the constructor, if any
-				def con = (m[it] ?: it) as ConstructionElement
-				tmpConVar = con.constructor.valueExpr as VariableExpr
-				tmpCurrConstructor = con.constructor.name
-				tmpConRecord = new RecordExpr(con.constructor.keyExprs)
-				head = visit head
-			}
+		def infoVisitor = new ConstructionInfoVisitor(compiler)
+		infoVisitor.visit n
+		infoVisitor.constructionsOrderedPerRule[n].each {
+			// Map to the updated (from a previous iteration) version of the constructor, if any
+			def con = (m[it] ?: it) as ConstructionElement
+			tmpConVar = con.constructor.valueExpr as VariableExpr
+			tmpCurrConstructor = con.constructor.name
+			tmpConRecord = new RecordExpr(con.constructor.keyExprs)
+			head = visit head
 		}
 		m[n.head] = head
 		inRuleHead = false
@@ -117,7 +121,9 @@ class ConstructorTransformer extends DefaultTransformer {
 		if (n.body) m[n.body] = visit n.body
 		inRuleBody = false
 
-		super.exit n
+		def res = super.exit n
+		m = oldMap
+		return res
 	}
 
 	IVisitable visit(Constructor n) { visit(n as Relation) }
