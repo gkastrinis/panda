@@ -47,9 +47,9 @@ class DefaultCodeGenerator extends DefaultVisitor<String> {
 	// Keep track of active logical and negation elements in order to group them correctly
 	private List<Integer> complexElements = []
 
-	DefaultCodeGenerator(Compiler compiler, String outDir, File mainFile) {
+	DefaultCodeGenerator(Compiler compiler, String outDirName, File mainFile) {
 		this.compiler = compiler
-		this.outDir = new File(outDir)
+		outDir = new File(outDirName)
 		outDir.mkdirs()
 		this.mainFile = mainFile
 	}
