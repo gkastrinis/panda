@@ -5,6 +5,7 @@ import org.codesimius.panda.actions.graph.DependencyGraphVisitor
 import org.codesimius.panda.actions.tranform.*
 import org.codesimius.panda.actions.validation.MainValidator
 import org.codesimius.panda.actions.validation.PreliminaryValidator
+import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl2
 import org.codesimius.panda.datalog.element.ComparisonElement
 import org.codesimius.panda.datalog.element.ConstructionElement
@@ -26,21 +27,9 @@ class DefaultCodeGenerator extends DefaultVisitor<String> {
 
 	List<Compiler.Artifact> artifacts = []
 
-	def typeInferenceTransformer = new TypeInferenceTransformer(compiler)
+	TypeInferenceTransformer typeInferenceTransformer
 
-	def transformations = [
-			new FreeTextTransformer(compiler),
-			new PreliminaryValidator(compiler),
-			new TemplateInstantiationTransformer(),
-			new DependencyGraphVisitor(compiler, outDir),
-			new TemplateFlatteningTransformer(),
-			new TypesTransformer(compiler),
-			new InputFactsTransformer(),
-			new MainValidator(compiler),
-			typeInferenceTransformer,
-			new SmartLiteralTransformer(compiler, typeInferenceTransformer),
-			new TypesOptimizer()
-	]
+	List<DefaultVisitor<IVisitable>> transformations
 
 	Compiler.Artifact currentFile
 	private FileWriter fw
@@ -52,6 +41,22 @@ class DefaultCodeGenerator extends DefaultVisitor<String> {
 		outDir = new File(outDirName)
 		outDir.mkdirs()
 		this.mainFile = mainFile
+
+		typeInferenceTransformer = new TypeInferenceTransformer(compiler)
+
+		transformations = [
+				new FreeTextTransformer(compiler),
+				new PreliminaryValidator(compiler),
+				new TemplateInstantiationTransformer(),
+				new DependencyGraphVisitor(compiler, outDir),
+				new TemplateFlatteningTransformer(),
+				new TypesTransformer(compiler),
+				new InputFactsTransformer(),
+				new MainValidator(compiler),
+				typeInferenceTransformer,
+				new SmartLiteralTransformer(compiler, typeInferenceTransformer),
+				new TypesOptimizer()
+		]
 	}
 
 	String exit(BlockLvl2 n) { fw.close(); null }
