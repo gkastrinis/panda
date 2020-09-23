@@ -72,7 +72,8 @@ class ConstructorTransformer extends DefaultTransformer {
 				n.constructorsPerType[it].each { conDecl ->
 					def conT = new Type(conDecl.relation.name)
 					constructorType[conDecl.relation.name] = conT
-					extraTypeDecls << new TypeDeclaration(conT, new RecordType(conDecl.types.dropRight(1)))
+					def newRecordType = new RecordType(conDecl.types.dropRight(1).collect { map(it) })
+					extraTypeDecls << new TypeDeclaration(conT, newRecordType)
 					recordType.innerTypes << conT
 				}
 			}
