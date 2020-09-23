@@ -1,0 +1,38 @@
+.decl byVar(v0:symbol, v1:__SYS_TYPE__AP) // string x AP
+.decl byFld(v0:symbol, v1:symbol, v2:__SYS_TYPE__AP) // string x string x AP
+.decl byLen(v0:number, v1:__SYS_TYPE__Shape) // int x Shape
+.decl byName(v0:symbol, v1:__SYS_TYPE__Shape) // string x Shape
+.decl byPoints(v0:number, v1:number, v2:__SYS_TYPE__Shape) // int x int x Shape
+.decl AP_byStr(v0:symbol, v1:__SYS_TYPE__AP) // string x AP
+.decl Shape_byStr(v0:symbol, v1:__SYS_TYPE__Shape) // string x Shape
+.decl Ble(v0:__SYS_TYPE__AP, v1:symbol) // AP x string
+.decl Foo(v0:__SYS_TYPE__AP, v1:symbol) // AP x string
+.decl Baz(v0:symbol) // string
+.decl BarBaz(v0:__SYS_TYPE__AP) // AP
+.decl Foo2(v0:__SYS_TYPE__AP) // AP2
+.decl Baz2(v0:symbol, v1:symbol) // string x string
+.decl Planned(v0:symbol) // string
+.decl FooBer(v0:number, v1:__SYS_TYPE__Shape, v2:number, v3:__SYS_TYPE__Shape) // int x Shape x int x Shape
+.decl Pred1(v0:number, v1:number) // int x int
+.decl Pred2(v0:number, v1:number, v2:number) // int x int x int
+.decl AP(v0:__SYS_TYPE__AP) // AP
+.decl AP2(v0:__SYS_TYPE__AP) // AP2
+.decl Shape(v0:__SYS_TYPE__Shape) // Shape
+.type __SYS_TYPE_byVar = [v0:symbol]
+.type __SYS_TYPE_byFld = [v0:symbol, v1:symbol]
+.type __SYS_TYPE_AP_byStr = [v0:symbol]
+.type __SYS_TYPE__AP = [v0:__SYS_TYPE_byVar, v1:__SYS_TYPE_byFld, v2:__SYS_TYPE_AP_byStr]
+.type __SYS_TYPE_byLen = [v0:number]
+.type __SYS_TYPE_byName = [v0:symbol]
+.type __SYS_TYPE_byPoints = [v0:number, v1:number]
+.type __SYS_TYPE_Shape_byStr = [v0:symbol]
+.type __SYS_TYPE__Shape = [v0:__SYS_TYPE_byLen, v1:__SYS_TYPE_byName, v2:__SYS_TYPE_byPoints, v3:__SYS_TYPE_Shape_byStr]
+byVar("abc", [["abc"], nil, nil]), AP([["abc"], nil, nil]), Ble([["abc"], nil, nil], "abc") :- 1=1.
+byVar("abc", [["abc"], nil, nil]), AP([["abc"], nil, nil]), Foo([["abc"], nil, nil], "abc"), Baz("abc"), BarBaz([["abc"], nil, nil]) :- 1=1.
+byFld("x2", "f1", [nil, ["x2", "f1"], nil]), AP2([nil, ["x2", "f1"], nil]), Foo2([nil, ["x2", "f1"], nil]), Baz2("f1", "x2") :- 1=1.
+Planned(x) :- Foo(_, x), Baz(x).
+.plan 1:(1,2)
+byLen(42, [[42], nil, nil, nil]), Shape([[42], nil, nil, nil]), byLen(10, [[10], nil, nil, nil]), Shape([[10], nil, nil, nil]), FooBer(42, [[42], nil, nil, nil], 10, [[10], nil, nil, nil]) :- 1=1.
+Pred1(10 + 20, 10).
+Pred2(x, t, x + t) :- Pred1(x, x), x = 10 + t, Pred1(t, t).
+AP(v0) :- AP2(v0).

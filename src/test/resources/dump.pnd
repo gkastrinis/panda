@@ -1,0 +1,11 @@
+Q(1)
+
+template Foo<A> {
+	P(x) <- Q@A(x)
+	Q(x) <- P(x), x > 10
+}
+
+Foo<_> as F1
+
+@output W
+W(x) <- Q@F1(x)

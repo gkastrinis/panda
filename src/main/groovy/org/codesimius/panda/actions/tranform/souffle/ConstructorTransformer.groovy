@@ -142,7 +142,7 @@ class ConstructorTransformer extends DefaultTransformer {
 		def conT = constructorType[tmpCurrConstructor]
 		def recordType = typeToRecordType[tmpCurrType]
 		def record = new RecordExpr((0..<recordType.innerTypes.size()).collect { NIL as IExpr })
-		record.exprs[recordType.findIndexOf { it == conT }] = tmpConRecord
+		record.exprs[recordType.innerTypes.findIndexOf { it == conT }] = tmpConRecord
 		return record
 	}
 
