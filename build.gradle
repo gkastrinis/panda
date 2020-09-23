@@ -2,6 +2,7 @@ plugins {
 	id "antlr"
 	id "application"
 	id "groovy"
+	id 'net.researchgate.release' version '2.8.1'
 }
 
 mainClassName = "org.codesimius.panda.Main"
@@ -30,4 +31,14 @@ run {
 test {
 	useJUnitPlatform()
 	testLogging { showStandardStreams = true }
+}
+
+release {
+	git {
+		requireBranch = 'master'
+		pushToRemote = 'origin'
+		pushToBranchPrefix = ''
+		commitVersionFileOnly = false
+		signTag = true
+	}
 }
