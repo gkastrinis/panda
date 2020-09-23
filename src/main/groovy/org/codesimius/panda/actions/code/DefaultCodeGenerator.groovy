@@ -20,10 +20,11 @@ import static org.codesimius.panda.datalog.element.ComparisonElement.TRIVIALLY_T
 
 class DefaultCodeGenerator extends DefaultVisitor<String> {
 
-	List<Compiler.Artifact> artifacts = []
-
 	Compiler compiler
 	File outDir
+	File mainFile
+
+	List<Compiler.Artifact> artifacts = []
 
 	def typeInferenceTransformer = new TypeInferenceTransformer(compiler)
 
@@ -46,13 +47,12 @@ class DefaultCodeGenerator extends DefaultVisitor<String> {
 	// Keep track of active logical and negation elements in order to group them correctly
 	private List<Integer> complexElements = []
 
-	DefaultCodeGenerator(Compiler compiler, File outDir) {
+	DefaultCodeGenerator(Compiler compiler, String outDir, File mainFile) {
 		this.compiler = compiler
-		this.outDir = outDir
+		this.outDir = new File(outDir)
 		outDir.mkdirs()
+		this.mainFile = mainFile
 	}
-
-	DefaultCodeGenerator(Compiler compiler, String outDir) { this(compiler, new File(outDir)) }
 
 	String exit(BlockLvl2 n) { fw.close(); null }
 

@@ -25,7 +25,7 @@ class Compiler {
 	Compiler(String logFilename = null, File mainFile, Class<? extends DefaultCodeGenerator> codeGenClass, String outDir) {
 		log = new Log(logFilename)
 		sourceManager = new SourceManager(mainFile)
-		codeGenerator = codeGenClass.newInstance(this, outDir) as DefaultCodeGenerator
+		codeGenerator = codeGenClass.newInstance(this, outDir, mainFile) as DefaultCodeGenerator
 
 		// Add a getAt method to the Set class to allow for search as in a map (i.e., set[element])
 		Set.metaClass.getAt = { element -> delegate.find { it == element} }
