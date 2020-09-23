@@ -17,6 +17,6 @@ Q(2).
 W(x) :- S2_R(x).
 S1_P(10).
 S1_R(x) :- S1_P(x).
-S1_cons_An(x, [nil, [x]]), S1_Animal([nil, [x]]), S1_foo([nil, [x]]) :- x = "cat", S1_W(x).
+S1_cons_An(x, [[x], nil]), S1_Animal([[x], nil]), S1_foo([[x], nil]) :- x = "cat", S1_W(x).
 S1_Bar(y) :- S1_cons_An(_, y).
 S2_R(x) :- Q(x).

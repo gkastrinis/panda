@@ -27,15 +27,15 @@
 .type __SYS_TYPE_con6 = [v0:symbol, v1:number]
 .type __SYS_TYPE_con7 = [v0:number]
 .type __SYS_TYPE__T1 = [v0:__SYS_TYPE_con1, v1:__SYS_TYPE_con2, v2:__SYS_TYPE_T1_byStr, v3:__SYS_TYPE_con3, v4:__SYS_TYPE_con4, v5:__SYS_TYPE_con5, v6:__SYS_TYPE_con6, v7:__SYS_TYPE_con7]
-.type __SYS_TYPE_concon = [v0:__SYS_TYPE_T4, v1:symbol]
+.type __SYS_TYPE_concon = [v0:__SYS_TYPE__T1, v1:symbol]
 .type __SYS_TYPE_F1_byStr = [v0:symbol]
 .type __SYS_TYPE__F1 = [v0:__SYS_TYPE_concon, v1:__SYS_TYPE_F1_byStr]
 .type __SYS_TYPE_Animal_byStr = [v0:symbol]
 .type __SYS_TYPE__Animal = [v0:__SYS_TYPE_Animal_byStr]
-foo("Hello", [nil, nil, nil, nil, nil, nil, nil, ["Hello", 42]]), con6("Hello", 42, [nil, nil, nil, nil, nil, nil, nil, ["Hello", 42]]), T4([nil, nil, nil, nil, nil, nil, nil, ["Hello", 42]]).
-concon([nil, nil, nil, nil, nil, nil, nil, ["World", 10]], "World", [nil, [a, "World"]]), F1([nil, [a, "World"]]), con6("World", 10, [nil, nil, nil, nil, nil, nil, nil, ["World", 10]]), T4([nil, nil, nil, nil, nil, nil, nil, ["World", 10]]).
-T1(v0):- T2(v0).
-T1(v0):- T3(v0).
-T3(v0):- T4(v0).
-Animal(v0):- Cat(v0).
-Animal(v0):- Dog(v0).
+foo("Hello", [nil, nil, nil, nil, nil, nil, ["Hello", 42], nil]), con6("Hello", 42, [nil, nil, nil, nil, nil, nil, ["Hello", 42], nil]), T4([nil, nil, nil, nil, nil, nil, ["Hello", 42], nil]) :- 1=1.
+concon([nil, nil, nil, nil, nil, nil, ["World", 10], nil], "World", [[[nil, nil, nil, nil, nil, nil, ["World", 10], nil], "World"], nil]), F1([[[nil, nil, nil, nil, nil, nil, ["World", 10], nil], "World"], nil]), con6("World", 10, [nil, nil, nil, nil, nil, nil, ["World", 10], nil]), T4([nil, nil, nil, nil, nil, nil, ["World", 10], nil]) :- 1=1.
+T1(v0) :- T2(v0).
+T1(v0) :- T3(v0).
+T3(v0) :- T4(v0).
+Animal(v0) :- Cat(v0).
+Animal(v0) :- Dog(v0).

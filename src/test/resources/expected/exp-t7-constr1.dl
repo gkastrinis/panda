@@ -10,8 +10,8 @@
 .type __SYS_TYPE_cons_Shape = [v0:symbol]
 .type __SYS_TYPE_Shape_byStr = [v0:symbol]
 .type __SYS_TYPE__Shape = [v0:__SYS_TYPE_cons_Shape, v1:__SYS_TYPE_Shape_byStr]
-cons_Shape("circle", [nil, ["circle"]]), Circle([nil, ["circle"]]), PredC("circle", [nil, ["circle"]]) :- 1=1.
-cons_Shape("triangle", [nil, ["triangle"]]), RightTriangle([nil, ["triangle"]]), PredT("triangle", [nil, ["triangle"]]) :- 1=1.
+cons_Shape("circle", [["circle"], nil]), Circle([["circle"], nil]), PredC("circle", [["circle"], nil]) :- 1=1.
+cons_Shape("triangle", [["triangle"], nil]), RightTriangle([["triangle"], nil]), PredT("triangle", [["triangle"], nil]) :- 1=1.
 Pred(x) :- PredC(_, x).
 Pred(x) :- PredT(_, x).
 Shape(v0) :- Circle(v0).
