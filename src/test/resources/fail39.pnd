@@ -1,3 +1,4 @@
 template Foo<X>{}
-template Bar{} as B
+template Bar{}
+Bar as B
 Foo<B2> as F

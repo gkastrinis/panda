@@ -48,7 +48,7 @@ class DatalogParserImpl extends DatalogBaseListener {
 		// Do so only at the end of all code parsing, because
 		// exitProgram will also be called at the end of each included file.
 		if (compiler.activeFiles.size() == 1)
-			currPendingAnnotations.each { addAnnotationsToRelDecl(it.key, it.value) }
+			currPendingAnnotations.each { mkRelDeclFromAnnotations(it.key, it.value) }
 	}
 
 	void enterInclude(IncludeContext ctx) {
@@ -72,7 +72,7 @@ class DatalogParserImpl extends DatalogBaseListener {
 		def superParameters = ctx.superTemplate()?.parameterList() ? values[ctx.superTemplate().parameterList()] as List : []
 		program.templates << rec(new BlockLvl1(name, superName, parameters, superParameters, currDatalog), ctx)
 
-		currPendingAnnotations.each { addAnnotationsToRelDecl(it.key, it.value) }
+		currPendingAnnotations.each { mkRelDeclFromAnnotations(it.key, it.value) }
 		currPendingAnnotations = globalPendingAnnotations
 		currDatalog = program.datalog
 	}
@@ -88,9 +88,9 @@ class DatalogParserImpl extends DatalogBaseListener {
 		def annotations = mergeAnnotations(gatherAnnotations(ctx.annotationList()), annotateLocation(ctx))
 
 		// Type declaration
-		if (ctx.extIdentifier(0) && TYPE in annotations) {
-			def type = new Type(values[ctx.extIdentifier(0)] as String)
-			def supertype = ctx.extIdentifier(1) ? new Type(values[ctx.extIdentifier(1)] as String) : null
+		if (ctx.qualifiedId(0) && TYPE in annotations) {
+			def type = new Type(values[ctx.qualifiedId(0)] as String)
+			def supertype = ctx.qualifiedId(1) ? new Type(values[ctx.qualifiedId(1)] as String) : null
 			// Initial values are of the form `key(value)`. E.g., PUBLIC('public')
 			// Keys are used to generate singleton relations. E.g., Modifier:PUBLIC(x)
 			if (ctx.initValueList())
@@ -99,13 +99,13 @@ class DatalogParserImpl extends DatalogBaseListener {
 		}
 		// Incomplete declaration of the form: `@output Foo`
 		// i.e. binds annotations with a relation name without providing any details
-		else if (ctx.extIdentifier(0)) {
-			mergeAnnotations(currPendingAnnotations[values[ctx.extIdentifier(0)] as String], annotations)
+		else if (ctx.qualifiedId(0)) {
+			mergeAnnotations(currPendingAnnotations[values[ctx.qualifiedId(0)] as String], annotations)
 		}
 		// Full declaration of a relation
 		else {
 			def rel = ctx.relation() ? values[ctx.relation()] as Relation : values[ctx.constructor()] as Constructor
-			def types = values[ctx.extIdentifierList()].collect { new Type(it as String) }
+			def types = values[ctx.qualifiedIdList()].collect { new Type(it as String) }
 			currDatalog.relDeclarations << new RelDeclaration(rel, types, annotations)
 		}
 	}
@@ -128,7 +128,7 @@ class DatalogParserImpl extends DatalogBaseListener {
 	}
 
 	void exitRelation(RelationContext ctx) {
-		def name = values[ctx.extIdentifier()] as String
+		def name = values[ctx.qualifiedId()] as String
 		def exprs = ctx.exprList() ? values[ctx.exprList()] as List : []
 		values[ctx] = new Relation(name, exprs)
 	}
@@ -151,8 +151,8 @@ class DatalogParserImpl extends DatalogBaseListener {
 				values[ctx.bodyList()] as IElement)
 	}
 
-	void exitExtIdentifier(ExtIdentifierContext ctx) {
-		values[ctx] = "${ctx.IDENTIFIER(0).text}${ctx.IDENTIFIER(1) ? "@${ctx.IDENTIFIER(1).text}" : ""}"
+	void exitQualifiedId(QualifiedIdContext ctx) {
+		values[ctx] = hasToken(ctx, '.') ? "${ctx.IDENTIFIER(0).text}.${ctx.IDENTIFIER(1).text}" : ctx.IDENTIFIER(0).text
 	}
 
 	void exitConstant(ConstantContext ctx) {
@@ -263,8 +263,8 @@ class DatalogParserImpl extends DatalogBaseListener {
 		values[ctx] = ((values[ctx.identifierList()] ?: []) as List) << ctx.IDENTIFIER().text
 	}
 
-	void exitExtIdentifierList(ExtIdentifierListContext ctx) {
-		values[ctx] = ((values[ctx.extIdentifierList()] ?: []) as List) << values[ctx.extIdentifier()]
+	void exitQualifiedIdList(QualifiedIdListContext ctx) {
+		values[ctx] = ((values[ctx.qualifiedIdList()] ?: []) as List) << values[ctx.qualifiedId()]
 	}
 
 	// Special handling (instead of using "exit")
@@ -284,8 +284,9 @@ class DatalogParserImpl extends DatalogBaseListener {
 
 	void visitErrorNode(ErrorNode node) { throw new RuntimeException("Parsing error") }
 
+	///////////////////////////////////////////////////////////
 
-	def addAnnotationsToRelDecl(String relName, Set<Annotation> annotations) {
+	def mkRelDeclFromAnnotations(String relName, Set<Annotation> annotations) {
 		def rd = currDatalog.relDeclarations.find { it.relation.name == relName } as RelDeclaration
 		if (rd) mergeAnnotations(rd.annotations, annotations)
 		else currDatalog.relDeclarations << new RelDeclaration(new Relation(relName), [], annotations)

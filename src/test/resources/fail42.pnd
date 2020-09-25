@@ -1,5 +1,6 @@
 template Foo {
     P(x) :int
-} as S1
+}
+Foo as S1
 
 S1:Bar(x) : int

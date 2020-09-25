@@ -1,9 +1,9 @@
 P(42)
 
 template Foo <X>{
-	Q(x) <- P@X(x)
+	Q(x) <- X.P(x)
 }
 
 template Bar <A, B> : Foo<X> {
-	W(x) <- P@A(x)
+	W(x) <- A.P(x)
 }

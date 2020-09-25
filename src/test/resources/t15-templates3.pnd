@@ -13,12 +13,12 @@ template Foo {
 Foo as S1
 
 template Bar <G> {
-	R(x) <- Q@G(x)
+	R(x) <- G.Q(x)
 }
 Bar<_> as S2
 
 Q(1)
 Q(2)
 
-W(x) <- R@S2(x)
+W(x) <- S2.R(x)
 W(x):int

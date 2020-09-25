@@ -19,15 +19,14 @@ superTemplate
 instantiation
 	: IDENTIFIER parameterList? 'as' identifierList ;
 
-
 ///////////////////////////////////////////////////////////////
 
 datalog
 	: declaration | rule_ ;
 
 declaration
-	: annotationList? extIdentifier (':' extIdentifier)? ('with' initValueList)?
-	| annotationList? (relation | constructor) ':' extIdentifierList
+	: annotationList qualifiedId (':' qualifiedId)? ('with' initValueList)?
+	| annotationList? (relation | constructor) ':' qualifiedIdList
 	;
 
 rule_
@@ -38,7 +37,7 @@ rule_
 ///////////////////////////////////////////////////////////////
 
 relation
-	: extIdentifier '(' exprList? ')' ;
+	: qualifiedId '(' exprList? ')' ;
 
 relationText
 	: (IDENTIFIER | constant)+ ;
@@ -54,8 +53,8 @@ aggregation
 
 ///////////////////////////////////////////////////////////////
 
-extIdentifier
-	: IDENTIFIER ('@' IDENTIFIER)? ;
+qualifiedId
+	: (IDENTIFIER '.')? IDENTIFIER ;
 
 value
 	: IDENTIFIER '=' constant ;
@@ -117,9 +116,9 @@ identifierList
 	| identifierList ',' IDENTIFIER
 	;
 
-extIdentifierList
-	: extIdentifier
-	| extIdentifierList ',' extIdentifier
+qualifiedIdList
+	: qualifiedId
+	| qualifiedIdList ',' qualifiedId
 	;
 
 valueList

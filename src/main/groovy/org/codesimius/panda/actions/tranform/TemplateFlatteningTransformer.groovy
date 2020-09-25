@@ -43,10 +43,10 @@ class TemplateFlatteningTransformer extends DefaultTransformer {
 	IVisitable exit(Constructor n) { new Constructor(rename(n.name), n.exprs) }
 
 	IVisitable exit(Relation n) {
-		if (!n.name.contains("@"))
+		if (!n.name.contains("."))
 			return new Relation(rename(n.name), n.exprs)
 		else {
-			def (simpleName, parameter) = n.name.split("@")
+			def (parameter, simpleName) = n.name.split("\\.")
 			return new Relation(parameter == "_" ? simpleName : "$parameter:$simpleName", n.exprs)
 		}
 	}

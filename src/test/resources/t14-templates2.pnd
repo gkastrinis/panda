@@ -1,6 +1,6 @@
 template Foo<T, G> {
-	P(x) <- Q@G(x)
-	Bar(x) <- P(x), Bar@T(x)
+	P(x) <- G.Q(x)
+	Bar(x) <- P(x), T.Bar(x)
 	Bar(x) : int
 }
 Foo<_, _> as S1

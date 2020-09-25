@@ -107,8 +107,8 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 		ids.findAll { n.name.startsWith("$it:") }.each {
 			error(findParentLoc(), Error.REL_NAME_COMP, "$it:", n.name)
 		}
-		if (n.name.contains("@")) {
-			def parameter = n.name.split("@").last() as String
+		if (n.name.contains(".")) {
+			def parameter = n.name.split("\\.").first() as String
 			if (inDecl || inRuleHead)
 				error(findParentLoc(), Error.REL_EXT_INVALID)
 			if (!currComp && !prog.instantiations.any { it.id == parameter })

@@ -63,7 +63,7 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 			}
 		}
 		pendingIndirectEdges.each { relNode, complexName ->
-			def (String name, String parameter) = complexName.split("@")
+			def (String parameter, String name) = complexName.split("\\.")
 			def graphName = parameter == "_" ? GLOBAL : parameter
 			if (!graphs[graphName].nodes.values().any { it.title == name })
 				error(Error.REL_EXT_NO_DECL, name)
@@ -143,7 +143,7 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 	void enter(Relation n) {
 		if (inDecl) return
 
-		if (n.name.contains("@"))
+		if (n.name.contains("."))
 			pendingIndirectEdges[currGraph.touch(n.name, Node.Kind.PARAMETER)] = n.name
 
 		if (inRuleHead) headRelations << new RelInfo(n.name)

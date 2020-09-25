@@ -3,9 +3,10 @@ template Base {
 }
 template Core : Base {
     Q(x) : int
-} as C1
+}
+Core as C1
 template Foo<X> {
-    W(x) <- P@X(x)
-    Z(x) <- Q@X(x)
+    W(x) <- X.P(x)
+    Z(x) <- X.Q(x)
 }
 Foo<C1> as F1

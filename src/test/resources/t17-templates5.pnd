@@ -1,17 +1,17 @@
 template FooBar<X, Y> : Baz<Y, Y> {
-    P(x) <- Q@X(x), R@Y(x)
+    P(x) <- X.Q(x), Y.R(x)
 }
 
 template Foo<E, F> : Baz<F, E> {
-    P3(x) <- Q@E(x), R@F(x)
+    P3(x) <- E.Q(x), F.R(x)
 }
 
 template Baz<C, D> : Bar<D, C> {
-    P2(x) <- Q@D(x), R@C(x)
+    P2(x) <- D.Q(x), C.R(x)
 }
 
 template Bar<A, B> {
-    P1(x) <- Q@A(x), R@B(x)
+    P1(x) <- A.Q(x), B.R(x)
 }
 
 

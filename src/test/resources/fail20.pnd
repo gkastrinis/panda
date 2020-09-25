@@ -1,13 +1,13 @@
 template First {
 	P(42)
 }
-as S1
+First as S1
 
 template Second {
 	Q(42)
-	Q(x), P@ext(x) <- W(x)
+	Q(x), ext.P(x) <- W(x)
 }
-as S2
+Second as S2
 
 //S1 {*} -> S2
 

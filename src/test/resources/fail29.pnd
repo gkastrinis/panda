@@ -1,7 +1,7 @@
 P(42)
 
 template Foo <X>{
-	Q(x) <- P@X(x)
-	W@X(x) : int
+	Q(x) <- X.P(x)
+	X.W(x) : int
 }
 Foo<_> as F1

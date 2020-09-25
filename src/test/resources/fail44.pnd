@@ -1,17 +1,17 @@
 P(x) : int
 
 template Base<A, B> {
-    AA(x) <- P@A(x)
-    BB(x) <- P@B(x)
+    AA(x) <- A.P(x)
+    BB(x) <- B.P(x)
 }
 
 template Foo<T> : Base<T, T> {
-    P(x) <- P@T(x)
+    P(x) <- T.P(x)
 }
 
 Foo<_> as F1
 
-P(x) <- P@F1(x)
+P(x) <- F1.P(x)
 
 template Bar {
     Q(x) <- P(x), x > 10
@@ -22,4 +22,4 @@ Bar as B1
 
 Foo<B1> as F2
 
-P(x) <- P@F2(x)
+P(x) <- F2.P(x)

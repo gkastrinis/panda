@@ -1,8 +1,8 @@
 template Foo<X> {
-    P(x) <- Q@X(x)
+    P(x) <- X.Q(x)
 }
 template Bar<Y> {
-    Q(x) <- P@Y(x)
+    Q(x) <- Y.P(x)
 }
 
 Foo<B> as F

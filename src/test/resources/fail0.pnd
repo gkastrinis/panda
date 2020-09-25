@@ -1,5 +1,5 @@
 template Foo<G> {
-	P(x) <- Q@X(x)
+	P(x) <- X.Q(x)
 }
 
 Foo<_> as S1

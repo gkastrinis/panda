@@ -1,4 +1,4 @@
 template Foo {
     P(x) : int
 }
-as Foo:Bar
+Foo as Foo:Bar

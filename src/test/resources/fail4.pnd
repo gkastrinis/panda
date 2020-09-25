@@ -1,11 +1,11 @@
 template Foo {
 	P(x) : string
 }
-as S1
+Foo as S1
 
 template Bar {
 	R(x) : int
 }
-as S2
+Bar as S2
 
 Bar as Foo

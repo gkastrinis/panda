@@ -2,10 +2,10 @@ P(x) : int
 
 template Foo<X> {
     Q(x) : int
-    P(x) <- Q(x), P@X(x)
+    P(x) <- Q(x), X.P(x)
 }
 
 Foo<_> as F1
 Foo<F1> as F2
 
-Res(x) <- P@F2(x)
+Res(x) <- F2.P(x)

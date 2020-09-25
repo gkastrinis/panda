@@ -72,11 +72,11 @@ class TemplateInstantiationTransformer extends DefaultTransformer {
 	IVisitable exit(Constructor n) { n }
 
 	IVisitable exit(Relation n) {
-		if (!n.name.contains("@") || !currComp)
+		if (!n.name.contains(".") || !currComp)
 			return n
 		else {
-			def (simpleName, String parameter) = n.name.split("@")
-			return new Relation("$simpleName@${mapParams[parameter]}", n.exprs)
+			def (String parameter, simpleName) = n.name.split("\\.")
+			return new Relation("${mapParams[parameter]}.$simpleName", n.exprs)
 		}
 	}
 

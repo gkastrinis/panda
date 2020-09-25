@@ -1,8 +1,6 @@
-@Input {
-	P1(x) : string
-	P2(x) : int
-	P3(x) : string
-}
+@Input P1(x) : string
+@Input P2(x) : int
+@Input P3(x) : string
 
 @output p
 p(x) <- P1(x) ; P3(x)
