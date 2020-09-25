@@ -42,7 +42,8 @@ class Log {
 
 	void error(Exception e) {
 		def msg = e.message
-		System.err.println msg
+		if (e instanceof PandaException) System.err.println msg
+		else e.printStackTrace()
 		if (logFile) logFile.append "$msg\n"
 	}
 }
