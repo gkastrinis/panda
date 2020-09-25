@@ -25,7 +25,7 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 	@Delegate
 	Compiler compiler
 	private BlockLvl2 prog
-	private BlockLvl1 currComp
+	private BlockLvl1 currTemplate
 	private BlockLvl0 currDatalog
 	private List<String> ids
 
@@ -41,15 +41,15 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 		n.instantiations.each { inst ->
 			def loc = loc(inst)
 			if (inst.id.contains(":"))
-				error(loc, Error.COMP_NAME_LIMITS, inst.id)
+				error(loc, Error.TEMPL_NAME_LIMITS, inst.id)
 
-			def currComp = n.templates.find { it.name == inst.template }
-			if (!currComp)
-				error(loc, Error.COMP_UNKNOWN, inst.template)
-			if (currComp.parameters.size() != inst.parameters.size())
-				error(loc, Error.COMP_INST_ARITY, inst.parameters, inst.template, inst.id)
+			def currTemplate = n.templates.find { it.name == inst.template }
+			if (!currTemplate)
+				error(loc, Error.TEMPL_UNKNOWN, inst.template)
+			if (currTemplate.parameters.size() != inst.parameters.size())
+				error(loc, Error.TEMPL_INST_ARITY, inst.parameters, inst.template, inst.id)
 			inst.parameters.findAll { param -> param != "_" && !n.instantiations.any { it.id == param } }.each {
-				error(loc, Error.COMP_UNKNOWN_PARAM, it)
+				error(loc, Error.TEMPL_UNKNOWN_PARAM, it)
 			}
 		}
 
@@ -61,16 +61,16 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 	void enter(BlockLvl1 n) {
 		def loc = loc(n)
 		if (n.parameters.size() != n.parameters.toSet().size())
-			error(loc, Error.COMP_DUPLICATE_PARAMS, n.parameters, n.name)
+			error(loc, Error.TEMPL_DUPLICATE_PARAMS, n.parameters, n.name)
 		if (n.superParameters.any { it !in n.parameters })
-			error(loc, Error.COMP_SUPER_PARAM_MISMATCH, n.superParameters, n.parameters, n.superTemplate)
+			error(loc, Error.TEMPL_SUPER_PARAM_MISMATCH, n.superParameters, n.parameters, n.superTemplate)
 		if (n.name.contains(":"))
-			error(loc, Error.COMP_NAME_LIMITS, n.name)
+			error(loc, Error.TEMPL_NAME_LIMITS, n.name)
 
-		currComp = n
+		currTemplate = n
 	}
 
-	IVisitable exit(BlockLvl1 n) { currComp = null }
+	IVisitable exit(BlockLvl1 n) { currTemplate = null }
 
 	void enter(BlockLvl0 n) {
 		currDatalog = n
@@ -105,16 +105,16 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 
 	void enter(Relation n) {
 		ids.findAll { n.name.startsWith("$it:") }.each {
-			error(findParentLoc(), Error.REL_NAME_COMP, "$it:", n.name)
+			error(findParentLoc(), Error.REL_NAME_TEMPL, "$it:", n.name)
 		}
 		if (n.name.contains(".")) {
 			def parameter = n.name.split("\\.").first() as String
 			if (inDecl || inRuleHead)
 				error(findParentLoc(), Error.REL_EXT_INVALID)
-			if (!currComp && !prog.instantiations.any { it.id == parameter })
+			if (!currTemplate && !prog.instantiations.any { it.id == parameter })
 				error(findParentLoc(), Error.INST_UNKNOWN, parameter)
-			if (currComp && !currComp.parameters.any { it == parameter })
-				error(findParentLoc(), Error.COMP_UNKNOWN_PARAM, parameter)
+			if (currTemplate && !currTemplate.parameters.any { it == parameter })
+				error(findParentLoc(), Error.TEMPL_UNKNOWN_PARAM, parameter)
 		}
 	}
 

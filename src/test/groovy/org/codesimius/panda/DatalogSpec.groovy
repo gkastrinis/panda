@@ -53,10 +53,10 @@ class DatalogSpec extends Specification {
 
 		where:
 		file     | expectedErrorId
-		"fail0"  | Error.COMP_UNKNOWN_PARAM
+		"fail0"  | Error.TEMPL_UNKNOWN_PARAM
 		"fail1"  | Error.ID_IN_USE
 		"fail2"  | Error.ID_IN_USE
-		"fail3"  | Error.COMP_UNKNOWN
+		"fail3"  | Error.TEMPL_UNKNOWN
 		"fail4"  | Error.ID_IN_USE
 		"fail5"  | Error.REL_EXT_NO_DECL
 		"fail6"  | Error.CONSTR_TYPE_INCOMPAT
@@ -79,9 +79,9 @@ class DatalogSpec extends Specification {
 		"fail23" | Error.CONSTR_RULE_CYCLE
 		"fail24" | Error.VAR_MULTIPLE_CONSTR
 		"fail25" | Error.TYPE_INF_INCOMPAT
-		"fail26" | Error.COMP_DUPLICATE_PARAMS
-		"fail27" | Error.COMP_SUPER_PARAM_MISMATCH
-		"fail28" | Error.COMP_INST_ARITY
+		"fail26" | Error.TEMPL_DUPLICATE_PARAMS
+		"fail27" | Error.TEMPL_SUPER_PARAM_MISMATCH
+		"fail28" | Error.TEMPL_INST_ARITY
 		"fail29" | Error.REL_EXT_INVALID
 		"fail30" | Error.INST_UNKNOWN
 		"fail31" | Error.VAR_UNKNOWN
@@ -89,13 +89,13 @@ class DatalogSpec extends Specification {
 		"fail33" | Error.REL_ARITY
 		"fail34" | Error.REL_NO_DECL
 		"fail35" | Error.DECL_SAME_VAR
-		"fail36" | Error.COMP_NAME_LIMITS
+		"fail36" | Error.TEMPL_NAME_LIMITS
 		"fail37" | Error.ANNOTATION_UNKNOWN
 		"fail38" | Error.REL_EXT_NO_DECL
-		"fail39" | Error.COMP_UNKNOWN_PARAM
-		"fail40" | Error.COMP_NAME_LIMITS
-		"fail41" | Error.REL_NAME_COMP
-		"fail42" | Error.REL_NAME_COMP
+		"fail39" | Error.TEMPL_UNKNOWN_PARAM
+		"fail40" | Error.TEMPL_NAME_LIMITS
+		"fail41" | Error.REL_NAME_TEMPL
+		"fail42" | Error.REL_NAME_TEMPL
 		"fail43" | Error.INST_CYCLE
 		"fail44" | Error.REL_EXT_CYCLE
 		"fail45" | Error.AGGR_UNSUPPORTED_REL

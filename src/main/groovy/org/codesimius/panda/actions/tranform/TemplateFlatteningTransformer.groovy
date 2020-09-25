@@ -16,18 +16,18 @@ import org.codesimius.panda.datalog.expr.GroupExpr
 
 class TemplateFlatteningTransformer extends DefaultTransformer {
 
-	// Program after instantiation (only a global component)
+	// Program after instantiation (only a global "template" / scope)
 	private BlockLvl2 instantiatedP
-	// Current component being instantiated
-	private BlockLvl1 currComp
+	// Current template being instantiated
+	private BlockLvl1 currTemplate
 
 	void enter(BlockLvl2 n) { instantiatedP = new BlockLvl2() }
 
 	IVisitable exit(BlockLvl2 n) { instantiatedP }
 
-	void enter(BlockLvl1 n) { currComp = n }
+	void enter(BlockLvl1 n) { currTemplate = n }
 
-	IVisitable exit(BlockLvl1 n) { currComp = null }
+	IVisitable exit(BlockLvl1 n) { currTemplate = null }
 
 	IVisitable exit(BlockLvl0 n) {
 		instantiatedP.datalog.with {
@@ -57,5 +57,5 @@ class TemplateFlatteningTransformer extends DefaultTransformer {
 
 	IVisitable exit(GroupExpr n) { n }
 
-	def rename(def name) { currComp ? "${currComp.name}:$name" : name }
+	def rename(def name) { currTemplate ? "${currTemplate.name}:$name" : name }
 }

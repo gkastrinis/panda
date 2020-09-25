@@ -25,7 +25,7 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 	Compiler compiler
 	File outDir
 
-	// Each subgraph represents a different component
+	// Each subgraph represents a different template
 	Map<String, Graph> graphs = [:].withDefault { new Graph(it) }
 
 	private Graph currGraph
@@ -34,7 +34,7 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 	private Set<RelInfo> headRelations
 	private Set<RelInfo> bodyRelations
 	private BlockLvl2 origP
-	private BlockLvl1 currComp
+	private BlockLvl1 currTemplate
 	// Indirect edges are added in the end so we can first check if the target node exists
 	private Map<Node, String> pendingIndirectEdges = [:]
 
@@ -47,9 +47,9 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 	}
 
 	IVisitable exit(BlockLvl2 n) {
-		n.templates.findAll { comp -> !n.instantiations.any { it.id == comp.name } }.each { comp ->
-			def baseNode = graphs[INSTANTIATION].touch(comp.name, Node.Kind.TEMPLATE)
-			def superNode = graphs[INSTANTIATION].touch(comp.superTemplate, Node.Kind.TEMPLATE)
+		n.templates.findAll { template -> !n.instantiations.any { it.id == template.name } }.each { template ->
+			def baseNode = graphs[INSTANTIATION].touch(template.name, Node.Kind.TEMPLATE)
+			def superNode = graphs[INSTANTIATION].touch(template.superTemplate, Node.Kind.TEMPLATE)
 			baseNode.connectTo(superNode, Edge.Kind.INHERITANCE)
 		}
 		n.instantiations.each { inst ->
@@ -84,12 +84,12 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 
 	void enter(BlockLvl1 n) {
 		currGraph = graphs[n.name]
-		currComp = n
+		currTemplate = n
 	}
 
 	IVisitable exit(BlockLvl1 n) {
 		currGraph = graphs[GLOBAL]
-		currComp = null
+		currTemplate = null
 	}
 
 	void enter(RelDeclaration n) {
