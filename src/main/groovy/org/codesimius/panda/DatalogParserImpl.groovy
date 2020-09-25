@@ -41,6 +41,7 @@ class DatalogParserImpl extends DatalogBaseListener {
 	Map<String, Set<Annotation>> currPendingAnnotations = globalPendingAnnotations
 	// Extra annotations from annotation blocks
 	Stack<Set<Annotation>> extraAnnotationsStack = []
+	// Generic map to pass computed values around
 	def values = [:]
 
 	DatalogParserImpl(Compiler compiler) { this.compiler = compiler }
@@ -99,12 +100,12 @@ class DatalogParserImpl extends DatalogBaseListener {
 
 	void exitDeclaration(DeclarationContext ctx) {
 		def annotations = mergeAnnotations(gatherAnnotations(ctx.annotationList()), annotateLocation(ctx))
-		extraAnnotationsStack.each { set -> mergeAnnotations(annotations, set) }
+		extraAnnotationsStack.each { set -> mergeAnnotations(annotations, set) }ζ
 
 		// Type declaration
-		if (ctx.IDENTIFIER(0) && TYPE in annotations) {
-			def type = new Type(ctx.IDENTIFIER(0).text)
-			def supertype = ctx.IDENTIFIER(1) ? new Type(ctx.IDENTIFIER(1).text) : null
+		if (ctx.extIdentifier(0) && TYPE in annotations) {
+			def type = new Type(values[ctx.extIdentifier(0)] as String)
+			def supertype = ctx.extIdentifier(1) ? new Type(values[ctx.extIdentifier(1)] as String) : null
 			// Initial values are of the form `key(value)`. E.g., PUBLIC('public')
 			// Keys are used to generate singleton relations. E.g., Modifier:PUBLIC(x)
 			if (ctx.initValueList())
@@ -113,13 +114,13 @@ class DatalogParserImpl extends DatalogBaseListener {
 		}
 		// Incomplete declaration of the form: `@output Foo`
 		// i.e. binds annotations with a relation name without providing any details
-		else if (ctx.IDENTIFIER(0)) {
-			mergeAnnotations(currPendingAnnotations[ctx.IDENTIFIER(0).text], annotations)
+		else if (ctx.extIdentifier(0)) {
+			mergeAnnotations(currPendingAnnotations[values[ctx.extIdentifier(0)] as String], annotations)
 		}
 		// Full declaration of a relation
 		else {
 			def rel = ctx.relation() ? values[ctx.relation()] as Relation : values[ctx.constructor()] as Constructor
-			def types = values[ctx.identifierList()].collect { new Type(it as String) }
+			def types = values[ctx.extIdentifierList()].collect { new Type(it as String) }
 			currDatalog.relDeclarations << new RelDeclaration(rel, types, annotations)
 		}
 	}
@@ -142,10 +143,9 @@ class DatalogParserImpl extends DatalogBaseListener {
 	}
 
 	void exitRelation(RelationContext ctx) {
-		def name = ctx.IDENTIFIER(0).text
-		def at = ctx.IDENTIFIER(1) ? "@${ctx.IDENTIFIER(1).text}" : ""
+		def name = values[ctx.extIdentifier()] as String
 		def exprs = ctx.exprList() ? values[ctx.exprList()] as List : []
-		values[ctx] = new Relation("$name$at", exprs)
+		values[ctx] = new Relation(name, exprs)
 	}
 
 	void exitConstructor(ConstructorContext ctx) {
@@ -164,6 +164,10 @@ class DatalogParserImpl extends DatalogBaseListener {
 				new VariableExpr(ctx.IDENTIFIER().text),
 				values[ctx.relation()] as Relation,
 				values[ctx.bodyList()] as IElement)
+	}
+
+	void exitExtIdentifier(ExtIdentifierContext ctx) {
+		values[ctx] = "${ctx.IDENTIFIER(0).text}${ctx.IDENTIFIER(1) ? "@${ctx.IDENTIFIER(1).text}" : ""}"
 	}
 
 	void exitConstant(ConstantContext ctx) {
@@ -272,6 +276,10 @@ class DatalogParserImpl extends DatalogBaseListener {
 
 	void exitIdentifierList(IdentifierListContext ctx) {
 		values[ctx] = ((values[ctx.identifierList()] ?: []) as List) << ctx.IDENTIFIER().text
+	}
+
+	void exitExtIdentifierList(ExtIdentifierListContext ctx) {
+		values[ctx] = ((values[ctx.extIdentifierList()] ?: []) as List) << values[ctx.extIdentifier()]
 	}
 
 	// Special handling (instead of using "exit")

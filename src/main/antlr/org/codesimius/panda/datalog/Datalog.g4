@@ -19,6 +19,9 @@ superTemplate
 instantiation
 	: IDENTIFIER parameterList? 'as' identifierList ;
 
+
+///////////////////////////////////////////////////////////////
+
 datalog
 	: annotationBlock | declaration | rule_ ;
 
@@ -26,9 +29,9 @@ annotationBlock
 	: annotationList '{' datalog* '}' ;
 
 declaration
-	: annotationList IDENTIFIER (':' IDENTIFIER)? ('with' initValueList)?
-	| IDENTIFIER '.' // Note: Specifically due to annotation blocks
-	| annotationList? (relation | constructor) ':' identifierList
+	: annotationList extIdentifier (':' extIdentifier)? ('with' initValueList)?
+	| extIdentifier '.' // Note: Specifically due to annotation blocks
+	| annotationList? (relation | constructor) ':' extIdentifierList
 	;
 
 rule_
@@ -36,8 +39,10 @@ rule_
 	| relation '<-' aggregation
 	;
 
+///////////////////////////////////////////////////////////////
+
 relation
-	: IDENTIFIER ('@' IDENTIFIER)? '(' exprList? ')' ;
+	: extIdentifier '(' exprList? ')' ;
 
 relationText
 	: (IDENTIFIER | constant)+ ;
@@ -51,8 +56,16 @@ construction
 aggregation
 	: IDENTIFIER '=' relation '{' bodyList '}' ;
 
+///////////////////////////////////////////////////////////////
+
+extIdentifier
+	: IDENTIFIER ('@' IDENTIFIER)? ;
+
 value
 	: IDENTIFIER '=' constant ;
+
+initValue
+	: IDENTIFIER '(' constant ')' ;
 
 annotation
 	: '@' IDENTIFIER ('(' valueList ')')? ;
@@ -71,11 +84,10 @@ expr
 	| '(' expr ')'
 	;
 
-initValue
-	: IDENTIFIER '(' constant ')' ;
-
 comparison
 	: expr ('=' | '<' | '<=' | '>' | '>=' | '!=') expr ;
+
+///////////////////////////////////////////////////////////////
 
 headList
 	: relationText
@@ -107,6 +119,11 @@ initValueList
 identifierList
 	: IDENTIFIER
 	| identifierList ',' IDENTIFIER
+	;
+
+extIdentifierList
+	: extIdentifier
+	| extIdentifierList ',' extIdentifier
 	;
 
 valueList
