@@ -22,11 +22,7 @@ class Compiler {
 	SourceManager sourceManager
 	DefaultCodeGenerator codeGenerator
 
-	Compiler(String logFilename = null, File mainFile, Class<? extends DefaultCodeGenerator> codeGenClass, String outDir) {
-		log = new Log(logFilename)
-		sourceManager = new SourceManager(mainFile)
-		codeGenerator = codeGenClass.newInstance(this, outDir, mainFile) as DefaultCodeGenerator
-
+	static {
 		// Add a getAt method to the Set class to allow for search as in a map (i.e., set[element])
 		Set.metaClass.getAt = { element -> delegate.find { it == element} }
 
@@ -38,6 +34,12 @@ class Compiler {
 				delegate.add element
 			return delegate
 		}
+	}
+
+	Compiler(String logFilename = null, File mainFile, Class<? extends DefaultCodeGenerator> codeGenClass, String outDir) {
+		log = new Log(logFilename)
+		sourceManager = new SourceManager(mainFile)
+		codeGenerator = codeGenClass.newInstance(this, outDir, mainFile) as DefaultCodeGenerator
 	}
 
 	def run(ANTLRInputStream inputStream) {
