@@ -70,11 +70,7 @@ class DatalogParserImpl extends DatalogBaseListener {
 		def superName = ctx.superTemplate()?.IDENTIFIER()?.text
 		def parameters = values[ctx.parameterList()] as List ?: []
 		def superParameters = ctx.superTemplate()?.parameterList() ? values[ctx.superTemplate().parameterList()] as List : []
-
 		program.templates << rec(new BlockLvl1(name, superName, parameters, superParameters, currDatalog), ctx)
-		values[ctx.identifierList()].each { String id ->
-			program.instantiations << rec(new Instantiation(name, id, []), ctx.identifierList())
-		}
 
 		currPendingAnnotations.each { addAnnotationsToRelDecl(it.key, it.value) }
 		currPendingAnnotations = globalPendingAnnotations

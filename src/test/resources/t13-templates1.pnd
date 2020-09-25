@@ -5,7 +5,7 @@ template First {
 	Z(x) : int
 	P11(x) : string
 }
-as S1
+First as S1
 
 template Base <X> {
 	P1(x) <- P@X(x)

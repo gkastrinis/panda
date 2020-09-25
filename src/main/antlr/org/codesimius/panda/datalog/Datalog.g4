@@ -11,7 +11,7 @@ include
 	: 'include' STRING ;
 
 template
-	: 'template' IDENTIFIER parameterList? (':' superTemplate)? '{' datalog* '}' ('as' identifierList)? ;
+	: 'template' IDENTIFIER parameterList? (':' superTemplate)? '{' datalog* '}' ;
 
 superTemplate
 	: IDENTIFIER parameterList? ;

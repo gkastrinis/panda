@@ -17,10 +17,12 @@ template Bar<A, B> {
 
 template Base1 {
     Q(x) : int
-} as B1
+}
+Base1 as B1
 
 template Base2 {
     R(x) : int
-} as B2
+}
+Base2 as B2
 
 Foo<B1, B2> as FFFF
