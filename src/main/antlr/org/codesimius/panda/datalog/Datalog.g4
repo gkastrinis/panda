@@ -23,14 +23,10 @@ instantiation
 ///////////////////////////////////////////////////////////////
 
 datalog
-	: annotationBlock | declaration | rule_ ;
-
-annotationBlock
-	: annotationList '{' datalog* '}' ;
+	: declaration | rule_ ;
 
 declaration
-	: annotationList extIdentifier (':' extIdentifier)? ('with' initValueList)?
-	| extIdentifier '.' // Note: Specifically due to annotation blocks
+	: annotationList? extIdentifier (':' extIdentifier)? ('with' initValueList)?
 	| annotationList? (relation | constructor) ':' extIdentifierList
 	;
 

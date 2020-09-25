@@ -39,8 +39,6 @@ class DatalogParserImpl extends DatalogBaseListener {
 	// Relation Name x Annotations
 	Map<String, Set<Annotation>> globalPendingAnnotations = [:].withDefault { [] as Set }
 	Map<String, Set<Annotation>> currPendingAnnotations = globalPendingAnnotations
-	// Extra annotations from annotation blocks
-	Stack<Set<Annotation>> extraAnnotationsStack = []
 	// Generic map to pass computed values around
 	def values = [:]
 
@@ -90,17 +88,8 @@ class DatalogParserImpl extends DatalogBaseListener {
 		}
 	}
 
-	void enterAnnotationBlock(AnnotationBlockContext ctx) {
-		extraAnnotationsStack.push(gatherAnnotations(ctx.annotationList()) << annotateLocation(ctx))
-	}
-
-	void exitAnnotationBlock(AnnotationBlockContext ctx) {
-		extraAnnotationsStack.pop()
-	}
-
 	void exitDeclaration(DeclarationContext ctx) {
 		def annotations = mergeAnnotations(gatherAnnotations(ctx.annotationList()), annotateLocation(ctx))
-		extraAnnotationsStack.each { set -> mergeAnnotations(annotations, set) }ζ
 
 		// Type declaration
 		if (ctx.extIdentifier(0) && TYPE in annotations) {

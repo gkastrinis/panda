@@ -3,7 +3,5 @@
 @Type Dog : Animal
 @Type PersianCat : Cat
 
-@Output @Type {
-	@Output Apple
-	Panda.
-}
+@Output @Type @output Apple
+@output @type Panda
