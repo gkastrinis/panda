@@ -25,6 +25,11 @@ class TypesTransformer extends DefaultTransformer {
 	private BlockLvl0 currDatalog
 
 	IVisitable visit(BlockLvl0 n) {
+		n.typeDeclarations
+				.findAll { it.supertype }
+				.findAll { decl -> !n.typeDeclarations.any { it.type == decl.supertype } }
+				.each { error(loc(it), Error.TYPE_UNKNOWN, it.supertype.name) }
+
 		// Add default constructors
 		n.rootTypes.findAll { !it.primitive }.each { root ->
 			n.relDeclarations

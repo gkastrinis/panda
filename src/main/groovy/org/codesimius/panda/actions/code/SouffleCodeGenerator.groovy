@@ -99,7 +99,7 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		"[${n.exprs.collect { visit(it) }.join(", ")}]"
 	}
 
-	static def fix(def s) { s.replace ":", "_" }
+	static def fix(def s) { s.replaceAll "[:.]", "_" }
 
 	static def tr(def name) {
 		if (name == "string") return "symbol"

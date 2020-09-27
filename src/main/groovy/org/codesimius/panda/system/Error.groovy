@@ -28,6 +28,10 @@ enum Error {
 	REL_ARITY,
 	REL_EXT_CYCLE,
 	REL_EXT_INVALID,
+
+	REL_QUAL_HEAD,
+	REL_QUAL_DECL,
+
 	REL_EXT_NO_DECL,
 	REL_NO_DECL,
 	REL_NAME_TEMPL,
@@ -55,6 +59,7 @@ enum Error {
 	TYPE_RULE,
 	TYPE_OPT_ROOT_NONOPT,
 	TYPE_OPT_CONSTR,
+	TYPE_QUAL_DECL,
 
 	TEXT_MALFORMED_HEAD,
 	TEXT_HEAD_NON_VAR,
@@ -94,6 +99,10 @@ enum Error {
 			(FUNC_NON_CONSTR)           : "Functional syntax available only for constructors (`{0}`)",
 			(REL_ARITY)                 : "Inconsistent arity for relation `{0}`",
 			(REL_EXT_CYCLE)             : "Cycle detected involving a global relation used with a `@` paramater ({0})",
+
+			(REL_QUAL_HEAD)             : "Qualified relation `{0}` not allowed in rule head",
+			(REL_QUAL_DECL)             : "Declaration of qualified relation `{0}` is not allowed",
+
 			(REL_EXT_INVALID)           : "Relation with a parameter only allowed in a rule body, inside a template",
 			(REL_EXT_NO_DECL)           : "Unknown relation `{0}` used with a parameter",
 			(REL_NO_DECL)               : "Unknown relation `{0}`",
@@ -112,25 +121,26 @@ enum Error {
 			(VAR_ASGN_CYCLE)            : "Assignment on var `{0}` is part of an assignment cycle",
 			(VAR_ASGN_COMPLEX)          : "Assignment on var `{0}` is part of a complicated logical structure",
 			(SMART_LIT_NON_PRIMITIVE)   : "Smart literals (`{0}`) can only be use for user defined types (type `{1}`)",
-			(SMART_LIT_NO_DIRECT_REL)   : "Smart literals (`{0}`) can only be direct parameters of a relation/constructor",
+			(SMART_LIT_NO_DIRECT_REL): "Smart literals (`{0}`) can only be direct parameters of a relation/constructor",
 
-			(TYPE_INF_FAIL)             : "Type inference was inconclusive: cannot reach fixpoint",
-			(TYPE_INF_INCOMPAT)         : "Incompatible types during type inference ({0})",
-			(TYPE_INF_INCOMPAT_USE)     : "Incompatible types used for relation `{0}` at index {1} (expected `{2}` & used {3})",
-			(TYPE_UNSUPP)               : "Currently unsupported type `{0}`",
-			(TYPE_UNKNOWN)             : "Unknown type `{0}`",
-			(TYPE_RULE)                : "Type `{0}` used as a normal relation in rule head",
-			(TYPE_OPT_ROOT_NONOPT)     : "Root types of a hierarchy must be explicitly marked for optimization (`{0}`) when optimizing types",
-			(TYPE_OPT_CONSTR)          : "Type hierarchies marked for optimization cannot have user defined constructors (`{0}`)",
+			(TYPE_INF_FAIL)          : "Type inference was inconclusive: cannot reach fixpoint",
+			(TYPE_INF_INCOMPAT)      : "Incompatible types during type inference ({0})",
+			(TYPE_INF_INCOMPAT_USE)  : "Incompatible types used for relation `{0}` at index {1} (expected `{2}` & used {3})",
+			(TYPE_UNSUPP)            : "Currently unsupported type `{0}`",
+			(TYPE_UNKNOWN)           : "Unknown type `{0}`",
+			(TYPE_RULE)              : "Type `{0}` used as a normal relation in rule head",
+			(TYPE_OPT_ROOT_NONOPT)   : "Root types of a hierarchy must be explicitly marked for optimization (`{0}`) when optimizing types",
+			(TYPE_OPT_CONSTR)        : "Type hierarchies marked for optimization cannot have user defined constructors (`{0}`)",
+			(TYPE_QUAL_DECL)         : "Declaration of qualified type `{0}` is not allowed",
 
-			(TEXT_MALFORMED_HEAD)      : "Declaration for text representation of relation is malformed (head must be a single relation)",
-			(TEXT_HEAD_NON_VAR)        : "Declaration for text representation of relation is malformed (head relation must contain only variables)",
-			(TEXT_MALFORMED_BODY)      : "Declaration for text representation of relation is malformed (body must be a single text representation)",
-			(TEXT_BODY_NON_VAR)        : "Declaration for text representation of relation is malformed (body must contain only text and variables)",
-			(TEXT_LIT_N_VAR)           : "Conflict in text representations between literals ({0}) and parameter `{1}`",
-			(TEXT_MULTIPLE_RELS)       : "Same text representation cannot be used for multiple relations ({0})",
-			(TEXT_UNKNOWN)             : "Unknown text representation ({0})",
-			(TEXT_VAR_MATCHES_LIT)     : "Parameter `{0}` also matches text literals in `{1}`",
+			(TEXT_MALFORMED_HEAD)    : "Declaration for text representation of relation is malformed (head must be a single relation)",
+			(TEXT_HEAD_NON_VAR)      : "Declaration for text representation of relation is malformed (head relation must contain only variables)",
+			(TEXT_MALFORMED_BODY)    : "Declaration for text representation of relation is malformed (body must be a single text representation)",
+			(TEXT_BODY_NON_VAR)      : "Declaration for text representation of relation is malformed (body must contain only text and variables)",
+			(TEXT_LIT_N_VAR)         : "Conflict in text representations between literals ({0}) and parameter `{1}`",
+			(TEXT_MULTIPLE_RELS)     : "Same text representation cannot be used for multiple relations ({0})",
+			(TEXT_UNKNOWN)           : "Unknown text representation ({0})",
+			(TEXT_VAR_MATCHES_LIT)   : "Parameter `{0}` also matches text literals in `{1}`",
 
 			(EXP_CONTENTS_MISMATCH)    : "Generated and expected file differ in contents"
 	]

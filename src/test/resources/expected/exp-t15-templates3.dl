@@ -1,14 +1,14 @@
 .decl W(v0:number) // int
 .decl S1_W(v0:symbol) // string
-.decl S1_cons_An(v0:symbol, v1:__SYS_TYPE__S1_Animal) // string x S1:Animal
-.decl S1_Animal_byStr(v0:symbol, v1:__SYS_TYPE__S1_Animal) // string x S1:Animal
+.decl S1_cons_An(v0:symbol, v1:__SYS_TYPE__S1_Animal) // string x S1.Animal
+.decl S1_Animal_byStr(v0:symbol, v1:__SYS_TYPE__S1_Animal) // string x S1.Animal
 .decl Q(v0:number) // int
 .decl S2_R(v0:number) // int
 .decl S1_P(v0:number) // int
 .decl S1_R(v0:number) // int
-.decl S1_foo(v0:__SYS_TYPE__S1_Animal) // S1:Animal
-.decl S1_Bar(v0:__SYS_TYPE__S1_Animal) // S1:Animal
-.decl S1_Animal(v0:__SYS_TYPE__S1_Animal) // S1:Animal
+.decl S1_foo(v0:__SYS_TYPE__S1_Animal) // S1.Animal
+.decl S1_Bar(v0:__SYS_TYPE__S1_Animal) // S1.Animal
+.decl S1_Animal(v0:__SYS_TYPE__S1_Animal) // S1.Animal
 .type __SYS_TYPE_S1_cons_An = [v0:symbol]
 .type __SYS_TYPE_S1_Animal_byStr = [v0:symbol]
 .type __SYS_TYPE__S1_Animal = [v0:__SYS_TYPE_S1_cons_An, v1:__SYS_TYPE_S1_Animal_byStr]

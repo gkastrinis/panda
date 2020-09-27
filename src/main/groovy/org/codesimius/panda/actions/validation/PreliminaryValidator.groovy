@@ -15,7 +15,7 @@ import org.codesimius.panda.datalog.expr.ConstantExpr
 import org.codesimius.panda.system.Compiler
 import org.codesimius.panda.system.Error
 
-import static org.codesimius.panda.datalog.Annotation.CONSTRUCTOR
+import static org.codesimius.panda.datalog.Annotation.*
 import static org.codesimius.panda.datalog.expr.ConstantExpr.Kind.BOOLEAN
 import static org.codesimius.panda.datalog.expr.ConstantExpr.Kind.REAL
 
@@ -74,10 +74,15 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 
 	void enter(BlockLvl0 n) {
 		currDatalog = n
-		n.typeDeclarations
-				.findAll { it.supertype }
-				.findAll { decl -> !n.typeDeclarations.any { it.type == decl.supertype } }
-				.each { error(loc(it), Error.TYPE_UNKNOWN, it.supertype.name) }
+		n.typeDeclarations.findAll { it.type.name.contains(".") }.each { error(Error.TYPE_QUAL_DECL, it.type.name) }
+
+		n.relDeclarations.findAll {
+			// Declarations of qualified relations are not allowed, in general
+			def invalid = it.relation.name.contains(".")
+			// Only exception is in global scope, and only for an @output annotation
+			if (!currTemplate && it.annotations.every { it == OUTPUT || it == METADATA }) invalid = false
+			return invalid
+		}.each { error(Error.REL_QUAL_DECL, it.relation.name) }
 	}
 
 	void enter(RelDeclaration n) {
@@ -109,8 +114,8 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 		}
 		if (n.name.contains(".")) {
 			def parameter = n.name.split("\\.").first() as String
-			if (inDecl || inRuleHead)
-				error(findParentLoc(), Error.REL_EXT_INVALID)
+			if (inRuleHead)
+				error(findParentLoc(), Error.REL_QUAL_HEAD, n.name)
 			if (!currTemplate && !prog.instantiations.any { it.id == parameter })
 				error(findParentLoc(), Error.INST_UNKNOWN, parameter)
 			if (currTemplate && !currTemplate.parameters.any { it == parameter })

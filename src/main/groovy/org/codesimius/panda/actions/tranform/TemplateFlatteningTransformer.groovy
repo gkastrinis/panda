@@ -40,22 +40,31 @@ class TemplateFlatteningTransformer extends DefaultTransformer {
 
 	IVisitable exit(ComparisonElement n) { n }
 
-	IVisitable exit(Constructor n) { new Constructor(rename(n.name), n.exprs) }
-
-	IVisitable exit(Relation n) {
-		if (!n.name.contains("."))
-			return new Relation(rename(n.name), n.exprs)
-		else {
-			def (parameter, simpleName) = n.name.split("\\.")
-			return new Relation(parameter == "_" ? simpleName : "$parameter:$simpleName", n.exprs)
-		}
+	IVisitable exit(Constructor n) {
+		def name = rename(n.name)
+		return n.name == name ? n : new Constructor(name, n.exprs)
 	}
 
-	IVisitable exit(Type n) { n.isPrimitive() ? n : new Type(rename(n.name)) }
+	IVisitable exit(Relation n) {
+		def name = rename(n.name)
+		return n.name == name ? n : new Relation(name, n.exprs)
+	}
+
+	IVisitable exit(Type n) {
+		def name = rename(n.name)
+		return n.name == name ? n : new Type(name)
+	}
 
 	IVisitable exit(BinaryExpr n) { n }
 
 	IVisitable exit(GroupExpr n) { n }
 
-	def rename(def name) { currTemplate ? "${currTemplate.name}:$name" : name }
+	def rename(def name) {
+		// Global scope, primitive type, or qualified name (from another template)
+		if (!currTemplate || Type.isPrimitive(name) || (name.contains(".") && !name.startsWith("_."))) return name
+		// Inside a template and starts with "_."
+		if (name.startsWith("_.")) return name[2..-1]
+		// Inside a template
+		return "${currTemplate.name}.$name"
+	}
 }

@@ -4,10 +4,13 @@ import org.codesimius.panda.datalog.IVisitable
 import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.block.BlockLvl1
 import org.codesimius.panda.datalog.block.BlockLvl2
+import org.codesimius.panda.datalog.clause.RelDeclaration
 import org.codesimius.panda.datalog.clause.Rule
+import org.codesimius.panda.datalog.clause.TypeDeclaration
 import org.codesimius.panda.datalog.element.ComparisonElement
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
+import org.codesimius.panda.datalog.element.relation.Type
 import org.codesimius.panda.datalog.expr.BinaryExpr
 import org.codesimius.panda.datalog.expr.GroupExpr
 
@@ -60,8 +63,8 @@ class TemplateInstantiationTransformer extends DefaultTransformer {
 
 	IVisitable exit(BlockLvl0 n) {
 		newCurrTemplate.datalog.with {
-			relDeclarations += n.relDeclarations
-			typeDeclarations += n.typeDeclarations
+			relDeclarations += n.relDeclarations.collect { m[it] as RelDeclaration }
+			typeDeclarations += n.typeDeclarations.collect { m[it] as TypeDeclaration }
 			rules += n.rules.collect { m[it] as Rule }
 		}
 		null
@@ -69,18 +72,28 @@ class TemplateInstantiationTransformer extends DefaultTransformer {
 
 	IVisitable exit(ComparisonElement n) { n }
 
-	IVisitable exit(Constructor n) { n }
+	IVisitable exit(Constructor n) {
+		def name = rename(n.name)
+		return n.name == name ? n : new Constructor(name, n.exprs)
+	}
 
 	IVisitable exit(Relation n) {
-		if (!n.name.contains(".") || !currTemplate)
-			return n
-		else {
-			def (String parameter, simpleName) = n.name.split("\\.")
-			return new Relation("${mapParams[parameter]}.$simpleName", n.exprs)
-		}
+		def name = rename(n.name)
+		return n.name == name ? n : new Relation(name, n.exprs)
+	}
+
+	IVisitable exit(Type n) {
+		def name = rename(n.name)
+		return n.name == name ? n : new Type(name)
 	}
 
 	IVisitable exit(BinaryExpr n) { n }
 
 	IVisitable exit(GroupExpr n) { n }
+
+	def rename(def name) {
+		if (!name.contains(".") || !currTemplate) return name
+		def (String parameter, simpleName) = name.split("\\.")
+		return "${mapParams[parameter]}.$simpleName"
+	}
 }
