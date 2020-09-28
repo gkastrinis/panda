@@ -40,9 +40,6 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 
 		n.instantiations.each { inst ->
 			def loc = loc(inst)
-			if (inst.id.contains(":"))
-				error(loc, Error.TEMPL_NAME_LIMITS, inst.id)
-
 			def currTemplate = n.templates.find { it.name == inst.template }
 			if (!currTemplate)
 				error(loc, Error.TEMPL_UNKNOWN, inst.template)
@@ -64,8 +61,6 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 			error(loc, Error.TEMPL_DUPLICATE_PARAMS, n.parameters, n.name)
 		if (n.superParameters.any { it !in n.parameters })
 			error(loc, Error.TEMPL_SUPER_PARAM_MISMATCH, n.superParameters, n.parameters, n.superTemplate)
-		if (n.name.contains(":"))
-			error(loc, Error.TEMPL_NAME_LIMITS, n.name)
 
 		currTemplate = n
 	}
@@ -77,11 +72,10 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 		n.typeDeclarations.findAll { it.type.name.contains(".") }.each { error(Error.TYPE_QUAL_DECL, it.type.name) }
 
 		n.relDeclarations.findAll {
-			// Declarations of qualified relations are not allowed, in general
-			def invalid = it.relation.name.contains(".")
-			// Only exception is in global scope, and only for an @output annotation
-			if (!currTemplate && it.annotations.every { it == OUTPUT || it == METADATA }) invalid = false
-			return invalid
+			// Declarations in global scope that only have an @output annotation are allowed
+			if (!currTemplate && (OUTPUT in it.annotations) && it.annotations.every { it == OUTPUT || it == METADATA }) return false
+			// Otherwise, in general, declarations of qualified relations are not allowed
+			return it.relation.name.contains(".")
 		}.each { error(Error.REL_QUAL_DECL, it.relation.name) }
 	}
 
@@ -109,9 +103,6 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 	}
 
 	void enter(Relation n) {
-		ids.findAll { n.name.startsWith("$it:") }.each {
-			error(findParentLoc(), Error.REL_NAME_TEMPL, "$it:", n.name)
-		}
 		if (n.name.contains(".")) {
 			def parameter = n.name.split("\\.").first() as String
 			if (inRuleHead)

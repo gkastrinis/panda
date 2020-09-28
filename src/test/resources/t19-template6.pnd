@@ -1,0 +1,17 @@
+Q(1)
+
+@type Shape
+
+template Foo<A> {
+	P(x) <- A.Q(x)
+    Q(x) <- P(x), x > 10
+    @Type Animal
+    @type Circle : A.Shape
+	ZZ(x, y) : int, A.Shape
+}
+Foo<_> as F1
+
+Bar(x, y) : int, F1.Animal
+@type Cat : F1.Animal
+
+@output F1.Q

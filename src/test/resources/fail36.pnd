@@ -1,4 +1,4 @@
-template Foo:Bar {
-    P(x) : int
-}
-Foo:Bar as F1
+@text
+Foo(x, y) <- number x morethan y
+Foo(10, 5)
+number number morethan 0

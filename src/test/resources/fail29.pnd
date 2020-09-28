@@ -1,7 +1,6 @@
-P(42)
-
-template Foo <X>{
-	Q(x) <- X.P(x)
-	X.W(x) : int
+template Foo<A> {
+    P(x) : int
+    @type Animal
+    A.Q(x) <- P(x)
 }
 Foo<_> as F1

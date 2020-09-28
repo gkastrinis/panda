@@ -66,7 +66,7 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 			def (String parameter, String name) = complexName.split("\\.")
 			def graphName = parameter == "_" ? GLOBAL : parameter
 			if (!graphs[graphName].nodes.values().any { it.title == name })
-				error(Error.REL_EXT_NO_DECL, name)
+				error(Error.REL_QUAL_UNKNOWN, name)
 			def paramNode = graphs[graphName].touch(name, Node.Kind.RELATION)
 			relNode.connectTo(paramNode, Edge.Kind.INDIRECT_PARAM)
 		}

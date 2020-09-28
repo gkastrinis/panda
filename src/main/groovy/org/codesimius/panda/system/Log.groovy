@@ -24,7 +24,7 @@ class Log {
 	}
 
 	private def prob(def tag, def loc = null, Error errorId, Object... values) {
-		def rawMsg = "${MessageFormat.format(Error.msgMap[errorId], values)} -- [$errorId]"
+		def rawMsg = "${MessageFormat.format(errorId.label, values)} -- [$errorId]"
 		def msg = "${DATE_FORMAT.format(new Date())} $tag: $rawMsg${loc ? "\n$loc" : ""}"
 		System.err.println msg
 		if (logFile) logFile.append "$msg\n"

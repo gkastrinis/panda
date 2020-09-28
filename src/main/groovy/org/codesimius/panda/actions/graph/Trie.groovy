@@ -85,7 +85,7 @@ class Trie {
 		}
 
 		def p = params.find { it instanceof VariableExpr && it.name in nonParams }
-		if (p) warn(loc, Error.TEXT_VAR_MATCHES_LIT, p, tokens.join(" "))
+		if (p) error(loc, Error.TEXT_VAR_MATCHES_LIT, p, tokens.join(" "))
 
 		def leaf = currRoots.first()
 		new Relation(leaf.value, leaf.paramIndexes.collect { params[it] })

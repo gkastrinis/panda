@@ -4,4 +4,4 @@ template Foo<A> {
 }
 Foo<_> as F1
 
-F1.P(x) <- Q(x)
+Baz(x, y) : int, F1.Dog

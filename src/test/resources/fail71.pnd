@@ -1,7 +1,6 @@
 template Foo<A> {
     P(x) : int
     @type Animal
+    Baz(x, y) : int, A.Dog
 }
 Foo<_> as F1
-
-F1.P(x) <- Q(x)

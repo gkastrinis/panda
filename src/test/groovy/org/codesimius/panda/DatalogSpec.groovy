@@ -40,6 +40,7 @@ class DatalogSpec extends Specification {
 		"t16-templates4"    | _
 		"t17-templates5"    | _
 		"t18-includes"      | _
+		"t19-template6"     | _
 	}
 
 	@Unroll
@@ -58,7 +59,7 @@ class DatalogSpec extends Specification {
 		"fail2"  | Error.ID_IN_USE
 		"fail3"  | Error.TEMPL_UNKNOWN
 		"fail4"  | Error.ID_IN_USE
-		"fail5"  | Error.REL_EXT_NO_DECL
+		"fail5"  | Error.REL_QUAL_UNKNOWN
 		"fail6"  | Error.CONSTR_TYPE_INCOMPAT
 		"fail7"  | Error.FUNC_NON_CONSTR
 		"fail8"  | Error.TYPE_UNKNOWN
@@ -73,7 +74,7 @@ class DatalogSpec extends Specification {
 		"fail17" | Error.ANNOTATION_MISSING_ARG
 		"fail18" | Error.ANNOTATION_INVALID_ARG
 		"fail19" | Error.ANNOTATION_INVALID
-		"fail20" | Error.REL_EXT_INVALID
+		"fail20" | Error.REL_QUAL_HEAD
 		"fail21" | Error.DECL_MALFORMED
 		"fail22" | Error.ANNOTATION_MISTYPED_ARG
 		"fail23" | Error.CONSTR_RULE_CYCLE
@@ -82,25 +83,25 @@ class DatalogSpec extends Specification {
 		"fail26" | Error.TEMPL_DUPLICATE_PARAMS
 		"fail27" | Error.TEMPL_SUPER_PARAM_MISMATCH
 		"fail28" | Error.TEMPL_INST_ARITY
-		"fail29" | Error.REL_EXT_INVALID
+		"fail29" | Error.REL_QUAL_HEAD
 		"fail30" | Error.INST_UNKNOWN
-		"fail31" | Error.VAR_UNKNOWN
+		"fail31" | Error.VAR_UNBOUND
 		"fail32" | Error.TYPE_INF_FAIL
 		"fail33" | Error.REL_ARITY
 		"fail34" | Error.REL_NO_DECL
 		"fail35" | Error.DECL_SAME_VAR
-		"fail36" | Error.TEMPL_NAME_LIMITS
+		"fail36" | Error.TEXT_VAR_MATCHES_LIT
 		"fail37" | Error.ANNOTATION_UNKNOWN
-		"fail38" | Error.REL_EXT_NO_DECL
+		"fail38" | Error.REL_QUAL_UNKNOWN
 		"fail39" | Error.TEMPL_UNKNOWN_PARAM
-		"fail40" | Error.TEMPL_NAME_LIMITS
-		"fail41" | Error.REL_NAME_TEMPL
-		"fail42" | Error.REL_NAME_TEMPL
+		"fail40" | Error.TYPE_QUAL_DECL
+		"fail41" | Error.REL_QUAL_DECL
+		"fail42" | Error.REL_QUAL_DECL
 		"fail43" | Error.INST_CYCLE
-		"fail44" | Error.REL_EXT_CYCLE
+		"fail44" | Error.REL_TEMPL_CYCLE
 		"fail45" | Error.AGGR_UNSUPPORTED_REL
 		"fail46" | Error.REL_NEGATION_CYCLE
-		"fail47" | Error.VAR_UNBOUND_HEAD
+		"fail47" | Error.VAR_DONTCARE_HEAD
 		"fail48" | Error.VAR_CONSTR_BODY
 		"fail49" | Error.REL_NAME_DEFCONSTR
 		"fail50" | Error.TYPE_OPT_ROOT_NONOPT
@@ -123,6 +124,10 @@ class DatalogSpec extends Specification {
 		"fail67" | Error.TEXT_MULTIPLE_RELS
 		"fail68" | Error.TEXT_UNKNOWN
 		"fail69" | Error.TEXT_LIT_N_VAR
+		"fail70" | Error.TYPE_UNKNOWN
+		"fail71" | Error.TYPE_UNKNOWN
+		"fail72" | Error.REL_QUAL_DECL
+		"fail73" | Error.REL_QUAL_DECL
 	}
 
 	@Unroll

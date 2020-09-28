@@ -32,7 +32,7 @@ class CycleDetector {
 				{ Node node, List<Node> visitedNodes, List<Edge> visitedEdges ->
 					def cycleEdges = visitedEdges.drop(visitedNodes.indexOf(node))
 					if (cycleEdges.any { it.kind == Edge.Kind.INDIRECT_PARAM })
-						error(Error.REL_EXT_CYCLE, cycleEdges.collect { prettify it.node.id }.join(" - "))
+						error(Error.REL_TEMPL_CYCLE, cycleEdges.collect { prettify it.node.id }.join(" - "))
 				}
 		)
 	}

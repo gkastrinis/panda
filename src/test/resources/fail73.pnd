@@ -3,5 +3,4 @@ template Foo<A> {
     @type Animal
 }
 Foo<_> as F1
-
-F1.P(x) <- Q(x)
+@output @constructor F1.ZZ

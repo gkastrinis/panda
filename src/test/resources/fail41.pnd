@@ -1,6 +1,7 @@
-template Foo {
-    P(x) :int
+template Foo<A> {
+    P(x) : int
+    @type Animal
 }
-Foo as S1
+Foo<_> as F1
 
-Foo:Bar(x) : int
+F1.Z(x) : int
