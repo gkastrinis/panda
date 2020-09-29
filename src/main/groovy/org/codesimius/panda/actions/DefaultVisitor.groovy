@@ -24,9 +24,12 @@ class DefaultVisitor<T> {
 	boolean inDecl
 	boolean inRuleHead
 	boolean inRuleBody
+	BlockLvl2 program
+	BlockLvl0 currDatalog
 
 	T visit(BlockLvl2 n) {
 		enter n
+		program = n
 		m[n.datalog] = visit n.datalog
 		n.templates.each { m[it] = visit it }
 		exit n
@@ -40,7 +43,9 @@ class DefaultVisitor<T> {
 
 	T visit(BlockLvl0 n) {
 		enter n
+		currDatalog = n
 		(n.relDeclarations + n.typeDeclarations + n.rules).each { m[it] = visit it }
+		currDatalog = null
 		exit n
 	}
 

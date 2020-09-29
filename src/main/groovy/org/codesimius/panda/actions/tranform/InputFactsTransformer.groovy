@@ -23,10 +23,8 @@ import static org.codesimius.panda.datalog.expr.VariableExpr.genN as varN
 @Canonical
 class InputFactsTransformer extends DefaultTransformer {
 
-	BlockLvl0 datalog
-
 	IVisitable visit(BlockLvl0 n) {
-		datalog = n
+		currDatalog = n
 		(n.relDeclarations + n.typeDeclarations).each { m[it] = visit it }
 		def newRelDecls = (n.relDeclarations.collect { m[it] as RelDeclaration } + extraRelDecls).grep() as Set
 		new BlockLvl0(newRelDecls, n.typeDeclarations + extraTypeDecls, n.rules + extraRules)
@@ -53,7 +51,7 @@ class InputFactsTransformer extends DefaultTransformer {
 				vars << var1(i)
 				inputTypes << t
 			} else {
-				def rootT = datalog.typeToRootType[t]
+				def rootT = currDatalog.typeToRootType[t]
 				headElements << new ConstructionElement(new Constructor(rootT.defaultConName, [var1(i), var1(N + i)]), t)
 				vars << var1(N + i)
 				inputTypes << TYPE_STRING

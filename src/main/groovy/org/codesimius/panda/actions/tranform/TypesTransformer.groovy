@@ -22,7 +22,6 @@ class TypesTransformer extends DefaultTransformer {
 
 	@Delegate
 	Compiler compiler
-	private BlockLvl0 currDatalog
 
 	IVisitable visit(BlockLvl0 n) {
 		n.typeDeclarations

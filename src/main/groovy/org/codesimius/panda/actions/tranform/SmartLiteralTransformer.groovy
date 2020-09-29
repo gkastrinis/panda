@@ -2,7 +2,6 @@ package org.codesimius.panda.actions.tranform
 
 import groovy.transform.Canonical
 import org.codesimius.panda.datalog.IVisitable
-import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.clause.Rule
 import org.codesimius.panda.datalog.element.IElement
 import org.codesimius.panda.datalog.element.relation.Constructor
@@ -21,12 +20,9 @@ class SmartLiteralTransformer extends DefaultTransformer {
 	Compiler compiler
 	TypeInferenceTransformer typeInference
 
-	private BlockLvl0 currDatalog
 	private List<IElement> extraElementsForBody
 	private Set<VariableExpr> currVars
 	private boolean parentIsRelation
-
-	void enter(BlockLvl0 n) { currDatalog = n }
 
 	void enter(Rule n) {
 		extraElementsForBody = []

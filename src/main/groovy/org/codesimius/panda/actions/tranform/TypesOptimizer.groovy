@@ -23,13 +23,10 @@ import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
 @Canonical
 class TypesOptimizer extends DefaultTransformer {
 
-	private BlockLvl0 currDatalog
 	private Set<Type> typesToOptimize = [] as Set
 	private Map<IExpr, IExpr> mapExprs = [:]
 
 	void enter(BlockLvl0 n) {
-		currDatalog = n
-
 		n.typeDeclarations
 				.findAll { it.annotations[TYPE]["opt"] }
 				.each { typesToOptimize += n.getExtendedSubTypesOf(it.type) }

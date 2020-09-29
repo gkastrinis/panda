@@ -33,7 +33,6 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 	private boolean inAggregation
 	private Set<RelInfo> headRelations
 	private Set<RelInfo> bodyRelations
-	private BlockLvl2 origP
 	private BlockLvl1 currTemplate
 	// Indirect edges are added in the end so we can first check if the target node exists
 	private Map<Node, String> pendingIndirectEdges = [:]
@@ -41,10 +40,7 @@ class DependencyGraphVisitor extends DefaultVisitor<IVisitable> {
 	static final String GLOBAL = "_"
 	static final String INSTANTIATION = null
 
-	void enter(BlockLvl2 n) {
-		currGraph = graphs[GLOBAL]
-		origP = n
-	}
+	void enter(BlockLvl2 n) { currGraph = graphs[GLOBAL] }
 
 	IVisitable exit(BlockLvl2 n) {
 		n.templates.findAll { template -> !n.instantiations.any { it.id == template.name } }.each { template ->

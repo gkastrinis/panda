@@ -24,12 +24,11 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 
 	@Delegate
 	Compiler compiler
-	private BlockLvl2 prog
 	private BlockLvl1 currTemplate
-	private BlockLvl0 currDatalog
 	private List<String> ids
 
 	void enter(BlockLvl2 n) {
+		program = n
 		ids = n.templates*.name + n.instantiations*.id
 		ids.findAll { ids.count(it) > 1 }.each { id ->
 			def candidates = (n.templates.findAll { it.name == id } + n.instantiations.findAll { it.id == id })
@@ -49,8 +48,6 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 				error(loc, Error.TEMPL_UNKNOWN_PARAM, it)
 			}
 		}
-
-		prog = n
 	}
 
 	IVisitable exit(BlockLvl2 n) { n }
@@ -68,7 +65,6 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 	IVisitable exit(BlockLvl1 n) { currTemplate = null }
 
 	void enter(BlockLvl0 n) {
-		currDatalog = n
 		n.typeDeclarations.findAll { it.type.name.contains(".") }.each { error(Error.TYPE_QUAL_DECL, it.type.name) }
 
 		n.relDeclarations.findAll {
@@ -107,7 +103,7 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 			def parameter = n.name.split("\\.").first() as String
 			if (inRuleHead)
 				error(findParentLoc(), Error.REL_QUAL_HEAD, n.name)
-			if (!currTemplate && !prog.instantiations.any { it.id == parameter })
+			if (!currTemplate && !program.instantiations.any { it.id == parameter })
 				error(findParentLoc(), Error.INST_UNKNOWN, parameter)
 			if (currTemplate && !currTemplate.parameters.any { it == parameter })
 				error(findParentLoc(), Error.TEMPL_UNKNOWN_PARAM, parameter)

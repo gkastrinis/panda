@@ -3,7 +3,6 @@ package org.codesimius.panda.actions.code
 import groovy.transform.InheritConstructors
 import org.codesimius.panda.actions.tranform.souffle.AssignTransformer
 import org.codesimius.panda.actions.tranform.souffle.ConstructorTransformer
-import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.block.BlockLvl2
 import org.codesimius.panda.datalog.clause.RelDeclaration
 import org.codesimius.panda.datalog.clause.Rule
@@ -23,7 +22,6 @@ import static org.codesimius.panda.datalog.expr.VariableExpr.gen1 as var1
 @InheritConstructors
 class SouffleCodeGenerator extends DefaultCodeGenerator {
 
-	private BlockLvl0 currDatalog
 	private Rule currRule
 
 	String visit(BlockLvl2 p) {
@@ -37,8 +35,6 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		def n = steps.inject(p) { prog, step -> prog.accept(step) }
 		super.visit(n)
 	}
-
-	void enter(BlockLvl0 n) { currDatalog = n }
 
 	String visit(RelDeclaration n) {
 		def relName = fix(n.relation.name)

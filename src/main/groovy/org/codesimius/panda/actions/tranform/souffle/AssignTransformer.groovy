@@ -1,10 +1,8 @@
 package org.codesimius.panda.actions.tranform.souffle
 
-
 import groovy.transform.Canonical
 import org.codesimius.panda.actions.tranform.DefaultTransformer
 import org.codesimius.panda.datalog.IVisitable
-import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.clause.RelDeclaration
 import org.codesimius.panda.datalog.clause.Rule
 import org.codesimius.panda.datalog.clause.TypeDeclaration
@@ -37,9 +35,6 @@ class AssignTransformer extends DefaultTransformer {
 	private int complexLogic
 	// For transitive closure
 	private boolean changes
-	private BlockLvl0 datalog
-
-	void enter(BlockLvl0 n) { datalog = n }
 
 	IVisitable visit(Rule n) {
 		parentAnnotations = n.annotations
@@ -47,7 +42,7 @@ class AssignTransformer extends DefaultTransformer {
 
 		assignments = [:]
 		replacedVars = [] as Set
-		boundVars = datalog.getBoundBodyVars(n)
+		boundVars = currDatalog.getBoundBodyVars(n)
 		complexLogic = 0
 		def head = n.head
 		def body = n.body

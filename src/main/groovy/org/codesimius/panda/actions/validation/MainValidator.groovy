@@ -5,7 +5,6 @@ import org.codesimius.panda.actions.DefaultVisitor
 import org.codesimius.panda.actions.symbol.ConstructionInfoVisitor
 import org.codesimius.panda.datalog.Annotation
 import org.codesimius.panda.datalog.IVisitable
-import org.codesimius.panda.datalog.block.BlockLvl0
 import org.codesimius.panda.datalog.block.BlockLvl2
 import org.codesimius.panda.datalog.clause.RelDeclaration
 import org.codesimius.panda.datalog.clause.Rule
@@ -28,11 +27,8 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 	private Set<String> tmpDeclaredRelations = [] as Set
 	private Set<String> tmpDeclaredTypes = [] as Set
 	private Map<String, Integer> arities = [:]
-	private BlockLvl0 datalog
 
 	IVisitable exit(BlockLvl2 n) { n }
-
-	void enter(BlockLvl0 n) { datalog = n }
 
 	void enter(RelDeclaration n) {
 		def alternativeName = n.relation.name.replace ":", "_"
@@ -46,12 +42,12 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 		checkArity(n.relation.name, n.types.size())
 
 		n.types.findAll { !it.primitive }
-				.findAll { it !in datalog.allTypes }
+				.findAll { it !in currDatalog.allTypes }
 				.each { error(loc(n), Error.TYPE_UNKNOWN, it.name) }
 
 		if (CONSTRUCTOR in n.annotations) {
-			def rootT = datalog.typeToRootType[n.types.last()]
-			def optimized = datalog.typeDeclarations.find { it.type == rootT }.annotations[TYPE]["opt"]
+			def rootT = currDatalog.typeToRootType[n.types.last()]
+			def optimized = currDatalog.typeDeclarations.find { it.type == rootT }.annotations[TYPE]["opt"]
 			if (optimized && rootT.defaultConName != n.relation.name)
 				error(loc(n), Error.TYPE_OPT_CONSTR, n.relation.name)
 		}
@@ -65,8 +61,8 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 		tmpDeclaredTypes << n.type.name
 
 		if (n.annotations[TYPE]["opt"]) {
-			def rootT = datalog.typeToRootType[n.type]
-			if (!datalog.typeDeclarations.find { it.type == rootT }.annotations[TYPE]["opt"])
+			def rootT = currDatalog.typeToRootType[n.type]
+			if (!currDatalog.typeDeclarations.find { it.type == rootT }.annotations[TYPE]["opt"])
 				error(loc(n), Error.TYPE_OPT_ROOT_NONOPT, n.type.name)
 		}
 	}
@@ -74,9 +70,9 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 	void enter(Rule n) {
 		checkAnnotations(n.annotations, [PLAN], "Rule")
 
-		def varsInHead = datalog.getHeadVars(n)
-		def varsInBody = datalog.getBodyVars(n)
-		def conVars = datalog.getConstructedVars(n)
+		def varsInHead = currDatalog.getHeadVars(n)
+		def varsInBody = currDatalog.getBodyVars(n)
+		def conVars = currDatalog.getConstructedVars(n)
 		varsInHead.findAll { it.name == "_" }
 				.each { error(loc(n), Error.VAR_DONTCARE_HEAD, null) }
 		varsInHead.findAll { (it !in varsInBody) && (it !in conVars) }
@@ -95,13 +91,13 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 	}
 
 	void enter(ConstructionElement n) {
-		def baseType = datalog.constructorToBaseType[n.constructor.name]
+		def baseType = currDatalog.constructorToBaseType[n.constructor.name]
 		if (!baseType)
 			error(findParentLoc(), Error.CONSTR_UNKNOWN, n.constructor.name)
-		if (n.type != baseType && (baseType !in datalog.superTypesOrdered[n.type]))
+		if (n.type != baseType && (baseType !in currDatalog.superTypesOrdered[n.type]))
 			error(findParentLoc(), Error.CONSTR_TYPE_INCOMPAT, n.constructor.name, n.type.name)
 
-		if (n.type !in datalog.allTypes) error(findParentLoc(), Error.TYPE_UNKNOWN, n.type.name)
+		if (n.type !in currDatalog.allTypes) error(findParentLoc(), Error.TYPE_UNKNOWN, n.type.name)
 	}
 
 	void enter(Constructor n) { if (!inDecl) checkRelation(n) }
@@ -109,23 +105,23 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 	void enter(Relation n) {
 		if (!inDecl) checkRelation(n)
 
-		if (n.name in datalog.allConstructors)
+		if (n.name in currDatalog.allConstructors)
 			error(findParentLoc(), Error.CONSTR_AS_REL, n.name)
 	}
 
 	def checkRelation(Relation n) {
 		// Type is used in rule head
-		if (inRuleHead && (new Type(n.name) in datalog.allTypes))
+		if (inRuleHead && (new Type(n.name) in currDatalog.allTypes))
 			error(findParentLoc(), Error.TYPE_RULE, n.name)
 
-		if (inRuleBody && (n.name !in datalog.declaredRelations))
+		if (inRuleBody && (n.name !in currDatalog.declaredRelations))
 			error(findParentLoc(), Error.REL_NO_DECL, n.name)
 
 		checkArity(n.name, n.arity)
 	}
 
 	def checkArity(String name, int arity) {
-		if (datalog.allTypes.find { it.name == name } && arity != 1)
+		if (currDatalog.allTypes.find { it.name == name } && arity != 1)
 			error(findParentLoc(), Error.REL_ARITY, name)
 
 		def prevArity = arities[name]

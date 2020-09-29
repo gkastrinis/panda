@@ -45,8 +45,6 @@ class TypeInferenceTransformer extends DefaultTransformer {
 	// Implementing fix-point computation
 	private Set<Rule> deltaRules
 
-	private BlockLvl0 currDatalog
-
 	IVisitable visit(BlockLvl0 n) {
 		currDatalog = n
 
