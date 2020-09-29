@@ -1,6 +1,7 @@
 .gradle
 .gradletasknamecache
 build
+src/test/resources/dump.pnd
 
 #intellij idea files
 .idea
