@@ -1,0 +1,9 @@
+template Foo<A> {
+    P(x) : int
+    @text GT(x, y) <- { number x greaterThan y }
+    number 1 greaterThan 0
+}
+Foo<_> as F1
+
+@text GT(x, y) <- { number x greaterThan y }
+number 1 greaterThan 0

@@ -33,14 +33,15 @@ class DatalogSpec extends Specification {
 		"t9-constr3"        | _
 		"t10-smartLiterals" | _
 		"t11-typesOpt"      | _
-		"t12-freeText"      | _
+		"t12-freeText1"     | _
 		"t13-templates1"    | _
 		"t14-templates2"    | _
 		"t15-templates3"    | _
 		"t16-templates4"    | _
 		"t17-templates5"    | _
 		"t18-includes"      | _
-		"t19-template6"     | _
+		"t19-templates6"    | _
+		"t20-freeText2"     | _
 	}
 
 	@Unroll

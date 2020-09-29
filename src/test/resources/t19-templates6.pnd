@@ -2,10 +2,15 @@ Q(1)
 
 @type Shape
 
-template Foo<A> {
+template Base<B> {
+	Z(x) <- B.Q(x)
+	@Type Living
+}
+
+template Foo<A> : Base<A> {
 	P(x) <- A.Q(x)
     Q(x) <- P(x), x > 10
-    @Type Animal
+    @Type Animal : Living
     @type Circle : A.Shape
 	ZZ(x, y) : int, A.Shape
 }

@@ -1,0 +1,25 @@
+.decl Bar(v0:number, v1:__SYS_TYPE__F1_Living) // int x F1.Animal
+.decl F1_ZZ(v0:number, v1:__SYS_TYPE__Shape) // int x Shape
+.decl Shape_byStr(v0:symbol, v1:__SYS_TYPE__Shape) // string x Shape
+.decl F1_Living_byStr(v0:symbol, v1:__SYS_TYPE__F1_Living) // string x F1.Living
+.decl Q(v0:number) // int
+.decl F1_P(v0:number) // int
+.decl F1_Q(v0:number) // int
+.output F1_Q
+.decl F1_Z(v0:number) // int
+.decl Shape(v0:__SYS_TYPE__Shape) // Shape
+.decl Cat(v0:__SYS_TYPE__F1_Living) // Cat
+.decl F1_Animal(v0:__SYS_TYPE__F1_Living) // F1.Animal
+.decl F1_Circle(v0:__SYS_TYPE__Shape) // F1.Circle
+.decl F1_Living(v0:__SYS_TYPE__F1_Living) // F1.Living
+.type __SYS_TYPE_Shape_byStr = [v0:symbol]
+.type __SYS_TYPE__Shape = [v0:__SYS_TYPE_Shape_byStr]
+.type __SYS_TYPE_F1_Living_byStr = [v0:symbol]
+.type __SYS_TYPE__F1_Living = [v0:__SYS_TYPE_F1_Living_byStr]
+Q(1).
+F1_P(x) :- Q(x).
+F1_Q(x) :- F1_P(x), x > 10.
+F1_Z(x) :- Q(x).
+F1_Animal(v0) :- Cat(v0).
+F1_Living(v0) :- F1_Animal(v0).
+Shape(v0) :- F1_Circle(v0).
