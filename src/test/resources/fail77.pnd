@@ -1,0 +1,7 @@
+@constant MAX_LEN(3)
+Len(1)
+Len(5)
+
+P(x) <- Len(x), x <= MAX_LEN
+
+@Constant HEIGHT(1,2)

@@ -50,6 +50,7 @@ abstract class DefaultCodeGenerator extends DefaultVisitor<String> {
 
 		transformations = [
 				new FreeTextTransformer(compiler),
+				new ConstantTransformer(compiler),
 				new PreliminaryValidator(compiler),
 				new TemplateInstantiationTransformer(),
 				new DependencyGraphVisitor(compiler, outDir),

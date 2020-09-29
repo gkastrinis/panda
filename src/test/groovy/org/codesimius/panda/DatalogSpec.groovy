@@ -42,6 +42,7 @@ class DatalogSpec extends Specification {
 		"t18-includes"      | _
 		"t19-templates6"    | _
 		"t20-freeText2"     | _
+		"t21-constants"     | _
 	}
 
 	@Unroll
@@ -131,6 +132,11 @@ class DatalogSpec extends Specification {
 		"fail73" | Error.REL_QUAL_DECL
 		"fail74" | Error.REL_NO_DECL
 		"fail75" | Error.REL_NO_DECL
+		"fail76" | Error.CONSTANT_HEAD
+		"fail77" | Error.CONSTANT_ARITY
+		"fail78" | Error.CONSTANT_NON_PRIMITIVE
+		"fail79" | Error.CONSTANT_BODY
+		"fail80" | Error.CONSTANT_AS_REL
 	}
 
 	@Unroll

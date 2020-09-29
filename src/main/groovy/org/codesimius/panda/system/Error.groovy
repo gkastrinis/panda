@@ -67,6 +67,12 @@ enum Error {
 	TEXT_UNKNOWN("Unknown text representation ({0})"),
 	TEXT_VAR_MATCHES_LIT("Parameter `{0}` also matches text literals in `{1}`"),
 
+	CONSTANT_HEAD("Declaration of constant is malformed (head must be a single relation)"),
+	CONSTANT_ARITY("Declaration of constant `{0}` is malformed (relation arity must be 1)"),
+	CONSTANT_NON_PRIMITIVE("Declaration of constant `{0}` is malformed (non primitive value `{1}` given)"),
+	CONSTANT_BODY("Declaration of constant `{0}` is malformed (body is not allowed)"),
+	CONSTANT_AS_REL("Constant `{0}` cannot be used as a normal relation"),
+
 	EXP_CONTENTS_MISMATCH("Generated and expected file differ in contents")
 
 	public final String label

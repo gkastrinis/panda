@@ -1,0 +1,9 @@
+@constant MAX_LEN(3)
+Len(1)
+Len(3)
+Len(5)
+
+P(x) <- Len(x), x <= MAX_LEN
+
+@text GT(x, y) <- { number x greaterThan y }
+number 1 greaterThan MAX_LEN
