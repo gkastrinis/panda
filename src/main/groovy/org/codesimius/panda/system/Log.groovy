@@ -9,11 +9,11 @@ class Log {
 
 	File logFile
 
-	Log(String filename) {
-		if (filename) {
-			logFile = new File(filename)
-			logFile.parentFile.mkdirs()
-			logFile.text = ''
+	Log(File logFile) {
+		if (logFile) {
+			this.logFile = logFile
+			this.logFile.parentFile.mkdirs()
+			this.logFile.text = ''
 		}
 	}
 

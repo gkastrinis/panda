@@ -162,9 +162,9 @@ class DatalogSpec extends Specification {
 	def test(String file, Class codeGen) {
 		def resourcePath = "/${file}.pnd"
 		def inputStream = new ANTLRInputStream(this.class.getResourceAsStream(resourcePath))
-		def inputFile = new File(this.class.getResource(resourcePath).file)
+		def input = new File(this.class.getResource(resourcePath).file)
 
-		def compiler = new Compiler("build/logs/panda.log", inputFile, codeGen, "build/out")
+		def compiler = new Compiler(codeGen, input, new File("build/out_test"), null, new File("build/logs/panda-test.log"))
 		compiler.run(inputStream)
 		return compiler
 	}

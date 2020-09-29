@@ -36,10 +36,10 @@ class Compiler {
 		}
 	}
 
-	Compiler(String logFilename = null, File mainFile, Class<? extends DefaultCodeGenerator> codeGenClass, String outDir) {
-		log = new Log(logFilename)
-		sourceManager = new SourceManager(mainFile)
-		codeGenerator = codeGenClass.newInstance(this, outDir, mainFile) as DefaultCodeGenerator
+	Compiler(Class<? extends DefaultCodeGenerator> codeGenClass, File input, File outDir, File output, File logFile) {
+		log = new Log(logFile)
+		sourceManager = new SourceManager(input)
+		codeGenerator = codeGenClass.newInstance(this, input, outDir, output) as DefaultCodeGenerator
 	}
 
 	def run(ANTLRInputStream inputStream) {

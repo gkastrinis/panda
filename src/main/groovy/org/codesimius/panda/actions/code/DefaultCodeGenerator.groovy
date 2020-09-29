@@ -19,11 +19,12 @@ import org.codesimius.panda.system.Compiler
 
 import static org.codesimius.panda.datalog.element.ComparisonElement.TRIVIALLY_TRUE
 
-class DefaultCodeGenerator extends DefaultVisitor<String> {
+abstract class DefaultCodeGenerator extends DefaultVisitor<String> {
 
 	Compiler compiler
+	File input
 	File outDir
-	File mainFile
+	Compiler.Artifact output
 
 	List<Compiler.Artifact> artifacts = []
 
@@ -31,16 +32,19 @@ class DefaultCodeGenerator extends DefaultVisitor<String> {
 
 	List<DefaultVisitor<IVisitable>> transformations
 
-	Compiler.Artifact currentFile
 	private FileWriter fw
 	// Keep track of active logical and negation elements in order to group them correctly
 	private List<Integer> complexElements = []
 
-	DefaultCodeGenerator(Compiler compiler, String outDirName, File mainFile) {
+	DefaultCodeGenerator(Compiler compiler, File input, File outDir, File output) {
 		this.compiler = compiler
-		outDir = new File(outDirName)
-		outDir.mkdirs()
-		this.mainFile = mainFile
+		this.input = input
+		this.outDir = outDir
+		this.outDir.mkdirs()
+		this.output = getOutputArtifact(output)
+		artifacts << this.output
+		fw?.close()
+		fw = new FileWriter(this.output)
 
 		typeInferenceTransformer = new TypeInferenceTransformer(compiler)
 
@@ -88,12 +92,7 @@ class DefaultCodeGenerator extends DefaultVisitor<String> {
 
 	String exit(VariableExpr n) { n.name }
 
-	def createUniqueFile(String prefix, String suffix) {
-		currentFile = Compiler.LogicFile.createUniqueFile(prefix, suffix, outDir) as Compiler.Artifact
-		artifacts << currentFile
-		fw?.close()
-		fw = new FileWriter(currentFile)
-	}
+	abstract Compiler.Artifact getOutputArtifact(File output)
 
 	def emit(String data) { fw.write "$data\n" }
 
