@@ -23,3 +23,6 @@ foobar(?v, ?hctx) <-
     foo(?v),
     var ?v and _ points to "o1" and ?hctx,
     bar(?hctx)
+
+@text GT(x, y) <- { number x greaterThan y }
+number 1 greaterThan 0

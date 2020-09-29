@@ -40,7 +40,9 @@ relation
 	: qualifiedId '(' exprList? ')' ;
 
 relationText
-	: (IDENTIFIER | constant)+ ;
+	: (IDENTIFIER | constant)+
+	| '{' (IDENTIFIER | constant)+ '}' // For disambiguation
+	;
 
 constructor
 	: IDENTIFIER '[' exprList? ']' '=' expr ;

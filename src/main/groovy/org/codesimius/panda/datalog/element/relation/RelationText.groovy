@@ -8,5 +8,10 @@ class RelationText extends Relation {
 
 	List tokens
 
+	RelationText(def tokens) {
+		// Remove '{' and '}' used for disambiguation
+		this.tokens = tokens.first() == "{" ? tokens.drop(1).dropRight(1) : tokens
+	}
+
 	String toString() { "R##<$tokens>" }
 }
