@@ -1,0 +1,3 @@
+Q(x) <- P(x)
+P(1)
+@output Q2

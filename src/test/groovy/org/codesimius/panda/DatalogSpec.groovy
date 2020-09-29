@@ -128,6 +128,8 @@ class DatalogSpec extends Specification {
 		"fail71" | Error.TYPE_UNKNOWN
 		"fail72" | Error.REL_QUAL_DECL
 		"fail73" | Error.REL_QUAL_DECL
+		"fail74" | Error.REL_NO_DECL
+		"fail75" | Error.REL_NO_DECL
 	}
 
 	@Unroll

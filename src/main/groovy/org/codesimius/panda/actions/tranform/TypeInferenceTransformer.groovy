@@ -65,10 +65,15 @@ class TypeInferenceTransformer extends DefaultTransformer {
 			oldDeltaRules = deltaRules
 		}
 
+		// Incomplete relations with no usage or declaration (e.g. @output P)
+		n.relDeclarations
+				.findAll { it.relation.name !in inferredTypes }
+				.each { error(loc(it.relation), Error.REL_NO_DECL, it.relation.name) }
+
 		// Fill partial declarations and add implicit ones
 		// Ignore relations that derive from types
 		def interestingRelationsWithTypes = inferredTypes.findAll { rel, types ->
-			!currDatalog.allTypes.any { it.name == rel } && (rel !in AggregationElement.SUPPORTED_PREDICATES)
+			!n.allTypes.any { it.name == rel } && (rel !in AggregationElement.SUPPORTED_PREDICATES)
 		}
 		def relDeclarations = interestingRelationsWithTypes.collect { rel, types ->
 			def vars = varN(types.size())

@@ -1,0 +1,6 @@
+template Foo<A> {
+    P(x) : int
+	Q(x) <- P(x)
+}
+Foo<_> as F1
+@output F1.Q2
