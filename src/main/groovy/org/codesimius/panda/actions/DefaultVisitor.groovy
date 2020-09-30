@@ -16,7 +16,7 @@ import org.codesimius.panda.datalog.expr.*
 
 import static org.codesimius.panda.datalog.Annotation.METADATA
 
-class DefaultVisitor<T> {
+abstract class DefaultVisitor<T> {
 
 	// The annotation set of a declaration / rule for usage in its children
 	Set<Annotation> parentAnnotations
