@@ -1,0 +1,8 @@
+P(1,2)
+Q(3,4)
+
+@inline Foo(a, b) <- P(a, c), Bar(c, b)
+@inline Bar(d, e) <- Q(d, f), Baz(f, g)
+@inline Baz(h, i) <- P(h, j), Foo(j, i)
+
+R(x, a) <- Foo(x, x), P(_, x), a = x*2

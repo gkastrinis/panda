@@ -60,6 +60,7 @@ class Annotation {
 			"CONSTRUCTOR": NO_ARGS_VALIDATOR,
 			"CONSTANT"   : NO_ARGS_VALIDATOR,
 			"FUNCTIONAL" : NO_ARGS_VALIDATOR,
+			"INLINE"     : NO_ARGS_VALIDATOR,
 			"INPUT"      : { Compiler compiler, Annotation a ->
 				OPTIONAL_VALIDATOR.call(compiler, a, [filename: STRING, delimiter: STRING])
 			},
@@ -79,6 +80,7 @@ class Annotation {
 	static final CONSTRUCTOR = new Annotation("CONSTRUCTOR")
 	static final CONSTANT = new Annotation("CONSTANT")
 	static final FUNCTIONAL = new Annotation("FUNCTIONAL")
+	static final INLINE = new Annotation("INLINE")
 	static final INPUT = new Annotation("INPUT")
 	static final OUTPUT = new Annotation("OUTPUT")
 	static final PLAN = new Annotation("PLAN")

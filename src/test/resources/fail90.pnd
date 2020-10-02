@@ -1,0 +1,6 @@
+P(1,2)
+Q(3,4)
+
+@inline Foo(x, y) <- P(x, z), Q(z,y), a = x + 1, y > a
+@type Shape
+@Constructor Foo[x] = y : int, Shape

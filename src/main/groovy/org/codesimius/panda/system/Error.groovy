@@ -58,9 +58,9 @@ enum Error {
 	TYPE_OPT_CONSTR("Type hierarchies marked for optimization cannot have user defined constructors (`{0}`)"),
 	TYPE_QUAL_DECL("Declaration of a qualified type `{0}` is not allowed"),
 
-	TEXT_MALFORMED_HEAD("Declaration of text representation for a relation is malformed (head must be a single relation)"),
+	TEXT_HEAD("Declaration of text representation for a relation is malformed (head must be a single relation)"),
 	TEXT_HEAD_NON_VAR("Declaration of text representation for a relation is malformed (head relation must contain only variables)"),
-	TEXT_MALFORMED_BODY("Declaration of text representation for a relation is malformed (body must be a single text representation)"),
+	TEXT_BODY("Declaration of text representation for a relation is malformed (body must be a single text representation)"),
 	TEXT_BODY_NON_VAR("Declaration of text representation for a relation is malformed (body must contain only text and variables)"),
 	TEXT_LIT_N_VAR("Conflict in text representations between literal \"{0}\" and parameter `{1}`"),
 	TEXT_MULTIPLE_RELS("Same text representation cannot be used for multiple relations ({0})"),
@@ -72,6 +72,15 @@ enum Error {
 	CONSTANT_NON_PRIMITIVE("Declaration of constant `{0}` is malformed (non primitive value `{1}` given)"),
 	CONSTANT_BODY("Declaration of constant `{0}` is malformed (body is not allowed)"),
 	CONSTANT_AS_REL("Constant `{0}` cannot be used as a normal relation"),
+
+	INLINE_HEAD("Declaration of inline relation is malformed (head must be a single relation)"),
+	INLINE_HEAD_NONVARS("Declaration of inline relation `{0}` is malformed (only named variables are allowed in the head -- `{1}`)"),
+	INLINE_HEAD_DUPVARS("Declaration of inline relation `{0}` is malformed (var duplication is not allowed in the head -- `{1}`)"),
+	INLINE_INVALID_ANN("Invalid annotation `{0}` in declaration of inline relation `{1}`"),
+	INLINE_RECURSION("Inline relation `{0}` appears in a recursive cycle"),
+	INLINE_NOTIN_BODY("Inline relation `{0}` can only appear in a rule body"),
+	INLINE_AS_CONSTR("Inline relation `{0}` used as a constructor"),
+	INLINE_AS_TYPE("Inline relation `{0}` used as a type"),
 
 	EXP_CONTENTS_MISMATCH("Generated and expected file differ in contents")
 

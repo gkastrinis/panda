@@ -42,7 +42,7 @@ class Compiler {
 		codeGenerator = codeGenClass.newInstance(this, input, outDir, output) as DefaultCodeGenerator
 	}
 
-	def run(ANTLRInputStream inputStream) {
+	Compiler run(ANTLRInputStream inputStream) {
 		info("COMPILE", "${activeFiles.first()} with ${codeGenerator.class.simpleName}")
 
 		def listener = new DatalogParserImpl(this)
@@ -51,6 +51,7 @@ class Compiler {
 
 		codeGenerator.visit(listener.program)
 		codeGenerator.artifacts.each { info(it.kind, it.canonicalPath) }
+		return this
 	}
 
 	// Manually simulate what the delegate annotation would do, because recursive delegation does not

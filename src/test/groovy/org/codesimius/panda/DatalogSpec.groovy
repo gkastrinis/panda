@@ -43,6 +43,7 @@ class DatalogSpec extends Specification {
 		"t19-templates6"    | _
 		"t20-freeText2"     | _
 		"t21-constants"     | _
+		"t22-inlines"       | _
 	}
 
 	@Unroll
@@ -118,9 +119,9 @@ class DatalogSpec extends Specification {
 		"fail59" | Error.REL_ARITY
 		"fail60" | Error.TYPE_INF_INCOMPAT
 		"fail61" | Error.DECL_MULTIPLE
-		"fail62" | Error.TEXT_MALFORMED_HEAD
-		"fail63" | Error.TEXT_MALFORMED_BODY
-		"fail64" | Error.TEXT_MALFORMED_BODY
+		"fail62" | Error.TEXT_HEAD
+		"fail63" | Error.TEXT_BODY
+		"fail64" | Error.TEXT_BODY
 		"fail65" | Error.TEXT_HEAD_NON_VAR
 		"fail66" | Error.TEXT_BODY_NON_VAR
 		"fail67" | Error.TEXT_MULTIPLE_RELS
@@ -137,6 +138,17 @@ class DatalogSpec extends Specification {
 		"fail78" | Error.CONSTANT_NON_PRIMITIVE
 		"fail79" | Error.CONSTANT_BODY
 		"fail80" | Error.CONSTANT_AS_REL
+		"fail81" | Error.INLINE_HEAD
+		"fail82" | Error.INLINE_HEAD_NONVARS
+		"fail83" | Error.INLINE_HEAD_NONVARS
+		"fail84" | Error.INLINE_HEAD_DUPVARS
+		"fail85" | Error.INLINE_INVALID_ANN
+		"fail86" | Error.INLINE_RECURSION
+		"fail87" | Error.INLINE_NOTIN_BODY
+		"fail88" | Error.INLINE_NOTIN_BODY
+		"fail89" | Error.INLINE_HEAD
+		"fail90" | Error.INLINE_AS_CONSTR
+		"fail91" | Error.INLINE_AS_TYPE
 	}
 
 	@Unroll
@@ -170,8 +182,8 @@ class DatalogSpec extends Specification {
 		def inputStream = new ANTLRInputStream(this.class.getResourceAsStream(resourcePath))
 		def input = new File(this.class.getResource(resourcePath).file)
 
-		def compiler = new Compiler(codeGen, input, new File("build/out_test"), null, new File("build/logs/panda-test.log"))
-		compiler.run(inputStream)
-		return compiler
+		new Compiler(codeGen, input, new File("build/out_test"), null,
+				new File("build/logs/panda-test.log"))
+				.run(inputStream)
 	}
 }

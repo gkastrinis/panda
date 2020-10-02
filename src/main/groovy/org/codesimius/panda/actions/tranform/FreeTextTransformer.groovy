@@ -27,14 +27,14 @@ class FreeTextTransformer extends DefaultTransformer {
 		freeTextRules.each {
 			def loc = loc(it)
 
-			if (it.head !instanceof Relation) error(loc, Error.TEXT_MALFORMED_HEAD, null)
+			if (it.head !instanceof Relation) error(loc, Error.TEXT_HEAD, null)
 			def relation = it.head as Relation
 			def relationParams = relation.exprs
 			relationParams
 					.findAll { it !instanceof VariableExpr }
 					.each { error(loc, Error.TEXT_HEAD_NON_VAR) }
 
-			if (it.body !instanceof RelationText) error(loc, Error.TEXT_MALFORMED_BODY, null)
+			if (it.body !instanceof RelationText) error(loc, Error.TEXT_BODY, null)
 			def tokens = (it.body as RelationText).tokens.collect { token ->
 				if (token instanceof ConstantExpr) error(loc, Error.TEXT_BODY_NON_VAR)
 				def index = relationParams.findIndexOf { (it as VariableExpr).name == token }

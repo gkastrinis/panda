@@ -1,0 +1,4 @@
+P(1,2)
+Q(3,4)
+
+@inline Foo(x, 1) <- P(x, z), Q(z, y), a = x + 1, y > a

@@ -1,0 +1,8 @@
+.decl Len(v0:number) // int
+.decl P(v0:number) // int
+.decl GT(v0:number, v1:number) // int x int
+Len(1).
+Len(3).
+Len(5).
+P(x) :- Len(x), x <= 3.
+GT(1, 3).
