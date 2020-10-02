@@ -49,7 +49,7 @@ class DatalogSpec extends Specification {
 	@Unroll
 	def "Failing tests"() {
 		when:
-		testAndCompare(file)
+		testAndCompare("failing/$file")
 
 		then:
 		def e = thrown(PandaException)
@@ -154,7 +154,7 @@ class DatalogSpec extends Specification {
 	@Unroll
 	def "Souffle failing tests"() {
 		when:
-		test(file, SouffleCodeGenerator)
+		test("failing/$file", SouffleCodeGenerator)
 
 		then:
 		def e = thrown(PandaException)
