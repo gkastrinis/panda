@@ -31,8 +31,6 @@ template CoreA <X, Y> : Core<Y, X> {
 
 CoreA<_, S3> as S5
 
-//Pred(x) <- W(x) // TODO
-
 template Foo<T1, T2> {
 	P1(x) <- T2.P(x)
 	P1(x) <- T1.P11(x)
