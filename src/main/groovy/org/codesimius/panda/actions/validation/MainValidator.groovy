@@ -32,8 +32,10 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 
 	void enter(RelDeclaration n) {
 		def alternativeName = n.relation.name.replace ":", "_"
-		if (n.relation.name in tmpDeclaredRelations || alternativeName in tmpDeclaredRelations)
+		if (n.relation.name in tmpDeclaredRelations || alternativeName in tmpDeclaredRelations ||
+				n.relation.name in tmpDeclaredTypes || alternativeName in tmpDeclaredTypes)
 			error(loc(n), Error.DECL_MULTIPLE, n.relation.name)
+
 		tmpDeclaredRelations << n.relation.name
 
 		checkAnnotations(n.annotations, [CONSTRUCTOR, FUNCTIONAL, INPUT, OUTPUT, METADATA], "Declarations")
@@ -54,11 +56,14 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 	}
 
 	void enter(TypeDeclaration n) {
-		checkAnnotations(n.annotations, [INPUT, OUTPUT, TYPE, TYPEVALUES], "Type")
-
-		if (n.type.name in tmpDeclaredTypes)
+		def alternativeName = n.type.name.replace ":", "_"
+		if (n.type.name in tmpDeclaredRelations || alternativeName in tmpDeclaredRelations ||
+				n.type.name in tmpDeclaredTypes || alternativeName in tmpDeclaredTypes)
 			error(loc(n), Error.DECL_MULTIPLE, n.type.name)
+
 		tmpDeclaredTypes << n.type.name
+
+		checkAnnotations(n.annotations, [INPUT, OUTPUT, TYPE, TYPEVALUES], "Type")
 
 		if (n.annotations[TYPE]["opt"]) {
 			def rootT = currDatalog.typeToRootType[n.type]
