@@ -72,6 +72,7 @@ enum Error {
 	CONSTANT_NON_PRIMITIVE("Declaration of constant `{0}` is malformed (non primitive value `{1}` given)"),
 	CONSTANT_BODY("Declaration of constant `{0}` is malformed (body is not allowed)"),
 	CONSTANT_AS_REL("Constant `{0}` cannot be used as a normal relation"),
+	CONSTANT_INVALID_ANN("Invalid annotation `{0}` in declaration of constant `{1}`"),
 
 	INLINE_HEAD("Declaration of inline relation is malformed (head must be a single relation)"),
 	INLINE_HEAD_NONVARS("Declaration of inline relation `{0}` is malformed (only named variables are allowed in the head -- `{1}`)"),

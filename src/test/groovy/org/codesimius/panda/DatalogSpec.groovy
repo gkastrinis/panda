@@ -149,6 +149,7 @@ class DatalogSpec extends Specification {
 		"fail89" | Error.INLINE_HEAD
 		"fail90" | Error.INLINE_AS_CONSTR
 		"fail91" | Error.INLINE_AS_TYPE
+		"fail92" | Error.CONSTANT_INVALID_ANN
 	}
 
 	@Unroll

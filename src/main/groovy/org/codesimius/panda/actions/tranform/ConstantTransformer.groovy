@@ -10,6 +10,7 @@ import org.codesimius.panda.system.Compiler
 import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.datalog.Annotation.CONSTANT
+import static org.codesimius.panda.datalog.Annotation.METADATA
 
 @Canonical
 class ConstantTransformer extends DefaultTransformer {
@@ -25,6 +26,9 @@ class ConstantTransformer extends DefaultTransformer {
             if (it.head !instanceof Relation)
                 error(loc(it), Error.CONSTANT_HEAD)
             def rel = it.head as Relation
+            it.annotations.findAll { it != CONSTANT && it != METADATA }.each { an ->
+                error(loc(it), Error.CONSTANT_INVALID_ANN, an, rel.name)
+            }
             if (rel.exprs.size() != 1)
                 error(loc(it), Error.CONSTANT_ARITY, rel.name)
             if (rel.exprs.first() !instanceof ConstantExpr)
