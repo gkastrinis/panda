@@ -173,8 +173,10 @@ class DatalogSpec extends Specification {
 		def expectedFileURL = this.class.getResource("/expected/exp-${file}.dl")
 		def expectedFile = expectedFileURL ? new File(expectedFileURL.toURI()) : null
 
-		if (expectedFile?.exists() && !FileUtils.contentEqualsIgnoreEOL(generatedFile, expectedFile, null))
-			compiler.error(Error.EXP_CONTENTS_MISMATCH, null)
+		if (!expectedFile)
+			compiler.error(Error.EXP_CONTENTS_MISSING, file)
+		if (!FileUtils.contentEqualsIgnoreEOL(generatedFile, expectedFile, null))
+			compiler.error(Error.EXP_CONTENTS_MISMATCH)
 	}
 
 	def test(String file, Class codeGen) {

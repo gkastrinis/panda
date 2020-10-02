@@ -82,7 +82,8 @@ enum Error {
 	INLINE_AS_CONSTR("Inline relation `{0}` used as a constructor"),
 	INLINE_AS_TYPE("Inline relation `{0}` used as a type"),
 
-	EXP_CONTENTS_MISMATCH("Generated and expected file differ in contents")
+	EXP_CONTENTS_MISMATCH("Generated and expected file differ in contents"),
+	EXP_CONTENTS_MISSING("Missing expected file for `{0}`")
 
 	public final String label
 
