@@ -1,4 +1,4 @@
-[![License MIT][badge-license]](LICENSE.txt)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![Travis CI w/ Logo](https://img.shields.io/travis/gkastrinis/panda/master.svg?logo=travis)
 ![CI](https://github.com/gkastrinis/panda/workflows/CI/badge.svg)
 [![GitHub Release](https://img.shields.io/github/release/gkastrinis/panda.svg)](https://github.com/gkastrinis/panda/releases)
