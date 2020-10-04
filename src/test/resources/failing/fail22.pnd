@@ -1,1 +1,1 @@
-@type(capacity = true) Animal
+@type(opt = 1) Animal

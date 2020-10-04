@@ -2,7 +2,7 @@ template Foo {
 	P(x) <- x = 10
 	R(x) <- P(x)
 	W(x) : string
-	@type(capacity = 100000) Animal
+	@type Animal
 	@Constructor
     cons:An[x] = y : string, Animal
 

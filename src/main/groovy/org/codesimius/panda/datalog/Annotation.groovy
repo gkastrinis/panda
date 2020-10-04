@@ -6,7 +6,8 @@ import org.codesimius.panda.datalog.expr.ConstantExpr
 import org.codesimius.panda.system.Compiler
 import org.codesimius.panda.system.Error
 
-import static org.codesimius.panda.datalog.expr.ConstantExpr.Kind.*
+import static org.codesimius.panda.datalog.expr.ConstantExpr.Kind.BOOLEAN
+import static org.codesimius.panda.datalog.expr.ConstantExpr.Kind.STRING
 
 @EqualsAndHashCode(includes = "kind")
 @ToString(includePackage = false)
@@ -71,7 +72,7 @@ class Annotation {
 			},
 			"TEXT"       : NO_ARGS_VALIDATOR,
 			"TYPE"       : { Compiler compiler, Annotation a ->
-				OPTIONAL_VALIDATOR.call(compiler, a, [capacity: INTEGER, opt: BOOLEAN])
+				OPTIONAL_VALIDATOR.call(compiler, a, [opt: BOOLEAN])
 			},
 			"TYPEVALUES" : null,
 			"METADATA"   : null
