@@ -49,8 +49,7 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 
 		if (CONSTRUCTOR in n.annotations) {
 			def rootT = currDatalog.typeToRootType[n.types.last()]
-			def optimized = currDatalog.typeDeclarations.find { it.type == rootT }.annotations[TYPE]["opt"]
-			if (optimized && rootT.defaultConName != n.relation.name)
+			if (currDatalog.typeToDeclaration[rootT.name].annotations[TYPE]["opt"] && rootT.defaultConName != n.relation.name)
 				error(loc(n), Error.TYPE_OPT_CONSTR, n.relation.name)
 		}
 	}
@@ -67,7 +66,7 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 
 		if (n.annotations[TYPE]["opt"]) {
 			def rootT = currDatalog.typeToRootType[n.type]
-			if (!currDatalog.typeDeclarations.find { it.type == rootT }.annotations[TYPE]["opt"])
+			if (!currDatalog.typeToDeclaration[rootT.name].annotations[TYPE]["opt"])
 				error(loc(n), Error.TYPE_OPT_ROOT_NONOPT, rootT.name, n.type.name)
 		}
 	}

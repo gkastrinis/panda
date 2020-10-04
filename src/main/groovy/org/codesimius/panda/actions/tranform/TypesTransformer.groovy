@@ -50,7 +50,7 @@ class TypesTransformer extends DefaultTransformer {
 	IVisitable exit(TypeDeclaration n) {
 		if (n.annotations[TYPE]["noDefault"]) {
 			def rootT = currDatalog.typeToRootType[n.type]
-			if (!currDatalog.typeDeclarations.find { it.type == rootT }.annotations[TYPE]["noDefault"])
+			if (!currDatalog.typeToDeclaration[rootT.name].annotations[TYPE]["noDefault"])
 				error(loc(n), Error.TYPE_NODEF_ROOT_DEF, rootT.name, n.type.name)
 		}
 

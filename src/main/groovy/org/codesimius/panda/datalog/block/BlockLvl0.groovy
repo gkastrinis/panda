@@ -31,6 +31,7 @@ class BlockLvl0 implements IVisitable {
 	private Map<Type, Type> typeToRootType0 = [:]
 	private Map<String, Type> constructorToBaseType0 = [:]
 	private Map<Type, Set<RelDeclaration>> constructorsPerType0 = [:].withDefault { [] as Set }
+	private Map<String, TypeDeclaration> typeToDeclaration0 = [:]
 
 	private boolean relationInfoCollected
 	private Set<String> declaredRelations0
@@ -89,6 +90,11 @@ class BlockLvl0 implements IVisitable {
 		constructorToBaseType0.keySet()
 	}
 
+	Map<String, TypeDeclaration> getTypeToDeclaration() {
+		if (!typeInfoCollected) collectTypeInfo()
+		typeToDeclaration0
+	}
+
 	void collectTypeInfo() {
 		// Implicit subtyping in primitive types
 		superTypesOrdered0[TYPE_INT] = [TYPE_REAL]
@@ -103,7 +109,7 @@ class BlockLvl0 implements IVisitable {
 				superTypesOrdered0[d.type] << currDecl.supertype
 				currDecl = typeDeclarations.find { it.type == currDecl.supertype }
 			}
-
+			typeToDeclaration0[d.type.name] = d
 		}
 
 		superTypesOrdered0.each { t, ts ->
