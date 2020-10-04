@@ -1,0 +1,6 @@
+.decl byId(v0:number, v1:__SYS_TYPE__Fruit) // int x Fruit
+.decl Fruit(v0:__SYS_TYPE__Fruit) // Fruit
+.decl Apple(v0:__SYS_TYPE__Fruit) // Apple
+.type __SYS_TYPE_byId = [v0:number]
+.type __SYS_TYPE__Fruit = [v0:__SYS_TYPE_byId]
+Fruit(v0) :- Apple(v0).

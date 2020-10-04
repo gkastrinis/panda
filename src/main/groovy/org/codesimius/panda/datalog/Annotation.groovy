@@ -72,7 +72,7 @@ class Annotation {
 			},
 			"TEXT"       : NO_ARGS_VALIDATOR,
 			"TYPE"       : { Compiler compiler, Annotation a ->
-				OPTIONAL_VALIDATOR.call(compiler, a, [opt: BOOLEAN])
+				OPTIONAL_VALIDATOR.call(compiler, a, [opt: BOOLEAN, noDefault: BOOLEAN])
 			},
 			"TYPEVALUES" : null,
 			"METADATA"   : null

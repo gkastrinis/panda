@@ -68,7 +68,7 @@ class MainValidator extends DefaultVisitor<IVisitable> {
 		if (n.annotations[TYPE]["opt"]) {
 			def rootT = currDatalog.typeToRootType[n.type]
 			if (!currDatalog.typeDeclarations.find { it.type == rootT }.annotations[TYPE]["opt"])
-				error(loc(n), Error.TYPE_OPT_ROOT_NONOPT, n.type.name)
+				error(loc(n), Error.TYPE_OPT_ROOT_NONOPT, rootT.name, n.type.name)
 		}
 	}
 

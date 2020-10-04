@@ -29,8 +29,13 @@ class TypesTransformer extends DefaultTransformer {
 				.findAll { decl -> !n.typeDeclarations.any { it.type == decl.supertype } }
 				.each { error(loc(it), Error.TYPE_UNKNOWN, it.supertype.name) }
 
-		// Add default constructors
-		n.rootTypes.findAll { !it.primitive }.each { root ->
+
+		// Add default constructors for types that don't explicitly exclude them
+		def noDefault = n.typeDeclarations.findAll { it.annotations[TYPE]["noDefault"] }.collect { it.type }
+		n.rootTypes.findAll {!it.primitive && it in noDefault && n.constructorsPerType[it].empty }.each {
+			error(loc(it), Error.TYPE_NODEF_NOCON, it.name)
+		}
+		n.rootTypes.findAll { !it.primitive && (it !in noDefault) }.each { root ->
 			n.relDeclarations
 					.findAll { it.relation.name == root.defaultConName }
 					.each { error(loc(it), Error.REL_NAME_DEFCONSTR, it.relation.name) }
@@ -43,6 +48,12 @@ class TypesTransformer extends DefaultTransformer {
 	}
 
 	IVisitable exit(TypeDeclaration n) {
+		if (n.annotations[TYPE]["noDefault"]) {
+			def rootT = currDatalog.typeToRootType[n.type]
+			if (!currDatalog.typeDeclarations.find { it.type == rootT }.annotations[TYPE]["noDefault"])
+				error(loc(n), Error.TYPE_NODEF_ROOT_DEF, rootT.name, n.type.name)
+		}
+
 		if (n.annotations[TYPEVALUES]) {
 			def rootT = currDatalog.typeToRootType[n.type]
 			n.annotations[TYPEVALUES].args.each { key, value ->

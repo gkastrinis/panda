@@ -1,0 +1,3 @@
+@Type Fruit
+@type(noDefault=true) Apple : Fruit
+@constructor byId[x] = a : int, Fruit

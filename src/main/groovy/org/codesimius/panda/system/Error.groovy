@@ -54,9 +54,11 @@ enum Error {
 	TYPE_UNSUPP("Currently unsupported type `{0}`"),
 	TYPE_UNKNOWN("Unknown type `{0}`"),
 	TYPE_RULE("Type `{0}` used as a normal relation in rule head"),
-	TYPE_OPT_ROOT_NONOPT("Root type `{0}` of a hierarchy must be explicitly marked for optimization when optimizing types"),
+	TYPE_OPT_ROOT_NONOPT("Hierarchy root type `{0}` must be marked for optimization when optimizing subtype `{1}`"),
 	TYPE_OPT_CONSTR("Type hierarchies marked for optimization cannot have user defined constructors (`{0}`)"),
 	TYPE_QUAL_DECL("Declaration of a qualified type `{0}` is not allowed"),
+	TYPE_NODEF_ROOT_DEF("Hierarchy root type `{0}` must be marked for no default constructor, if it holds for subtype `{1}`"),
+	TYPE_NODEF_NOCON("Hierarchy root type `{0}` marked for no default constructor, but does not provide a custom one"),
 
 	TEXT_HEAD("Declaration of text representation for a relation is malformed (head must be a single relation)"),
 	TEXT_HEAD_NON_VAR("Declaration of text representation for a relation is malformed (head relation must contain only variables)"),
