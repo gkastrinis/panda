@@ -155,6 +155,9 @@ class DatalogSpec extends Specification {
 		"fail93" | Error.DECL_MULTIPLE
 		"fail94" | Error.TYPE_NODEF_NOCON
 		"fail95" | Error.TYPE_NODEF_ROOT_DEF
+		"fail96" | Error.PRIMITIVE_DECL_ASREL
+		"fail97" | Error.PRIMITIVE_DECL
+		"fail98" | Error.PRIMITIVE_AS_SUPER
 	}
 
 	@Unroll

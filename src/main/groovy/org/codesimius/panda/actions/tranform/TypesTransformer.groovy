@@ -29,7 +29,6 @@ class TypesTransformer extends DefaultTransformer {
 				.findAll { decl -> !n.typeDeclarations.any { it.type == decl.supertype } }
 				.each { error(loc(it), Error.TYPE_UNKNOWN, it.supertype.name) }
 
-
 		// Add default constructors for types that don't explicitly exclude them
 		def noDefault = n.typeDeclarations.findAll { it.annotations[TYPE]["noDefault"] }.collect { it.type }
 		n.rootTypes.findAll {!it.primitive && it in noDefault && n.constructorsPerType[it].empty }.each {

@@ -60,6 +60,10 @@ enum Error {
 	TYPE_NODEF_ROOT_DEF("Hierarchy root type `{0}` must be marked for no default constructor, if it holds for subtype `{1}`"),
 	TYPE_NODEF_NOCON("Hierarchy root type `{0}` marked for no default constructor, but does not provide a custom one"),
 
+	PRIMITIVE_DECL_ASREL("Primitive type `{0}` is not allowed to be declared as a relation"),
+	PRIMITIVE_DECL("Primitive type `{0}` is not allowed to have an explicit declaration"),
+	PRIMITIVE_AS_SUPER("Primitive type `{0}` is not allowed to be the supertype of `{1}`"),
+
 	TEXT_HEAD("Declaration of text representation for a relation is malformed (head must be a single relation)"),
 	TEXT_HEAD_NON_VAR("Declaration of text representation for a relation is malformed (head relation must contain only variables)"),
 	TEXT_BODY("Declaration of text representation for a relation is malformed (body must be a single text representation)"),

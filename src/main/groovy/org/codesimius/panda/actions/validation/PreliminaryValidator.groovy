@@ -8,9 +8,11 @@ import org.codesimius.panda.datalog.block.BlockLvl1
 import org.codesimius.panda.datalog.block.BlockLvl2
 import org.codesimius.panda.datalog.clause.RelDeclaration
 import org.codesimius.panda.datalog.clause.Rule
+import org.codesimius.panda.datalog.clause.TypeDeclaration
 import org.codesimius.panda.datalog.element.AggregationElement
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
+import org.codesimius.panda.datalog.element.relation.Type
 import org.codesimius.panda.datalog.expr.ConstantExpr
 import org.codesimius.panda.system.Compiler
 import org.codesimius.panda.system.Error
@@ -76,6 +78,8 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 	}
 
 	void enter(RelDeclaration n) {
+		if (Type.isPrimitive(n.relation.name))
+			error(loc(n), Error.PRIMITIVE_DECL_ASREL, n.relation.name)
 		if (n.relation.exprs.size() != n.types.size())
 			error(loc(n), Error.DECL_MALFORMED, null)
 		n.relation.exprs.findAll { n.relation.exprs.count(it) > 1 }.each {
@@ -85,6 +89,13 @@ class PreliminaryValidator extends DefaultVisitor<IVisitable> {
 			error(loc(n), Error.CONSTR_NON_FUNC, n.relation.name)
 		if (n.relation instanceof Constructor && CONSTRUCTOR !in n.annotations)
 			error(loc(n), Error.FUNC_NON_CONSTR, n.relation.name)
+	}
+
+	void enter(TypeDeclaration n) {
+		if (n.type.primitive)
+			error(loc(n), Error.PRIMITIVE_DECL, n.type.name)
+		if (n.supertype?.primitive)
+			error(loc(n), Error.PRIMITIVE_AS_SUPER, n.supertype.name, n.type.name)
 	}
 
 	void enter(Rule n) {
