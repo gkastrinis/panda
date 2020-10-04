@@ -32,6 +32,8 @@ class ConstantExpr implements IExpr {
 		value = s.startsWith("'") ? s.replaceAll(/^'|'$/, '"') : s
 	}
 
+	boolean asBoolean() { value }
+
 	String toString() { value }
 
 	private ConstantExpr() { value = "nil" }
