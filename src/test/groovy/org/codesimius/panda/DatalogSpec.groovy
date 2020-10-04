@@ -20,30 +20,31 @@ class DatalogSpec extends Specification {
 		notThrown(PandaException)
 
 		where:
-		file                | _
-		"t0-basics"         | _
-		"t1-primitives"     | _
-		"t2-aggregations"   | _
-		"t3-types"          | _
-		"t4-typeValues"     | _
-		"t5-inference"      | _
-		"t6-inputs"         | _
-		"t7-constr1"        | _
-		"t8-constr2"        | _
-		"t9-constr3"        | _
-		"t10-smartLiterals" | _
-		"t11-typesOpt"      | _
-		"t12-freeText1"     | _
-		"t13-templates1"    | _
-		"t14-templates2"    | _
-		"t15-templates3"    | _
-		"t16-templates4"    | _
-		"t17-templates5"    | _
-		"t18-includes"      | _
-		"t19-templates6"    | _
-		"t20-freeText2"     | _
-		"t21-constants"     | _
-		"t22-inlines"       | _
+		file                 | _
+		"t0-basics"          | _
+		"t1-primitives"      | _
+		"t2-aggregations"    | _
+		"t3-types"           | _
+		"t4-typeValues"      | _
+		"t5-inference"       | _
+		"t6-inputs"          | _
+		"t7-constr1"         | _
+		"t8-constr2"         | _
+		"t9-constr3"         | _
+		"t10-smartLiterals"  | _
+		"t11-typesOpt"       | _
+		"t12-freeText1"      | _
+		"t13-templates1"     | _
+		"t14-templates2"     | _
+		"t15-templates3"     | _
+		"t16-templates4"     | _
+		"t17-templates5"     | _
+		"t18-includes"       | _
+		"t19-templates6"     | _
+		"t20-freeText2"      | _
+		"t21-constants"      | _
+		"t22-inlines"        | _
+		"t23-recursiveTypes" | _
 	}
 
 	@Unroll

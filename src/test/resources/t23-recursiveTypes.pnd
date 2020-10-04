@@ -1,0 +1,7 @@
+@type @output Expr
+@constructor Expr:byVar[v] = e : string, Expr
+@constructor Expr:expand[v, e1] = e2 : string, Expr, Expr
+
+Expr:byVar["X"] = e new Expr
+
+Expr:expand["Y", e1] = e2 new Expr <- Expr:byVar[_] = e1

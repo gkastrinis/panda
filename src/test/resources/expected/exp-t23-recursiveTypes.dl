@@ -1,0 +1,11 @@
+.decl Expr_byVar(v0:symbol, v1:__SYS_TYPE__Expr) // string x Expr
+.decl Expr_expand(v0:symbol, v1:__SYS_TYPE__Expr, v2:__SYS_TYPE__Expr) // string x Expr x Expr
+.decl Expr_byStr(v0:symbol, v1:__SYS_TYPE__Expr) // string x Expr
+.decl Expr(v0:__SYS_TYPE__Expr) // Expr
+.output Expr
+.type __SYS_TYPE_Expr_byVar = [v0:symbol]
+.type __SYS_TYPE_Expr_expand = [v0:symbol, v1:__SYS_TYPE__Expr]
+.type __SYS_TYPE_Expr_byStr = [v0:symbol]
+.type __SYS_TYPE__Expr = [v0:__SYS_TYPE_Expr_byVar, v1:__SYS_TYPE_Expr_expand, v2:__SYS_TYPE_Expr_byStr]
+Expr_byVar("X", [["X"], nil, nil]), Expr([["X"], nil, nil]) :- 1=1.
+Expr_expand("Y", e1, [nil, ["Y", e1], nil]), Expr([nil, ["Y", e1], nil]) :- Expr_byVar(_, e1).
