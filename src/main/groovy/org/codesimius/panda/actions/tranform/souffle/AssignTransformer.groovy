@@ -37,18 +37,17 @@ class AssignTransformer extends DefaultTransformer {
 	private boolean changes
 
 	IVisitable visit(Rule n) {
-		parentAnnotations = n.annotations
 		if (!n.body) return n
 
+		parentAnnotations = n.annotations
 		assignments = [:]
 		replacedVars = [] as Set
 		boundVars = currDatalog.getBoundBodyVars(n)
 		complexLogic = 0
+
 		def head = n.head
 		def body = n.body
-		// Simulating a do-while in groovy
-		changes = true
-		while (changes) {
+		do {
 			changes = false
 			if (body) body = visit(body) as IElement
 			// Update expressions for assignment as well
@@ -56,7 +55,8 @@ class AssignTransformer extends DefaultTransformer {
 			head = visit(head) as IElement
 			replacedVars += assignments.keySet()
 			assignments = [:]
-		}
+		} while (changes)
+
 		replacedVars = [] as Set
 		m[n.head] = combineElements([head])
 		m[n.body] = combineElements([body])

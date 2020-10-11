@@ -44,6 +44,8 @@ class SmartLiteralTransformer extends DefaultTransformer {
 
 	void enter(BinaryExpr n) { parentIsRelation = false }
 
+	void enter(UnaryExpr n) { parentIsRelation = false }
+
 	void enter(ConstantExpr n) {
 		if (n.kind == ConstantExpr.Kind.SMART_LIT && !parentIsRelation)
 			error(findParentLoc(), Error.SMART_LIT_NO_DIRECT_REL, n.value)

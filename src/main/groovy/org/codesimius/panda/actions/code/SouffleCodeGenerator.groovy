@@ -8,13 +8,11 @@ import org.codesimius.panda.datalog.clause.RelDeclaration
 import org.codesimius.panda.datalog.clause.Rule
 import org.codesimius.panda.datalog.clause.TypeDeclaration
 import org.codesimius.panda.datalog.element.AggregationElement
-import org.codesimius.panda.datalog.element.ConstructionElement
-import org.codesimius.panda.datalog.element.LogicalElement
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.RecordType
 import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.element.relation.Type
-import org.codesimius.panda.datalog.expr.RecordExpr
+import org.codesimius.panda.datalog.expr.*
 import org.codesimius.panda.system.Compiler
 
 import static org.codesimius.panda.datalog.Annotation.*
@@ -63,10 +61,8 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	String exit(Rule n) {
 		def head = m[n.head]
 		def body = m[n.body]
-		if (!body && (n.head instanceof LogicalElement || n.head instanceof ConstructionElement))
+		if (!body)
 			emit "$head :- 1=1."
-		else if (!body)
-			emit "$head."
 		else
 			emit "$head :- $body."
 
@@ -87,6 +83,24 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 	String exit(Relation n) { "${fix(n.name)}(${n.exprs.collect { m[it] }.join(", ")})" }
 
 	String exit(Type n) { fix n.name }
+
+	String exit(BinaryExpr n) {
+		switch (n.op) {
+			case BinaryOp.CAT:
+				return "cat(${m[n.left]}, ${m[n.right]})"
+			default:
+				return super.exit(n)
+		}
+	}
+
+	String exit(UnaryExpr n) {
+		switch (n.op) {
+			case UnaryOp.TO_STR:
+				return "to_string(${m[n.expr]})"
+			default:
+				return null
+		}
+	}
 
 	// Must override since the default implementation throws an exception
 	String visit(RecordExpr n) {

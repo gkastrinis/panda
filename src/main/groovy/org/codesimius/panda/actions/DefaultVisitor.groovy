@@ -142,6 +142,12 @@ abstract class DefaultVisitor<T> {
 		exit n
 	}
 
+	T visit(UnaryExpr n) {
+		enter n
+		m[n.expr] = visit n.expr
+		exit n
+	}
+
 	T visit(ConstantExpr n) {
 		enter n
 		exit n
@@ -222,6 +228,10 @@ abstract class DefaultVisitor<T> {
 	void enter(BinaryExpr n) {}
 
 	T exit(BinaryExpr n) { null }
+
+	void enter(UnaryExpr n) {}
+
+	T exit(UnaryExpr n) { null }
 
 	void enter(ConstantExpr n) {}
 

@@ -11,10 +11,7 @@ import org.codesimius.panda.datalog.element.ComparisonElement
 import org.codesimius.panda.datalog.element.ConstructionElement
 import org.codesimius.panda.datalog.element.LogicalElement
 import org.codesimius.panda.datalog.element.NegationElement
-import org.codesimius.panda.datalog.expr.BinaryExpr
-import org.codesimius.panda.datalog.expr.ConstantExpr
-import org.codesimius.panda.datalog.expr.GroupExpr
-import org.codesimius.panda.datalog.expr.VariableExpr
+import org.codesimius.panda.datalog.expr.*
 import org.codesimius.panda.system.Compiler
 
 import static org.codesimius.panda.datalog.element.ComparisonElement.TRIVIALLY_TRUE
@@ -87,6 +84,8 @@ abstract class DefaultCodeGenerator extends DefaultVisitor<String> {
 	}
 
 	String exit(BinaryExpr n) { "${m[n.left]} ${n.op} ${m[n.right]}" }
+
+	String exit(UnaryExpr n) { "${n.op} ${m[n.expr]}" }
 
 	String exit(ConstantExpr n) { n.kind == ConstantExpr.Kind.STRING ? "\"${n.value}\"" : "${n.value}" }
 

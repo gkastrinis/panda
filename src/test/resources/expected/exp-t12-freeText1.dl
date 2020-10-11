@@ -7,10 +7,10 @@
 .decl foobar(v0:symbol, v1:symbol) // string x string
 .output foobar
 .decl GT(v0:number, v1:number) // int x int
-Var_Type("Object", "o1").
-Var_Type("String", "str").
+Var_Type("Object", "o1") :- 1=1.
+Var_Type("String", "str") :- 1=1.
 types(?t) :- Var_Type(?t, _).
-foo("abc").
-bar("new A").
+foo("abc") :- 1=1.
+bar("new A") :- 1=1.
 foobar(?v, ?hctx) :- foo(?v), VarPointsTo(?v, "o1", _, ?hctx), bar(?hctx).
-GT(1, 0).
+GT(1, 0) :- 1=1.

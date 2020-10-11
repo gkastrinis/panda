@@ -13,6 +13,7 @@ import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.element.relation.Type
 import org.codesimius.panda.datalog.expr.BinaryExpr
 import org.codesimius.panda.datalog.expr.GroupExpr
+import org.codesimius.panda.datalog.expr.UnaryExpr
 
 class TemplateFlatteningTransformer extends DefaultTransformer {
 
@@ -56,6 +57,8 @@ class TemplateFlatteningTransformer extends DefaultTransformer {
 	}
 
 	IVisitable exit(BinaryExpr n) { n }
+
+	IVisitable exit(UnaryExpr n) { n }
 
 	IVisitable exit(GroupExpr n) { n }
 

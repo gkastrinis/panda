@@ -33,6 +33,6 @@ byFld("x2", "f1", [nil, ["x2", "f1"], nil]), AP2([nil, ["x2", "f1"], nil]), Foo2
 Planned(x) :- Foo(_, x), Baz(x).
 .plan 1:(1,2)
 byLen(42, [[42], nil, nil, nil]), Shape([[42], nil, nil, nil]), byLen(10, [[10], nil, nil, nil]), Shape([[10], nil, nil, nil]), FooBer(42, [[42], nil, nil, nil], 10, [[10], nil, nil, nil]) :- 1=1.
-Pred1(10 + 20, 10).
+Pred1(10 + 20, 10) :- 1=1.
 Pred2(x, t, x + t) :- Pred1(x, x), x = 10 + t, Pred1(t, t).
 AP(v0) :- AP2(v0).

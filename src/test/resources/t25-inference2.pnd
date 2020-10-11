@@ -1,0 +1,11 @@
+nums(x) : int
+nums(42)
+nums(-123)
+myStr(x) <- x = "abc" + "def"
+myStr(x) <- x = "abc" + 1
+myStr(x + "ab") <- nums(x)
+myStr(x) <- y = z + 1, nums(z), x = "ab" + y
+myStr(x) <- x = "ab" + y, y = z + 1, nums(z)
+myStr(x) <- x = "[" + "abc" + ", " + a + b + "]", nums(a), nums(b)
+myStr(x) <- x = a + b + "!!!", nums(a), nums(b)
+test(x) <- x = y * 1, y = z + 1, nums(z)

@@ -6,6 +6,8 @@ enum BinaryOp {
 	GT(">"), GEQ(">="), NEQ("!="),
 	// Arithmetic
 	PLUS("+"), MINUS("-"), MULT("*"), DIV("/"),
+	// String
+	CAT("CAT")
 
 	private String op
 

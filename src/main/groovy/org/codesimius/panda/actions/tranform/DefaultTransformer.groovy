@@ -114,6 +114,11 @@ abstract class DefaultTransformer extends DefaultVisitor<IVisitable> {
 		n.left === newLeft && n.right === newRight ? n : new BinaryExpr(newLeft, n.op, newRight)
 	}
 
+	IVisitable exit(UnaryExpr n) {
+		def newExpr = m[n.expr] as IExpr
+		n.expr === newExpr ? n : new UnaryExpr(n.op, newExpr)
+	}
+
 	IVisitable exit(ConstantExpr n) { n }
 
 	IVisitable exit(GroupExpr n) {

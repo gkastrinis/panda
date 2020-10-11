@@ -12,10 +12,10 @@
 .type __SYS_TYPE_S1_cons_An = [v0:symbol]
 .type __SYS_TYPE_S1_Animal_byStr = [v0:symbol]
 .type __SYS_TYPE__S1_Animal = [v0:__SYS_TYPE_S1_cons_An, v1:__SYS_TYPE_S1_Animal_byStr]
-Q(1).
-Q(2).
+Q(1) :- 1=1.
+Q(2) :- 1=1.
 W(x) :- S2_R(x).
-S1_P(10).
+S1_P(10) :- 1=1.
 S1_R(x) :- S1_P(x).
 S1_cons_An(x, [[x], nil]), S1_Animal([[x], nil]), S1_foo([[x], nil]) :- x = "cat", S1_W(x).
 S1_Bar(y) :- S1_cons_An(_, y).

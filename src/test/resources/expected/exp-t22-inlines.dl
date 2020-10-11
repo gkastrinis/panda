@@ -3,8 +3,8 @@
 .decl R(v0:number, v1:number) // int x int
 .decl R2(v0:number, v1:number) // int x int
 .decl R3(v0:number) // int
-P(1, 2).
-Q(3, 4).
+P(1, 2) :- 1=1.
+Q(3, 4) :- 1=1.
 R(x, x * 2) :- P(x, ?v1), Q(?v1, x), ?v3 = x + 1, x > ?v3, P(_, ?v3), P(?v3, _), P(_, x).
 R2(b, a) :- P(a, ?v1), Q(?v1, b), ?v3 = a + 1, b > ?v3, P(_, ?v3), P(?v3, _), P(_, b), a = b * 2.
 R3(c) :- P(a, ?v1), Q(?v1, b), ?v3 = a + 1, b > ?v3, P(_, ?v3), P(?v3, _), P(a, c), P(b, ?v1), Q(?v1, c), ?v3 = b + 1, c > ?v3, P(_, ?v3), P(?v3, _).

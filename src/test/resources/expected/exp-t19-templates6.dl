@@ -16,7 +16,7 @@
 .type __SYS_TYPE__Shape = [v0:__SYS_TYPE_Shape_byStr]
 .type __SYS_TYPE_F1_Living_byStr = [v0:symbol]
 .type __SYS_TYPE__F1_Living = [v0:__SYS_TYPE_F1_Living_byStr]
-Q(1).
+Q(1) :- 1=1.
 F1_P(x) :- Q(x).
 F1_Q(x) :- F1_P(x), x > 10.
 F1_Z(x) :- Q(x).

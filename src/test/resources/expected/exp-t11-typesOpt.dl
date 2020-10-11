@@ -9,5 +9,5 @@
 .type __SYS_TYPE__Animal = [v0:__SYS_TYPE_Animal_byStr]
 A(v0) :- Animal_byStr("abc", v0).
 P(x) :- ((Animal_byStr("123", v0), A(v0)); (Animal_byStr("abc", v1), A(v1))), num(x).
-Q("def").
+Q("def") :- 1=1.
 Q("567") :- num(42).

@@ -26,7 +26,7 @@ class DatalogSpec extends Specification {
 		"t2-aggregations"     | _
 		"t3-types"            | _
 		"t4-typeValues"       | _
-		"t5-inference"        | _
+		"t5-inference1"       | _
 		"t6-inputs"           | _
 		"t7-constr1"          | _
 		"t8-constr2"          | _
@@ -46,6 +46,7 @@ class DatalogSpec extends Specification {
 		"t22-inlines"         | _
 		"t23-recursiveTypes"  | _
 		"t24-noDefaultConstr" | _
+		"t25-inference2"      | _
 	}
 
 	@Unroll

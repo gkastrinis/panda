@@ -17,7 +17,7 @@
 .decl S5_P3(v0:number) // int
 .decl S5_W(v0:number) // int
 .decl S5_M(v0:number) // int
-P("hello").
+P("hello") :- 1=1.
 Q(x, 42) :- P(x).
 S4_P2(x) :- Q(x, _).
 S4_P3(x) :- Q(_, x).

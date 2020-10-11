@@ -28,6 +28,6 @@ FooBar2("foo", y) :- Baz(y).
 Part1(x, y) :- Bar(x, y).
 Part2(x, y) :- Part1(y, x).
 Part1(x, y) :- Foo2(y, x).
-BarI(1).
-BarII(1).
+BarI(1) :- 1=1.
+BarII(1) :- 1=1.
 Animal(v0) :- Cat(v0).

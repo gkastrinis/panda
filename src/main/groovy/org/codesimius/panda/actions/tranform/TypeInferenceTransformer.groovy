@@ -11,16 +11,14 @@ import org.codesimius.panda.datalog.element.ConstructionElement
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.element.relation.Type
-import org.codesimius.panda.datalog.expr.BinaryExpr
-import org.codesimius.panda.datalog.expr.ConstantExpr
-import org.codesimius.panda.datalog.expr.IExpr
-import org.codesimius.panda.datalog.expr.VariableExpr
+import org.codesimius.panda.datalog.expr.*
 import org.codesimius.panda.system.Compiler
 import org.codesimius.panda.system.Error
 
 import static org.codesimius.panda.datalog.element.relation.Type.*
 import static org.codesimius.panda.datalog.expr.BinaryOp.*
 import static org.codesimius.panda.datalog.expr.ConstantExpr.Kind.*
+import static org.codesimius.panda.datalog.expr.UnaryOp.TO_STR
 import static org.codesimius.panda.datalog.expr.VariableExpr.genN as varN
 
 @Canonical
@@ -35,12 +33,17 @@ class TypeInferenceTransformer extends DefaultTransformer {
 	private Set<String> explicitRelations
 	// Expression x Type (for current rule)
 	private Map<IExpr, Type> exprType
+	// Expressions in a rule that are missing a type
+	private Set<IExpr> untypedExprs
 
 	// Relations found in the current rule head that will have types inferred
 	private Set<Relation> forHeadInference
 	// Relations found in the current rule (head/body) that will have types validated
 	// For those found in the head, this is because there is an explicit declaration
-	private Set<Relation> forBodyValidation
+	private Set<Relation> forValidation
+
+	// Variables bound by relations in a rule body
+	private Set<VariableExpr> boundVars
 
 	// Implementing fix-point computation
 	private Set<Rule> deltaRules
@@ -57,7 +60,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 		Set<Rule> oldDeltaRules = n.rules
 		while (!oldDeltaRules.empty) {
 			deltaRules = [] as Set
-			oldDeltaRules.each { visit it }
+			oldDeltaRules.each { m[it] = visit it }
 			if (oldDeltaRules == deltaRules)
 				error(Error.TYPE_INF_FAIL, null)
 			oldDeltaRules = deltaRules
@@ -88,7 +91,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 			return decl
 		} as Set
 
-		new BlockLvl0(relDeclarations, n.typeDeclarations, n.rules)
+		new BlockLvl0(relDeclarations, n.typeDeclarations, n.rules.collect { m[it] as Rule } as Set)
 	}
 
 	void enter(RelDeclaration n) {
@@ -101,24 +104,33 @@ class TypeInferenceTransformer extends DefaultTransformer {
 		inferredTypes[n.type.name] = [n.type]
 	}
 
-	void enter(Rule n) {
+	IVisitable visit(Rule n) {
+		parentAnnotations = n.annotations
 		forHeadInference = [] as Set
-		forBodyValidation = [] as Set
+		forValidation = [] as Set
 		exprType = [:]
-	}
+		boundVars = currDatalog.getBoundBodyVars(n) as Set
 
-	IVisitable exit(Rule n) {
-		forHeadInference.each { relation ->
+		do {
+			untypedExprs = [] as Set
+			inRuleHead = true
+			m[n.head] = visit n.head
+			inRuleHead = false
+			inRuleBody = true
+			if (n.body) m[n.body] = visit n.body
+			inRuleBody = false
+			// An expr type was needed and missing, but then it was inferred
+		} while (untypedExprs.any { exprType[it] })
+
+		forHeadInference.each { Relation relation ->
 			relation.exprs.eachWithIndex { expr, int i ->
-
 				def prevType = inferredTypes[relation.name][i]
 				def currType = join(prevType, exprType[expr])
 
 				// Relation has an explicit declaration. Just validate
 				// currType must be a subtype of the explicit type
 				if (relation.name in explicitRelations) {
-					assert currType
-					if (currType! in currDatalog.getExtendedSubTypesOf(prevType))
+					if (currType !in currDatalog.getExtendedSubTypesOf(prevType))
 						error(loc(n), Error.TYPE_INF_INCOMPAT_USE, relation.name, i, prevType, currType)
 				}
 				// Still missing type information
@@ -135,7 +147,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 			}
 		}
 
-		forBodyValidation.each { relation ->
+		forValidation.each { Relation relation ->
 			relation.exprs.eachWithIndex { expr, int i ->
 				def prevType = inferredTypes[relation.name][i]
 				def currType = exprType[expr]
@@ -145,7 +157,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 			}
 		}
 
-		return n
+		super.exit(n)
 	}
 
 	void enter(AggregationElement n) {
@@ -155,8 +167,6 @@ class TypeInferenceTransformer extends DefaultTransformer {
 	}
 
 	void enter(ConstructionElement n) {
-		assert inRuleHead
-		assert !exprType[n.constructor.valueExpr]
 		// The type for constructed vars is fixed
 		exprType[n.constructor.valueExpr] = n.type
 	}
@@ -165,9 +175,9 @@ class TypeInferenceTransformer extends DefaultTransformer {
 
 	void enter(Relation n) {
 		if (inRuleHead)
-			(n.name in explicitRelations ? forBodyValidation : forHeadInference) << n
+			(n.name in explicitRelations ? forValidation : forHeadInference) << n
 		else if (inRuleBody) {
-			forBodyValidation << n
+			forValidation << n
 			def types = inferredTypes[n.name]
 			if (types) n.exprs.eachWithIndex { expr, i ->
 				if (expr instanceof VariableExpr && expr.name == '_') return
@@ -180,35 +190,57 @@ class TypeInferenceTransformer extends DefaultTransformer {
 		def numericalTypes = [TYPE_INT, TYPE_REAL]
 		def ordinalTypes = [TYPE_INT, TYPE_REAL, TYPE_STRING]
 		def leftType = exprType[n.left], rightType = exprType[n.right]
-		def joinType = join(leftType, rightType)
-		def types = [leftType, rightType].grep()
+		def types = [leftType, rightType]
+
+		def handleAssignment = { IExpr e, IExpr other ->
+			// Assignment instead of equality check
+			if (e instanceof VariableExpr && (e as VariableExpr) !in boundVars) {
+				exprType[e] = join(leftType, rightType)
+				return true
+			}
+		}
+		if (n.op == EQ && handleAssignment(n.left, n.right)) return super.exit(n)
+		if (n.op == EQ && handleAssignment(n.right, n.left)) return super.exit(n)
+
+		if (!leftType || !rightType) {
+			if (!leftType) untypedExprs << n.left
+			if (!rightType) untypedExprs << n.right
+			return n
+		}
 
 		switch (n.op) {
-			case EQ:
-			case NEQ:
-				[n.left, n.right]
-						.findAll { it instanceof VariableExpr }
-						.each { exprType[it] = joinType }
-				exprType[n] = TYPE_BOOLEAN
-				break
 			case LT:
 			case LEQ:
 			case GT:
 			case GEQ:
 				if (types.any { it !in ordinalTypes })
-					error(findParentLoc(), Error.TYPE_INF_INCOMPAT, [leftType, rightType])
-				exprType[n] = TYPE_BOOLEAN
+					error(findParentLoc(), Error.TYPE_INF_INCOMPAT, types)
+			case EQ:
+			case NEQ:
+				// Just join types to test for compatibility
+				join(leftType, rightType)
 				break
 			case PLUS:
+				if (TYPE_BOOLEAN in types)
+					error(findParentLoc(), Error.TYPE_INF_INCOMPAT, types)
+
+				if (TYPE_STRING in types) {
+					def newLeft = m[n.left] as IExpr, newRight = m[n.right] as IExpr
+					newLeft = leftType in numericalTypes ? new UnaryExpr(TO_STR, newLeft) : newLeft
+					newRight = rightType in numericalTypes ? new UnaryExpr(TO_STR, newRight) : newRight
+					exprType[n] = TYPE_STRING
+					return new BinaryExpr(newLeft, CAT, newRight)
+				}
 			case MINUS:
 			case MULT:
 			case DIV:
 				if (types.any { it !in numericalTypes })
-					error(findParentLoc(), Error.TYPE_INF_INCOMPAT, [leftType, rightType])
-				exprType[n] = joinType
+					error(findParentLoc(), Error.TYPE_INF_INCOMPAT, types)
+				exprType[n] = join(leftType, rightType)
 				break
 		}
-		return n
+
+		super.exit(n)
 	}
 
 	void enter(ConstantExpr n) {
@@ -234,7 +266,7 @@ class TypeInferenceTransformer extends DefaultTransformer {
 
 	// For inferring a type *among* different rules of the same relation, treat it as a disjunction
 	// Therefore, infer the lowest, *higher* common type in the hierarchy (type-lattice / join operation)
-	// Traverse the type hierarhcy from the top and stop at the first branching point
+	// Traverse the type hierarchy from the top and stop at the first branching point
 	Type join(Type t1, Type t2) {
 		if (!t1) return t2
 		if (!t2) return t1

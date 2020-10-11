@@ -4,8 +4,8 @@
 .decl Q(v0:number) // int
 .decl S1_P(v0:number) // int
 .decl S2_P(v0:number) // int
-Q(1).
-Q(2).
+Q(1) :- 1=1.
+Q(2) :- 1=1.
 S1_P(x) :- Q(x).
 S1_Bar(x) :- S1_P(x), Bar(x).
 S2_P(x) :- Q(x).

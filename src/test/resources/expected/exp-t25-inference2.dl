@@ -1,0 +1,12 @@
+.decl nums(v0:number) // int
+.decl myStr(v0:symbol) // string
+.decl test(v0:number) // int
+nums(42) :- 1=1.
+nums(-123) :- 1=1.
+myStr(cat("abc", "def")) :- 1=1.
+myStr(cat("abc", to_string(1))) :- 1=1.
+myStr(cat(to_string(x), "ab")) :- nums(x).
+myStr(cat("ab", to_string(z + 1))) :- nums(z).
+myStr(cat(cat(cat(cat(cat("[", "abc"), ", "), to_string(a)), to_string(b)), "]")) :- nums(a), nums(b).
+myStr(cat(to_string(a + b), "!!!")) :- nums(a), nums(b).
+test(z + 1 * 1) :- nums(z).

@@ -1,2 +1,3 @@
 Foo(x) <- a = 42, b = a * 10, x = b + 2
-Bar(x) <- b = 42 + x, x = b + 2
+Num(x) : int
+Bar(a) <- b = 42 + a, a = b + 2, Num(b)
