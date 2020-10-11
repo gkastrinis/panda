@@ -3,7 +3,6 @@ package org.codesimius.panda.actions.tranform.souffle
 import groovy.transform.Canonical
 import org.codesimius.panda.actions.tranform.DefaultTransformer
 import org.codesimius.panda.datalog.IVisitable
-import org.codesimius.panda.datalog.clause.RelDeclaration
 import org.codesimius.panda.datalog.clause.Rule
 import org.codesimius.panda.datalog.clause.TypeDeclaration
 import org.codesimius.panda.datalog.element.ComparisonElement
@@ -64,8 +63,7 @@ class AssignTransformer extends DefaultTransformer {
 		super.exit n
 	}
 
-	IVisitable exit(RelDeclaration n) { n }
-
+	// Needed for record types
 	IVisitable exit(TypeDeclaration n) { n }
 
 	IVisitable exit(ComparisonElement n) {

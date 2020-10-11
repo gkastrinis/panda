@@ -7,13 +7,9 @@ import org.codesimius.panda.datalog.block.BlockLvl2
 import org.codesimius.panda.datalog.clause.RelDeclaration
 import org.codesimius.panda.datalog.clause.Rule
 import org.codesimius.panda.datalog.clause.TypeDeclaration
-import org.codesimius.panda.datalog.element.ComparisonElement
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.element.relation.Type
-import org.codesimius.panda.datalog.expr.BinaryExpr
-import org.codesimius.panda.datalog.expr.GroupExpr
-import org.codesimius.panda.datalog.expr.UnaryExpr
 
 class TemplateInstantiationTransformer extends DefaultTransformer {
 
@@ -60,8 +56,6 @@ class TemplateInstantiationTransformer extends DefaultTransformer {
 		new BlockLvl2(n.datalog, newTemplates + extraTemplates, n.instantiations)
 	}
 
-	IVisitable exit(BlockLvl1 n) { n }
-
 	IVisitable exit(BlockLvl0 n) {
 		newCurrTemplate.datalog.with {
 			relDeclarations += n.relDeclarations.collect { m[it] as RelDeclaration }
@@ -70,8 +64,6 @@ class TemplateInstantiationTransformer extends DefaultTransformer {
 		}
 		null
 	}
-
-	IVisitable exit(ComparisonElement n) { n }
 
 	IVisitable exit(Constructor n) {
 		def name = rename(n.name)
@@ -87,12 +79,6 @@ class TemplateInstantiationTransformer extends DefaultTransformer {
 		def name = rename(n.name)
 		return n.name == name ? n : new Type(name)
 	}
-
-	IVisitable exit(BinaryExpr n) { n }
-
-	IVisitable exit(UnaryExpr n) { n }
-
-	IVisitable exit(GroupExpr n) { n }
 
 	def rename(def name) {
 		if (!name.contains(".") || !currTemplate) return name

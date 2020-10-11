@@ -7,13 +7,9 @@ import org.codesimius.panda.datalog.block.BlockLvl2
 import org.codesimius.panda.datalog.clause.RelDeclaration
 import org.codesimius.panda.datalog.clause.Rule
 import org.codesimius.panda.datalog.clause.TypeDeclaration
-import org.codesimius.panda.datalog.element.ComparisonElement
 import org.codesimius.panda.datalog.element.relation.Constructor
 import org.codesimius.panda.datalog.element.relation.Relation
 import org.codesimius.panda.datalog.element.relation.Type
-import org.codesimius.panda.datalog.expr.BinaryExpr
-import org.codesimius.panda.datalog.expr.GroupExpr
-import org.codesimius.panda.datalog.expr.UnaryExpr
 
 class TemplateFlatteningTransformer extends DefaultTransformer {
 
@@ -39,8 +35,6 @@ class TemplateFlatteningTransformer extends DefaultTransformer {
 		null
 	}
 
-	IVisitable exit(ComparisonElement n) { n }
-
 	IVisitable exit(Constructor n) {
 		def name = rename(n.name)
 		return n.name == name ? n : new Constructor(name, n.exprs)
@@ -55,12 +49,6 @@ class TemplateFlatteningTransformer extends DefaultTransformer {
 		def name = rename(n.name)
 		return n.name == name ? n : new Type(name)
 	}
-
-	IVisitable exit(BinaryExpr n) { n }
-
-	IVisitable exit(UnaryExpr n) { n }
-
-	IVisitable exit(GroupExpr n) { n }
 
 	def rename(def name) {
 		// Global scope, primitive type, or qualified name (from another template)
