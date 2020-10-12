@@ -243,11 +243,26 @@ class TypeInferenceTransformer extends DefaultTransformer {
 		super.exit(n)
 	}
 
+	IVisitable exit(UnaryExpr n) {
+		def type = exprType[n.expr]
+		if (n.op == UnaryOp.TO_ORD && type) {
+			if (type != TYPE_STRING)
+				error(findParentLoc(), Error.TYPE_INF_INCOMPAT_OP, type, n.op)
+			exprType[n] = TYPE_INT
+		}
+		return super.exit(n)
+	}
+
 	void enter(ConstantExpr n) {
 		if (n.kind == INTEGER) exprType[n] = TYPE_INT
 		else if (n.kind == REAL) exprType[n] = TYPE_REAL
 		else if (n.kind == BOOLEAN) exprType[n] = TYPE_BOOLEAN
 		else if (n.kind == STRING) exprType[n] = TYPE_STRING
+	}
+
+	IVisitable exit(GroupExpr n) {
+		exprType[n] = exprType[n.expr]
+		return super.exit(n)
 	}
 
 	// For inferring a type *in* a rule body, approximate by assuming all relations are used conjunctively

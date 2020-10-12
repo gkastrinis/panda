@@ -1,0 +1,9 @@
+.decl myStr(v0:symbol) // string
+.decl myStr2(v0:symbol, v1:symbol) // string x string
+.decl nums(v0:number) // int
+.decl strID(v0:number) // int
+strID(ord(y)) :- myStr(y).
+strID(ord("abcd")) :- 1=1.
+strID(ord(y)) :- myStr2(x, y), ord(x) < ord(y).
+strID(ord((cat("abc", "def")))) :- 1=1.
+strID(ord((cat(a, to_string(b))))) :- myStr(a), nums(b).

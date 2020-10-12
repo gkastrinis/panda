@@ -77,6 +77,7 @@ constant
 expr
 	: IDENTIFIER
 	| constant
+	| '#' expr
 	| expr ('+' | '-' | '*' | '/') expr
 	| '(' expr ')'
 	;

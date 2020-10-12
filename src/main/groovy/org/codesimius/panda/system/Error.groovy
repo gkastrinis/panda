@@ -51,6 +51,7 @@ enum Error {
 	TYPE_INF_FAIL("Type inference was inconclusive; cannot reach fixpoint"),
 	TYPE_INF_INCOMPAT("Incompatible types during type inference ({0})"),
 	TYPE_INF_INCOMPAT_USE("Incompatible types used for relation `{0}` at index {1} (expected `{2}` but `{3}` was used)"),
+	TYPE_INF_INCOMPAT_OP("Incompatible type `{0}` used with operator `{1}`"),
 	TYPE_UNSUPP("Currently unsupported type `{0}`"),
 	TYPE_UNKNOWN("Unknown type `{0}`"),
 	TYPE_RULE("Type `{0}` used as a normal relation in rule head"),

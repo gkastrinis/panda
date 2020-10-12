@@ -181,6 +181,8 @@ class DatalogParserImpl extends DatalogBaseListener {
 			values[ctx] = new VariableExpr(ctx.IDENTIFIER().text)
 		else if (ctx.constant())
 			values[ctx] = values[ctx.constant()] as ConstantExpr
+		else if (hasToken(ctx, "#"))
+			values[ctx] = new UnaryExpr(UnaryOp.TO_ORD, values[ctx.expr(0)] as IExpr)
 		else if (hasToken(ctx, "("))
 			values[ctx] = new GroupExpr(values[ctx.expr(0)] as IExpr)
 		else {

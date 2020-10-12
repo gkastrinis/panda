@@ -47,6 +47,7 @@ class DatalogSpec extends Specification {
 		"t23-recursiveTypes"  | _
 		"t24-noDefaultConstr" | _
 		"t25-inference2"      | _
+		"t26-string-ord"      | _
 	}
 
 	@Unroll
@@ -159,6 +160,7 @@ class DatalogSpec extends Specification {
 		"fail96" | Error.PRIMITIVE_DECL_ASREL
 		"fail97" | Error.PRIMITIVE_DECL
 		"fail98" | Error.PRIMITIVE_AS_SUPER
+		"fail99" | Error.TYPE_INF_INCOMPAT_OP
 	}
 
 	@Unroll

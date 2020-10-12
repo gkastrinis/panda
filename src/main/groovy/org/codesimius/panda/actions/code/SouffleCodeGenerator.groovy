@@ -97,6 +97,8 @@ class SouffleCodeGenerator extends DefaultCodeGenerator {
 		switch (n.op) {
 			case UnaryOp.TO_STR:
 				return "to_string(${m[n.expr]})"
+			case UnaryOp.TO_ORD:
+				return "ord(${m[n.expr]})"
 			default:
 				return null
 		}

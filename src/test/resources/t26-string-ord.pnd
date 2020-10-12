@@ -1,0 +1,9 @@
+myStr(x) : string
+myStr2(x, y) : string, string
+nums(x) : int
+
+strID(x) <- myStr(y), x = #y
+strID(x) <- x = #"abcd"
+strID(#y) <- myStr2(x, y), #x < #y
+strID(x) <- x = # ("abc" + "def")
+strID(x) <- x = #(a + b), myStr(a), nums(b)

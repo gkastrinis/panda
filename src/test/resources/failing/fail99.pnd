@@ -1,0 +1,2 @@
+nums(x) : int
+strID(x) <- x = #(a + b), nums(a), nums(b)
