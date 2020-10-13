@@ -265,9 +265,9 @@ class TypeInferenceTransformer extends DefaultTransformer {
 		return super.exit(n)
 	}
 
-	// For inferring a type *in* a rule body, approximate by assuming all relations are used conjunctively
-	// Therefore, infer the lowest type in the hierarchy (type-lattice) that is present (meet operation)
-	// Since there is no multiple subtyping, either currType or t must be the lowest type
+	// For inferring a type in a rule body, approximate by assuming all relations are used conjunctively
+	// Therefore, infer the lowest type in the hierarchy (type-lattice) that is present
+	// Since there is no multiple subtyping, either one of the types must be the lowest one
 	Type meet(Type currType, Type t) {
 		if (currType == t)
 			return currType
@@ -279,8 +279,8 @@ class TypeInferenceTransformer extends DefaultTransformer {
 		return currType
 	}
 
-	// For inferring a type *among* different rules of the same relation, treat it as a disjunction
-	// Therefore, infer the lowest, *higher* common type in the hierarchy (type-lattice / join operation)
+	// For inferring a type among different rules of the same relation, treat them as a disjunction
+	// Therefore, infer the lowest, higher common type in the hierarchy (type-lattice)
 	// Traverse the type hierarchy from the top and stop at the first branching point
 	Type join(Type t1, Type t2) {
 		if (!t1) return t2
