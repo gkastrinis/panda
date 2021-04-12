@@ -8,7 +8,7 @@ plugins {
 group = "org.codesimius"
 mainClassName = "org.codesimius.panda.Main"
 
-wrapper() { gradleVersion = "6.5" }
+wrapper() { gradleVersion = "6.7" }
 
 repositories { mavenCentral() }
 
