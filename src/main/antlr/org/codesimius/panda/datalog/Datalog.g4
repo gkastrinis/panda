@@ -5,7 +5,7 @@ package org.codesimius.panda.datalog;
 }
 
 program
-	: (include | template | instantiation | datalog)* ;
+	: (include | template | instantiation | datalog)* EOF ;
 
 include
 	: 'include' STRING ;
