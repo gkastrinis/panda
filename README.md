@@ -3,7 +3,6 @@
 ![CI](https://github.com/gkastrinis/panda/workflows/CI/badge.svg)
 [![GitHub Release](https://img.shields.io/github/release/gkastrinis/panda.svg)](https://github.com/gkastrinis/panda/releases)
 [![Discord Chat](https://img.shields.io/discord/758049851660304387)](https://discord.gg/KQDS83t)
-[![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/paNda-datalog/Lobby)
 [![Open Source](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://opensource.org/)
 
 ![PANDA](/panda.png)
